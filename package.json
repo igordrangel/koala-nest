@@ -1,13 +1,13 @@
 {
   "name": "@koalarx/nest",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "",
   "author": "Igor D. Rangel",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "build": "node .github/scripts/publish.js",
-    "lint": "prettier --end-of-line lf --write . && npx eslint --fix src/**/*",
+    "lint": "prettier --write \"dist/package.json\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
