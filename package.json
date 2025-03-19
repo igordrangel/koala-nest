@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "node .github/scripts/publish.js",
+    "lint": "prettier --end-of-line lf --write . && npx eslint --fix src/**/*",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
