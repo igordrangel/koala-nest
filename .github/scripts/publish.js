@@ -32,8 +32,7 @@ fs.writeFileSync(
       },
       homepage: "https://github.com/igordrangel/koala-nest#readme",
       types: "./koala-nest.d.ts",
-      dependencies: config.dependencies,
-      devDependencies: config.devDependencies,
+      peerDependencies: config.dependencies
     },
     null,
     2
