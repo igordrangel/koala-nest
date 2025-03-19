@@ -17,7 +17,13 @@
     "noFallthroughCasesInSwitch": false,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals"]
   },
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "src/test", "vitest.config.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts",
+    "src/test",
+    "vitest.config.ts"
+  ]
 }

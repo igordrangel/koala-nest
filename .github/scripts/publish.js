@@ -10,32 +10,34 @@ if (fs.existsSync("dist")) {
 execSync(`nest build`, { stdio: "inherit" });
 
 const packageJson = JSON.parse(
-  fs
-    .readFileSync("src/package.json", { encoding: "utf8" })
-    .toString()
+  fs.readFileSync("src/package.json", { encoding: "utf8" }).toString()
 );
 
 fs.writeFileSync(
   "dist/package.json",
-  JSON.stringify({
-    ...packageJson,
-    version: currentVersion,
-    description: config.description,
-    repository: {
-      type: "git",
-      url: "git+https://github.com/igordrangel/koala-nest.git",
+  JSON.stringify(
+    {
+      ...packageJson,
+      version: currentVersion,
+      description: config.description,
+      repository: {
+        type: "git",
+        url: "git+https://github.com/igordrangel/koala-nest.git",
+      },
+      keywords: config.keywords,
+      author: "Igor D. Rangel",
+      license: config.license,
+      bugs: {
+        url: "https://github.com/igordrangel/koala-nest/issues",
+      },
+      homepage: "https://github.com/igordrangel/koala-nest#readme",
+      types: "./koala-nest.d.ts",
+      dependencies: config.dependencies,
+      devDependencies: config.devDependencies,
     },
-    keywords: config.keywords,
-    author: "Igor D. Rangel",
-    license: config.license,
-    bugs: {
-      url: "https://github.com/igordrangel/koala-nest/issues",
-    },
-    homepage: "https://github.com/igordrangel/koala-nest#readme",
-    types: "./koala-nest.d.ts",
-    dependencies: config.dependencies,
-    devDependencies: config.devDependencies
-  }, null, 2),
+    null,
+    2
+  ),
   "utf8"
 );
 fs.writeFileSync(
