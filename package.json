@@ -7,12 +7,10 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "node .github/scripts/publish.js",
-    "lint": "prettier --write \"dist/package.json\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
-    "preversion": "npm run lint",
     "postversion": "git push && git push --tags",
     "deploy:hotfix": "npm version patch",
     "deploy:feature": "npm version minor",
