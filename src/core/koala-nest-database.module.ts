@@ -3,6 +3,8 @@ import { RepositoryBase } from '../core/database/repository.base'
 import { EnvService } from '../services/env/env.service'
 import { PrismaService } from '../services/prisma/prisma.service'
 
+export const PRISMA_TOKEN = 'PRISMA_SERVICE_TOKEN'
+
 export interface KoalaNestDatabaseRepositoryConfig {
   interface: InjectionToken
   class: Type<RepositoryBase<any>>
@@ -15,12 +17,12 @@ interface KoalaNestDatabaseModuleConfig {
 @Module({
   providers: [
     {
-      provide: 'PRISMA_SERVICE_TOKEN',
+      provide: PRISMA_TOKEN,
       useClass: PrismaService,
     },
     EnvService,
   ],
-  exports: ['PRISMA_SERVICE_TOKEN'],
+  exports: [PRISMA_TOKEN],
 })
 export class KoalaNestDatabaseModule {
   static forRoot(config: KoalaNestDatabaseModuleConfig): DynamicModule {

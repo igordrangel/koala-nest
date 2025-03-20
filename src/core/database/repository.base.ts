@@ -20,7 +20,7 @@ export interface FindAllProps<
 export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
   constructor(
     protected prisma: PrismaClientWithCustomTransaction,
-    private readonly _modelName: string,
+    private readonly _modelName: ModelName,
   ) {}
 
   withTransaction(fn: (prisma: PrismaTransactionalClient) => Promise<any>) {
