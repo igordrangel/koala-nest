@@ -7,10 +7,10 @@ if (fs.existsSync("dist")) {
   fs.rmSync("dist", { recursive: true });
 }
 
-execSync(`nest build`, { stdio: "inherit" });
+execSync(`npm run build:lib`, { stdio: "inherit" });
 
 const packageJson = JSON.parse(
-  fs.readFileSync("src/package.json", { encoding: "utf8" }).toString()
+  fs.readFileSync("apps/koala-nest/package.json", { encoding: "utf8" }).toString()
 );
 
 fs.writeFileSync(

@@ -9,7 +9,21 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Test {
+model Person {
   id   Int    @id @default(autoincrement())
   name String
+
+  phones PersonPhone[]
+
+  @@map("person")
+}
+
+model PersonPhone {
+  id    Int    @id @default(autoincrement())
+  phone String
+
+  personId Int    @map("person_id")
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@map("person_phone")
 }
