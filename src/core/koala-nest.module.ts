@@ -13,6 +13,7 @@ import {
   KoalaNestDatabaseModule,
   KoalaNestDatabaseRepositoryConfig,
 } from './koala-nest-database.module'
+import { EnvModule } from 'src/services/env/env.module'
 
 interface KoalaNestModuleConfig {
   logging?: Provider<ILoggingService>
@@ -21,6 +22,7 @@ interface KoalaNestModuleConfig {
 }
 
 @Module({
+  imports: [EnvModule],
   providers: [
     { provide: IRedisService, useClass: RedisService },
     { provide: IRedLockService, useClass: RedLockService },
