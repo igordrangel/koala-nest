@@ -24,7 +24,7 @@ export class PersonMapping {
     createMap(
       Person,
       ReadPersonResponse,
-      forMember('status', (s) => s.response),
+      forMember('status', (s) => (s.active === true ? 'active' : 'inactive')),
     )
 
     createMap(UpdatePersonPhoneRequest, PersonPhone)

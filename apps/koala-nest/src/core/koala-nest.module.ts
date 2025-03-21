@@ -37,6 +37,7 @@ export class KoalaNestModule {
         { provide: IRedLockService, useClass: RedLockService },
         EnvService,
       ],
+      exports: [ILoggingService, IRedisService, IRedLockService],
     }
   }
 }

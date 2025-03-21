@@ -4,4 +4,7 @@ import { ApiProperty } from '@nestjs/swagger'
 export class ReadManyPersonRequest extends PaginationParams {
   @ApiProperty({ required: false })
   name?: string
+
+  @ApiProperty({ required: false })
+  active?: boolean
 }

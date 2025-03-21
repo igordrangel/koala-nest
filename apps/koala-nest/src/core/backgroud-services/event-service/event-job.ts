@@ -1,10 +1,14 @@
-import { EntityBase } from '../../database/entity.base'
-import { IComparable } from '../../../core/utils/interfaces/icomparable'
+import { Type } from '@nestjs/common'
 import { EventClass } from './event-class'
+import { EventHandler } from './event-handler'
 import { EventQueue } from './event-queue'
 
-export class EventJob<TEntity extends IComparable> extends EntityBase<TEntity> {
+export abstract class EventJob<TEntity> {
   private _eventQueue: EventQueue[] = []
+
+  constructor(public readonly entity: TEntity) {}
+
+  abstract defineHandlers(): Array<Type<EventHandler<any>>>
 
   get eventQueue(): EventQueue[] {
     return this._eventQueue
@@ -14,8 +18,8 @@ export class EventJob<TEntity extends IComparable> extends EntityBase<TEntity> {
     this._eventQueue = []
   }
 
-  public addEvent(event: EventClass<EventJob<TEntity>>): void {
-    this.eventQueue.push(event)
+  public addEvent(Event: Type<EventClass<TEntity>>): void {
+    this.eventQueue.push(new Event(this))
     EventQueue.markAggregateForDispatch(this)
   }
 }

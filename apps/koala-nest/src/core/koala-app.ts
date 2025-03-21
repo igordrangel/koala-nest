@@ -10,6 +10,7 @@ import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
 import { ZodErrorsFilter } from '../filters/zod-errors.filter'
 import { EnvConfig } from './utils/env.config'
+import { KoalaGlobalVars } from './koala-global-vars'
 
 interface ApiDocConfig {
   endpoint: string
@@ -28,6 +29,7 @@ interface ApiDocConfig {
 }
 
 type CronJobClass = string | symbol | Function | Type<CronJob>
+type EventJobClass = string | symbol | Function | Type<EventHandler<any>>
 
 export class KoalaApp {
   private _globalExceptionFilter: BaseExceptionFilter
@@ -36,7 +38,7 @@ export class KoalaApp {
   private _zodExceptionFilter: BaseExceptionFilter
 
   private _cronJobs: CronJobClass[] = []
-  private _eventJobs: EventHandler<any>[] = []
+  private _eventJobs: EventJobClass[] = []
 
   constructor(private readonly app: INestApplication<any>) {
     const { httpAdapter } = app.get(HttpAdapterHost)
@@ -53,7 +55,7 @@ export class KoalaApp {
     return this
   }
 
-  addEventJob(eventJob: EventHandler<any>) {
+  addEventJob(eventJob: EventJobClass) {
     this._eventJobs.push(eventJob)
     return this
   }
@@ -117,9 +119,12 @@ export class KoalaApp {
     )
     const swaggerEndpoint = config.endpoint
 
-    // this.app.use(swaggerEndpoint, apiReference({ content: document }))
+    SwaggerModule.setup(swaggerEndpoint, this.app, document, {
+      swaggerUiEnabled: true,
+    })
 
-    SwaggerModule.setup(swaggerEndpoint, this.app, document)
+    // TODO: Pelo Scalar não está realizando requisições pela UI
+    //this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))
 
     return this
   }
@@ -134,6 +139,16 @@ export class KoalaApp {
     return this
   }
 
+  setAppName(name: string) {
+    KoalaGlobalVars.appName = name
+    return this
+  }
+
+  setInternalUserName(name: string) {
+    KoalaGlobalVars.internalUserName = name
+    return this
+  }
+
   async build() {
     this.app.useGlobalFilters(
       this._globalExceptionFilter,
@@ -142,11 +157,21 @@ export class KoalaApp {
       this._zodExceptionFilter,
     )
 
-    Promise.all(this._cronJobs.map((job) => this.app.resolve(job))).then(
-      (cronJobs) => cronJobs.forEach((job) => job.run()),
+    const cronJobs = await Promise.all(
+      this._cronJobs.map((job) => this.app.resolve(job)),
     )
 
-    this._eventJobs.forEach((eventJob) => eventJob.setupSubscriptions())
+    for (const cronJob of cronJobs) {
+      cronJob.start()
+    }
+
+    const eventJobs = await Promise.all(
+      this._eventJobs.map((job) => this.app.resolve(job)),
+    )
+
+    for (const eventJob of eventJobs) {
+      eventJob.setupSubscriptions()
+    }
 
     return this.app
   }

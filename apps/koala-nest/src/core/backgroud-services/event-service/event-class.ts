@@ -1,5 +1,5 @@
-export abstract class EventClass<TEventJob> {
+export abstract class EventClass<TEntity> {
   ocurredAt: Date = new Date()
 
-  constructor(public eventJob: TEventJob) {}
+  constructor(public data: TEntity) {}
 }

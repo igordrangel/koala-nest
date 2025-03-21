@@ -9,10 +9,7 @@ export class CronJobTest extends CronJob {
   constructor() {
     super(
       new FakeRedLockService(),
-      new FakeLoggingService(),
-      'username',
-      'koala-nest',
-      0.01,
+      new FakeLoggingService()
     )
   }
 
@@ -20,19 +17,23 @@ export class CronJobTest extends CronJob {
     return ok(null)
   }
 
-  async run(): Promise<void> {
-    await this.start(CronJobTest.isCalled)
+  protected run(): Promise<CronJobResponse> {
+    return CronJobTest.isCalled()
   }
 
   protected async isActive(): Promise<boolean> {
     return true
+  }
+
+  protected defineTimeInMinutes(): number {
+    return 0.01
   }
 }
 
 test('cron job', async () => {
   const callbackSpy = vi.spyOn(CronJobTest, 'isCalled')
 
-  new CronJobTest().run()
+  new CronJobTest().start()
 
   await klDelay(100)
 

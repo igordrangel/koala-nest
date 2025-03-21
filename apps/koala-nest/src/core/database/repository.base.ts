@@ -1,11 +1,11 @@
 import { toCamelCase } from '@koalarx/utils/operators/string'
 import { Type } from '@nestjs/common'
-import { PrismaTransactionalClient } from '../../services/prisma/prisma-transactional-client'
 import { ListResponse } from '../@types'
 import { PaginationParams } from '../models/pagination-params'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { EntityBase } from './entity.base'
+import { PrismaTransactionalClient } from './prisma-transactional-client'
 
 type RepositoryInclude<TEntity> = {
   [key in keyof TEntity]?: boolean | RepositoryInclude<TEntity[keyof TEntity]>
@@ -171,7 +171,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     Object.keys(entity)
       .filter((key) => key !== 'id' && key !== '_id')
       .forEach((key) => {
-        if (entity[key] instanceof List) {
+        if (entity[key] instanceof List && entity[key].toArray('added').length > 0) {
           prismaSchema[key] = {
             createMany: {
               data: entity[key].toArray('added').map((item) => {

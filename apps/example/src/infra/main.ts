@@ -1,6 +1,9 @@
+import { CreatePersonJob } from '@/domain/person/use-cases/create-person-job/create-person-job'
+import { DeleteInactiveJob } from '@/domain/person/use-cases/delete-inative-job/delete-inactive-job'
+import { InactivePersonHandler } from '@/domain/person/use-cases/events/inactive-person/inactive-person-handler'
+import { KoalaApp } from '@koalarx/nest/core/koala-app'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { KoalaApp } from '@koalarx/nest/core/koala-app'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule).then((app) =>
@@ -10,6 +13,11 @@ async function bootstrap() {
         title: 'API de Demonstração',
         version: '1.0',
       })
+      .addCronJob(CreatePersonJob)
+      .addCronJob(DeleteInactiveJob)
+      .addEventJob(InactivePersonHandler)
+      .setAppName('example')
+      .setInternalUserName('integration.bot')
       .enableCors()
       .build(),
   )

@@ -1,20 +1,20 @@
 import { Type } from '@nestjs/common'
-import { Optional } from '../@types'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 
-export type EntityProps<T extends IComparable<T>> = Omit<
-  Optional<T, '_id'>,
-  'equals'
->
+export type EntityProps<T extends IComparable<T>> = Omit<{
+  [K in keyof T as T[K] extends Function ? never : K]: T[K]
+}, '_id'>
 
 export abstract class EntityBase<T extends IComparable<T>>
   implements IComparable<T>
 {
   _id: IComparableId
 
-  constructor(props: EntityProps<T>) {
-    Object.assign(this, props)
+  constructor(props?: EntityProps<T>) {
+    if (props) {
+      this.automap(props)
+    }
   }
 
   automap(props: EntityProps<T>) {

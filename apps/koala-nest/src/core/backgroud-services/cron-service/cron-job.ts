@@ -2,39 +2,39 @@ import { klDelay } from '@koalarx/utils/operators/delay'
 import { ILoggingService } from '../../../services/logging/ilogging.service'
 import { IRedLockService } from '../../../services/redlock/ired-lock.service'
 import { RequestResult } from '../../request-overflow/request-result'
+import { KoalaGlobalVars } from '../../koala-global-vars'
 
 export type CronJobResponse = RequestResult<Error, null>
 
 export abstract class CronJob {
-  public readonly timeout: number
+  private readonly _timeout: number
 
-  protected constructor(
+  constructor(
     private readonly redlockService: IRedLockService,
     private readonly loggingService: ILoggingService,
-    private readonly loggedUsername: string,
-    private readonly appName: string,
-    timeInMinutes: number,
   ) {
-    this.timeout = timeInMinutes * 60 * 1000
+    this._timeout = this.defineTimeInMinutes() * 60 * 1000
   }
 
-  abstract run(): Promise<void>
+  protected abstract run(): Promise<CronJobResponse>
 
   protected abstract isActive(): Promise<boolean>
 
-  protected async start(job: () => Promise<CronJobResponse>): Promise<void> {
+  protected abstract defineTimeInMinutes(): number
+
+  async start(): Promise<void> {
     const name = this.constructor.name
 
     while (true) {
       if (await this.isActive()) {
-        const ttlSecondsLock = this.timeout / 1000
+        const ttlSecondsLock = this._timeout / 1000
         const acquiredLock = await this.redlockService.acquiredLock(
           name,
           ttlSecondsLock,
         )
 
         if (acquiredLock) {
-          const error = await job()
+          const error = await this.run()
             .then((result) => {
               if (result.isFailure()) {
                 return result.value
@@ -44,16 +44,20 @@ export abstract class CronJob {
             .catch((error) => error)
 
           if (error) {
-            this.loggingService.report({
-              error,
-              packageName: this.appName,
-              loggedUsername: this.loggedUsername,
-            })
+            try {
+              await this.loggingService.report({
+                error,
+                packageName: KoalaGlobalVars.appName,
+                loggedUsername: KoalaGlobalVars.internalUserName,
+              })
+            } catch {
+              console.error(error)
+            }
           }
         }
       }
 
-      await klDelay(this.timeout)
+      await klDelay(this._timeout)
 
       await this.redlockService.releaseLock(name)
     }

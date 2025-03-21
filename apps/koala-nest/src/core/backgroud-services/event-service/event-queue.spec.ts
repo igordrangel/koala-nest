@@ -1,39 +1,55 @@
+import { Type } from '@nestjs/common'
+import { randomUUID } from 'crypto'
 import { vi } from 'vitest'
+import { EntityBase } from '../../database/entity.base'
 import { EventClass } from './event-class'
+import { EventHandler } from './event-handler'
 import { EventJob } from './event-job'
 import { EventQueue } from './event-queue'
 
-class CustomEvent extends EventJob<any> {
-  static create() {
-    const aggregate = new CustomEvent()
+class ClassTest extends EntityBase<ClassTest> {
+  id: string
 
-    aggregate.addEvent(new CustomEventCreated(aggregate))
+  private _eventJobs = new CustomEventJob(this)
 
-    return aggregate
+  get eventJobs() {
+    return this._eventJobs
   }
 }
 
-class CustomEventCreated extends EventClass<CustomEvent> {}
+class CustomEvent extends EventClass<any> {}
+
+class CustomEventHandler extends EventHandler<CustomEvent> {
+  static async isCalled(): Promise<null> {
+    return null
+  }
+
+  async handleEvent(event: CustomEvent): Promise<void> {
+    await CustomEventHandler.isCalled()
+  }
+}
+
+class CustomEventJob extends EventJob<any> {
+  defineHandlers(): Array<Type<EventHandler<any>>> {
+    return [CustomEventHandler]
+  }
+}
 
 describe('event queue', () => {
   it('should be able to dispatch and listen to events', () => {
-    const callbackSpy = vi.fn()
+    const callbackSpy = vi.spyOn(CustomEventHandler, 'isCalled')
 
-    // Subscriber cadastrado (ouvindo o evento de "resposta criada")
-    EventQueue.register(callbackSpy, CustomEventCreated.name)
+    new CustomEventHandler().setupSubscriptions()
 
-    // Estou criando uma resposta porém SEM slvar no banco
-    const aggregate = CustomEvent.create()
+    const entity = new ClassTest()
+    entity.automap({id: randomUUID()})
+    entity.eventJobs.addEvent(CustomEvent)
 
-    // Estou assegurando que o evento foi criado porém NÃO foi disparado
-    expect(aggregate.eventQueue).toHaveLength(1)
+    expect(entity.eventJobs.eventQueue).toHaveLength(1)
 
-    // Estou salvando a resposta no banco de dados e assim disparando o evento
-    EventQueue.dispatchEventsForAggregate(aggregate.id)
-
-    // O subscriber ouve o evento e faz o que precisa ser feito com o dado
+    EventQueue.dispatchEventsForAggregate(entity.id)
+    
     expect(callbackSpy).toHaveBeenCalled()
-
-    expect(aggregate.eventQueue).toHaveLength(0)
+    expect(entity.eventJobs.eventQueue).toHaveLength(0)
   })
 })

@@ -4,7 +4,7 @@ import { Person } from '../entities/person'
 import { ReadManyPersonRequest } from '../use-cases/read-many/read-many-person.request'
 
 export abstract class IPersonRepository {
-  abstract save(person: Person): Promise<CreatedRegistreResponseBase>
+  abstract save(person: Person): Promise<CreatedRegistreResponseBase<number>>
   abstract read(id: number): Promise<Person | null>
   abstract readMany(
     query: ReadManyPersonRequest,

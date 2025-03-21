@@ -9,7 +9,7 @@ export class EventQueue {
   private static markedAggregates: EventJob<any>[] = []
 
   public static markAggregateForDispatch(aggregate: EventJob<any>) {
-    const aggregateFound = !!this.findMarkedAggregateByID(aggregate._id)
+    const aggregateFound = !!this.findMarkedAggregateByID(aggregate.entity._id)
 
     if (!aggregateFound) {
       this.markedAggregates.push(aggregate)
@@ -53,7 +53,9 @@ export class EventQueue {
   private static removeAggregateFromMarkedDispatchList(
     aggregate: EventJob<any>,
   ) {
-    const index = this.markedAggregates.findIndex((a) => a.equals(aggregate))
+    const index = this.markedAggregates.findIndex((a) =>
+      a.entity.equals(aggregate),
+    )
 
     this.markedAggregates.splice(index, 1)
   }
@@ -61,16 +63,25 @@ export class EventQueue {
   private static findMarkedAggregateByID(
     id: IComparableId,
   ): EventJob<any> | undefined {
-    return this.markedAggregates.find((aggregate) => aggregate._id === id)
+    return this.markedAggregates.find(
+      (aggregate) => aggregate.entity._id === id,
+    )
   }
 
   private static dispatch(event: EventClass<any>) {
-    const eventClassName: string = event.constructor.name
+    const eventJobHandlers = this.markedAggregates.find((a) =>
+      a.eventQueue.find((e) => e === event),
+    )
+    const eventHandler = Object.keys(this.handlersMap).find((handlerName) =>
+      eventJobHandlers
+        ?.defineHandlers()
+        .find((handler) => handler.name === handlerName),
+    )
 
-    const isEventRegistered = eventClassName in this.handlersMap
+    const isEventRegistered = !!eventHandler
 
     if (isEventRegistered) {
-      const handlers = this.handlersMap[eventClassName]
+      const handlers = this.handlersMap[eventHandler]
 
       for (const handler of handlers) {
         handler(event)

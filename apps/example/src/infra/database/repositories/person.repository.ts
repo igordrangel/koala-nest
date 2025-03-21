@@ -26,7 +26,7 @@ export class PersonRepository
     })
   }
 
-  save(person: Person): Promise<CreatedRegistreResponseBase> {
+  async save(person: Person): Promise<CreatedRegistreResponseBase<number>> {
     return this.saveChanges(person)
   }
 
@@ -40,6 +40,7 @@ export class PersonRepository
         name: {
           contains: query.name,
         },
+        active: query.active,
       },
       query,
     )
