@@ -1,13 +1,16 @@
 import { Type } from '@nestjs/common'
 import { randomUUID } from 'node:crypto'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
+import { ForMemberDefinition } from './for-member'
 
 export class AutoMappingContext implements IComparable<AutoMappingContext> {
   _id: IComparableId
-  source: Type<any>
-  target: Type<any>
 
-  constructor(source: Type<any>, target: Type<any>) {
+  constructor(
+    public source: Type<any>,
+    public target: Type<any>,
+    public forMemberDifinitions: ForMemberDefinition<any, any>,
+  ) {
     this._id = randomUUID()
     this.source = source
     this.target = target

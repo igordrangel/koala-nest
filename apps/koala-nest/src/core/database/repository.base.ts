@@ -5,7 +5,7 @@ import { ListResponse } from '../@types'
 import { PaginationParams } from '../models/pagination-params'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
-import { Entity } from './entity'
+import { EntityBase } from './entity.base'
 
 type RepositoryInclude<TEntity> = {
   [key in keyof TEntity]?: boolean | RepositoryInclude<TEntity[keyof TEntity]>
@@ -18,7 +18,7 @@ interface RepositoryInitProps<TEntity> {
   include?: RepositoryInclude<TEntity>
 }
 
-export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
+export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected _context: PrismaTransactionalClient
   private _transactionContext?: Type<PrismaTransactionalClient>
   private readonly _modelName: Type<TEntity>
@@ -62,7 +62,10 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
       .findMany(this.findManySchema(where, pagination))
       .then((result: TEntity[]) => {
         return result.map((response) => {
-          return new this._modelName(response)
+          const entity = new this._modelName()
+          entity.automap(response)
+
+          return entity
         })
       })
   }
@@ -176,7 +179,7 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
               }),
             },
           }
-        } else if (entity[key] instanceof Entity) {
+        } else if (entity[key] instanceof EntityBase) {
           prismaSchema[key] = this.entityToPrisma(entity[key] as any)
         } else {
           prismaSchema[key] = entity[key]

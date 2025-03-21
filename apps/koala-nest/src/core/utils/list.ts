@@ -1,5 +1,6 @@
 import { Type } from '@nestjs/common'
-import { Entity } from '../database/entity'
+import 'reflect-metadata'
+import { EntityBase } from '../database/entity.base'
 import { IComparableId } from './interfaces/icomparable'
 
 export type ListActionType = 'added' | 'updated' | 'removed'
@@ -23,8 +24,9 @@ export class List<T> {
   findById(id: IComparableId): T | null {
     return (
       this._list
-        .filter((item) => item instanceof Entity)
-        .find((item) => (item as any).id === id) ?? null
+        .filter((item) => item instanceof EntityBase)
+        .find((item) => (item as any)._id === id || (item as any).id === id) ??
+      null
     )
   }
 
@@ -33,7 +35,7 @@ export class List<T> {
   }
 
   setList(list: T[]) {
-    this._list = list
+    this._list = this.mapInternalIdIfIsEmpty(list)
     return this
   }
 
@@ -50,6 +52,8 @@ export class List<T> {
 
     this._list.push(item)
     this._addedItemsList.push(item)
+
+    return this
   }
 
   remove(item: T) {
@@ -62,27 +66,38 @@ export class List<T> {
         this._removedItemsList.push(item)
       }
     }
+
+    return this
   }
 
   update(items: T[]) {
+    items = this.mapInternalIdIfIsEmpty(items)
+
     items.forEach((item) => this.add(item))
 
     this._list
       .filter((item) => !this.contains(item, items))
       .forEach((item) => this.remove(item))
+
+    return this
   }
 
   clear() {
+    this._addedItemsList = []
+    this._updatedItemsList = []
     this._removedItemsList = this._list
     this._list = []
+
+    return this
   }
 
   forEach(callback: (item: T, index: number) => void) {
     this._list.forEach(callback)
+    return this
   }
 
-  forEachAsync(callback: (item: T, index: number) => Promise<void>) {
-    return Promise.all(this._list.map(callback))
+  async forEachAsync(callback: (item: T, index: number) => Promise<void>) {
+    return Promise.all(this._list.map(callback)).then(() => this)
   }
 
   map<U>(callback: (item: T, index: number) => U): List<U> {
@@ -147,9 +162,9 @@ export class List<T> {
   }
 
   private indexOf(item: T, list = this._list) {
-    if (item instanceof Entity) {
+    if (item instanceof EntityBase) {
       return list
-        .filter((i) => i instanceof Entity)
+        .filter((i) => i instanceof EntityBase)
         .findIndex(
           (i) =>
             (item as any)._id === (i as any)._id ||
@@ -158,11 +173,21 @@ export class List<T> {
     }
 
     return list
-      .filter((i) => !(i instanceof Entity))
+      .filter((i) => !(i instanceof EntityBase))
       .findIndex((i) => item === i)
   }
 
   private contains(item: T, list = this._list): boolean {
     return this.indexOf(item, list) > -1
+  }
+
+  private mapInternalIdIfIsEmpty(list: T[]) {
+    return list.map((item) => {
+      if (item instanceof EntityBase && !item._id) {
+        item._id = (item as any).id
+      }
+
+      return item
+    })
   }
 }

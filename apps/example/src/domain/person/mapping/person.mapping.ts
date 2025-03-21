@@ -13,6 +13,7 @@ import {
   UpdatePersonPhoneRequest,
   UpdatePersonRequest,
 } from '../use-cases/update/update-person.request'
+import { forMember } from '@koalarx/nest/core/mapping/for-member'
 
 export class PersonMapping {
   static createMap() {
@@ -20,7 +21,11 @@ export class PersonMapping {
     createMap(CreatePersonRequest, Person)
 
     createMap(PersonPhone, ReadPersonPhoneResponse)
-    createMap(Person, ReadPersonResponse)
+    createMap(
+      Person,
+      ReadPersonResponse,
+      forMember('status', (s) => s.response),
+    )
 
     createMap(UpdatePersonPhoneRequest, PersonPhone)
     createMap(UpdatePersonRequest, Person)

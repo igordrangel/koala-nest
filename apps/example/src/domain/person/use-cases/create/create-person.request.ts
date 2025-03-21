@@ -13,6 +13,6 @@ export class CreatePersonRequest {
   name: string
 
   @ApiProperty({ type: [CreatePersonPhoneRequest] })
-  @AutoMap()
+  @AutoMap({ type: CreatePersonPhoneRequest, isArray: { addTo: true } })
   phones: Array<CreatePersonPhoneRequest>
 }

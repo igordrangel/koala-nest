@@ -8,7 +8,12 @@ export class AutoMappingClassContext
 {
   _id: IComparableId
   source: Type<any>
-  props = new List<string>()
+  props = new List<{
+    name: string
+    type: any
+    compositionType?: Type<any>
+    compositionAction?: 'onlySet' | 'addTo'
+  }>()
 
   constructor(source: Type<any>) {
     this._id = randomUUID()

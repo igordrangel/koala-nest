@@ -1,20 +1,18 @@
-import { Entity, EntityProps } from '@koalarx/nest/core/database/entity'
+import { EntityBase } from '@koalarx/nest/core/database/entity.base'
 import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 import { List } from '@koalarx/nest/core/utils/list'
 import { PersonPhone } from './person-phone'
 
-export class Person extends Entity<Person> {
+export class Person extends EntityBase<Person> {
   @AutoMap()
   id: number
 
   @AutoMap()
   name: string
 
-  @AutoMap()
+  @AutoMap({ type: List })
   phones = new List(PersonPhone)
 
-  constructor(props: EntityProps<Person>) {
-    super()
-    this.automap(props)
-  }
+  @AutoMap()
+  response = 'teste'
 }

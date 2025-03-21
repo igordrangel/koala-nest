@@ -8,20 +8,27 @@ export type EntityProps<T extends IComparable<T>> = Omit<
   'equals'
 >
 
-export abstract class Entity<T extends IComparable<T>>
+export abstract class EntityBase<T extends IComparable<T>>
   implements IComparable<T>
 {
   _id: IComparableId
 
-  protected automap(props: EntityProps<T>) {
+  constructor(props: EntityProps<T>) {
+    Object.assign(this, props)
+  }
+
+  automap(props: EntityProps<T>) {
     Object.keys(props ?? {}).forEach((key) => {
       if (Array.isArray(props[key]) && this[key] instanceof List) {
         let value: any = props[key]
 
         if (this[key].entityType) {
-          value = value.map(
-            (item) => new (this[key].entityType as Type<T>)(item),
-          )
+          value = value.map((item) => {
+            const entity = new (this[key].entityType as Type<EntityBase<T>>)()
+            entity.automap(item)
+
+            return entity
+          })
         }
 
         this[key].setList(value)
@@ -35,7 +42,7 @@ export abstract class Entity<T extends IComparable<T>>
     })
   }
 
-  public equals(obj: Entity<T>): boolean {
+  public equals(obj: EntityBase<T>): boolean {
     return obj._id === this._id
   }
 }

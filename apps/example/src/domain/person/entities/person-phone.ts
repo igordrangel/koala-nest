@@ -1,15 +1,10 @@
-import { Entity, EntityProps } from '@koalarx/nest/core/database/entity'
+import { EntityBase } from '@koalarx/nest/core/database/entity.base'
 import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 
-export class PersonPhone extends Entity<PersonPhone> {
+export class PersonPhone extends EntityBase<PersonPhone> {
   @AutoMap()
   id: number
 
   @AutoMap()
   phone: string
-
-  constructor(props: EntityProps<PersonPhone>) {
-    super()
-    this.automap(props)
-  }
 }
