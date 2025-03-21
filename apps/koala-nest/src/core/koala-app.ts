@@ -1,9 +1,10 @@
 import { INestApplication, Type } from '@nestjs/common'
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { apiReference } from '@scalar/nestjs-api-reference'
 import expressBasicAuth from 'express-basic-auth'
-import { CronJob } from '../common/backgroud-services/cron-service/cron-job'
-import { EventHandler } from '../common/backgroud-services/event-service/event-handler'
+import { CronJob } from '../core/backgroud-services/cron-service/cron-job'
+import { EventHandler } from '../core/backgroud-services/event-service/event-handler'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
@@ -77,7 +78,7 @@ export class KoalaApp {
     return this
   }
 
-  includeSwagger(config: ApiDocConfig) {
+  useDoc(config: ApiDocConfig) {
     if (EnvConfig.isEnvDevelop && config.accessDocWithCredentials) {
       this.app.use(
         [config.endpoint],
@@ -91,7 +92,6 @@ export class KoalaApp {
       )
     }
 
-    // Configurando SWAGGER
     const documentBuilder = new DocumentBuilder()
       .setTitle(config.title)
       .setVersion(config.version)
@@ -116,6 +116,8 @@ export class KoalaApp {
       documentBuilder.build(),
     )
     const swaggerEndpoint = config.endpoint
+
+    // this.app.use(swaggerEndpoint, apiReference({ content: document }))
 
     SwaggerModule.setup(swaggerEndpoint, this.app, document)
 

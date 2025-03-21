@@ -1,10 +1,10 @@
-import { ResourceNotFoundError } from '@koalarx/nest/common/errors/resource-not-found.error'
-import { RequestHandlerBase } from '@koalarx/nest/common/mediator/request-handler.base'
+import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
+import { RequestHandlerBase } from '@koalarx/nest/core/request-overflow/request-handler.base'
 import {
   failure,
   ok,
   RequestResult,
-} from '@koalarx/nest/common/mediator/request-result'
+} from '@koalarx/nest/core/request-overflow/request-result'
 import { Injectable } from '@nestjs/common'
 import { IPersonRepository } from '../../repositories/iperson.repository'
 

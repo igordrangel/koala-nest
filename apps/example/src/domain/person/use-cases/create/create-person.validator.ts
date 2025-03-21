@@ -1,4 +1,4 @@
-import { RequestValidatorBase } from '@koalarx/nest/common/mediator/request-validator.base'
+import { RequestValidatorBase } from '@koalarx/nest/core/request-overflow/request-validator.base'
 import { CreatePersonRequest } from './create-person.request'
 import { z, ZodType, ZodTypeDef } from 'zod'
 

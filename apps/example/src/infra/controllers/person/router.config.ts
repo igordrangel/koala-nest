@@ -1,4 +1,4 @@
-import { RouterConfigBase } from '@koalarx/nest/common/controllers/router-config.base'
+import { RouterConfigBase } from '@koalarx/nest/core/controllers/router-config.base'
 
 class PersonRouterConfig extends RouterConfigBase {
   constructor() {

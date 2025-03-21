@@ -1,8 +1,10 @@
-import { RequestHandlerBase } from '@koalarx/nest/common/mediator/request-handler.base'
-import { ok, RequestResult } from '@koalarx/nest/common/mediator/request-result'
+import { AutoMappingService } from '@koalarx/nest/core/mapping/auto-mapping.service'
+import { RequestHandlerBase } from '@koalarx/nest/core/request-overflow/request-handler.base'
+import {
+  ok,
+  RequestResult,
+} from '@koalarx/nest/core/request-overflow/request-result'
 import { Injectable } from '@nestjs/common'
-import { Mapper } from 'automapper-core'
-import { InjectMapper } from 'automapper-nestjs'
 import { Person } from '../../entities/person'
 import { IPersonRepository } from '../../repositories/iperson.repository'
 import { CreatePersonRequest } from './create-person.request'
@@ -15,8 +17,7 @@ export class CreatePersonHandler extends RequestHandlerBase<
   RequestResult<Error, CreatePersonResponse>
 > {
   constructor(
-    @InjectMapper()
-    private readonly mapper: Mapper,
+    private readonly mapper: AutoMappingService,
     private readonly repository: IPersonRepository,
   ) {
     super()

@@ -1,4 +1,4 @@
-import { RequestResult } from '../../common/mediator/request-result'
+import { RequestResult } from './request-result'
 
 export abstract class RequestHandlerBase<
   TRequest,

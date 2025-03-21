@@ -5,7 +5,7 @@ import { KoalaApp } from '@koalarx/nest/core/koala-app'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule).then((app) =>
     new KoalaApp(app)
-      .includeSwagger({
+      .useDoc({
         endpoint: '/',
         title: 'API de Demonstração',
         version: '1.0',

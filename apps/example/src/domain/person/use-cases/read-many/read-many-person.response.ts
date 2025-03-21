@@ -1,6 +1,6 @@
 import { ListResponse } from '@koalarx/nest/core/@types'
+import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 import { ApiProperty } from '@nestjs/swagger'
-import { AutoMap } from 'automapper-classes'
 import { ReadPersonResponse } from '../read/read-person.response'
 
 export class ReadManyPersonResponse

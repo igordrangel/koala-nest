@@ -1,5 +1,4 @@
-import { List } from '@koalarx/nest/core/utils/list'
-import { createMap, forMember, mapFrom, Mapper } from 'automapper-core'
+import { createMap } from '@koalarx/nest/core/mapping/create-map'
 import { Person } from '../entities/person'
 import { PersonPhone } from '../entities/person-phone'
 import {
@@ -16,64 +15,14 @@ import {
 } from '../use-cases/update/update-person.request'
 
 export class PersonMapping {
-  static createMap(mapper: Mapper) {
-    createMap(mapper, CreatePersonPhoneRequest, PersonPhone)
-    createMap(
-      mapper,
-      CreatePersonRequest,
-      Person,
-      forMember(
-        (d) => d.phones,
-        mapFrom((s) => {
-          const phones = new List()
+  static createMap() {
+    createMap(CreatePersonPhoneRequest, PersonPhone)
+    createMap(CreatePersonRequest, Person)
 
-          s.phones.map((phone) =>
-            phones.add(
-              mapper.map(phone, CreatePersonPhoneRequest, PersonPhone),
-            ),
-          )
+    createMap(PersonPhone, ReadPersonPhoneResponse)
+    createMap(Person, ReadPersonResponse)
 
-          return phones
-        }),
-      ),
-    )
-
-    createMap(mapper, PersonPhone, ReadPersonPhoneResponse)
-    createMap(
-      mapper,
-      Person,
-      ReadPersonResponse,
-      forMember(
-        (d) => d.phones,
-        mapFrom((s) =>
-          s.phones
-            .toArray()
-            .map((phone) =>
-              mapper.map(phone, PersonPhone, ReadPersonPhoneResponse),
-            ),
-        ),
-      ),
-    )
-
-    createMap(mapper, UpdatePersonPhoneRequest, PersonPhone)
-    createMap(
-      mapper,
-      UpdatePersonRequest,
-      Person,
-      forMember(
-        (d) => d.phones,
-        mapFrom((s) => {
-          const phones = new List()
-
-          phones.setList(
-            s.phones.map((phone) =>
-              mapper.map(phone, UpdatePersonPhoneRequest, PersonPhone),
-            ),
-          )
-
-          return phones
-        }),
-      ),
-    )
+    createMap(UpdatePersonPhoneRequest, PersonPhone)
+    createMap(UpdatePersonRequest, Person)
   }
 }

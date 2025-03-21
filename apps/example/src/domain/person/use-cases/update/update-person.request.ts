@@ -1,26 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { AutoMap } from 'automapper-classes'
 
 export class UpdatePersonPhoneRequest {
   @ApiProperty()
-  @AutoMap()
+  // @AutoMap()
   id: number
 
   @ApiProperty()
-  @AutoMap()
+  // @AutoMap()
   phone: string
 }
 
 export class UpdatePersonRequest {
   @ApiProperty()
-  @AutoMap()
+  // @AutoMap()
   id: number
 
   @ApiProperty()
-  @AutoMap()
+  // @AutoMap()
   name: string
 
   @ApiProperty({ type: [UpdatePersonPhoneRequest] })
-  @AutoMap()
+  // @AutoMap()
   phones: Array<UpdatePersonPhoneRequest>
 }

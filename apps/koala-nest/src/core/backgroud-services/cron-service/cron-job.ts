@@ -1,7 +1,7 @@
+import { klDelay } from '@koalarx/utils/operators/delay'
 import { ILoggingService } from '../../../services/logging/ilogging.service'
 import { IRedLockService } from '../../../services/redlock/ired-lock.service'
-import { RequestResult } from '../../mediator/request-result'
-import { klDelay } from '@koalarx/utils/operators/delay'
+import { RequestResult } from '../../request-overflow/request-result'
 
 export type CronJobResponse = RequestResult<Error, null>
 

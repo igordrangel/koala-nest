@@ -1,6 +1,6 @@
 import { DynamicModule, InjectionToken, Module, Type } from '@nestjs/common'
 import { RepositoryBase } from '../core/database/repository.base'
-import { EnvService } from '../services/env/env.service'
+import { EnvService } from '../env/env.service'
 import { PrismaService } from '../services/prisma/prisma.service'
 
 export const PRISMA_TOKEN = 'PRISMA_SERVICE_TOKEN'

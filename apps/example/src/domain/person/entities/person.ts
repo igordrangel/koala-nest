@@ -1,6 +1,6 @@
 import { Entity, EntityProps } from '@koalarx/nest/core/database/entity'
+import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 import { List } from '@koalarx/nest/core/utils/list'
-import { AutoMap } from 'automapper-classes'
 import { PersonPhone } from './person-phone'
 
 export class Person extends Entity<Person> {

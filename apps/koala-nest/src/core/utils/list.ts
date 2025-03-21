@@ -34,6 +34,7 @@ export class List<T> {
 
   setList(list: T[]) {
     this._list = list
+    return this
   }
 
   add(item: T) {
@@ -126,6 +127,10 @@ export class List<T> {
 
         return list
       })
+  }
+
+  find(callback: (item: T, index: number) => boolean): T | null {
+    return this._list.find(callback) ?? null
   }
 
   toArray(type?: ListActionType): T[] {

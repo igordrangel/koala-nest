@@ -1,6 +1,6 @@
 import { UpdatePersonHandler } from '@/domain/person/use-cases/update/update-person.handler'
 import { UpdatePersonRequest } from '@/domain/person/use-cases/update/update-person.request'
-import { IController } from '@koalarx/nest/common/controllers/base.controller'
+import { IController } from '@koalarx/nest/core/controllers/base.controller'
 import { Body, Controller, Param, Put } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
 import { PERSON_ROUTER_CONFIG } from './router.config'

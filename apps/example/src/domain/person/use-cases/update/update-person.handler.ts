@@ -1,13 +1,12 @@
-import { ResourceNotFoundError } from '@koalarx/nest/common/errors/resource-not-found.error'
-import { RequestHandlerBase } from '@koalarx/nest/common/mediator/request-handler.base'
+import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
+import { AutoMappingService } from '@koalarx/nest/core/mapping/auto-mapping.service'
+import { RequestHandlerBase } from '@koalarx/nest/core/request-overflow/request-handler.base'
 import {
   failure,
   ok,
   RequestResult,
-} from '@koalarx/nest/common/mediator/request-result'
+} from '@koalarx/nest/core/request-overflow/request-result'
 import { Injectable } from '@nestjs/common'
-import { Mapper } from 'automapper-core'
-import { InjectMapper } from 'automapper-nestjs'
 import { Person } from '../../entities/person'
 import { IPersonRepository } from '../../repositories/iperson.repository'
 import { UpdatePersonRequest } from './update-person.request'
@@ -24,8 +23,7 @@ export class UpdatePersonHandler extends RequestHandlerBase<
   RequestResult<ResourceNotFoundError, null>
 > {
   constructor(
-    @InjectMapper()
-    private readonly mapper: Mapper,
+    private readonly mapper: AutoMappingService,
     private readonly repository: IPersonRepository,
   ) {
     super()

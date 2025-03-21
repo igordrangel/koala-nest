@@ -1,5 +1,5 @@
 import { Entity, EntityProps } from '@koalarx/nest/core/database/entity'
-import { AutoMap } from 'automapper-classes'
+import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 
 export class PersonPhone extends Entity<PersonPhone> {
   @AutoMap()

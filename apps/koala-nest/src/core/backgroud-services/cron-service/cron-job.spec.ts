@@ -2,7 +2,7 @@ import { klDelay } from '@koalarx/utils/operators/delay'
 import { vi } from 'vitest'
 import { FakeLoggingService } from '../../../test/services/fake-logging.service'
 import { FakeRedLockService } from '../../../test/services/fake-red-lock.service'
-import { ok } from '../../mediator/request-result'
+import { ok } from '../../request-overflow/request-result'
 import { CronJob, CronJobResponse } from './cron-job'
 
 export class CronJobTest extends CronJob {

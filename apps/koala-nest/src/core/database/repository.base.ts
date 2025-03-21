@@ -1,21 +1,11 @@
 import { toCamelCase } from '@koalarx/utils/operators/string'
 import { Type } from '@nestjs/common'
-import { PaginationParams } from '../../common/models/pagination-params'
 import { PrismaTransactionalClient } from '../../services/prisma/prisma-transactional-client'
 import { ListResponse } from '../@types'
+import { PaginationParams } from '../models/pagination-params'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { Entity } from './entity'
-
-export interface FindAllProps<
-  TPaginateAndOrdering extends PaginationParams,
-  TWhere,
-  TInclude = any,
-> {
-  where: TWhere
-  paginateAndOrderingProps?: TPaginateAndOrdering
-  include?: TInclude
-}
 
 type RepositoryInclude<TEntity> = {
   [key in keyof TEntity]?: boolean | RepositoryInclude<TEntity[keyof TEntity]>

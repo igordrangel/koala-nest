@@ -2,11 +2,12 @@ import { Entity, EntityProps } from '../database/entity'
 import { List } from './list'
 
 class EntityTest extends Entity<EntityTest> {
+  id: number
   value: number
 
   constructor(props: EntityProps<EntityTest>) {
     super()
-    this.create(props)
+    this.automap(props)
   }
 }
 
@@ -26,7 +27,7 @@ describe('List test', () => {
   })
 
   it('should update item on list', () => {
-    const list = new List<EntityTest>([entity])
+    const list = new List(EntityTest).setList([entity])
 
     list.add(new EntityTest({ id: 1, value: 2 }))
 
@@ -35,7 +36,7 @@ describe('List test', () => {
   })
 
   it('should remove item on list', () => {
-    const list = new List<EntityTest>([entity])
+    const list = new List(EntityTest).setList([entity])
 
     list.remove(entity)
 
@@ -45,7 +46,7 @@ describe('List test', () => {
   })
 
   it('should get item by id', () => {
-    const list = new List<EntityTest>([entity])
+    const list = new List(EntityTest).setList([entity])
 
     expect(list.findById(entity.id)).toEqual(entity)
   })
