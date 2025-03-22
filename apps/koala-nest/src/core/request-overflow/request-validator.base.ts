@@ -3,7 +3,7 @@ import { ZodType } from 'zod'
 export abstract class RequestValidatorBase<TRequest> {
   constructor(private _request: TRequest) {}
 
-  validate() {
+  validate(): TRequest {
     const requestParsed = this.schema.safeParse(this._request)
 
     if (requestParsed.success) {
