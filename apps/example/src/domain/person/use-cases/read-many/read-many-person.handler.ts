@@ -36,7 +36,7 @@ export class ReadManyPersonHandler extends RequestHandlerBase<
       ...listOfPerson,
       items: listOfPerson.items.map((person) =>
         this.mapper.map(person, Person, ReadPersonResponse),
-      ),
+      )
     })
   }
 }

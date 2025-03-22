@@ -8,7 +8,7 @@ export class UpdatePersonValidator extends RequestValidatorBase<UpdatePersonRequ
       name: z.string(),
       phones: z.array(
         z.object({
-          id: z.number(),
+          id: z.number().nullable().optional(),
           phone: z.string(),
         }),
       ),

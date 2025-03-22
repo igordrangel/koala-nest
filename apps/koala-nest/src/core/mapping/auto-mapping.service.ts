@@ -1,7 +1,7 @@
 import { Injectable, Type } from '@nestjs/common'
+import { List } from '../utils/list'
 import { AutoMappingList } from './auto-mapping-list'
 import { AutoMappingProfile } from './auto-mapping-profile'
-import { List } from '../utils/list'
 
 @Injectable()
 export class AutoMappingService {
@@ -78,7 +78,7 @@ export class AutoMappingService {
   private mapNestedProp(data: any, source: Type<any>) {
     const targets = this._contextList.getTargets(source.prototype.constructor)
 
-    if (targets.length === 1) {
+    if (targets.length >= 1) {
       return this.map(data, source.prototype.constructor, targets[0])
     }
   }
@@ -89,7 +89,7 @@ export class AutoMappingService {
       .map(
         (item) =>
           this.mapNestedProp(item, value.entityType?.prototype.constructor) ??
-          item,
+          {},
       )
   }
 
@@ -102,7 +102,7 @@ export class AutoMappingService {
 
     const mappedValue = value.map(
       (item) =>
-        this.mapNestedProp(item, compositionType.prototype.constructor) ?? item,
+        this.mapNestedProp(item, compositionType.prototype.constructor) ?? {},
     )
 
     if (onlySet) {

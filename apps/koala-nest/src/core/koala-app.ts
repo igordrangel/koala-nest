@@ -15,6 +15,7 @@ import { KoalaGlobalVars } from './koala-global-vars'
 interface ApiDocConfig {
   endpoint: string
   title: string
+  ui?: 'swagger' | 'scalar'
   description?: string
   externalDoc?: {
     message: string
@@ -119,19 +120,17 @@ export class KoalaApp {
     )
     const swaggerEndpoint = config.endpoint
 
-    if (swaggerEndpoint === '/') {
-      throw new InternalServerErrorException("O endpoint de documentação não pode ser '/'. A rota '/' será redirecionada para o endpoint configurado.")
+    if (config.ui === 'scalar' && swaggerEndpoint === '/') {
+      throw new InternalServerErrorException("O endpoint de documentação não pode ser '/' para UI Scalar.")
     }
 
     SwaggerModule.setup(swaggerEndpoint, this.app, document, {
-      swaggerUiEnabled: false,
+      swaggerUiEnabled: config.ui !== 'scalar',
     })
 
-    this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))    
-    
-    this.app.use('/', (_, res) => {
-      res.redirect(swaggerEndpoint)
-    })
+    if (config.ui === 'scalar') {
+      this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))
+    }
 
     return this
   }

@@ -1,25 +1,26 @@
+import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 import { ApiProperty } from '@nestjs/swagger'
 
 export class UpdatePersonPhoneRequest {
-  @ApiProperty()
-  // @AutoMap()
-  id: number
+  @ApiProperty({required: false})
+  @AutoMap()
+  id?: number
 
   @ApiProperty()
-  // @AutoMap()
+  @AutoMap()
   phone: string
 }
 
 export class UpdatePersonRequest {
   @ApiProperty()
-  // @AutoMap()
-  id: number
-
-  @ApiProperty()
-  // @AutoMap()
+  @AutoMap()
   name: string
 
+  @ApiProperty()
+  @AutoMap()
+  active: boolean
+
   @ApiProperty({ type: [UpdatePersonPhoneRequest] })
-  // @AutoMap()
+  @AutoMap({ type: UpdatePersonPhoneRequest, isArray: true })
   phones: Array<UpdatePersonPhoneRequest>
 }

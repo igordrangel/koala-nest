@@ -50,7 +50,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       })
       .then((response: TEntity) => {
         if (response) {
-          return new this._modelName(response)
+          return this.createEntity(response)
         }
 
         return null
@@ -60,14 +60,9 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async findMany<T>(where: T, pagination?: PaginationParams) {
     return this.context()
       .findMany(this.findManySchema(where, pagination))
-      .then((result: TEntity[]) => {
-        return result.map((response) => {
-          const entity = new this._modelName()
-          entity.automap(response)
-
-          return entity
-        })
-      })
+      .then((result: TEntity[]) => 
+        result.map((response) => this.createEntity(response))
+      )
   }
 
   protected async findManyAndCount<T>(
@@ -212,5 +207,12 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       skip: pagination?.skip(),
       take: (pagination?.limit ?? 0) > 0 ? pagination?.limit : undefined,
     }
+  }
+
+  private createEntity(data: any) {
+    const entity = new this._modelName()
+    entity.automap(data)
+
+    return entity
   }
 }
