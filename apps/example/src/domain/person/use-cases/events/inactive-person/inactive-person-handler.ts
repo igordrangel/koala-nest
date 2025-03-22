@@ -12,7 +12,7 @@ export class InactivePersonHandler extends EventHandler<InactivePersonEvent> {
 
   async handleEvent(): Promise<void> {
     const result = await this.repository.readMany(
-      Object.assign(new ReadManyPersonRequest(), { active: true }),
+      new ReadManyPersonRequest({ active: true }),
     )
 
     for (const person of result.items) {

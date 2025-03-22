@@ -5,10 +5,10 @@ import {
 import { ok } from '@koalarx/nest/core/request-overflow/request-result'
 import { ILoggingService } from '@koalarx/nest/services/logging/ilogging.service'
 import { IRedLockService } from '@koalarx/nest/services/redlock/ired-lock.service'
+import { Injectable } from '@nestjs/common'
 import { DeletePersonHandler } from '../delete/delete-person.handler'
 import { ReadManyPersonHandler } from '../read-many/read-many-person.handler'
 import { ReadManyPersonRequest } from '../read-many/read-many-person.request'
-import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class DeleteInactiveJob extends CronJob {
@@ -23,7 +23,7 @@ export class DeleteInactiveJob extends CronJob {
 
   protected async run(): Promise<CronJobResponse> {
     const result = await this.readManyPerson.handle(
-      Object.assign(new ReadManyPersonRequest(), { active: false }),
+      new ReadManyPersonRequest({ active: false }),
     )
 
     if (result.isOk()) {

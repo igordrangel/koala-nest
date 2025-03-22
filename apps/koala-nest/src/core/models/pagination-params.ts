@@ -8,6 +8,11 @@ export const QueryFilterParams = {
   limit: 30,
 }
 
+export type PaginatedRequestProps<T extends PaginationParams> = Omit<
+  { [K in keyof T as T[K] extends Function ? never : K]: T[K] },
+  '_id'
+>
+
 export class PaginationParams {
   @ApiProperty({
     required: false,
