@@ -1,4 +1,4 @@
-import { INestApplication, Type } from '@nestjs/common'
+import { INestApplication, InternalServerErrorException, Type } from '@nestjs/common'
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { apiReference } from '@scalar/nestjs-api-reference'
@@ -119,12 +119,19 @@ export class KoalaApp {
     )
     const swaggerEndpoint = config.endpoint
 
+    if (swaggerEndpoint === '/') {
+      throw new InternalServerErrorException("O endpoint de documentação não pode ser '/'. A rota '/' será redirecionada para o endpoint configurado.")
+    }
+
     SwaggerModule.setup(swaggerEndpoint, this.app, document, {
-      swaggerUiEnabled: true,
+      swaggerUiEnabled: false,
     })
 
-    // TODO: Pelo Scalar não está realizando requisições pela UI
-    //this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))
+    this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))    
+    
+    this.app.use('/', (_, res) => {
+      res.redirect(swaggerEndpoint)
+    })
 
     return this
   }

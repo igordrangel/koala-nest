@@ -1,23 +1,11 @@
 import { Type } from '@nestjs/common'
-import { randomUUID } from 'crypto'
 import { vi } from 'vitest'
-import { EntityBase } from '../../database/entity.base'
 import { EventClass } from './event-class'
 import { EventHandler } from './event-handler'
 import { EventJob } from './event-job'
 import { EventQueue } from './event-queue'
 
-class ClassTest extends EntityBase<ClassTest> {
-  id: string
-
-  private _eventJobs = new CustomEventJob(this)
-
-  get eventJobs() {
-    return this._eventJobs
-  }
-}
-
-class CustomEvent extends EventClass<any> {}
+class CustomEvent extends EventClass {}
 
 class CustomEventHandler extends EventHandler<CustomEvent> {
   static async isCalled(): Promise<null> {
@@ -41,15 +29,14 @@ describe('event queue', () => {
 
     new CustomEventHandler().setupSubscriptions()
 
-    const entity = new ClassTest()
-    entity.automap({id: randomUUID()})
-    entity.eventJobs.addEvent(CustomEvent)
+    const jobs = new CustomEventJob()
+    jobs.addEvent(new CustomEvent())
 
-    expect(entity.eventJobs.eventQueue).toHaveLength(1)
+    expect(jobs.eventQueue).toHaveLength(1)
 
-    EventQueue.dispatchEventsForAggregate(entity.id)
+    EventQueue.dispatchEventsForAggregate(jobs._id)
     
     expect(callbackSpy).toHaveBeenCalled()
-    expect(entity.eventJobs.eventQueue).toHaveLength(0)
+    expect(jobs.eventQueue).toHaveLength(0)
   })
 })

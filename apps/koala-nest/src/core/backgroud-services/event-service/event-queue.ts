@@ -9,7 +9,7 @@ export class EventQueue {
   private static markedAggregates: EventJob<any>[] = []
 
   public static markAggregateForDispatch(aggregate: EventJob<any>) {
-    const aggregateFound = !!this.findMarkedAggregateByID(aggregate.entity._id)
+    const aggregateFound = !!this.findMarkedAggregateByID(aggregate._id)
 
     if (!aggregateFound) {
       this.markedAggregates.push(aggregate)
@@ -54,7 +54,7 @@ export class EventQueue {
     aggregate: EventJob<any>,
   ) {
     const index = this.markedAggregates.findIndex((a) =>
-      a.entity.equals(aggregate),
+      a._id === aggregate._id,
     )
 
     this.markedAggregates.splice(index, 1)
@@ -64,7 +64,7 @@ export class EventQueue {
     id: IComparableId,
   ): EventJob<any> | undefined {
     return this.markedAggregates.find(
-      (aggregate) => aggregate.entity._id === id,
+      (aggregate) => aggregate._id === id,
     )
   }
 

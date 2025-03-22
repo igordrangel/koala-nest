@@ -11,35 +11,31 @@ export abstract class EntityBase<T extends IComparable<T>>
 {
   _id: IComparableId
 
-  constructor(props?: EntityProps<T>) {
+  automap(props?: EntityProps<T>) {
     if (props) {
-      this.automap(props)
+      Object.keys(props).forEach((key) => {
+        if (Array.isArray(props[key]) && this[key] instanceof List) {
+          let value: any = props[key]
+
+          if (this[key].entityType) {
+            value = value.map((item) => {
+              const entity = new (this[key].entityType as Type<EntityBase<T>>)()
+              entity.automap(item)
+
+              return entity
+            })
+          }
+
+          this[key].setList(value)
+        } else {
+          if (key === 'id') {
+            this._id = props[key] as IComparableId
+          }
+
+          this[key] = props[key]
+        }
+      })
     }
-  }
-
-  automap(props: EntityProps<T>) {
-    Object.keys(props ?? {}).forEach((key) => {
-      if (Array.isArray(props[key]) && this[key] instanceof List) {
-        let value: any = props[key]
-
-        if (this[key].entityType) {
-          value = value.map((item) => {
-            const entity = new (this[key].entityType as Type<EntityBase<T>>)()
-            entity.automap(item)
-
-            return entity
-          })
-        }
-
-        this[key].setList(value)
-      } else {
-        if (key === 'id') {
-          this._id = props[key] as IComparableId
-        }
-
-        this[key] = props[key]
-      }
-    })
   }
 
   public equals(obj: EntityBase<T>): boolean {

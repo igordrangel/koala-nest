@@ -2,11 +2,14 @@ import { Type } from '@nestjs/common'
 import { EventClass } from './event-class'
 import { EventHandler } from './event-handler'
 import { EventQueue } from './event-queue'
+import { randomUUID } from 'node:crypto'
 
 export abstract class EventJob<TEntity> {
+  _id = randomUUID()
+
   private _eventQueue: EventQueue[] = []
 
-  constructor(public readonly entity: TEntity) {}
+  constructor() {}
 
   abstract defineHandlers(): Array<Type<EventHandler<any>>>
 
@@ -18,8 +21,8 @@ export abstract class EventJob<TEntity> {
     this._eventQueue = []
   }
 
-  public addEvent(Event: Type<EventClass<TEntity>>): void {
-    this.eventQueue.push(new Event(this))
+  public addEvent(event: EventClass<TEntity>): void {
+    this.eventQueue.push(event)
     EventQueue.markAggregateForDispatch(this)
   }
 }

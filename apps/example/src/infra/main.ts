@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule).then((app) =>
     new KoalaApp(app)
       .useDoc({
-        endpoint: '/',
+        endpoint: '/doc',
         title: 'API de Demonstração',
         version: '1.0',
       })

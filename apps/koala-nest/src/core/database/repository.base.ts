@@ -171,13 +171,15 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     Object.keys(entity)
       .filter((key) => key !== 'id' && key !== '_id')
       .forEach((key) => {
-        if (entity[key] instanceof List && entity[key].toArray('added').length > 0) {
-          prismaSchema[key] = {
-            createMany: {
-              data: entity[key].toArray('added').map((item) => {
-                return this.entityToPrisma(item)
-              }),
-            },
+        if (entity[key] instanceof List) {
+          if (entity[key].toArray('added').length > 0) {
+            prismaSchema[key] = {
+              createMany: {
+                data: entity[key].toArray('added').map((item) => {
+                  return this.entityToPrisma(item)
+                }),
+              },
+            }
           }
         } else if (entity[key] instanceof EntityBase) {
           prismaSchema[key] = this.entityToPrisma(entity[key] as any)

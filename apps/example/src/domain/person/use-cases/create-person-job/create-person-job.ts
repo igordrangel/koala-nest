@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common'
 import { IPersonRepository } from '../../repositories/iperson.repository'
 import { CreatePersonHandler } from '../create/create-person.handler'
 import { InactivePersonEvent } from '../events/inactive-person/inactive-person-event'
+import { PersonEventJob } from '../events/person-event.job'
 
 @Injectable()
 export class CreatePersonJob extends CronJob {
@@ -32,8 +33,10 @@ export class CreatePersonJob extends CronJob {
       const person = await this.repository.read(result.value.id)
 
       if (person) {
-        person.eventJobs.addEvent(InactivePersonEvent)
-        EventQueue.dispatchEventsForAggregate(person._id)
+        const jobs = new PersonEventJob()
+        jobs.addEvent(new InactivePersonEvent())
+
+        EventQueue.dispatchEventsForAggregate(jobs._id)
       }
 
       console.log('Person created with id:', result.value.id)
