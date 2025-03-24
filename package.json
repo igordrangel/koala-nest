@@ -9,7 +9,7 @@
     "build": "npm run build:app",
     "build:app": "nest build example",
     "build:lib": "nest build koala-nest",
-    "build:publish": "node .github/scripts/publish.js",
+    "build:publish": "node .github/scripts/publish.mjs",
     "start": "nest start example",
     "start:dev": "nest start example --watch",
     "start:debug": "nest start example --debug --watch",
@@ -38,7 +38,6 @@
     "ioredis": "5.3.2",
     "reflect-metadata": "0.1.13",
     "rimraf": "3.0.2",
-    "rxjs": "7.2.0",
     "zod": "3.22.4",
     "zod-validation-error": "1.5.0"
   },

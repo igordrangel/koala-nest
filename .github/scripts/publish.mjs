@@ -1,5 +1,6 @@
-const fs = require("fs");
-const { execSync } = require("child_process");
+import fs from "node:fs"
+import { execSync } from "node:child_process"
+
 const config = JSON.parse(fs.readFileSync("package.json").toString());
 const currentVersion = config.version;
 
