@@ -21,7 +21,6 @@ export class PersonRepository
     super({
       modelName: Person,
       context: prisma,
-      transactionContext: DbTransactionContext,
       include: { phones: true },
     })
   }

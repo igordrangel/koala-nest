@@ -4,6 +4,7 @@ import { InactivePersonHandler } from '@/domain/person/use-cases/events/inactive
 import { KoalaApp } from '@koalarx/nest/core/koala-app'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
+import { DbTransactionContext } from './database/db-transaction-context'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule).then((app) =>
@@ -19,6 +20,7 @@ async function bootstrap() {
       .addEventJob(InactivePersonHandler)
       .setAppName('example')
       .setInternalUserName('integration.bot')
+      .setDbTransactionContext(DbTransactionContext)
       .enableCors()
       .build(),
   )

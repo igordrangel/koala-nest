@@ -2,15 +2,16 @@ import { INestApplication, InternalServerErrorException, Type } from '@nestjs/co
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { apiReference } from '@scalar/nestjs-api-reference'
-import expressBasicAuth from 'express-basic-auth'
+import * as expressBasicAuth from 'express-basic-auth'
 import { CronJob } from '../core/backgroud-services/cron-service/cron-job'
 import { EventHandler } from '../core/backgroud-services/event-service/event-handler'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
 import { ZodErrorsFilter } from '../filters/zod-errors.filter'
-import { EnvConfig } from './utils/env.config'
+import { PrismaTransactionalClient } from './database/prisma-transactional-client'
 import { KoalaGlobalVars } from './koala-global-vars'
+import { EnvConfig } from './utils/env.config'
 
 interface ApiDocConfig {
   endpoint: string
@@ -22,10 +23,6 @@ interface ApiDocConfig {
     url: string
   }
   version: string
-  accessDocWithCredentials?: {
-    username: string
-    password: string
-  }
   withAuthorization?: boolean
 }
 
@@ -82,14 +79,18 @@ export class KoalaApp {
   }
 
   useDoc(config: ApiDocConfig) {
-    if (EnvConfig.isEnvDevelop && config.accessDocWithCredentials) {
+    const credentials = {
+      username: process.env.SWAGGER_USERNAME ?? '',
+      password: process.env.SWAGGER_PASSWORD ?? ''
+    }
+
+    if (EnvConfig.isEnvDevelop && credentials.username && credentials.password) {
       this.app.use(
         [config.endpoint],
         expressBasicAuth({
           challenge: true,
           users: {
-            [config.accessDocWithCredentials.username]:
-              config.accessDocWithCredentials.password,
+            [credentials.username]: credentials.password
           },
         }),
       )
@@ -152,6 +153,11 @@ export class KoalaApp {
 
   setInternalUserName(name: string) {
     KoalaGlobalVars.internalUserName = name
+    return this
+  }
+
+  setDbTransactionContext(transactionContext: Type<PrismaTransactionalClient>) {
+    KoalaGlobalVars.dbTransactionContext = transactionContext
     return this
   }
 

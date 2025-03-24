@@ -9,4 +9,14 @@ export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts}"], plugins: { js }, extends: ["js/recommended"] },
   tseslint.configs.recommended,
   { ignores: ["node_modules", "dist"] },
+  {
+    rules: {
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-unsafe-function-type": "off",
+      "@typescript-eslint/no-useless-constructor": "off",
+      "@typescript-eslint/no-new": "off",
+      "@typescript-eslint/no-explicit-any": "off"
+    }
+  }
 ]);

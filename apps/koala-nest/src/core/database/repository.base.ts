@@ -1,6 +1,7 @@
 import { toCamelCase } from '@koalarx/utils/operators/string'
 import { Type } from '@nestjs/common'
 import { ListResponse } from '../@types'
+import { KoalaGlobalVars } from '../koala-global-vars'
 import { PaginationParams } from '../models/pagination-params'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
@@ -20,25 +21,22 @@ interface RepositoryInitProps<TEntity> {
 
 export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected _context: PrismaTransactionalClient
-  private _transactionContext?: Type<PrismaTransactionalClient>
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
 
   constructor({
     context,
-    transactionContext,
     modelName,
     include,
   }: RepositoryInitProps<TEntity>) {
     this._context = context
-    this._transactionContext = transactionContext
     this._modelName = modelName
     this._include = include
   }
 
   withTransaction(fn: (prisma: PrismaTransactionalClient) => Promise<any>) {
     return this._context.withTransaction(async (client) => {
-      return fn(new (this._transactionContext as any)(client))
+      return fn(new (KoalaGlobalVars.dbTransactionContext as any)(client))
     })
   }
 
