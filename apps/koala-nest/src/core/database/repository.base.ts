@@ -187,7 +187,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   }
 
   private context(transactionalClient?: PrismaTransactionalClient) {
-    const modelName = this._modelName?.name
+    const modelName = this._modelName.name
 
     if (!modelName)
       throw new Error('modelName não informado no contrutor do repositorio')

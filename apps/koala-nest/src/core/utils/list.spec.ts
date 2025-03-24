@@ -4,7 +4,7 @@ import { List } from './list';
 class EntityTest extends EntityBase<EntityTest> {
   id: number
   value: number
-
+  
   constructor(props?: EntityProps<EntityTest>) {
     super()
     this.automap(props)

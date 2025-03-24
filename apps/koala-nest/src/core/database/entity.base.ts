@@ -13,28 +13,28 @@ export abstract class EntityBase<T extends IComparable<T>>
 
   automap(props?: EntityProps<T>) {
     if (props) {
-      Object.keys(props).forEach((key) => {
+      for (const key of Object.keys(props)) {
         if (Array.isArray(props[key]) && this[key] instanceof List) {
           let value: any = props[key]
-
+  
           if (this[key].entityType) {
             value = value.map((item) => {
-              const entity = new (this[key].entityType as Type<EntityBase<T>>)()
+              const entity = new (this[key].entityType as Type<any>)()
               entity.automap(item)
-
+              
               return entity
             })
           }
-
+  
           this[key].setList(value)
         } else {
           if (key === 'id') {
             this._id = props[key] as IComparableId
           }
-
+  
           this[key] = props[key]
         }
-      })
+      }
     }
   }
 
