@@ -1,32 +1,33 @@
-import { INestApplication, Type } from '@nestjs/common'
+import { INestApplication, InternalServerErrorException, Type } from '@nestjs/common'
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import expressBasicAuth from 'express-basic-auth'
-import { CronJob } from '../common/backgroud-services/cron-service/cron-job'
-import { EventHandler } from '../common/backgroud-services/event-service/event-handler'
+import { apiReference } from '@scalar/nestjs-api-reference'
+import * as expressBasicAuth from 'express-basic-auth'
+import { CronJob } from '../core/backgroud-services/cron-service/cron-job'
+import { EventHandler } from '../core/backgroud-services/event-service/event-handler'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
 import { ZodErrorsFilter } from '../filters/zod-errors.filter'
+import { PrismaTransactionalClient } from './database/prisma-transactional-client'
+import { KoalaGlobalVars } from './koala-global-vars'
 import { EnvConfig } from './utils/env.config'
 
 interface ApiDocConfig {
   endpoint: string
   title: string
+  ui?: 'swagger' | 'scalar'
   description?: string
   externalDoc?: {
     message: string
     url: string
   }
   version: string
-  accessDocWithCredentials?: {
-    username: string
-    password: string
-  }
   withAuthorization?: boolean
 }
 
 type CronJobClass = string | symbol | Function | Type<CronJob>
+type EventJobClass = string | symbol | Function | Type<EventHandler<any>>
 
 export class KoalaApp {
   private _globalExceptionFilter: BaseExceptionFilter
@@ -35,7 +36,7 @@ export class KoalaApp {
   private _zodExceptionFilter: BaseExceptionFilter
 
   private _cronJobs: CronJobClass[] = []
-  private _eventJobs: EventHandler<any>[] = []
+  private _eventJobs: EventJobClass[] = []
 
   constructor(private readonly app: INestApplication<any>) {
     const { httpAdapter } = app.get(HttpAdapterHost)
@@ -52,7 +53,7 @@ export class KoalaApp {
     return this
   }
 
-  addEventJob(eventJob: EventHandler<any>) {
+  addEventJob(eventJob: EventJobClass) {
     this._eventJobs.push(eventJob)
     return this
   }
@@ -77,21 +78,24 @@ export class KoalaApp {
     return this
   }
 
-  includeSwagger(config: ApiDocConfig) {
-    if (EnvConfig.isEnvDevelop && config.accessDocWithCredentials) {
+  useDoc(config: ApiDocConfig) {
+    const credentials = {
+      username: process.env.SWAGGER_USERNAME ?? '',
+      password: process.env.SWAGGER_PASSWORD ?? ''
+    }
+
+    if (EnvConfig.isEnvDevelop && credentials.username && credentials.password) {
       this.app.use(
         [config.endpoint],
         expressBasicAuth({
           challenge: true,
           users: {
-            [config.accessDocWithCredentials.username]:
-              config.accessDocWithCredentials.password,
+            [credentials.username]: credentials.password
           },
         }),
       )
     }
 
-    // Configurando SWAGGER
     const documentBuilder = new DocumentBuilder()
       .setTitle(config.title)
       .setVersion(config.version)
@@ -117,7 +121,17 @@ export class KoalaApp {
     )
     const swaggerEndpoint = config.endpoint
 
-    SwaggerModule.setup(swaggerEndpoint, this.app, document)
+    if (config.ui === 'scalar' && swaggerEndpoint === '/') {
+      throw new InternalServerErrorException("O endpoint de documentação não pode ser '/' para UI Scalar.")
+    }
+
+    SwaggerModule.setup(swaggerEndpoint, this.app, document, {
+      swaggerUiEnabled: config.ui !== 'scalar',
+    })
+
+    if (config.ui === 'scalar') {
+      this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))
+    }
 
     return this
   }
@@ -132,6 +146,21 @@ export class KoalaApp {
     return this
   }
 
+  setAppName(name: string) {
+    KoalaGlobalVars.appName = name
+    return this
+  }
+
+  setInternalUserName(name: string) {
+    KoalaGlobalVars.internalUserName = name
+    return this
+  }
+
+  setDbTransactionContext(transactionContext: Type<PrismaTransactionalClient>) {
+    KoalaGlobalVars.dbTransactionContext = transactionContext
+    return this
+  }
+
   async build() {
     this.app.useGlobalFilters(
       this._globalExceptionFilter,
@@ -140,11 +169,21 @@ export class KoalaApp {
       this._zodExceptionFilter,
     )
 
-    Promise.all(this._cronJobs.map((job) => this.app.resolve(job))).then(
-      (cronJobs) => cronJobs.forEach((job) => job.run()),
+    const cronJobs = await Promise.all(
+      this._cronJobs.map((job) => this.app.resolve(job)),
     )
 
-    this._eventJobs.forEach((eventJob) => eventJob.setupSubscriptions())
+    for (const cronJob of cronJobs) {
+      cronJob.start()
+    }
+
+    const eventJobs = await Promise.all(
+      this._eventJobs.map((job) => this.app.resolve(job)),
+    )
+
+    for (const eventJob of eventJobs) {
+      eventJob.setupSubscriptions()
+    }
 
     return this.app
   }

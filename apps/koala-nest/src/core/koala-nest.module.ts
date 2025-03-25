@@ -1,9 +1,9 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ZodType } from 'zod'
-import { envSchema } from '../services/env/env'
-import { EnvModule } from '../services/env/env.module'
-import { EnvService } from '../services/env/env.service'
+import { envSchema } from '../env/env'
+import { EnvModule } from '../env/env.module'
+import { EnvService } from '../env/env.service'
 import { ILoggingService } from '../services/logging/ilogging.service'
 import { LoggingService } from '../services/logging/logging.service'
 import { IRedisService } from '../services/redis/iredis.service'
@@ -37,6 +37,7 @@ export class KoalaNestModule {
         { provide: IRedLockService, useClass: RedLockService },
         EnvService,
       ],
+      exports: [ILoggingService, IRedisService, IRedLockService],
     }
   }
 }

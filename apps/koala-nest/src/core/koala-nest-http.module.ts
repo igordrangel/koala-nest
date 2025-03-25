@@ -4,15 +4,14 @@ import {
   Module,
   NestMiddleware,
   NestModule,
-  Provider,
   Type,
 } from '@nestjs/common'
-import { classes } from 'automapper-classes'
-import { AutomapperModule, AutomapperProfile } from 'automapper-nestjs'
-import { EnvService } from '../services/env/env.service'
+import { EnvService } from '../env/env.service'
+import { AutoMappingProfile } from './mapping/auto-mapping-profile'
+import { AutoMappingModule } from './mapping/auto-mapping.module'
 
 interface KoalaNestHttpModuleConfig {
-  automapperProfile: Provider<AutomapperProfile>
+  automapperProfile: Type<AutoMappingProfile>
   middlewares?: Type<NestMiddleware>[]
 }
 
@@ -25,12 +24,9 @@ export class KoalaNestHttpModule implements NestModule {
 
     return {
       module: KoalaNestHttpModule,
-      imports: [
-        AutomapperModule.forRoot({
-          strategyInitializer: classes(),
-        }),
-      ],
-      providers: [config.automapperProfile, EnvService],
+      imports: [AutoMappingModule.register(config.automapperProfile)],
+      providers: [EnvService],
+      exports: [AutoMappingModule],
     }
   }
 

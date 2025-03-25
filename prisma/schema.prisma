@@ -10,8 +10,9 @@ datasource db {
 }
 
 model Person {
-  id   Int    @id @default(autoincrement())
-  name String
+  id     Int     @id @default(autoincrement())
+  name   String
+  active Boolean @default(true)
 
   phones PersonPhone[]
 

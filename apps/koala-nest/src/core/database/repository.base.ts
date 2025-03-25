@@ -1,21 +1,12 @@
 import { toCamelCase } from '@koalarx/utils/operators/string'
 import { Type } from '@nestjs/common'
-import { PaginationParams } from '../../common/models/pagination-params'
-import { PrismaTransactionalClient } from '../../services/prisma/prisma-transactional-client'
 import { ListResponse } from '../@types'
+import { KoalaGlobalVars } from '../koala-global-vars'
+import { PaginationParams } from '../models/pagination-params'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
-import { Entity } from './entity'
-
-export interface FindAllProps<
-  TPaginateAndOrdering extends PaginationParams,
-  TWhere,
-  TInclude = any,
-> {
-  where: TWhere
-  paginateAndOrderingProps?: TPaginateAndOrdering
-  include?: TInclude
-}
+import { EntityBase } from './entity.base'
+import { PrismaTransactionalClient } from './prisma-transactional-client'
 
 type RepositoryInclude<TEntity> = {
   [key in keyof TEntity]?: boolean | RepositoryInclude<TEntity[keyof TEntity]>
@@ -28,27 +19,24 @@ interface RepositoryInitProps<TEntity> {
   include?: RepositoryInclude<TEntity>
 }
 
-export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
+export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected _context: PrismaTransactionalClient
-  private _transactionContext?: Type<PrismaTransactionalClient>
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
 
   constructor({
     context,
-    transactionContext,
     modelName,
     include,
   }: RepositoryInitProps<TEntity>) {
     this._context = context
-    this._transactionContext = transactionContext
     this._modelName = modelName
     this._include = include
   }
 
   withTransaction(fn: (prisma: PrismaTransactionalClient) => Promise<any>) {
     return this._context.withTransaction(async (client) => {
-      return fn(new (this._transactionContext as any)(client))
+      return fn(new (KoalaGlobalVars.dbTransactionContext as any)(client))
     })
   }
 
@@ -60,7 +48,7 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
       })
       .then((response: TEntity) => {
         if (response) {
-          return new this._modelName(response)
+          return this.createEntity(response)
         }
 
         return null
@@ -70,11 +58,9 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
   protected async findMany<T>(where: T, pagination?: PaginationParams) {
     return this.context()
       .findMany(this.findManySchema(where, pagination))
-      .then((result: TEntity[]) => {
-        return result.map((response) => {
-          return new this._modelName(response)
-        })
-      })
+      .then((result: TEntity[]) => 
+        result.map((response) => this.createEntity(response))
+      )
   }
 
   protected async findManyAndCount<T>(
@@ -179,14 +165,16 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
       .filter((key) => key !== 'id' && key !== '_id')
       .forEach((key) => {
         if (entity[key] instanceof List) {
-          prismaSchema[key] = {
-            createMany: {
-              data: entity[key].toArray('added').map((item) => {
-                return this.entityToPrisma(item)
-              }),
-            },
+          if (entity[key].toArray('added').length > 0) {
+            prismaSchema[key] = {
+              createMany: {
+                data: entity[key].toArray('added').map((item) => {
+                  return this.entityToPrisma(item)
+                }),
+              },
+            }
           }
-        } else if (entity[key] instanceof Entity) {
+        } else if (entity[key] instanceof EntityBase) {
           prismaSchema[key] = this.entityToPrisma(entity[key] as any)
         } else {
           prismaSchema[key] = entity[key]
@@ -197,7 +185,7 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
   }
 
   private context(transactionalClient?: PrismaTransactionalClient) {
-    const modelName = this._modelName?.name
+    const modelName = this._modelName.name
 
     if (!modelName)
       throw new Error('modelName não informado no contrutor do repositorio')
@@ -217,5 +205,12 @@ export abstract class RepositoryBase<TEntity extends Entity<TEntity>> {
       skip: pagination?.skip(),
       take: (pagination?.limit ?? 0) > 0 ? pagination?.limit : undefined,
     }
+  }
+
+  private createEntity(data: any) {
+    const entity = new this._modelName()
+    entity.automap(data)
+
+    return entity
   }
 }

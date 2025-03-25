@@ -99,27 +99,6 @@
     "repositories": "mappings",
     "filters": "pipe"
   },
-  "symbols.folders.associations": {
-    "data": "folder-database",
-    "auth": "folder-purple",
-    "common": "folder-green",
-    "controllers": "folder-yellow",
-    "decorators": "folder-yellow",
-    "repositories": "folder-yellow",
-    "services": "folder-yellow",
-    "filters": "folder-blue",
-    "guards": "folder-orange",
-    "test": "folder-context"
-  },
-  "symbols.files.associations": {
-    "*.module.ts": "nest",
-    "*.controller.ts": "nest",
-    "*.guard.ts": "nest",
-    "*.spec.ts": "ts-test",
-    "*.e2e-spec.ts": "ts-test",
-    "vitest.config.e2e.ts": "vite",
-    ".env.example": "gear"
-  },
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
@@ -130,7 +109,5 @@
   "npm.scriptExplorerAction": "run",
   "npm.packageManager": "npm",
   "editor.wordWrap": "on",
-  "editor.wrappingIndent": "indent",
-  "a-file-icon-vscode.activeIconPacks": ["nest"],
-  "a-file-icon-vscode.arrowTheme": "plusMinus"
+  "editor.wrappingIndent": "indent"
 }

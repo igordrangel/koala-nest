@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "sourceMap": true
-  }
+    "sourceMap": true,
+  },
+  "exclude": ["**/*.e2e-spec.ts"]
 }

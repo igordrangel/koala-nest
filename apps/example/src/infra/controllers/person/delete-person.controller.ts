@@ -1,5 +1,5 @@
-import { DeletePersonHandler } from '@/domain/person/use-cases/delete/delete-person.handler'
-import { IController } from '@koalarx/nest/common/controllers/base.controller'
+import { DeletePersonHandler } from '@/application/person/delete/delete-person.handler'
+import { IController } from '@koalarx/nest/core/controllers/base.controller'
 import { Controller, Delete, HttpCode, HttpStatus, Param } from '@nestjs/common'
 import { ApiNoContentResponse, ApiTags } from '@nestjs/swagger'
 import { PERSON_ROUTER_CONFIG } from './router.config'

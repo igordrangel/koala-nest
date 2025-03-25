@@ -1,20 +1,10 @@
-import { Mapper, MappingProfile as Profile } from 'automapper-core'
-import { AutomapperProfile, InjectMapper } from 'automapper-nestjs'
-import { PersonMapping } from '../person/mapping/person.mapping'
+import { AutoMappingProfile } from '@koalarx/nest/core/mapping/auto-mapping-profile'
 import { Injectable } from '@nestjs/common'
+import { PersonMapping } from './person.mapping'
 
 @Injectable()
-export class MappingProfile extends AutomapperProfile {
-  constructor(
-    // @ts-ignore
-    @InjectMapper() mapper: Mapper,
-  ) {
-    super(mapper)
-  }
-
-  get profile(): Profile {
-    return (mapper: Mapper) => {
-      PersonMapping.createMap(mapper)
-    }
+export class MappingProfile implements AutoMappingProfile {
+  profile(): void {
+    PersonMapping.createMap()
   }
 }

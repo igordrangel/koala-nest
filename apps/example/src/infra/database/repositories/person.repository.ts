@@ -1,8 +1,8 @@
-import { Person } from '@/domain/person/entities/person'
-import { IPersonRepository } from '@/domain/person/repositories/iperson.repository'
-import { ReadManyPersonRequest } from '@/domain/person/use-cases/read-many/read-many-person.request'
-import { CreatedRegistreResponseBase } from '@koalarx/nest/common/controllers/created-registre-response.base'
-import { ListResponseBase } from '@koalarx/nest/common/controllers/list-response.base'
+import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-person.request'
+import { Person } from '@/domain/entities/person/person'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
+import { CreatedRegistreResponseBase } from '@koalarx/nest/core/controllers/created-registre-response.base'
+import { ListResponseBase } from '@koalarx/nest/core/controllers/list-response.base'
 import { RepositoryBase } from '@koalarx/nest/core/database/repository.base'
 import { PRISMA_TOKEN } from '@koalarx/nest/core/koala-nest-database.module'
 import { Inject, Injectable } from '@nestjs/common'
@@ -21,12 +21,11 @@ export class PersonRepository
     super({
       modelName: Person,
       context: prisma,
-      transactionContext: DbTransactionContext,
       include: { phones: true },
     })
   }
 
-  save(person: Person): Promise<CreatedRegistreResponseBase> {
+  async save(person: Person): Promise<CreatedRegistreResponseBase<number>> {
     return this.saveChanges(person)
   }
 
@@ -40,6 +39,7 @@ export class PersonRepository
         name: {
           contains: query.name,
         },
+        active: query.active,
       },
       query,
     )

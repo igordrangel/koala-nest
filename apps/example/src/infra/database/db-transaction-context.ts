@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { PrismaClientWithCustomTransaction } from '@koalarx/nest/services/prisma/prisma-client-with-custom-transaction.interface'
-import { PrismaTransactionalClient } from '@koalarx/nest/services/prisma/prisma-transactional-client'
+import { PrismaClientWithCustomTransaction } from '@koalarx/nest/core/database/prisma-client-with-custom-transaction.interface'
+import { PrismaTransactionalClient } from '@koalarx/nest/core/database/prisma-transactional-client'
 import { Prisma } from '@prisma/client'
 import { DefaultArgs } from '@prisma/client/runtime/library'
 
