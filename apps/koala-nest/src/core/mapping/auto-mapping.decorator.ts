@@ -8,8 +8,13 @@ interface AutoMapConfig<T> {
 
 export function AutoMap<T>(config?: AutoMapConfig<T>) {
   return function (target: any, propertyKey: string) {
-    const customMetadata = config?.type
     const isArray = config?.isArray
+
+    let customMetadata: any = config?.type
+
+    if (!customMetadata) {
+      customMetadata = isArray ? Array : undefined
+    }
 
     if (customMetadata) {
       if (isArray) {
@@ -25,7 +30,13 @@ export function AutoMap<T>(config?: AutoMapConfig<T>) {
           target,
           propertyKey,
         )
-      } else {
+        
+        if (customMetadata !== Array) {
+          customMetadata = Array
+        }
+      }
+
+      if (!Reflect.getMetadata('design:type', target, propertyKey) || !isArray) {
         Reflect.defineMetadata(
           'design:type',
           customMetadata,

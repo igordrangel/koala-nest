@@ -21,7 +21,7 @@ export class ReadPersonResponse {
   name: string
 
   @ApiProperty({ type: [ReadPersonPhoneResponse] })
-  @AutoMap()
+  @AutoMap({ type: ReadPersonPhoneResponse, isArray: true})
   phones: Array<ReadPersonPhoneResponse>
 
   @ApiProperty()

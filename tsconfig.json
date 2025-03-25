@@ -25,7 +25,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.spec.ts",
     "vitest.config.e2e.mts",
     "vitest.config.mts"
   ]

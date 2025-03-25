@@ -3,7 +3,7 @@ import { DbTransactionContext } from '@/infra/database/db-transaction-context'
 import { KoalaAppTest } from '@koalarx/nest/test/koala-app-test'
 import { Test } from '@nestjs/testing'
 
-export async function createAppTest() {
+export async function createE2ETestApp() {
   return Test
     .createTestingModule({ imports: [AppModule] })    
     .compile()

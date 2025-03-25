@@ -37,13 +37,13 @@ export class AutoMappingService {
           const listToArray =
             propSource.type === List.name &&
             targetProp.type === Array.name &&
-            value instanceof List
+            value instanceof List;        
 
           const arrayToList =
             propSource.type === Array.name &&
             targetProp.type === List.name &&
             value instanceof Array &&
-            compositionType
+            !!compositionType;
 
           let mappedValue = value
 
@@ -87,9 +87,15 @@ export class AutoMappingService {
     return value
       .toArray()
       .map(
-        (item) =>
-          this.mapNestedProp(item, value.entityType?.prototype.constructor) ??
-          {},
+        (item) => {
+          const entityOnList = value.entityType?.prototype.constructor
+
+          if (entityOnList) {
+            return this.mapNestedProp(item, entityOnList) ?? {}
+          }
+          
+          return {}
+        },
       )
   }
 
@@ -98,7 +104,7 @@ export class AutoMappingService {
     compositionType: Type<any>,
     onlySet = true,
   ) {
-    const list = new List()
+    const list = new List(compositionType.prototype.constructor)
 
     const mappedValue = value.map(
       (item) =>

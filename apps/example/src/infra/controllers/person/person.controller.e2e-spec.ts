@@ -1,4 +1,4 @@
-import { createAppTest } from '@/test/main'
+import { createE2ETestApp } from '@/test/create-e2e-test-app'
 import { INestApplication } from '@nestjs/common'
 import request from 'supertest'
 import { PERSON_ROUTER_CONFIG } from './router.config'
@@ -8,7 +8,7 @@ describe(`CRUD OF PERSON`, () => {
   let personId: number
 
   beforeAll(async () => {
-    app = await createAppTest()
+    app = await createE2ETestApp()
   })
 
   it('should create a person', async () => {
