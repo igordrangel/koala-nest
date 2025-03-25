@@ -1,5 +1,5 @@
-import { ReadPersonHandler } from '@/domain/person/use-cases/read/read-person.handler'
-import { ReadPersonResponse } from '@/domain/person/use-cases/read/read-person.response'
+import { ReadPersonHandler } from '@/application/person/read/read-person.handler'
+import { ReadPersonResponse } from '@/application/person/read/read-person.response'
 import { IController } from '@koalarx/nest/core/controllers/base.controller'
 import { Controller, Get, Param } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'

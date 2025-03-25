@@ -1,4 +1,4 @@
-import { IPersonRepository } from '@/domain/person/repositories/iperson.repository'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { EventHandler } from '@koalarx/nest/core/backgroud-services/event-service/event-handler'
 import { Injectable } from '@nestjs/common'
 import { ReadManyPersonRequest } from '../../read-many/read-many-person.request'

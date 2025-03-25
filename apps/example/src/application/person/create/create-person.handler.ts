@@ -1,3 +1,5 @@
+import { Person } from '@/domain/entities/person/person'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { AutoMappingService } from '@koalarx/nest/core/mapping/auto-mapping.service'
 import { RequestHandlerBase } from '@koalarx/nest/core/request-overflow/request-handler.base'
 import {
@@ -5,8 +7,6 @@ import {
   RequestResult,
 } from '@koalarx/nest/core/request-overflow/request-result'
 import { Injectable } from '@nestjs/common'
-import { Person } from '../../entities/person'
-import { IPersonRepository } from '../../repositories/iperson.repository'
 import { CreatePersonRequest } from './create-person.request'
 import { CreatePersonResponse } from './create-person.response'
 import { CreatePersonValidator } from './create-person.validator'

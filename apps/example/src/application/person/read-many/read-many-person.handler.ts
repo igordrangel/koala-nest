@@ -1,3 +1,5 @@
+import { Person } from '@/domain/entities/person/person'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
 import { AutoMappingService } from '@koalarx/nest/core/mapping/auto-mapping.service'
 import { RequestHandlerBase } from '@koalarx/nest/core/request-overflow/request-handler.base'
@@ -6,8 +8,6 @@ import {
   RequestResult,
 } from '@koalarx/nest/core/request-overflow/request-result'
 import { Injectable } from '@nestjs/common'
-import { Person } from '../../entities/person'
-import { IPersonRepository } from '../../repositories/iperson.repository'
 import { ReadPersonResponse } from '../read/read-person.response'
 import { ReadManyPersonRequest } from './read-many-person.request'
 import { ReadManyPersonResponse } from './read-many-person.response'

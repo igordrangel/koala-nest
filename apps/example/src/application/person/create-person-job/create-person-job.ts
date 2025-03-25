@@ -1,3 +1,4 @@
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import {
   CronJob,
   CronJobResponse,
@@ -7,7 +8,6 @@ import { ok } from '@koalarx/nest/core/request-overflow/request-result'
 import { ILoggingService } from '@koalarx/nest/services/logging/ilogging.service'
 import { IRedLockService } from '@koalarx/nest/services/redlock/ired-lock.service'
 import { Injectable } from '@nestjs/common'
-import { IPersonRepository } from '../../repositories/iperson.repository'
 import { CreatePersonHandler } from '../create/create-person.handler'
 import { InactivePersonEvent } from '../events/inactive-person/inactive-person-event'
 import { PersonEventJob } from '../events/person-event.job'

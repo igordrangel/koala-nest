@@ -1,3 +1,4 @@
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
 import { RequestHandlerBase } from '@koalarx/nest/core/request-overflow/request-handler.base'
 import {
@@ -6,7 +7,6 @@ import {
   RequestResult,
 } from '@koalarx/nest/core/request-overflow/request-result'
 import { Injectable } from '@nestjs/common'
-import { IPersonRepository } from '../../repositories/iperson.repository'
 
 @Injectable()
 export class DeletePersonHandler extends RequestHandlerBase<

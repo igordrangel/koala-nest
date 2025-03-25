@@ -1,19 +1,10 @@
+import { CreatePersonPhoneRequest, CreatePersonRequest } from '@/application/person/create/create-person.request'
+import { ReadPersonPhoneResponse, ReadPersonResponse } from '@/application/person/read/read-person.response'
+import { UpdatePersonPhoneRequest, UpdatePersonRequest } from '@/application/person/update/update-person.request'
 import { createMap } from '@koalarx/nest/core/mapping/create-map'
-import { Person } from '../entities/person'
-import { PersonPhone } from '../entities/person-phone'
-import {
-  CreatePersonPhoneRequest,
-  CreatePersonRequest,
-} from '../use-cases/create/create-person.request'
-import {
-  ReadPersonPhoneResponse,
-  ReadPersonResponse,
-} from '../use-cases/read/read-person.response'
-import {
-  UpdatePersonPhoneRequest,
-  UpdatePersonRequest,
-} from '../use-cases/update/update-person.request'
 import { forMember } from '@koalarx/nest/core/mapping/for-member'
+import { Person } from '../entities/person/person'
+import { PersonPhone } from '../entities/person/person-phone'
 
 export class PersonMapping {
   static createMap() {

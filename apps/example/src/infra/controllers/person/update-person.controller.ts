@@ -1,5 +1,5 @@
-import { UpdatePersonHandler } from '@/domain/person/use-cases/update/update-person.handler'
-import { UpdatePersonRequest } from '@/domain/person/use-cases/update/update-person.request'
+import { UpdatePersonHandler } from '@/application/person/update/update-person.handler'
+import { UpdatePersonRequest } from '@/application/person/update/update-person.request'
 import { IController } from '@koalarx/nest/core/controllers/base.controller'
 import { Body, Controller, Param, Put } from '@nestjs/common'
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger'

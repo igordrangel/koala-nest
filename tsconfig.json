@@ -26,7 +26,7 @@
     "node_modules",
     "dist",
     "**/*.spec.ts",
-    "apps/koala-nest/src/test",
+    "vitest.config.e2e.mts",
     "vitest.config.mts"
   ]
 }
