@@ -1,8 +1,8 @@
 import { toCamelCase } from '@koalarx/utils/operators/string'
 import { Type } from '@nestjs/common'
-import { ListResponse } from '../@types'
+import { ListResponse } from '..'
+import { PaginationDto } from '../dtos/pagination.dto'
 import { KoalaGlobalVars } from '../koala-global-vars'
-import { PaginationParams } from '../models/pagination-params'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { EntityBase } from './entity.base'
@@ -55,7 +55,22 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       })
   }
 
-  protected async findMany<T>(where: T, pagination?: PaginationParams) {
+  protected async findFirst<T>(where: T) {
+    return this.context()
+      .findFirst({
+        include: this._include,
+        where,
+      })
+      .then((response: TEntity) => {
+        if (response) {
+          return this.createEntity(response)
+        }
+
+        return null
+      })
+  }
+
+  protected async findMany<T>(where: T, pagination?: PaginationDto) {
     return this.context()
       .findMany(this.findManySchema(where, pagination))
       .then((result: TEntity[]) => 
@@ -65,14 +80,14 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
 
   protected async findManyAndCount<T>(
     where: T,
-    pagination?: PaginationParams,
+    pagination?: PaginationDto,
   ): Promise<ListResponse<TEntity>> {
     const count = await this.context().count({ where })
 
     if (count > 0) {
       const items = await this.findMany(
         where,
-        Object.assign(new PaginationParams(), pagination),
+        Object.assign(new PaginationDto(), pagination),
       )
 
       return { items, count }
@@ -81,20 +96,21 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return { items: [], count }
   }
 
-  protected saveChanges(entity: TEntity) {
+  protected insert(entity: TEntity) {
     const prismaEntity = this.entityToPrisma(entity)
 
-    const isCreate = !entity._id
+    return this.context().create({
+      data: prismaEntity,
+    })
+  }
+  
+  protected edit<TWhere = any>(entity: TEntity, updateWhere?: TWhere) {
+    const prismaEntity = this.entityToPrisma(entity)
 
-    if (isCreate) {
-      return this.context().create({
-        data: prismaEntity,
-      })
-    } else {
-      return this.withTransaction((client) =>
+    return this.withTransaction((client) =>
         this.context(client)
           .update({
-            where: { id: entity._id },
+            where: updateWhere ?? { id: entity._id },
             data: prismaEntity,
           })
           .then(() => {
@@ -111,13 +127,10 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
             ])
           }),
       )
-    }
   }
 
-  protected delete(id: IComparableId) {
-    return this.context().delete({
-      where: { id },
-    })
+  protected remove<TWhere = any>(where: TWhere) {
+    return this.context().delete({ where })
   }
 
   private listToRelationActionList(entity: TEntity) {
@@ -198,7 +211,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return this._context[modelName]
   }
 
-  private findManySchema<T>(where: T, pagination?: PaginationParams) {
+  private findManySchema<T>(where: T, pagination?: PaginationDto) {
     return {
       include: this._include,
       where,

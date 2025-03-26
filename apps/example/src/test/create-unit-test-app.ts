@@ -1,5 +1,5 @@
 import { CreatePersonHandler } from '@/application/person/create/create-person.handler'
-import { MappingProfile } from '@/domain/mapping/mapping.profile'
+import { MappingProfile } from '@/application/mapping/mapping.profile'
 import { AutoMappingService } from '@koalarx/nest/core/mapping/auto-mapping.service'
 import { KoalaAppTestDependencies } from '@koalarx/nest/test/koala-app-test-dependencies'
 import { PersonRepository } from './repositories/person.repository'

@@ -1,3 +1,4 @@
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import {
   CronJob,
   CronJobResponse,
@@ -8,7 +9,6 @@ import { IRedLockService } from '@koalarx/nest/services/redlock/ired-lock.servic
 import { Injectable } from '@nestjs/common'
 import { DeletePersonHandler } from '../delete/delete-person.handler'
 import { ReadManyPersonHandler } from '../read-many/read-many-person.handler'
-import { ReadManyPersonRequest } from '../read-many/read-many-person.request'
 
 @Injectable()
 export class DeleteInactiveJob extends CronJob {
@@ -23,7 +23,7 @@ export class DeleteInactiveJob extends CronJob {
 
   protected async run(): Promise<CronJobResponse> {
     const result = await this.readManyPerson.handle(
-      new ReadManyPersonRequest({ active: false }),
+      new ReadManyPersonDto({ active: false }),
     )
 
     if (result.isOk()) {

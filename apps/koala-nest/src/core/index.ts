@@ -44,3 +44,5 @@ export type FileResponse = {
   type: string
   base64: string
 }
+
+export type QueryDirectionType = 'asc' | 'desc'

@@ -1,7 +1,7 @@
-import { MappingProfile } from '@/domain/mapping/mapping.profile'
+import { MappingProfile } from '@/application/mapping/mapping.profile'
+import { RepositoriesModule } from '@/infra/database/repositories/repositories.module'
 import { KoalaNestHttpModule } from '@koalarx/nest/core/koala-nest-http.module'
 import { Module } from '@nestjs/common'
-import { RepositoriesModule } from '../database/repositories/repositories.module'
 
 @Module({
   imports: [

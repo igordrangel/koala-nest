@@ -28,7 +28,7 @@ export class AutoMappingService {
       const compositionType = propSource.compositionType
       const compositionAction = propSource.compositionAction
 
-      if (value) {
+      if (value !== undefined) {
         const targetProp = propTargetContext?.props.find(
           (tp) => tp.name === propSource.name,
         )

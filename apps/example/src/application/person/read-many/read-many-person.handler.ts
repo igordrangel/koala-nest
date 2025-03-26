@@ -1,3 +1,4 @@
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import { Person } from '@/domain/entities/person/person'
 import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
@@ -29,7 +30,11 @@ export class ReadManyPersonHandler extends RequestHandlerBase<
     query: ReadManyPersonRequest,
   ): Promise<RequestResult<ResourceNotFoundError, ReadManyPersonResponse>> {
     const listOfPerson = await this.repository.readMany(
-      new ReadManyPersonValidator(query).validate(),
+      this.mapper.map(
+        new ReadManyPersonValidator(query).validate(),
+        ReadManyPersonRequest,
+        ReadManyPersonDto
+      ),
     )
 
     return ok({
