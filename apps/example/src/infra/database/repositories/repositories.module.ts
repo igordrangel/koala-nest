@@ -7,6 +7,7 @@ import { PersonRepository } from './person.repository'
   imports: [
     KoalaNestDatabaseModule.register({
       repositories: [{ interface: IPersonRepository, class: PersonRepository }],
+      services: [],
     }),
   ],
   exports: [KoalaNestDatabaseModule],
