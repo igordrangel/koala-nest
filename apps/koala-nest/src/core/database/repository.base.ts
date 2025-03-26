@@ -24,11 +24,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
 
-  constructor({
-    context,
-    modelName,
-    include,
-  }: RepositoryInitProps<TEntity>) {
+  constructor({ context, modelName, include }: RepositoryInitProps<TEntity>) {
     this._context = context
     this._modelName = modelName
     this._include = include
@@ -73,8 +69,8 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async findMany<T>(where: T, pagination?: PaginationDto) {
     return this.context()
       .findMany(this.findManySchema(where, pagination))
-      .then((result: TEntity[]) => 
-        result.map((response) => this.createEntity(response))
+      .then((result: TEntity[]) =>
+        result.map((response) => this.createEntity(response)),
       )
   }
 
@@ -97,40 +93,58 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   }
 
   protected insert(entity: TEntity) {
-    const prismaEntity = this.entityToPrisma(entity)
+    const prismaEntity = this.entityToPrisma(entity, true)
 
     return this.context().create({
       data: prismaEntity,
     })
   }
-  
+
   protected edit<TWhere = any>(entity: TEntity, updateWhere?: TWhere) {
-    const prismaEntity = this.entityToPrisma(entity)
+    const prismaEntity = this.entityToPrisma(entity, false)
 
     return this.withTransaction((client) =>
-        this.context(client)
-          .update({
-            where: updateWhere ?? { id: entity._id },
-            data: prismaEntity,
-          })
-          .then(() => {
-            const { relationUpdates, relationDeletes } =
-              this.listToRelationActionList(entity)
+      this.context(client)
+        .update({
+          where: updateWhere ?? { id: entity._id },
+          data: prismaEntity,
+        })
+        .then(() => {
+          const { relationUpdates, relationDeletes } =
+            this.listToRelationActionList(entity)
 
-            return Promise.all([
-              ...relationUpdates.map((relation) =>
-                client[relation.modelName].updateMany(relation.schema),
-              ),
-              ...relationDeletes.map((relation) =>
-                client[relation.modelName].deleteMany(relation.schema),
-              ),
-            ])
-          }),
-      )
+          return Promise.all([
+            ...relationUpdates.map((relation) =>
+              client[relation.modelName].updateMany(relation.schema),
+            ),
+            ...relationDeletes.map((relation) =>
+              client[relation.modelName].deleteMany(relation.schema),
+            ),
+          ])
+        }),
+    )
   }
 
-  protected remove<TWhere = any>(where: TWhere) {
-    return this.context().delete({ where })
+  protected async remove<TWhere = any>(where: TWhere) {
+    const entity = await this.findFirst(where)
+
+    const relationEntity: EntityBase<TEntity>[] = []
+
+    Object.keys(entity).forEach((key) => {
+      if (entity[key] instanceof EntityBase) {
+        relationEntity.push(entity[key])
+      }
+    })
+
+    return this.withTransaction((client) =>
+      this.context(client)
+        .delete({ where })
+        .then((response) =>
+          Promise.all(
+            relationEntity.map((entity) => this.orphanRemoval(client, entity)),
+          ).then(() => response),
+        ),
+    )
   }
 
   private listToRelationActionList(entity: TEntity) {
@@ -160,7 +174,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
               modelName: toCamelCase(modelName),
               schema: {
                 where: { id: item._id },
-                data: this.entityToPrisma(item),
+                data: this.entityToPrisma(item, false),
               },
             })
           })
@@ -171,11 +185,11 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return { relationUpdates, relationDeletes }
   }
 
-  private entityToPrisma(entity: TEntity) {
+  private entityToPrisma(entity: TEntity, isCreate: boolean) {
     const prismaSchema = {}
 
     Object.keys(entity)
-      .filter((key) => key !== 'id' && key !== '_id')
+      .filter((key) => !['id', '_id'].includes(key))
       .filter((key) => !(entity[key] instanceof Function))
       .forEach((key) => {
         if (entity[key] instanceof List) {
@@ -183,13 +197,15 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
             prismaSchema[key] = {
               createMany: {
                 data: entity[key].toArray('added').map((item) => {
-                  return this.entityToPrisma(item)
+                  return this.entityToPrisma(item, isCreate)
                 }),
               },
             }
           }
         } else if (entity[key] instanceof EntityBase) {
-          prismaSchema[key] = this.entityToPrisma(entity[key] as any)
+          prismaSchema[key] = isCreate
+            ? { create: this.entityToPrisma(entity[key] as any, isCreate) }
+            : { update: this.entityToPrisma(entity[key] as any, isCreate) }
         } else {
           prismaSchema[key] = entity[key]
         }
@@ -226,5 +242,18 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     entity.automap(data)
 
     return entity
+  }
+
+  private orphanRemoval(
+    client: PrismaTransactionalClient,
+    entity: EntityBase<TEntity>,
+  ) {
+    const where = {}
+
+    Object.keys(entity)
+      .filter((key: string) => key === 'id' || key.includes('Id'))
+      .forEach((key) => (where[key] = entity[key]))
+
+    return client[toCamelCase(entity.constructor.name)].delete({ where })
   }
 }

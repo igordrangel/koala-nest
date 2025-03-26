@@ -53,8 +53,8 @@ export class EventQueue {
   private static removeAggregateFromMarkedDispatchList(
     aggregate: EventJob<any>,
   ) {
-    const index = this.markedAggregates.findIndex((a) =>
-      a._id === aggregate._id,
+    const index = this.markedAggregates.findIndex(
+      (a) => a._id === aggregate._id,
     )
 
     this.markedAggregates.splice(index, 1)
@@ -63,9 +63,7 @@ export class EventQueue {
   private static findMarkedAggregateByID(
     id: IComparableId,
   ): EventJob<any> | undefined {
-    return this.markedAggregates.find(
-      (aggregate) => aggregate._id === id,
-    )
+    return this.markedAggregates.find((aggregate) => aggregate._id === id)
   }
 
   private static dispatch(event: EventClass<any>) {

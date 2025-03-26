@@ -1,8 +1,8 @@
-import { createUnitTestApp } from "@/test/create-unit-test-app"
-import { createPersonRequestMockup } from "@/test/mockup/person/create-person-request.mockup"
-import { CreatePersonHandler } from "../create/create-person.handler"
-import { ReadPersonHandler } from "../read/read-person.handler"
-import { UpdatePersonHandler } from "./update-person.handler"
+import { createUnitTestApp } from '@/test/create-unit-test-app'
+import { createPersonRequestMockup } from '@/test/mockup/person/create-person-request.mockup'
+import { CreatePersonHandler } from '../create/create-person.handler'
+import { ReadPersonHandler } from '../read/read-person.handler'
+import { UpdatePersonHandler } from './update-person.handler'
 
 describe('UpdatePersonHandler', () => {
   const app = createUnitTestApp()
@@ -12,20 +12,22 @@ describe('UpdatePersonHandler', () => {
     const createResult = await app
       .get(CreatePersonHandler)
       .handle(createPersonRequestMockup)
-    
+
     expect(createResult.isOk()).toBeTruthy()
 
     if (createResult.isOk()) {
-      const updateResult = await app
-        .get(UpdatePersonHandler)
-        .handle({
-          id: createResult.value.id,
-          data: {
-            ...person,
-            active: true
-          }
-        })
-      
+      const updateResult = await app.get(UpdatePersonHandler).handle({
+        id: createResult.value.id,
+        data: {
+          ...person,
+          address: {
+            id: 1,
+            ...person.address,
+          },
+          active: true,
+        },
+      })
+
       expect(updateResult.isOk()).toBeTruthy()
 
       const result = await app
@@ -35,7 +37,7 @@ describe('UpdatePersonHandler', () => {
       expect(result.value).toEqual({
         ...person,
         id: createResult.value.id,
-        status: 'active'
+        status: 'active',
       })
     }
   })

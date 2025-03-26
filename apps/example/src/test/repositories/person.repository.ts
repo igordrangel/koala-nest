@@ -1,11 +1,14 @@
-import { ReadManyPersonDto } from "@/domain/dtos/read-many-person.dto";
-import { Person } from "@/domain/entities/person/person";
-import { IPersonRepository } from "@/domain/repositories/iperson.repository";
-import { CreatedRegistreResponseBase } from "@koalarx/nest/core/controllers/created-registre-response.base";
-import { ListResponseBase } from "@koalarx/nest/core/controllers/list-response.base";
-import { InMemoryBaseRepository } from "@koalarx/nest/test/repositories/in-memory-base.repository";
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
+import { Person } from '@/domain/entities/person/person'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
+import { CreatedRegistreResponseBase } from '@koalarx/nest/core/controllers/created-registre-response.base'
+import { ListResponseBase } from '@koalarx/nest/core/controllers/list-response.base'
+import { InMemoryBaseRepository } from '@koalarx/nest/test/repositories/in-memory-base.repository'
 
-export class PersonRepository extends InMemoryBaseRepository<Person> implements IPersonRepository {
+export class PersonRepository
+  extends InMemoryBaseRepository<Person>
+  implements IPersonRepository
+{
   create(person: Person): Promise<CreatedRegistreResponseBase<number>> {
     return this.insert(person)
   }
@@ -19,9 +22,11 @@ export class PersonRepository extends InMemoryBaseRepository<Person> implements 
   }
 
   readMany(query: ReadManyPersonDto): Promise<ListResponseBase<Person>> {
-    return this.findManyAndCount<ReadManyPersonDto>(query, (person) => 
-      (!query.name || person.name.includes(query.name)) &&
-      (query.active === undefined || person.active === query.active)
+    return this.findManyAndCount<ReadManyPersonDto>(
+      query,
+      (person) =>
+        (!query.name || person.name.includes(query.name)) &&
+        (query.active === undefined || person.active === query.active),
     )
   }
 

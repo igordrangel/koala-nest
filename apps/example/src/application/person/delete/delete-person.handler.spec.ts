@@ -1,7 +1,7 @@
-import { createUnitTestApp } from "@/test/create-unit-test-app"
-import { createPersonRequestMockup } from "@/test/mockup/person/create-person-request.mockup"
-import { CreatePersonHandler } from "../create/create-person.handler"
-import { DeletePersonHandler } from "./delete-person.handler"
+import { createUnitTestApp } from '@/test/create-unit-test-app'
+import { createPersonRequestMockup } from '@/test/mockup/person/create-person-request.mockup'
+import { CreatePersonHandler } from '../create/create-person.handler'
+import { DeletePersonHandler } from './delete-person.handler'
 
 describe('DeletePersonHandler', () => {
   const app = createUnitTestApp()
@@ -10,7 +10,7 @@ describe('DeletePersonHandler', () => {
     const createResult = await app
       .get(CreatePersonHandler)
       .handle(createPersonRequestMockup)
-    
+
     expect(createResult.isOk()).toBeTruthy()
 
     if (createResult.isOk()) {

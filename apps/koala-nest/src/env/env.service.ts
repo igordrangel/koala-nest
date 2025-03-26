@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config'
 import { Env } from './env'
 
 @Injectable()
-export class EnvService {
-  constructor(private readonly configService: ConfigService<Env, true>) {}
+export class EnvService<TEnv = Env> {
+  constructor(private readonly configService: ConfigService<TEnv, true>) {}
 
-  get<T extends keyof Env>(key: T) {
-    return this.configService.get(key, { infer: true })
+  get<T extends keyof TEnv>(key: T) {
+    return this.configService.get(key as any, { infer: true })
   }
 }

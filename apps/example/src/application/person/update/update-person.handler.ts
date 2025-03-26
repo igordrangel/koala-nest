@@ -47,6 +47,7 @@ export class UpdatePersonHandler extends RequestHandlerBase<
 
     personInBd.name = person.name
     personInBd.active = person.active
+    personInBd.address.address = person.address.address
     personInBd.phones.update(person.phones.toArray())
 
     await this.repository.update(personInBd)

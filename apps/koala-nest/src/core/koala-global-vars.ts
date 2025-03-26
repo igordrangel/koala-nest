@@ -1,5 +1,5 @@
-import { Type } from "@nestjs/common"
-import { PrismaTransactionalClient } from "./database/prisma-transactional-client"
+import { Type } from '@nestjs/common'
+import { PrismaTransactionalClient } from './database/prisma-transactional-client'
 
 export class KoalaGlobalVars {
   static appName: string = 'koala-nest'

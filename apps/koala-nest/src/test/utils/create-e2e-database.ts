@@ -1,6 +1,6 @@
 import 'dotenv/config'
-import { execSync } from "node:child_process"
-import { randomUUID } from "node:crypto"
+import { execSync } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 
 function generateUniqueDatabaseURL() {
   const schemaId = randomUUID()
@@ -15,12 +15,12 @@ function generateUniqueDatabaseURL() {
 
   return {
     url: url.toString(),
-    schemaId
+    schemaId,
   }
 }
 
 export function createE2EDatabase() {
-  const {url, schemaId} = generateUniqueDatabaseURL()
+  const { url, schemaId } = generateUniqueDatabaseURL()
 
   process.env.DATABASE_URL = url
   process.env.DIRECT_URL = url

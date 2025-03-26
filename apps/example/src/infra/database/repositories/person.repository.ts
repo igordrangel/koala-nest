@@ -21,7 +21,10 @@ export class PersonRepository
     super({
       modelName: Person,
       context: prisma,
-      include: { phones: true },
+      include: {
+        phones: true,
+        address: true,
+      },
     })
   }
 

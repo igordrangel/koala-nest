@@ -13,12 +13,12 @@ export function createUnitTestApp() {
   const personRepository = new PersonRepository()
 
   return new KoalaAppTestDependencies({
-    dependencies: [      
+    dependencies: [
       new CreatePersonHandler(automapService, personRepository),
       new ReadPersonHandler(automapService, personRepository),
       new ReadManyPersonHandler(automapService, personRepository),
       new UpdatePersonHandler(automapService, personRepository),
-      new DeletePersonHandler(personRepository)
-    ]
+      new DeletePersonHandler(personRepository),
+    ],
   })
 }

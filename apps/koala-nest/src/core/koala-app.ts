@@ -1,4 +1,8 @@
-import { INestApplication, InternalServerErrorException, Type } from '@nestjs/common'
+import {
+  INestApplication,
+  InternalServerErrorException,
+  Type,
+} from '@nestjs/common'
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { apiReference } from '@scalar/nestjs-api-reference'
@@ -81,16 +85,20 @@ export class KoalaApp {
   useDoc(config: ApiDocConfig) {
     const credentials = {
       username: process.env.SWAGGER_USERNAME ?? '',
-      password: process.env.SWAGGER_PASSWORD ?? ''
+      password: process.env.SWAGGER_PASSWORD ?? '',
     }
 
-    if (EnvConfig.isEnvDevelop && credentials.username && credentials.password) {
+    if (
+      EnvConfig.isEnvDevelop &&
+      credentials.username &&
+      credentials.password
+    ) {
       this.app.use(
         [config.endpoint],
         expressBasicAuth({
           challenge: true,
           users: {
-            [credentials.username]: credentials.password
+            [credentials.username]: credentials.password,
           },
         }),
       )
@@ -122,7 +130,9 @@ export class KoalaApp {
     const swaggerEndpoint = config.endpoint
 
     if (config.ui === 'scalar' && swaggerEndpoint === '/') {
-      throw new InternalServerErrorException("O endpoint de documentação não pode ser '/' para UI Scalar.")
+      throw new InternalServerErrorException(
+        "O endpoint de documentação não pode ser '/' para UI Scalar.",
+      )
     }
 
     SwaggerModule.setup(swaggerEndpoint, this.app, document, {
@@ -130,7 +140,10 @@ export class KoalaApp {
     })
 
     if (config.ui === 'scalar') {
-      this.app.use(swaggerEndpoint, apiReference({ spec: { content: document } }))
+      this.app.use(
+        swaggerEndpoint,
+        apiReference({ spec: { content: document } }),
+      )
     }
 
     return this

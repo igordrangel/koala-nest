@@ -26,7 +26,8 @@ export class CreatePersonJob extends CronJob {
   protected async run(): Promise<CronJobResponse> {
     const result = await this.createPerson.handle({
       name: 'John Doe',
-      phones: [{phone: '22999999999'}],
+      phones: [{ phone: '22999999999' }],
+      address: { address: 'Street 1' },
     })
 
     if (result.isOk()) {

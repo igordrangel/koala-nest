@@ -1,10 +1,14 @@
-import { EntityBase, EntityProps } from '../database/entity.base';
-import { List } from './list';
+import { EntityBase, EntityProps } from '../database/entity.base'
+import { AutoMap } from '../mapping/auto-mapping.decorator'
+import { List } from './list'
 
 class EntityTest extends EntityBase<EntityTest> {
+  @AutoMap()
   id: number
+
+  @AutoMap()
   value: number
-  
+
   constructor(props?: EntityProps<EntityTest>) {
     super()
     this.automap(props)
@@ -15,7 +19,7 @@ describe('List test', () => {
   let entity: EntityTest
 
   beforeEach(() => {
-    entity = new EntityTest({id: 1, value: 1})
+    entity = new EntityTest({ id: 1, value: 1 })
   })
 
   it('should add item on list', () => {

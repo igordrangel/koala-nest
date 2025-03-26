@@ -1,18 +1,16 @@
-import { QUERY_FILTER_PARAMS } from '@koalarx/nest/core/constants/query-params';
-import { PaginationDto } from '@koalarx/nest/core/dtos/pagination.dto';
-import { klArray } from '@koalarx/utils/operators/array';
-import { randomUUID } from 'node:crypto';
-import { CreatedRegistreResponseBase } from '../../core/controllers/created-registre-response.base';
-import { ListResponseBase } from '../../core/controllers/list-response.base';
-import { EntityBase } from '../../core/database/entity.base';
-import { IComparableId } from '../../core/utils/interfaces/icomparable';
+import { QUERY_FILTER_PARAMS } from '@koalarx/nest/core/constants/query-params'
+import { PaginationDto } from '@koalarx/nest/core/dtos/pagination.dto'
+import { klArray } from '@koalarx/utils/operators/array'
+import { randomUUID } from 'node:crypto'
+import { CreatedRegistreResponseBase } from '../../core/controllers/created-registre-response.base'
+import { ListResponseBase } from '../../core/controllers/list-response.base'
+import { EntityBase } from '../../core/database/entity.base'
+import { IComparableId } from '../../core/utils/interfaces/icomparable'
 
 export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
   protected items: TClass[] = []
 
-  constructor(
-    private readonly typeId: 'number' | 'string' = 'number'
-  ) {}
+  constructor(private readonly typeId: 'number' | 'string' = 'number') {}
 
   protected async findById(id: IComparableId): Promise<TClass | null> {
     return this.items.find((item) => item._id === id) ?? null
@@ -43,11 +41,11 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
     }
   }
 
-  protected async insert(item: TClass): Promise<CreatedRegistreResponseBase<any>> {
-    const id = this.typeId === 'number'
-      ? this.getNewId()
-      : randomUUID()
-    
+  protected async insert(
+    item: TClass,
+  ): Promise<CreatedRegistreResponseBase<any>> {
+    const id = this.typeId === 'number' ? this.getNewId() : randomUUID()
+
     item.automap({ ...item, id })
 
     this.items.push(item)
@@ -76,7 +74,8 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
 
   private getNewId(): IComparableId {
     return this.typeId === 'number'
-      ? (klArray(this.items).orderBy('_id', true).getValue()[0]?._id as number) ?? 0 + 1
+      ? (klArray(this.items).orderBy('_id', true).getValue()[0]
+          ?._id as number) ?? 0 + 1
       : randomUUID()
   }
 }
