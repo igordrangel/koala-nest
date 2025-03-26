@@ -1,10 +1,10 @@
 import { createUnitTestApp } from "@/test/create-unit-test-app"
 import { createPersonRequestMockup } from "@/test/mockup/person/create-person-request.mockup"
+import { RequestResult } from "@koalarx/nest/core/request-overflow/request-result"
 import { CreatePersonHandler } from "../create/create-person.handler"
+import { CreatePersonResponse } from "../create/create-person.response"
 import { ReadManyPersonHandler } from "./read-many-person.handler"
 import { ReadManyPersonRequest } from "./read-many-person.request"
-import { RequestResult } from "@koalarx/nest/core/request-overflow/request-result"
-import { CreatePersonResponse } from "../create/create-person.response"
 
 describe('ReadManyPersonHandler', () => {
   const app = createUnitTestApp()

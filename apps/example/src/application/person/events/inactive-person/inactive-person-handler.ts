@@ -3,6 +3,7 @@ import { EventHandler } from '@koalarx/nest/core/backgroud-services/event-servic
 import { Injectable } from '@nestjs/common'
 import { ReadManyPersonRequest } from '../../read-many/read-many-person.request'
 import { InactivePersonEvent } from './inactive-person-event'
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 
 @Injectable()
 export class InactivePersonHandler extends EventHandler<InactivePersonEvent> {
@@ -12,7 +13,7 @@ export class InactivePersonHandler extends EventHandler<InactivePersonEvent> {
 
   async handleEvent(): Promise<void> {
     const result = await this.repository.readMany(
-      new ReadManyPersonRequest({ active: true }),
+      new ReadManyPersonDto({ active: true }),
     )
 
     for (const person of result.items) {

@@ -1,4 +1,4 @@
-import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-person.request'
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import { Person } from '@/domain/entities/person/person'
 import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { CreatedRegistreResponseBase } from '@koalarx/nest/core/controllers/created-registre-response.base'
@@ -25,15 +25,19 @@ export class PersonRepository
     })
   }
 
-  async save(person: Person): Promise<CreatedRegistreResponseBase<number>> {
-    return this.saveChanges(person)
+  create(person: Person): Promise<CreatedRegistreResponseBase<number>> {
+    return this.insert(person)
+  }
+
+  update(person: Person): Promise<void> {
+    return this.edit(person)
   }
 
   read(id: number): Promise<Person | null> {
     return this.findById(id)
   }
 
-  readMany(query: ReadManyPersonRequest): Promise<ListResponseBase<Person>> {
+  readMany(query: ReadManyPersonDto): Promise<ListResponseBase<Person>> {
     return this.findManyAndCount<Prisma.PersonWhereInput>(
       {
         name: {
@@ -46,6 +50,6 @@ export class PersonRepository
   }
 
   delete(id: number): Promise<void> {
-    return super.delete(id)
+    return this.remove<Prisma.PersonWhereUniqueInput>({ id })
   }
 }

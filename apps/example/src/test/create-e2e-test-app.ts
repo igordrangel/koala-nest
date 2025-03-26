@@ -1,4 +1,4 @@
-import { AppModule } from '@/infra/app.module'
+import { AppModule } from '@/host/app.module'
 import { DbTransactionContext } from '@/infra/database/db-transaction-context'
 import { KoalaAppTest } from '@koalarx/nest/test/koala-app-test'
 import { Test } from '@nestjs/testing'

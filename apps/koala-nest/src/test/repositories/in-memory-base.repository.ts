@@ -1,10 +1,11 @@
+import { QUERY_FILTER_PARAMS } from '@koalarx/nest/core/constants/query-params';
+import { PaginationDto } from '@koalarx/nest/core/dtos/pagination.dto';
 import { klArray } from '@koalarx/utils/operators/array';
+import { randomUUID } from 'node:crypto';
 import { CreatedRegistreResponseBase } from '../../core/controllers/created-registre-response.base';
 import { ListResponseBase } from '../../core/controllers/list-response.base';
 import { EntityBase } from '../../core/database/entity.base';
-import { PaginationParams, QueryFilterParams } from '../../core/models/pagination-params';
 import { IComparableId } from '../../core/utils/interfaces/icomparable';
-import { randomUUID } from 'node:crypto';
 
 export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
   protected items: TClass[] = []
@@ -17,12 +18,12 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
     return this.items.find((item) => item._id === id) ?? null
   }
 
-  protected async findMany<T extends PaginationParams>(
+  protected async findMany<T extends PaginationDto>(
     query: T,
     predicate?: (value: TClass, index: number, array: TClass[]) => unknown,
   ) {
-    const page = query.page ?? QueryFilterParams.page
-    const limit = query.limit ?? QueryFilterParams.limit
+    const page = query.page ?? QUERY_FILTER_PARAMS.page
+    const limit = query.limit ?? QUERY_FILTER_PARAMS.limit
 
     return klArray(predicate ? this.items.filter(predicate) : this.items)
       .orderBy(query.orderBy ?? '', query.direction === 'desc')
@@ -30,7 +31,7 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
       .slice(page * limit, (page + 1) * limit)
   }
 
-  protected async findManyAndCount<T extends PaginationParams>(
+  protected async findManyAndCount<T extends PaginationDto>(
     query: T,
     predicate?: (value: TClass, index: number, array: TClass[]) => unknown,
   ): Promise<ListResponseBase<TClass>> {
@@ -42,13 +43,7 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
     }
   }
 
-  protected async saveChanges(item: TClass): Promise<CreatedRegistreResponseBase<any>> {
-    const itemIndex = this.items.findIndex((itemDB) => itemDB.equals(item))
-
-    if (itemIndex > -1) {
-      this.items[itemIndex] = item
-    }
-
+  protected async insert(item: TClass): Promise<CreatedRegistreResponseBase<any>> {
     const id = this.typeId === 'number'
       ? this.getNewId()
       : randomUUID()
@@ -58,6 +53,15 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
     this.items.push(item)
 
     return { id: item._id }
+  }
+
+  protected async edit(item: TClass, updateWhere?: (item: TClass) => boolean) {
+    const predicate = updateWhere ?? ((itemDB) => itemDB.equals(item))
+    const itemIndex = this.items.findIndex(predicate)
+
+    if (itemIndex > -1) {
+      this.items[itemIndex] = item
+    }
   }
 
   protected async remove(

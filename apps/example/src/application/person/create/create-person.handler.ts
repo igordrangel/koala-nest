@@ -32,7 +32,7 @@ export class CreatePersonHandler extends RequestHandlerBase<
       Person,
     )
 
-    const result = await this.repository.save(person)
+    const result = await this.repository.create(person)
 
     return ok({ id: result.id })
   }
