@@ -7,10 +7,7 @@ import { CronJob, CronJobResponse } from './cron-job'
 
 export class CronJobTest extends CronJob {
   constructor() {
-    super(
-      new FakeRedLockService(),
-      new FakeLoggingService()
-    )
+    super(new FakeRedLockService(), new FakeLoggingService())
   }
 
   static async isCalled(): Promise<CronJobResponse> {

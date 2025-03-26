@@ -37,13 +37,13 @@ export class AutoMappingService {
           const listToArray =
             propSource.type === List.name &&
             targetProp.type === Array.name &&
-            value instanceof List;        
+            value instanceof List
 
           const arrayToList =
             propSource.type === Array.name &&
             targetProp.type === List.name &&
             value instanceof Array &&
-            !!compositionType;
+            !!compositionType
 
           let mappedValue = value
 
@@ -55,6 +55,13 @@ export class AutoMappingService {
               compositionType,
               compositionAction === 'onlySet',
             )
+          } else {
+            const propSourceInstance = this._contextList.getSourceByName(
+              propSource.type,
+            )
+            if (propSourceInstance) {
+              mappedValue = this.mapNestedProp(value, propSourceInstance)
+            }
           }
 
           mappedTarget[targetProp.name] = mappedValue
@@ -84,19 +91,15 @@ export class AutoMappingService {
   }
 
   private mapListToArray(value: List<any>) {
-    return value
-      .toArray()
-      .map(
-        (item) => {
-          const entityOnList = value.entityType?.prototype.constructor
+    return value.toArray().map((item) => {
+      const entityOnList = value.entityType?.prototype.constructor
 
-          if (entityOnList) {
-            return this.mapNestedProp(item, entityOnList) ?? {}
-          }
-          
-          return {}
-        },
-      )
+      if (entityOnList) {
+        return this.mapNestedProp(item, entityOnList) ?? {}
+      }
+
+      return {}
+    })
   }
 
   private mapArrayToList(

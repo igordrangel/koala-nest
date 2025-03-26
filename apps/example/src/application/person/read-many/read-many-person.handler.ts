@@ -33,7 +33,7 @@ export class ReadManyPersonHandler extends RequestHandlerBase<
       this.mapper.map(
         new ReadManyPersonValidator(query).validate(),
         ReadManyPersonRequest,
-        ReadManyPersonDto
+        ReadManyPersonDto,
       ),
     )
 
@@ -41,7 +41,7 @@ export class ReadManyPersonHandler extends RequestHandlerBase<
       ...listOfPerson,
       items: listOfPerson.items.map((person) =>
         this.mapper.map(person, Person, ReadPersonResponse),
-      )
+      ),
     })
   }
 }

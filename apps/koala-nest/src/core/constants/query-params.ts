@@ -1,4 +1,4 @@
-import { QueryDirectionType } from "..";
+import { QueryDirectionType } from '..'
 
 export const QUERY_FILTER_PARAMS = {
   direction: 'asc' as QueryDirectionType,

@@ -1,7 +1,7 @@
-import { createUnitTestApp } from "@/test/create-unit-test-app"
-import { createPersonRequestMockup } from "@/test/mockup/person/create-person-request.mockup"
-import { CreatePersonHandler } from "../create/create-person.handler"
-import { ReadPersonHandler } from "./read-person.handler"
+import { createUnitTestApp } from '@/test/create-unit-test-app'
+import { createPersonRequestMockup } from '@/test/mockup/person/create-person-request.mockup'
+import { CreatePersonHandler } from '../create/create-person.handler'
+import { ReadPersonHandler } from './read-person.handler'
 
 describe('ReadPersonHandler', () => {
   const app = createUnitTestApp()
@@ -11,7 +11,7 @@ describe('ReadPersonHandler', () => {
     const createResult = await app
       .get(CreatePersonHandler)
       .handle(createPersonRequestMockup)
-    
+
     expect(createResult.isOk()).toBeTruthy()
 
     if (createResult.isOk()) {
@@ -22,7 +22,7 @@ describe('ReadPersonHandler', () => {
       expect(result.value).toEqual({
         ...person,
         id: createResult.value.id,
-        status: 'inactive'
+        status: 'inactive',
       })
     }
   })

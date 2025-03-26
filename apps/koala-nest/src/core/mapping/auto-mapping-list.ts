@@ -40,6 +40,17 @@ export class AutoMappingList {
     }
   }
 
+  static getSourceByName(sourceName: string) {
+    return this._mappingProfileList.find((mp) => mp.source.name === sourceName)
+      ?.source
+  }
+
+  static getPropDefinitions(source: Type<any>, propName: string) {
+    return this._mappedPropList
+      .find((mp) => mp.source === source)
+      ?.props.find((prop) => prop.name === propName)
+  }
+
   static getTargets(source: Type<any>) {
     return this._mappingProfileList
       .filter((mp) => mp.source === source)

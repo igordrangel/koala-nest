@@ -1,6 +1,6 @@
-import { createUnitTestApp } from "@/test/create-unit-test-app"
-import { createPersonRequestMockup } from "@/test/mockup/person/create-person-request.mockup"
-import { CreatePersonHandler } from "./create-person.handler"
+import { createUnitTestApp } from '@/test/create-unit-test-app'
+import { createPersonRequestMockup } from '@/test/mockup/person/create-person-request.mockup'
+import { CreatePersonHandler } from './create-person.handler'
 
 describe('CreatePersonHandler', () => {
   const app = createUnitTestApp()
@@ -10,12 +10,12 @@ describe('CreatePersonHandler', () => {
     const request = createPersonRequestMockup
 
     const result = await handler.handle(request)
-    
+
     expect(result.isOk()).toBeTruthy()
 
     if (result.isOk()) {
       expect(result.value).toEqual({
-        id: expect.any(Number)
+        id: expect.any(Number),
       })
     }
   })

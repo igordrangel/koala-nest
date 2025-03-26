@@ -11,6 +11,9 @@ export class CreatePersonValidator extends RequestValidatorBase<CreatePersonRequ
           phone: z.string(),
         }),
       ),
+      address: z.object({
+        address: z.string(),
+      }),
     })
   }
 }

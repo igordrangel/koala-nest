@@ -35,7 +35,7 @@ describe('event queue', () => {
     expect(jobs.eventQueue).toHaveLength(1)
 
     EventQueue.dispatchEventsForAggregate(jobs._id)
-    
+
     expect(callbackSpy).toHaveBeenCalled()
     expect(jobs.eventQueue).toHaveLength(0)
   })

@@ -15,4 +15,11 @@ export class DbTransactionContext
   get personPhone(): Prisma.PersonPhoneDelegate<DefaultArgs> {
     return this.transactionalClient.personPhone
   }
+
+  get personAddress(): Prisma.PersonAddressDelegate<
+    DefaultArgs,
+    Prisma.PrismaClientOptions
+  > {
+    return this.transactionalClient.personAddress
+  }
 }

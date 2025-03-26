@@ -1,9 +1,8 @@
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import { EventHandler } from '@koalarx/nest/core/backgroud-services/event-service/event-handler'
 import { Injectable } from '@nestjs/common'
-import { ReadManyPersonRequest } from '../../read-many/read-many-person.request'
 import { InactivePersonEvent } from './inactive-person-event'
-import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 
 @Injectable()
 export class InactivePersonHandler extends EventHandler<InactivePersonEvent> {
@@ -18,7 +17,7 @@ export class InactivePersonHandler extends EventHandler<InactivePersonEvent> {
 
     for (const person of result.items) {
       person.active = false
-      await this.repository.save(person)
+      await this.repository.update(person)
     }
 
     console.log(

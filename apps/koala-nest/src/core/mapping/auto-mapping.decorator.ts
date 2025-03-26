@@ -30,13 +30,16 @@ export function AutoMap<T>(config?: AutoMapConfig<T>) {
           target,
           propertyKey,
         )
-        
+
         if (customMetadata !== Array) {
           customMetadata = Array
         }
       }
 
-      if (!Reflect.getMetadata('design:type', target, propertyKey) || !isArray) {
+      if (
+        !Reflect.getMetadata('design:type', target, propertyKey) ||
+        !isArray
+      ) {
         Reflect.defineMetadata(
           'design:type',
           customMetadata,

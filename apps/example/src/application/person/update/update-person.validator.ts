@@ -12,6 +12,10 @@ export class UpdatePersonValidator extends RequestValidatorBase<UpdatePersonRequ
           phone: z.string(),
         }),
       ),
+      address: z.object({
+        id: z.number(),
+        address: z.string(),
+      }),
     })
   }
 }

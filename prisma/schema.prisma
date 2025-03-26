@@ -10,11 +10,13 @@ datasource db {
 }
 
 model Person {
-  id     Int     @id @default(autoincrement())
-  name   String
-  active Boolean @default(true)
+  id              Int     @id @default(autoincrement())
+  name            String
+  active          Boolean @default(true)
+  personAddressId Int     @map("person_address_id")
 
-  phones PersonPhone[]
+  phones  PersonPhone[]
+  address PersonAddress @relation(fields: [personAddressId], references: [id])
 
   @@map("person")
 }
@@ -27,4 +29,13 @@ model PersonPhone {
   person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@map("person_phone")
+}
+
+model PersonAddress {
+  id      Int    @id @default(autoincrement())
+  address String
+
+  people Person[]
+
+  @@map("person_address")
 }
