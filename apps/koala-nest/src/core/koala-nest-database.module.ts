@@ -5,13 +5,14 @@ import { PrismaService } from './database/prisma.service'
 
 export const PRISMA_TOKEN = 'PRISMA_SERVICE_TOKEN'
 
-export interface KoalaNestDatabaseRepositoryConfig {
+export interface KoalaNestDatabaseProviderConfig<T> {
   interface: InjectionToken
-  class: Type<RepositoryBase<any>>
+  class: Type<T>
 }
 
 interface KoalaNestDatabaseModuleConfig {
-  repositories: KoalaNestDatabaseRepositoryConfig[]
+  repositories: KoalaNestDatabaseProviderConfig<RepositoryBase<any>>[]
+  services: KoalaNestDatabaseProviderConfig<any>[]
 }
 
 @Module({})
@@ -25,6 +26,14 @@ export class KoalaNestDatabaseModule {
         useClass: repository.class,
       })) ?? []
 
+    const servicesToExport =
+      config.services?.map((service) => service.interface) ?? []
+    const servicesToProvide =
+      config.services?.map((service) => ({
+        provide: service.interface,
+        useClass: service.class,
+      })) ?? []
+
     return {
       module: KoalaNestDatabaseModule,
       providers: [
@@ -33,9 +42,10 @@ export class KoalaNestDatabaseModule {
           useClass: PrismaService,
         },
         ...repositoriesToProvide,
+        ...servicesToProvide,
         EnvService,
       ],
-      exports: [PRISMA_TOKEN, ...repositoriesToExport],
+      exports: [PRISMA_TOKEN, ...repositoriesToExport, ...servicesToExport],
     }
   }
 }
