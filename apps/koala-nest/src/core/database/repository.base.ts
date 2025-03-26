@@ -163,6 +163,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
 
     Object.keys(entity)
       .filter((key) => key !== 'id' && key !== '_id')
+      .filter((key) => !(entity[key] instanceof Function))
       .forEach((key) => {
         if (entity[key] instanceof List) {
           if (entity[key].toArray('added').length > 0) {
