@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common'
 import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
 import * as expressBasicAuth from 'express-basic-auth'
-import { CronJob } from '../core/backgroud-services/cron-service/cron-job'
-import { EventHandler } from '../core/backgroud-services/event-service/event-handler'
+import { CronJobHandler } from './backgroud-services/cron-service/cron-job.handler.base'
+import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
@@ -17,21 +18,46 @@ import { PrismaTransactionalClient } from './database/prisma-transactional-clien
 import { KoalaGlobalVars } from './koala-global-vars'
 import { EnvConfig } from './utils/env.config'
 
+interface ApiDocAuthorizationConfig {
+  name: string
+  config: SecuritySchemeObject
+}
+
+interface ApiDocServerConfig {
+  url: string
+  description: string
+}
+
+type ScalarTheme =
+  | 'alternate'
+  | 'default'
+  | 'moon'
+  | 'purple'
+  | 'solarized'
+  | 'bluePlanet'
+  | 'saturn'
+  | 'kepler'
+  | 'mars'
+  | 'deepSpace'
+  | 'none'
+
 interface ApiDocConfig {
   endpoint: string
   title: string
   ui?: 'swagger' | 'scalar'
+  theme?: ScalarTheme
   description?: string
   externalDoc?: {
     message: string
     url: string
   }
+  servers?: ApiDocServerConfig[]
   version: string
-  withAuthorization?: boolean
+  authorizations?: boolean | ApiDocAuthorizationConfig[]
 }
 
-type CronJobClass = string | symbol | Function | Type<CronJob>
-type EventJobClass = string | symbol | Function | Type<EventHandler<any>>
+type CronJobClass = string | symbol | Function | Type<CronJobHandler>
+type EventJobClass = string | symbol | Function | Type<EventHandlerBase<any>>
 
 export class KoalaApp {
   private _globalExceptionFilter: BaseExceptionFilter
@@ -109,18 +135,30 @@ export class KoalaApp {
       .setVersion(config.version)
 
     if (config.description) {
-      documentBuilder.setDescription(config.description)
+      if (config.externalDoc) {
+        documentBuilder.setDescription(
+          `${config.description}\n\n[${config.externalDoc.message}](${config.externalDoc.url})`,
+        )
+      } else {
+        documentBuilder.setDescription(config.description)
+      }
     }
 
-    if (config.externalDoc) {
-      documentBuilder.setExternalDoc(
-        config.externalDoc.message,
-        config.externalDoc.url,
-      )
+    if (config.authorizations) {
+      if (Array.isArray(config.authorizations)) {
+        for (const auth of config.authorizations) {
+          documentBuilder.addBearerAuth(auth.config, auth.name)
+          documentBuilder.addSecurityRequirements(auth.name)
+        }
+      } else {
+        documentBuilder.addBearerAuth()
+      }
     }
 
-    if (config.withAuthorization) {
-      documentBuilder.addBearerAuth()
+    if (config.servers) {
+      for (const server of config.servers) {
+        documentBuilder.addServer(server.url, server.description)
+      }
     }
 
     const document = SwaggerModule.createDocument(
@@ -142,7 +180,49 @@ export class KoalaApp {
     if (config.ui === 'scalar') {
       this.app.use(
         swaggerEndpoint,
-        apiReference({ spec: { content: document } }),
+        apiReference({
+          spec: {
+            content: document,
+          },
+          hideModels: true,
+          hideDownloadButton: true,
+          hideClientButton: true,
+          theme: config.theme ?? 'default',
+          hiddenClients: [
+            'libcurl',
+            'clj_http',
+            'restsharp',
+            'native',
+            'http1.1',
+            'asynchttp',
+            'nethttp',
+            'okhttp',
+            'unirest',
+            'xhr',
+            'okhttp',
+            'native',
+            'request',
+            'unirest',
+            'nsurlsession',
+            'cohttp',
+            'guzzle',
+            'http1',
+            'http2',
+            'webrequest',
+            'restmethod',
+            'requests',
+            'httr',
+            'native',
+            'httpie',
+            'wget',
+            'nsurlsession',
+            'undici',
+          ],
+          metaData: {
+            title: config.title,
+            description: config.description,
+          },
+        }),
       )
     }
 

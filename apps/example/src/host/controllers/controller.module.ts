@@ -1,5 +1,5 @@
 import { MappingProfile } from '@/application/mapping/mapping.profile'
-import { RepositoriesModule } from '@/infra/database/repositories/repositories.module'
+import { InfraModule } from '@/infra/infra.module'
 import { KoalaNestHttpModule } from '@koalarx/nest/core/koala-nest-http.module'
 import { Module } from '@nestjs/common'
 
@@ -9,8 +9,8 @@ import { Module } from '@nestjs/common'
       automapperProfile: MappingProfile,
       middlewares: [],
     }),
-    RepositoriesModule,
+    InfraModule,
   ],
-  exports: [KoalaNestHttpModule, RepositoriesModule],
+  exports: [KoalaNestHttpModule, InfraModule],
 })
 export class ControllerModule {}

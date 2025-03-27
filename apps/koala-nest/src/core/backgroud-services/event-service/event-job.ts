@@ -1,6 +1,6 @@
 import { Type } from '@nestjs/common'
 import { EventClass } from './event-class'
-import { EventHandler } from './event-handler'
+import { EventHandlerBase } from './event-handler.base'
 import { EventQueue } from './event-queue'
 import { randomUUID } from 'node:crypto'
 
@@ -11,7 +11,7 @@ export abstract class EventJob<TEntity> {
 
   constructor() {}
 
-  abstract defineHandlers(): Array<Type<EventHandler<any>>>
+  abstract defineHandlers(): Array<Type<EventHandlerBase<any>>>
 
   get eventQueue(): EventQueue[] {
     return this._eventQueue

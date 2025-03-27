@@ -1,12 +1,12 @@
 import { ReadPersonHandler } from '@/application/person/read/read-person.handler'
 import { ReadPersonResponse } from '@/application/person/read/read-person.response'
 import { IController } from '@koalarx/nest/core/controllers/base.controller'
-import { Controller, Get, Param } from '@nestjs/common'
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { Controller } from '@koalarx/nest/core/controllers/controller.decorator'
+import { Get, Param } from '@nestjs/common'
+import { ApiOkResponse } from '@nestjs/swagger'
 import { PERSON_ROUTER_CONFIG } from './router.config'
 
-@ApiTags(PERSON_ROUTER_CONFIG.tag)
-@Controller(PERSON_ROUTER_CONFIG.group)
+@Controller(PERSON_ROUTER_CONFIG)
 export class ReadPersonController
   implements IController<null, ReadPersonResponse, string>
 {

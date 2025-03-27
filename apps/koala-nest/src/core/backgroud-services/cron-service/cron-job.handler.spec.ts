@@ -3,9 +3,9 @@ import { vi } from 'vitest'
 import { FakeLoggingService } from '../../../test/services/fake-logging.service'
 import { FakeRedLockService } from '../../../test/services/fake-red-lock.service'
 import { ok } from '../../request-overflow/request-result'
-import { CronJob, CronJobResponse } from './cron-job'
+import { CronJobHandler, CronJobResponse } from './cron-job.handler.base'
 
-export class CronJobTest extends CronJob {
+export class CronJobTest extends CronJobHandler {
   constructor() {
     super(new FakeRedLockService(), new FakeLoggingService())
   }

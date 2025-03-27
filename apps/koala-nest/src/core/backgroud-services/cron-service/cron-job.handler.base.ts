@@ -6,7 +6,7 @@ import { KoalaGlobalVars } from '../../koala-global-vars'
 
 export type CronJobResponse = RequestResult<Error, null>
 
-export abstract class CronJob {
+export abstract class CronJobHandler {
   private readonly _timeout: number
 
   constructor(

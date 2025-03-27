@@ -2,12 +2,12 @@ import { ReadManyPersonHandler } from '@/application/person/read-many/read-many-
 import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-person.request'
 import { ReadManyPersonResponse } from '@/application/person/read-many/read-many-person.response'
 import { IController } from '@koalarx/nest/core/controllers/base.controller'
-import { Controller, Get, Query } from '@nestjs/common'
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger'
+import { Controller } from '@koalarx/nest/core/controllers/controller.decorator'
+import { Get, Query } from '@nestjs/common'
+import { ApiOkResponse } from '@nestjs/swagger'
 import { PERSON_ROUTER_CONFIG } from './router.config'
 
-@ApiTags(PERSON_ROUTER_CONFIG.tag)
-@Controller(PERSON_ROUTER_CONFIG.group)
+@Controller(PERSON_ROUTER_CONFIG)
 export class ReadManyPersonController
   implements IController<ReadManyPersonRequest, ReadManyPersonResponse>
 {
