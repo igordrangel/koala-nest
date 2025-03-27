@@ -1,6 +1,6 @@
 import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import {
-  CronJobHandler,
+  CronJobHandlerBase,
   CronJobResponse,
 } from '@koalarx/nest/core/backgroud-services/cron-service/cron-job.handler.base'
 import { EventQueue } from '@koalarx/nest/core/backgroud-services/event-service/event-queue'
@@ -13,7 +13,7 @@ import { InactivePersonEvent } from '../events/inactive-person/inactive-person-e
 import { PersonEventJob } from '../events/person-event.job'
 
 @Injectable()
-export class CreatePersonJob extends CronJobHandler {
+export class CreatePersonJob extends CronJobHandlerBase {
   constructor(
     redlockService: IRedLockService,
     loggingService: ILoggingService,
