@@ -1,6 +1,6 @@
 import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import {
-  CronJobHandler,
+  CronJobHandlerBase,
   CronJobResponse,
 } from '@koalarx/nest/core/backgroud-services/cron-service/cron-job.handler.base'
 import { ok } from '@koalarx/nest/core/request-overflow/request-result'
@@ -11,7 +11,7 @@ import { DeletePersonHandler } from '../delete/delete-person.handler'
 import { ReadManyPersonHandler } from '../read-many/read-many-person.handler'
 
 @Injectable()
-export class DeleteInactiveJob extends CronJobHandler {
+export class DeleteInactiveJob extends CronJobHandlerBase {
   constructor(
     redlockService: IRedLockService,
     loggingService: ILoggingService,

@@ -8,7 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
 import * as expressBasicAuth from 'express-basic-auth'
-import { CronJobHandler } from './backgroud-services/cron-service/cron-job.handler.base'
+import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.handler.base'
 import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
@@ -56,7 +56,7 @@ interface ApiDocConfig {
   authorizations?: boolean | ApiDocAuthorizationConfig[]
 }
 
-type CronJobClass = string | symbol | Function | Type<CronJobHandler>
+type CronJobClass = string | symbol | Function | Type<CronJobHandlerBase>
 type EventJobClass = string | symbol | Function | Type<EventHandlerBase<any>>
 
 export class KoalaApp {

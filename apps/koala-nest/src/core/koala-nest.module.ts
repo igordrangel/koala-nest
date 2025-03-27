@@ -10,14 +10,14 @@ import { IRedisService } from '../services/redis/iredis.service'
 import { RedisService } from '../services/redis/redis.service'
 import { IRedLockService } from '../services/redlock/ired-lock.service'
 import { RedLockService } from '../services/redlock/red-lock.service'
-import { CronJobHandler } from './backgroud-services/cron-service/cron-job.handler.base'
+import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.handler.base'
 import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 
 interface KoalaNestModuleConfig {
   logging?: Provider<ILoggingService>
   env?: ZodType
   constrollers?: Type<any>[]
-  cronJobs?: Type<CronJobHandler>[]
+  cronJobs?: Type<CronJobHandlerBase>[]
   eventJobs?: Type<EventHandlerBase<any>>[]
 }
 
