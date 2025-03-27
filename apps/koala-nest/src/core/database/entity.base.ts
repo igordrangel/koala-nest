@@ -2,12 +2,16 @@ import { Type } from '@nestjs/common'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
+import { Overwrite } from '..'
 
-export type EntityProps<T extends IComparable<T>> = Omit<
-  {
-    [K in keyof T as T[K] extends Function ? never : K]: T[K]
-  },
-  '_id'
+export type EntityProps<T extends IComparable<T>> = Overwrite<
+  Omit<
+    {
+      [K in keyof T as T[K] extends Function ? never : K]: T[K]
+    },
+    '_id'
+  >,
+  { id?: T extends { id: infer U } ? U : never }
 >
 
 export abstract class EntityBase<T extends IComparable<T>>
