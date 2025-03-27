@@ -5,6 +5,7 @@ import { DbTransactionContext } from '@/infra/database/db-transaction-context'
 import { KoalaApp } from '@koalarx/nest/core/koala-app'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
+import { EnvService } from '@koalarx/nest/env/env.service'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule).then((app) =>
@@ -25,6 +26,9 @@ async function bootstrap() {
       .build(),
   )
 
-  await app.listen(process.env.PORT ?? 3000)
+  const envService = app.get(EnvService)
+  const port = envService.get('PORT') ?? 3000
+
+  await app.listen(port)
 }
 bootstrap()

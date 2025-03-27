@@ -1,4 +1,4 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common'
+import { DynamicModule, Module, Provider, Type } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ZodType } from 'zod'
 import { envSchema } from '../env/env'
@@ -10,15 +10,24 @@ import { IRedisService } from '../services/redis/iredis.service'
 import { RedisService } from '../services/redis/redis.service'
 import { IRedLockService } from '../services/redlock/ired-lock.service'
 import { RedLockService } from '../services/redlock/red-lock.service'
+import { CronJobHandler } from './backgroud-services/cron-service/cron-job.handler.base'
+import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 
 interface KoalaNestModuleConfig {
   logging?: Provider<ILoggingService>
   env?: ZodType
+  constrollers?: Type<any>[]
+  cronJobs?: Type<CronJobHandler>[]
+  eventJobs?: Type<EventHandlerBase<any>>[]
 }
 
 @Module({})
 export class KoalaNestModule {
   static register(config?: KoalaNestModuleConfig): DynamicModule {
+    const controllers = config?.constrollers ?? []
+    const cronJobsProviders = config?.cronJobs ?? []
+    const eventJobsProviders = config?.eventJobs ?? []
+
     return {
       module: KoalaNestModule,
       imports: [
@@ -27,8 +36,11 @@ export class KoalaNestModule {
           isGlobal: true,
         }),
         EnvModule,
+        ...controllers,
       ],
       providers: [
+        ...cronJobsProviders,
+        ...eventJobsProviders,
         {
           provide: ILoggingService,
           useValue: config?.logging ?? LoggingService,
@@ -37,7 +49,14 @@ export class KoalaNestModule {
         { provide: IRedLockService, useClass: RedLockService },
         EnvService,
       ],
-      exports: [ILoggingService, IRedisService, IRedLockService],
+      exports: [
+        ...cronJobsProviders,
+        ...eventJobsProviders,
+        ILoggingService,
+        IRedisService,
+        IRedLockService,
+        EnvService,
+      ],
     }
   }
 }

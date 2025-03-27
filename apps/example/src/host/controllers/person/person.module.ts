@@ -27,5 +27,11 @@ import { UpdatePersonController } from './update-person.controller'
     UpdatePersonHandler,
     DeletePersonHandler,
   ],
+  exports: [
+    ControllerModule,
+    CreatePersonHandler,
+    ReadManyPersonHandler,
+    DeletePersonHandler,
+  ],
 })
 export class PersonModule {}

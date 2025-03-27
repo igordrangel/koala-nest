@@ -1,13 +1,13 @@
 import { Type } from '@nestjs/common'
 import { vi } from 'vitest'
 import { EventClass } from './event-class'
-import { EventHandler } from './event-handler'
+import { EventHandlerBase } from './event-handler.base'
 import { EventJob } from './event-job'
 import { EventQueue } from './event-queue'
 
 class CustomEvent extends EventClass {}
 
-class CustomEventHandler extends EventHandler<CustomEvent> {
+class CustomEventHandler extends EventHandlerBase<CustomEvent> {
   static async isCalled(): Promise<null> {
     return null
   }
@@ -18,7 +18,7 @@ class CustomEventHandler extends EventHandler<CustomEvent> {
 }
 
 class CustomEventJob extends EventJob<any> {
-  defineHandlers(): Array<Type<EventHandler<any>>> {
+  defineHandlers(): Array<Type<EventHandlerBase<any>>> {
     return [CustomEventHandler]
   }
 }

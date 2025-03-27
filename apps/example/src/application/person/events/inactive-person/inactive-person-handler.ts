@@ -1,11 +1,11 @@
 import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import { IPersonRepository } from '@/domain/repositories/iperson.repository'
-import { EventHandler } from '@koalarx/nest/core/backgroud-services/event-service/event-handler'
+import { EventHandlerBase } from '@koalarx/nest/core/backgroud-services/event-service/event-handler.base'
 import { Injectable } from '@nestjs/common'
 import { InactivePersonEvent } from './inactive-person-event'
 
 @Injectable()
-export class InactivePersonHandler extends EventHandler<InactivePersonEvent> {
+export class InactivePersonHandler extends EventHandlerBase<InactivePersonEvent> {
   constructor(private readonly repository: IPersonRepository) {
     super()
   }

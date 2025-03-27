@@ -2,12 +2,12 @@ import { CreatePersonHandler } from '@/application/person/create/create-person.h
 import { CreatePersonRequest } from '@/application/person/create/create-person.request'
 import { CreatePersonResponse } from '@/application/person/create/create-person.response'
 import { IController } from '@koalarx/nest/core/controllers/base.controller'
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger'
+import { Controller } from '@koalarx/nest/core/controllers/controller.decorator'
+import { Body, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { ApiCreatedResponse } from '@nestjs/swagger'
 import { PERSON_ROUTER_CONFIG } from './router.config'
 
-@ApiTags(PERSON_ROUTER_CONFIG.tag)
-@Controller(PERSON_ROUTER_CONFIG.group)
+@Controller(PERSON_ROUTER_CONFIG)
 export class CreatePersonController
   implements IController<CreatePersonRequest, CreatePersonResponse>
 {

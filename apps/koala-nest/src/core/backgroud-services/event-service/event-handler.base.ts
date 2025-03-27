@@ -1,7 +1,7 @@
 import { EventClass } from './event-class'
 import { EventQueue } from './event-queue'
 
-export abstract class EventHandler<TEvent extends EventClass<any>> {
+export abstract class EventHandlerBase<TEvent extends EventClass<any>> {
   setupSubscriptions() {
     EventQueue.register(this.handleEvent.bind(this), this.constructor.name)
   }
