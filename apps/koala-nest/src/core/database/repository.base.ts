@@ -140,7 +140,10 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     )
   }
 
-  protected async remove<TWhere = any>(where: TWhere) {
+  protected async remove<TWhere = any>(
+    where: TWhere,
+    externalServices?: Promise<any>,
+  ) {
     const entity = await this.findUnique(where)
 
     const relationEntity: EntityBase<TEntity>[] = []
@@ -152,13 +155,20 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     })
 
     return this.withTransaction((client) =>
-      this.context(client)
-        .delete({ where })
-        .then((response) =>
-          Promise.all(
-            relationEntity.map((entity) => this.orphanRemoval(client, entity)),
-          ).then(() => response),
-        ),
+      (externalServices
+        ? externalServices.then(() => client)
+        : Promise.resolve(client)
+      ).then((client) =>
+        this.context(client)
+          .delete({ where })
+          .then((response) =>
+            Promise.all(
+              relationEntity.map((entity) =>
+                this.orphanRemoval(client, entity),
+              ),
+            ).then(() => response),
+          ),
+      ),
     )
   }
 
