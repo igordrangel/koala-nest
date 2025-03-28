@@ -2,19 +2,19 @@ import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 import { ApiProperty } from '@nestjs/swagger'
 
 export class CreatePersonAddressRequest {
-  @ApiProperty()
+  @ApiProperty({ example: 'Street 1' })
   @AutoMap()
   address: string
 }
 
 export class CreatePersonPhoneRequest {
-  @ApiProperty()
+  @ApiProperty({ example: '22999999999' })
   @AutoMap()
   phone: string
 }
 
 export class CreatePersonRequest {
-  @ApiProperty()
+  @ApiProperty({ example: 'John Doe' })
   @AutoMap()
   name: string
 
