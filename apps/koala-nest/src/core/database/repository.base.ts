@@ -66,6 +66,21 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       })
   }
 
+  protected async findUnique<T>(where: T) {
+    return this.context()
+      .findUnique({
+        include: this._include,
+        where,
+      })
+      .then((response: TEntity) => {
+        if (response) {
+          return this.createEntity(response)
+        }
+
+        return null
+      })
+  }
+
   protected async findMany<T>(where: T, pagination?: PaginationDto) {
     return this.context()
       .findMany(this.findManySchema(where, pagination))
@@ -126,7 +141,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   }
 
   protected async remove<TWhere = any>(where: TWhere) {
-    const entity = await this.findFirst(where)
+    const entity = await this.findUnique(where)
 
     const relationEntity: EntityBase<TEntity>[] = []
 
