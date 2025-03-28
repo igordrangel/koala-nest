@@ -4,7 +4,7 @@ export function instanciateClassWithDependenciesInjection(
   app: INestApplication,
   Target: any,
 ) {
-  const dependencies = Reflect.getMetadata('design:paramtypes', Target)
+  const dependencies = Reflect.getMetadata('design:paramtypes', Target) ?? []
   const injections = dependencies.map((dependency: any) => {
     return app.get(dependency)
   })
