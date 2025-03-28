@@ -17,7 +17,7 @@ import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.h
 import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 import { PrismaTransactionalClient } from './database/prisma-transactional-client'
 import { KoalaGlobalVars } from './koala-global-vars'
-import { instanciateClassWithDependenciesInjection } from './utils/dependency-injection'
+import { instanciateClassWithDependenciesInjection } from './utils/instanciate-class-with-dependencies-injection'
 import { EnvConfig } from './utils/env.config'
 
 interface ApiDocAuthorizationConfig {
@@ -80,6 +80,7 @@ export class KoalaApp {
         loggingService,
       )
     }
+
     this._globalExceptionFilter = new GlobalExceptionsFilter(
       httpAdapter,
       loggingService,
