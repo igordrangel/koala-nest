@@ -6,7 +6,7 @@ export class ReadPersonAddressResponse {
   @AutoMap()
   id: number
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Street 1' })
   @AutoMap()
   address: string
 }
@@ -16,7 +16,7 @@ export class ReadPersonPhoneResponse {
   @AutoMap()
   id: number
 
-  @ApiProperty()
+  @ApiProperty({ example: '22999999999' })
   @AutoMap()
   phone: string
 }
@@ -26,7 +26,7 @@ export class ReadPersonResponse {
   @AutoMap()
   id: number
 
-  @ApiProperty()
+  @ApiProperty({ example: 'John Doe' })
   @AutoMap()
   name: string
 
@@ -40,5 +40,5 @@ export class ReadPersonResponse {
 
   @ApiProperty()
   @AutoMap()
-  status: string
+  active: boolean
 }

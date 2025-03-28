@@ -22,6 +22,10 @@ export abstract class EntityBase<T extends IComparable<T>>
   automap(props?: EntityProps<T>) {
     if (props) {
       for (const key of Object.keys(props)) {
+        if (props[key] === undefined) {
+          continue
+        }
+
         const propDefinitions = AutoMappingList.getPropDefinitions(
           this.constructor.prototype.constructor,
           key,

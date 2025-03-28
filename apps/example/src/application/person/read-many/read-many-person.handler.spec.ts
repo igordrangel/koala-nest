@@ -35,7 +35,7 @@ describe('ReadManyPersonHandler', () => {
         {
           ...person,
           id: personId,
-          status: 'inactive',
+          active: false,
         },
       ],
       count: 1,
@@ -54,7 +54,7 @@ describe('ReadManyPersonHandler', () => {
         {
           ...person,
           id: personId,
-          status: 'inactive',
+          active: false,
         },
       ],
       count: 1,

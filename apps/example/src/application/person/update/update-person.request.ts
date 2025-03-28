@@ -6,7 +6,7 @@ export class UpdatePersonAddressRequest {
   @AutoMap()
   id: number
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Street 2' })
   @AutoMap()
   address: string
 }
@@ -16,17 +16,17 @@ export class UpdatePersonPhoneRequest {
   @AutoMap()
   id?: number
 
-  @ApiProperty()
+  @ApiProperty({ example: 22888888888 })
   @AutoMap()
   phone: string
 }
 
 export class UpdatePersonRequest {
-  @ApiProperty()
+  @ApiProperty({ example: 'Mark Willians' })
   @AutoMap()
   name: string
 
-  @ApiProperty()
+  @ApiProperty({ example: false })
   @AutoMap()
   active: boolean
 

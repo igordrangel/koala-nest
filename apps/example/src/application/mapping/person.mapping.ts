@@ -29,11 +29,7 @@ export class PersonMapping {
 
     createMap(PersonAddress, ReadPersonAddressResponse)
     createMap(PersonPhone, ReadPersonPhoneResponse)
-    createMap(
-      Person,
-      ReadPersonResponse,
-      forMember('status', (s) => (s.active === true ? 'active' : 'inactive')),
-    )
+    createMap(Person, ReadPersonResponse)
 
     createMap(ReadManyPersonRequest, ReadManyPersonDto)
 

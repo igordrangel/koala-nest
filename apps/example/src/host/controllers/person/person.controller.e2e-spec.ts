@@ -44,7 +44,7 @@ describe(`CRUD OF PERSON`, () => {
         id: 1,
         address: 'Streat 1',
       },
-      status: 'active',
+      active: true,
     })
   })
 
@@ -64,7 +64,7 @@ describe(`CRUD OF PERSON`, () => {
             id: 1,
             address: 'Streat 1',
           },
-          status: 'active',
+          active: true,
         },
       ],
       count: 1,
@@ -99,7 +99,7 @@ describe(`CRUD OF PERSON`, () => {
             id: 1,
             address: 'Streat 1',
           },
-          status: 'active',
+          active: true,
         },
       ],
       count: 1,
@@ -116,7 +116,7 @@ describe(`CRUD OF PERSON`, () => {
           id: 1,
           address: 'Streat 2',
         },
-        status: 'active',
+        active: true,
       })
 
     expect(updateResponse.statusCode).toBe(200)
@@ -133,7 +133,7 @@ describe(`CRUD OF PERSON`, () => {
         id: 1,
         address: 'Streat 2',
       },
-      status: 'active',
+      active: true,
     })
   })
 
