@@ -17,6 +17,7 @@ import { ZodErrorsFilter } from '../filters/zod-errors.filter'
 import { PrismaTransactionalClient } from './database/prisma-transactional-client'
 import { KoalaGlobalVars } from './koala-global-vars'
 import { EnvConfig } from './utils/env.config'
+import { ILoggingService } from '../services/logging/ilogging.service'
 
 interface ApiDocAuthorizationConfig {
   name: string
@@ -70,12 +71,17 @@ export class KoalaApp {
 
   constructor(private readonly app: INestApplication<any>) {
     const { httpAdapter } = app.get(HttpAdapterHost)
+    const loggingService = app.get(ILoggingService)
 
-    this._globalExceptionFilter = new GlobalExceptionsFilter(httpAdapter)
-    this._prismaValidationExceptionFilter =
-      new PrismaValidationExceptionFilter()
-    this._domainExceptionFilter = new DomainErrorsFilter()
-    this._zodExceptionFilter = new ZodErrorsFilter()
+    this._globalExceptionFilter = new GlobalExceptionsFilter(
+      httpAdapter,
+      loggingService,
+    )
+    this._prismaValidationExceptionFilter = new PrismaValidationExceptionFilter(
+      loggingService,
+    )
+    this._domainExceptionFilter = new DomainErrorsFilter(loggingService)
+    this._zodExceptionFilter = new ZodErrorsFilter(loggingService)
   }
 
   addCronJob(job: CronJobClass) {

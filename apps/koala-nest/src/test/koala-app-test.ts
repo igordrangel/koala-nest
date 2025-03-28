@@ -6,6 +6,7 @@ import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
 import { ZodErrorsFilter } from '../filters/zod-errors.filter'
+import { ILoggingService } from '../services/logging/ilogging.service'
 
 export class KoalaAppTest {
   private _globalExceptionFilter: BaseExceptionFilter
@@ -15,12 +16,17 @@ export class KoalaAppTest {
 
   constructor(private readonly app: INestApplication<any>) {
     const { httpAdapter } = app.get(HttpAdapterHost)
+    const loggingService = app.get(ILoggingService)
 
-    this._globalExceptionFilter = new GlobalExceptionsFilter(httpAdapter)
-    this._prismaValidationExceptionFilter =
-      new PrismaValidationExceptionFilter()
-    this._domainExceptionFilter = new DomainErrorsFilter()
-    this._zodExceptionFilter = new ZodErrorsFilter()
+    this._globalExceptionFilter = new GlobalExceptionsFilter(
+      httpAdapter,
+      loggingService,
+    )
+    this._prismaValidationExceptionFilter = new PrismaValidationExceptionFilter(
+      loggingService,
+    )
+    this._domainExceptionFilter = new DomainErrorsFilter(loggingService)
+    this._zodExceptionFilter = new ZodErrorsFilter(loggingService)
   }
 
   addCustomGlobalExceptionFilter(filter: BaseExceptionFilter) {
