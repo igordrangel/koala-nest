@@ -22,7 +22,7 @@ describe('ReadPersonHandler', () => {
       expect(result.value).toEqual({
         ...person,
         id: createResult.value.id,
-        status: 'inactive',
+        active: false,
       })
     }
   })

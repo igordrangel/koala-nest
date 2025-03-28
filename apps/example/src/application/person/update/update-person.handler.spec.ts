@@ -37,7 +37,7 @@ describe('UpdatePersonHandler', () => {
       expect(result.value).toEqual({
         ...person,
         id: createResult.value.id,
-        status: 'active',
+        active: true,
       })
     }
   })

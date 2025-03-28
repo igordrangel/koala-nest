@@ -10,6 +10,7 @@ export class PersonRepository
   implements IPersonRepository
 {
   create(person: Person): Promise<CreatedRegistreResponseBase<number>> {
+    person.active = false
     return this.insert(person)
   }
 
