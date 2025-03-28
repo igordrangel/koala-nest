@@ -10,7 +10,7 @@ import { PersonModule } from './controllers/person/person.module'
   imports: [
     KoalaNestModule.register({
       env,
-      constrollers: [PersonModule],
+      controllers: [PersonModule],
       cronJobs: [DeleteInactiveJob, CreatePersonJob],
       eventJobs: [InactivePersonHandler],
     }),
