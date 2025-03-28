@@ -8,16 +8,17 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
 import * as expressBasicAuth from 'express-basic-auth'
-import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.handler.base'
-import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
 import { ZodErrorsFilter } from '../filters/zod-errors.filter'
+import { ILoggingService } from '../services/logging/ilogging.service'
+import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.handler.base'
+import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 import { PrismaTransactionalClient } from './database/prisma-transactional-client'
 import { KoalaGlobalVars } from './koala-global-vars'
+import { instanciateClassWithDependenciesInjection } from './utils/dependency-injection'
 import { EnvConfig } from './utils/env.config'
-import { ILoggingService } from '../services/logging/ilogging.service'
 
 interface ApiDocAuthorizationConfig {
   name: string
@@ -70,9 +71,15 @@ export class KoalaApp {
   private _eventJobs: EventJobClass[] = []
 
   constructor(private readonly app: INestApplication<any>) {
-    const { httpAdapter } = app.get(HttpAdapterHost)
-    const loggingService = app.get(ILoggingService)
+    const { httpAdapter } = this.app.get(HttpAdapterHost)
+    let loggingService = this.app.get(ILoggingService)
 
+    if (!loggingService.report) {
+      loggingService = instanciateClassWithDependenciesInjection(
+        this.app,
+        loggingService,
+      )
+    }
     this._globalExceptionFilter = new GlobalExceptionsFilter(
       httpAdapter,
       loggingService,
