@@ -16,7 +16,7 @@ import { EventHandlerBase } from './backgroud-services/event-service/event-handl
 interface KoalaNestModuleConfig {
   logging?: Provider<ILoggingService>
   env?: ZodType
-  constrollers?: Type<any>[]
+  controllers?: Type<any>[]
   cronJobs?: Type<CronJobHandlerBase>[]
   eventJobs?: Type<EventHandlerBase<any>>[]
 }
@@ -24,7 +24,7 @@ interface KoalaNestModuleConfig {
 @Module({})
 export class KoalaNestModule {
   static register(config?: KoalaNestModuleConfig): DynamicModule {
-    const controllers = config?.constrollers ?? []
+    const controllers = config?.controllers ?? []
     const cronJobsProviders = config?.cronJobs ?? []
     const eventJobsProviders = config?.eventJobs ?? []
     const loggingServiceClass = config?.logging ?? LoggingService
