@@ -7,7 +7,10 @@ import { NotAllowedError } from '../core/errors/not-allowed.error'
 import { ResourceNotFoundError } from '../core/errors/resource-not-found.error'
 import { UserAlreadyExist } from '../core/errors/user-already-exist.error'
 import { WrongCredentialsError } from '../core/errors/wrong-credentials.error'
+import { KoalaGlobalVars } from '../core/koala-global-vars'
+import { EnvConfig } from '../core/utils/env.config'
 import { FilterRequestParams } from '../core/utils/filter-request-params'
+import { ILoggingService } from '../services/logging/ilogging.service'
 
 type DomainErrors =
   | NotAllowedError
@@ -28,12 +31,31 @@ type DomainErrors =
   NoContentError,
 )
 export class DomainErrorsFilter extends BaseExceptionFilter {
+  constructor(private readonly loggingService: ILoggingService) {
+    super()
+  }
+
   public catch(exception: DomainErrors, host: ArgumentsHost) {
     const mappedException = this.map(exception)
     const filterRequestParams = FilterRequestParams.get(host)
 
     if (mappedException.statusCode !== HttpStatus.UNAUTHORIZED) {
-      console.error(exception)
+      if (!EnvConfig.isEnvTest) {
+        this.loggingService
+          .report({
+            error: exception,
+            packageName: KoalaGlobalVars.appName,
+            loggedUsername: filterRequestParams.loggedUserName,
+            httpRequest: {
+              ...filterRequestParams.filterParams,
+              statusCode: mappedException.statusCode,
+              response: mappedException,
+            },
+          })
+          .catch((err) => console.error(err))
+      } else {
+        console.error(exception)
+      }
     }
 
     return filterRequestParams.response

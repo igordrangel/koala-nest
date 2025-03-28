@@ -1,10 +1,17 @@
 import { ArgumentsHost, Catch, HttpStatus } from '@nestjs/common'
 import { BaseExceptionFilter } from '@nestjs/core'
 import { Prisma } from '@prisma/client'
+import { KoalaGlobalVars } from '../core/koala-global-vars'
+import { EnvConfig } from '../core/utils/env.config'
 import { FilterRequestParams } from '../core/utils/filter-request-params'
+import { ILoggingService } from '../services/logging/ilogging.service'
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaValidationExceptionFilter extends BaseExceptionFilter {
+  constructor(private readonly loggingService: ILoggingService) {
+    super()
+  }
+
   public catch(
     exception: Prisma.PrismaClientKnownRequestError,
     host: ArgumentsHost,
@@ -13,7 +20,22 @@ export class PrismaValidationExceptionFilter extends BaseExceptionFilter {
     const filterRequestParams = FilterRequestParams.get(host)
 
     if (translatedResponse.statusCode !== HttpStatus.UNAUTHORIZED) {
-      console.error(exception)
+      if (!EnvConfig.isEnvTest) {
+        this.loggingService
+          .report({
+            error: exception,
+            packageName: KoalaGlobalVars.appName,
+            loggedUsername: filterRequestParams.loggedUserName,
+            httpRequest: {
+              ...filterRequestParams.filterParams,
+              statusCode: translatedResponse.statusCode,
+              response: translatedResponse,
+            },
+          })
+          .catch((err) => console.error(err))
+      } else {
+        console.error(exception)
+      }
     }
 
     return filterRequestParams.response
