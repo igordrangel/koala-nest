@@ -27,6 +27,7 @@ export class KoalaNestModule {
     const controllers = config?.constrollers ?? []
     const cronJobsProviders = config?.cronJobs ?? []
     const eventJobsProviders = config?.eventJobs ?? []
+    const loggingServiceClass = config?.logging ?? LoggingService
 
     return {
       module: KoalaNestModule,
@@ -43,7 +44,7 @@ export class KoalaNestModule {
         ...eventJobsProviders,
         {
           provide: ILoggingService,
-          useValue: config?.logging ?? LoggingService,
+          useValue: loggingServiceClass,
         },
         { provide: IRedisService, useClass: RedisService },
         { provide: IRedLockService, useClass: RedLockService },
