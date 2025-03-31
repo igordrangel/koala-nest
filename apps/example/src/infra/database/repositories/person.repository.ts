@@ -28,12 +28,8 @@ export class PersonRepository
     })
   }
 
-  create(person: Person): Promise<CreatedRegistreResponseBase<number>> {
-    return this.insert(person)
-  }
-
-  update(person: Person): Promise<void> {
-    return this.edit(person)
+  save(person: Person): Promise<CreatedRegistreResponseBase<number>> {
+    return this.saveChanges(person)
   }
 
   read(id: number): Promise<Person | null> {

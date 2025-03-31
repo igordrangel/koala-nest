@@ -5,7 +5,7 @@ import { PaginationDto } from '../dtos/pagination.dto'
 import { KoalaGlobalVars } from '../koala-global-vars'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
-import { EntityBase } from './entity.base'
+import { EntityActionType, EntityBase } from './entity.base'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
 
 type RepositoryInclude<TEntity> = {
@@ -107,37 +107,35 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return { items: [], count }
   }
 
-  protected insert(entity: TEntity) {
-    const prismaEntity = this.entityToPrisma(entity, true)
+  protected saveChanges<TWhere = any>(entity: TEntity, updateWhere?: TWhere) {
+    const prismaEntity = this.entityToPrisma(entity)
 
-    return this.context().create({
-      data: prismaEntity,
-    })
-  }
+    if (entity._action === EntityActionType.create) {
+      return this.context().create({
+        data: prismaEntity,
+      })
+    } else {
+      return this.withTransaction((client) =>
+        this.context(client)
+          .update({
+            where: updateWhere ?? { id: entity._id },
+            data: prismaEntity,
+          })
+          .then(() => {
+            const { relationUpdates, relationDeletes } =
+              this.listToRelationActionList(entity)
 
-  protected edit<TWhere = any>(entity: TEntity, updateWhere?: TWhere) {
-    const prismaEntity = this.entityToPrisma(entity, false)
-
-    return this.withTransaction((client) =>
-      this.context(client)
-        .update({
-          where: updateWhere ?? { id: entity._id },
-          data: prismaEntity,
-        })
-        .then(() => {
-          const { relationUpdates, relationDeletes } =
-            this.listToRelationActionList(entity)
-
-          return Promise.all([
-            ...relationUpdates.map((relation) =>
-              client[relation.modelName].updateMany(relation.schema),
-            ),
-            ...relationDeletes.map((relation) =>
-              client[relation.modelName].deleteMany(relation.schema),
-            ),
-          ])
-        }),
-    )
+            return Promise.all([
+              ...relationUpdates.map((relation) =>
+                client[relation.modelName].updateMany(relation.schema),
+              ),
+              ...relationDeletes.map((relation) =>
+                client[relation.modelName].deleteMany(relation.schema),
+              ),
+            ])
+          }),
+      )
+    }
   }
 
   protected async remove<TWhere = any>(
@@ -199,7 +197,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
               modelName: toCamelCase(modelName),
               schema: {
                 where: { id: item._id },
-                data: this.entityToPrisma(item, false),
+                data: this.entityToPrisma(item),
               },
             })
           })
@@ -210,11 +208,11 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return { relationUpdates, relationDeletes }
   }
 
-  private entityToPrisma(entity: TEntity, isCreate: boolean) {
+  private entityToPrisma(entity: TEntity) {
     const prismaSchema = {}
 
     Object.keys(entity)
-      .filter((key) => !['id', '_id'].includes(key))
+      .filter((key) => !['id', '_id', '_action'].includes(key))
       .filter((key) => !(entity[key] instanceof Function))
       .forEach((key) => {
         if (entity[key] instanceof List) {
@@ -222,15 +220,16 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
             prismaSchema[key] = {
               createMany: {
                 data: entity[key].toArray('added').map((item) => {
-                  return this.entityToPrisma(item, isCreate)
+                  return this.entityToPrisma(item)
                 }),
               },
             }
           }
         } else if (entity[key] instanceof EntityBase) {
-          prismaSchema[key] = isCreate
-            ? { create: this.entityToPrisma(entity[key] as any, isCreate) }
-            : { update: this.entityToPrisma(entity[key] as any, isCreate) }
+          prismaSchema[key] =
+            entity[key]._action === EntityActionType.create
+              ? { create: this.entityToPrisma(entity[key] as any) }
+              : { update: this.entityToPrisma(entity[key] as any) }
         } else {
           prismaSchema[key] = entity[key]
         }
@@ -264,6 +263,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
 
   private createEntity(data: any) {
     const entity = new this._modelName()
+    entity._action = EntityActionType.update
     entity.automap(data)
 
     return entity

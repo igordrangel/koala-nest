@@ -64,7 +64,6 @@ export class List<T> {
 
       if (!this.contains(item, this._removedItemsList)) {
         this._removedItemsList.push(item)
-        console.log(this._removedItemsList)
       }
     }
 

@@ -34,11 +34,14 @@ describe('UpdatePersonHandler', () => {
         .get(ReadPersonHandler)
         .handle(createResult.value.id)
 
-      expect(result.value).toEqual({
-        ...person,
-        id: createResult.value.id,
-        active: true,
-      })
+      expect(result.isOk()).toBeTruthy()
+
+      if (result.isOk()) {
+        expect(result.value.name).toEqual(person.name)
+        expect(result.value.active).toEqual(true)
+        expect(result.value.address.address).toEqual(person.address.address)
+        expect(result.value.phones[0].phone).toEqual(person.phones[0].phone)
+      }
     }
   })
 })
