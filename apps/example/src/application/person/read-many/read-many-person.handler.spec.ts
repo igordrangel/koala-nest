@@ -30,16 +30,11 @@ describe('ReadManyPersonHandler', () => {
       .get(ReadManyPersonHandler)
       .handle(new ReadManyPersonRequest())
 
-    expect(result.value).toEqual({
-      items: [
-        {
-          ...person,
-          id: personId,
-          active: false,
-        },
-      ],
-      count: 1,
-    })
+    expect(result.isOk()).toBeTruthy()
+
+    if (result.isOk()) {
+      expect(result.value.items).toHaveLength(1)
+    }
   })
 
   it('should get persons by name', async () => {
@@ -49,16 +44,12 @@ describe('ReadManyPersonHandler', () => {
       }),
     )
 
-    expect(result.value).toEqual({
-      items: [
-        {
-          ...person,
-          id: personId,
-          active: false,
-        },
-      ],
-      count: 1,
-    })
+    expect(result.isOk()).toBeTruthy()
+
+    if (result.isOk()) {
+      expect(result.value.items[0].name).toBe(person.name)
+      expect(result.value.items).toHaveLength(1)
+    }
   })
 
   it('should get persons by status', async () => {

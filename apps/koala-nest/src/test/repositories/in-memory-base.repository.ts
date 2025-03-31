@@ -2,9 +2,8 @@ import { QUERY_FILTER_PARAMS } from '@koalarx/nest/core/constants/query-params'
 import { PaginationDto } from '@koalarx/nest/core/dtos/pagination.dto'
 import { klArray } from '@koalarx/utils/operators/array'
 import { randomUUID } from 'node:crypto'
-import { CreatedRegistreResponseBase } from '../../core/controllers/created-registre-response.base'
 import { ListResponseBase } from '../../core/controllers/list-response.base'
-import { EntityBase } from '../../core/database/entity.base'
+import { EntityActionType, EntityBase } from '../../core/database/entity.base'
 import { IComparableId } from '../../core/utils/interfaces/icomparable'
 
 export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
@@ -13,7 +12,13 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
   constructor(private readonly typeId: 'number' | 'string' = 'number') {}
 
   protected async findById(id: IComparableId): Promise<TClass | null> {
-    return this.items.find((item) => item._id === id) ?? null
+    const entity = this.items.find((item) => item._id === id) ?? null
+
+    if (entity) {
+      entity._action = EntityActionType.update
+    }
+
+    return entity
   }
 
   protected async findMany<T extends PaginationDto>(
@@ -27,6 +32,10 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
       .orderBy(query.orderBy ?? '', query.direction === 'desc')
       .getValue()
       .slice(page * limit, (page + 1) * limit)
+      .map((item) => {
+        item._action = EntityActionType.update
+        return item
+      })
   }
 
   protected async findManyAndCount<T extends PaginationDto>(
@@ -41,19 +50,20 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
     }
   }
 
-  protected async insert(
+  protected async saveChanges(
     item: TClass,
-  ): Promise<CreatedRegistreResponseBase<any>> {
-    const id = this.typeId === 'number' ? this.getNewId() : randomUUID()
+    updateWhere?: (item: TClass) => boolean,
+  ) {
+    if (item._action === EntityActionType.create) {
+      const id = this.typeId === 'number' ? this.getNewId() : randomUUID()
 
-    item.automap({ ...item, id })
+      item.automap({ ...item, id })
 
-    this.items.push(item)
+      this.items.push(item)
 
-    return { id: item._id }
-  }
+      return { id: item._id }
+    }
 
-  protected async edit(item: TClass, updateWhere?: (item: TClass) => boolean) {
     const predicate = updateWhere ?? ((itemDB) => itemDB.equals(item))
     const itemIndex = this.items.findIndex(predicate)
 

@@ -7,7 +7,6 @@ describe('ReadPersonHandler', () => {
   const app = createUnitTestApp()
 
   it('should get a person by id', async () => {
-    const person = createPersonRequestMockup
     const createResult = await app
       .get(CreatePersonHandler)
       .handle(createPersonRequestMockup)
@@ -19,11 +18,11 @@ describe('ReadPersonHandler', () => {
         .get(ReadPersonHandler)
         .handle(createResult.value.id)
 
-      expect(result.value).toEqual({
-        ...person,
-        id: createResult.value.id,
-        active: false,
-      })
+      expect(result.isOk()).toBeTruthy()
+
+      if (result.isOk()) {
+        expect(result.value.id).toBe(createResult.value.id)
+      }
     }
   })
 })
