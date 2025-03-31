@@ -1,6 +1,6 @@
 import { RequestValidatorBase } from '@koalarx/nest/core/request-overflow/request-validator.base'
-import { CreatePersonRequest } from './create-person.request'
 import { z, ZodType, ZodTypeDef } from 'zod'
+import { CreatePersonRequest } from './create-person.request'
 
 export class CreatePersonValidator extends RequestValidatorBase<CreatePersonRequest> {
   protected get schema(): ZodType<any, ZodTypeDef, any> {

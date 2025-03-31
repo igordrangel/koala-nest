@@ -24,12 +24,19 @@ export class AutoMappingList {
     )
     this._mappedPropList.add(new AutoMappingClassContext(source))
     this._mappedPropList.add(new AutoMappingClassContext(target))
+
+    this.addExtendedPropsIntoSubClass(source)
+    this.addExtendedPropsIntoSubClass(target)
   }
 
   static get(source: Type<any>, target: Type<any>): AutoMappingGetContext {
     return {
       mapContext: this._mappingProfileList.find(
-        (mp) => mp.source === source && mp.target === target,
+        (mp) =>
+          (mp.source === source ||
+            Object.getPrototypeOf(mp.source.prototype.constructor) ===
+              source) &&
+          mp.target === target,
       ),
       propSourceContext: this._mappedPropList.find(
         (mp) => mp.source === source,
@@ -41,8 +48,12 @@ export class AutoMappingList {
   }
 
   static getSourceByName(sourceName: string) {
-    return this._mappingProfileList.find((mp) => mp.source.name === sourceName)
-      ?.source
+    return this._mappingProfileList.find(
+      (mp) =>
+        mp.source.name === sourceName ||
+        Object.getPrototypeOf(mp.source.prototype.constructor).name ===
+          sourceName,
+    )?.source
   }
 
   static getPropDefinitions(source: Type<any>, propName: string) {
@@ -53,7 +64,11 @@ export class AutoMappingList {
 
   static getTargets(source: Type<any>) {
     return this._mappingProfileList
-      .filter((mp) => mp.source === source)
+      .filter(
+        (mp) =>
+          mp.source === source ||
+          Object.getPrototypeOf(mp.source.prototype.constructor) === source,
+      )
       .map((mp) => mp.target)
       .toArray()
   }
@@ -63,6 +78,16 @@ export class AutoMappingList {
 
     if (!mappedClass) {
       mappedClass = new AutoMappingClassContext(source)
+
+      const mappedExtendedClass = this._mappedPropList.find(
+        (mp) =>
+          mp.source === Object.getPrototypeOf(source.prototype.constructor),
+      )
+
+      if (mappedExtendedClass) {
+        mappedClass.props.setList(mappedExtendedClass.props.toArray())
+      }
+
       this._mappedPropList.add(mappedClass)
     }
 
@@ -89,5 +114,21 @@ export class AutoMappingList {
       compositionType,
       compositionAction,
     })
+  }
+
+  static addExtendedPropsIntoSubClass(source: Type<any>) {
+    const mappedExtendedClass = this._mappedPropList.find(
+      (mp) => mp.source === Object.getPrototypeOf(source.prototype.constructor),
+    )
+    if (mappedExtendedClass) {
+      const mappedClass = this._mappedPropList.find(
+        (mp) => mp.source === source,
+      )
+      if (mappedClass) {
+        mappedExtendedClass.props
+          .toArray()
+          .forEach((prop) => mappedClass.props.add(prop))
+      }
+    }
   }
 }
