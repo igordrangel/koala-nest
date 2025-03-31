@@ -3,7 +3,6 @@ import { Person } from '@/domain/entities/person/person'
 import { PersonAddress } from '@/domain/entities/person/person-address'
 import { PersonPhone } from '@/domain/entities/person/person-phone'
 import { createMap } from '@koalarx/nest/core/mapping/create-map'
-import { forMember } from '@koalarx/nest/core/mapping/for-member'
 import {
   CreatePersonAddressRequest,
   CreatePersonPhoneRequest,

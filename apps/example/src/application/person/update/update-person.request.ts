@@ -1,24 +1,20 @@
 import { AutoMap } from '@koalarx/nest/core/mapping/auto-mapping.decorator'
 import { ApiProperty } from '@nestjs/swagger'
+import {
+  PersistPersonAddressRequest,
+  PersistPersonPhoneRequest,
+} from '../common/persist-person.request'
 
-export class UpdatePersonAddressRequest {
+export class UpdatePersonAddressRequest extends PersistPersonAddressRequest {
   @ApiProperty()
   @AutoMap()
   id: number
-
-  @ApiProperty({ example: 'Street 2' })
-  @AutoMap()
-  address: string
 }
 
-export class UpdatePersonPhoneRequest {
+export class UpdatePersonPhoneRequest extends PersistPersonPhoneRequest {
   @ApiProperty({ required: false })
   @AutoMap()
   id?: number
-
-  @ApiProperty({ example: 22888888888 })
-  @AutoMap()
-  phone: string
 }
 
 export class UpdatePersonRequest {
