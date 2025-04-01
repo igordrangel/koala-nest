@@ -48,12 +48,8 @@ export class AutoMappingList {
   }
 
   static getSourceByName(sourceName: string) {
-    return this._mappingProfileList.find(
-      (mp) =>
-        mp.source.name === sourceName ||
-        Object.getPrototypeOf(mp.source.prototype.constructor).name ===
-          sourceName,
-    )?.source
+    return this._mappedPropList.find((mp) => mp.source.name === sourceName)
+      ?.source
   }
 
   static getPropDefinitions(source: Type<any>, propName: string) {
