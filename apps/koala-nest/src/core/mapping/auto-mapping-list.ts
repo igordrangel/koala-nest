@@ -33,16 +33,16 @@ export class AutoMappingList {
     return {
       mapContext: this._mappingProfileList.find(
         (mp) =>
-          (mp.source === source ||
+          (mp.source.name === source.name ||
             Object.getPrototypeOf(mp.source.prototype.constructor) ===
               source) &&
-          mp.target === target,
+          mp.target.name === target.name,
       ),
       propSourceContext: this._mappedPropList.find(
-        (mp) => mp.source === source,
+        (mp) => mp.source.name === source.name,
       ),
       propTargetContext: this._mappedPropList.find(
-        (mp) => mp.source === target,
+        (mp) => mp.source.name === target.name,
       ),
     }
   }
@@ -66,7 +66,7 @@ export class AutoMappingList {
     return this._mappingProfileList
       .filter(
         (mp) =>
-          mp.source === source ||
+          mp.source.name === source.name ||
           Object.getPrototypeOf(mp.source.prototype.constructor) === source,
       )
       .map((mp) => mp.target)
@@ -74,7 +74,9 @@ export class AutoMappingList {
   }
 
   static addMappedProp(source: Type<any>, propName: string) {
-    let mappedClass = this._mappedPropList.find((mp) => mp.source === source)
+    let mappedClass = this._mappedPropList.find(
+      (mp) => mp.source.name === source.name,
+    )
 
     if (!mappedClass) {
       mappedClass = new AutoMappingClassContext(source)
@@ -122,7 +124,7 @@ export class AutoMappingList {
     )
     if (mappedExtendedClass) {
       const mappedClass = this._mappedPropList.find(
-        (mp) => mp.source === source,
+        (mp) => mp.source.name === source.name,
       )
       if (mappedClass) {
         mappedExtendedClass.props
