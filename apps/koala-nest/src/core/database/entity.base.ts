@@ -1,8 +1,8 @@
 import { Type } from '@nestjs/common'
+import { Overwrite } from '..'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
-import { Overwrite } from '..'
 
 export enum EntityActionType {
   create = 1,
@@ -25,6 +25,12 @@ export abstract class EntityBase<T extends IComparable<T>>
   _id: IComparableId
   _action: EntityActionType = EntityActionType.create
 
+  constructor(props?: EntityProps<T>) {
+    if (props) {
+      this.automap(props)
+    }
+  }
+
   automap(props?: EntityProps<T>) {
     if (props) {
       for (const key of Object.keys(props)) {
@@ -45,9 +51,8 @@ export abstract class EntityBase<T extends IComparable<T>>
 
           if (this[key].entityType) {
             value = value.map((item) => {
-              const entity = new (this[key].entityType as Type<any>)()
+              const entity = new (this[key].entityType as Type<any>)(item)
               entity._action = this._action
-              entity.automap(item)
 
               return entity
             })
@@ -55,9 +60,8 @@ export abstract class EntityBase<T extends IComparable<T>>
 
           this[key].setList(value)
         } else if (EntityOnPropKey) {
-          const entity = new EntityOnPropKey()
+          const entity = new EntityOnPropKey(props[key])
           entity._action = this._action
-          entity.automap(props[key])
 
           this[key] = entity
         } else if (propDefinitions) {
