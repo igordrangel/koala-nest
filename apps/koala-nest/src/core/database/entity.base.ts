@@ -51,8 +51,9 @@ export abstract class EntityBase<T extends IComparable<T>>
 
           if (this[key].entityType) {
             value = value.map((item) => {
-              const entity = new (this[key].entityType as Type<any>)(item)
+              const entity = new (this[key].entityType as Type<any>)()
               entity._action = this._action
+              entity.automap(item)
 
               return entity
             })
@@ -60,8 +61,9 @@ export abstract class EntityBase<T extends IComparable<T>>
 
           this[key].setList(value)
         } else if (EntityOnPropKey) {
-          const entity = new EntityOnPropKey(props[key])
+          const entity = new EntityOnPropKey()
           entity._action = this._action
+          entity.automap(props[key])
 
           this[key] = entity
         } else if (propDefinitions) {
