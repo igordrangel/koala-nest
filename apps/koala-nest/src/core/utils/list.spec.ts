@@ -1,18 +1,15 @@
-import { EntityBase, EntityProps } from '../database/entity.base'
+import { EntityBase } from '../database/entity.base'
+import { Entity } from '../database/entity.decorator'
 import { AutoMap } from '../mapping/auto-mapping.decorator'
 import { List } from './list'
 
+@Entity()
 class EntityTest extends EntityBase<EntityTest> {
   @AutoMap()
   id: number
 
   @AutoMap()
   value: number
-
-  constructor(props?: EntityProps<EntityTest>) {
-    super()
-    this.automap(props)
-  }
 }
 
 describe('List test', () => {

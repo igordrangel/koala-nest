@@ -17,7 +17,7 @@ export class InactivePersonHandler extends EventHandlerBase<InactivePersonEvent>
 
     for (const person of result.items) {
       person.active = false
-      await this.repository.update(person)
+      await this.repository.save(person)
     }
 
     console.log(

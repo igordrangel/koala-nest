@@ -1,7 +1,7 @@
 import { Type } from '@nestjs/common'
 import { List } from '../utils/list'
-import { AutoMappingContext } from './auto-mapping-context'
 import { AutoMappingClassContext } from './auto-mapping-class-context'
+import { AutoMappingContext } from './auto-mapping-context'
 import { ForMemberDefinition } from './for-member'
 
 interface AutoMappingGetContext {
@@ -58,7 +58,7 @@ export class AutoMappingList {
 
   static getPropDefinitions(source: Type<any>, propName: string) {
     return this._mappedPropList
-      .find((mp) => mp.source === source)
+      .find((mp) => mp.source.name === source.name)
       ?.props.find((prop) => prop.name === propName)
   }
 
