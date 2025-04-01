@@ -62,11 +62,13 @@ export abstract class EntityBase<T extends IComparable<T>>
 
           this[key].setList(value)
         } else if (EntityOnPropKey) {
-          const entity = new EntityOnPropKey()
-          entity._action = this._action
-          entity.automap(props[key])
+          if (props[key]) {
+            const entity = new EntityOnPropKey()
+            entity._action = this._action
+            entity.automap(props[key])
 
-          this[key] = entity
+            this[key] = entity
+          }
         } else if (propDefinitions) {
           if (key === 'id') {
             this._id = props[key] as IComparableId
