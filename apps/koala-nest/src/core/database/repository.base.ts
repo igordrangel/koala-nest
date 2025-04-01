@@ -107,13 +107,19 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return { items: [], count }
   }
 
-  protected saveChanges<TWhere = any>(entity: TEntity, updateWhere?: TWhere) {
+  protected async saveChanges<TWhere = any>(
+    entity: TEntity,
+    updateWhere?: TWhere,
+  ): Promise<TEntity | null> {
     const prismaEntity = this.entityToPrisma(entity)
 
     if (entity._action === EntityActionType.create) {
-      return this.context().create({
-        data: prismaEntity,
-      })
+      return this.context()
+        .create({
+          data: prismaEntity,
+          include: this._include,
+        })
+        .then((response: TEntity) => this.createEntity(response))
     } else {
       return this.withTransaction((client) =>
         this.context(client)
@@ -134,7 +140,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
               ),
             ])
           }),
-      )
+      ).then(() => null)
     }
   }
 

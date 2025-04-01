@@ -3,6 +3,7 @@ import { Overwrite } from '..'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
+import { PersonAddress } from './entity.decorator.spec'
 
 export enum EntityActionType {
   create = 1,

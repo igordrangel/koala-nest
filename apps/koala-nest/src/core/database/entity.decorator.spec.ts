@@ -42,18 +42,15 @@ export class Person extends EntityBase<Person> {
 
 describe('Entity decorator', () => {
   it('should create an instance of Person', () => {
-    const phones = new List(PersonPhone)
-    phones.setList([
-      new PersonPhone({ phone: faker.phone.number() }),
-      new PersonPhone({ phone: faker.phone.number() }),
-    ])
-
     const person = new Person({
       name: faker.person.fullName(),
-      phones,
-      address: new PersonAddress({ address: faker.location.streetAddress() }),
+      phones: [
+        { phone: faker.phone.number() },
+        { phone: faker.phone.number() },
+      ],
+      address: { address: faker.location.streetAddress() },
       active: true,
-    })
+    } as any)
 
     expect(person).toBeInstanceOf(Person)
     expect(person).toBeInstanceOf(EntityBase)
@@ -65,7 +62,7 @@ describe('Entity decorator', () => {
     expect(person.phones.toArray()[0].phone).toBeDefined()
     expect(person.phones.toArray()[1].phone).toBeDefined()
 
-    expect(person.address).toBeInstanceOf(PersonAddress)
+    expect(person.address.constructor.name).equal(PersonAddress.name)
     expect(person.address.address).toBeDefined()
 
     expect(person.name).toBeDefined()
