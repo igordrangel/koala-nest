@@ -5,16 +5,18 @@ import { DbTransactionContext } from '@/infra/database/db-transaction-context'
 import { KoalaApp } from '@koalarx/nest/core/koala-app'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { EnvService } from '@koalarx/nest/env/env.service'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule).then((app) =>
+  return NestFactory.create(AppModule).then((app) =>
     new KoalaApp(app)
       .useDoc({
         ui: 'scalar',
         endpoint: '/doc',
         title: 'API de Demonstração',
         version: '1.0',
+        authorizations: [
+          { name: 'ApiKey', config: { type: 'apiKey', name: 'ApiKey' } },
+        ],
       })
       .addCronJob(CreatePersonJob)
       .addCronJob(DeleteInactiveJob)
@@ -23,12 +25,7 @@ async function bootstrap() {
       .setInternalUserName('integration.bot')
       .setDbTransactionContext(DbTransactionContext)
       .enableCors()
-      .build(),
+      .buildAndServe(),
   )
-
-  const envService = app.get(EnvService)
-  const port = envService.get('PORT') ?? 3000
-
-  await app.listen(port)
 }
 bootstrap()

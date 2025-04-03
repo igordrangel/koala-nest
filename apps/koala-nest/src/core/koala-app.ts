@@ -7,7 +7,10 @@ import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
+import * as consola from 'consola'
 import * as expressBasicAuth from 'express-basic-auth'
+import * as ngrok from 'ngrok'
+import { EnvService } from '../env/env.service'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
 import { PrismaValidationExceptionFilter } from '../filters/prisma-validation-exception.filter'
@@ -17,8 +20,8 @@ import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.h
 import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
 import { PrismaTransactionalClient } from './database/prisma-transactional-client'
 import { KoalaGlobalVars } from './koala-global-vars'
-import { instanciateClassWithDependenciesInjection } from './utils/instanciate-class-with-dependencies-injection'
 import { EnvConfig } from './utils/env.config'
+import { instanciateClassWithDependenciesInjection } from './utils/instanciate-class-with-dependencies-injection'
 
 interface ApiDocAuthorizationConfig {
   name: string
@@ -69,6 +72,9 @@ export class KoalaApp {
 
   private _cronJobs: CronJobClass[] = []
   private _eventJobs: EventJobClass[] = []
+  private _apiReferenceEndpoint: string
+  private _ngrokKey: string
+  private _ngrokUrl: string
 
   constructor(private readonly app: INestApplication<any>) {
     const { httpAdapter } = this.app.get(HttpAdapterHost)
@@ -180,6 +186,7 @@ export class KoalaApp {
       documentBuilder.build(),
     )
     const swaggerEndpoint = config.endpoint
+    this._apiReferenceEndpoint = swaggerEndpoint
 
     if (config.ui === 'scalar' && swaggerEndpoint === '/') {
       throw new InternalServerErrorException(
@@ -243,6 +250,11 @@ export class KoalaApp {
     return this
   }
 
+  useNgrok(key: string) {
+    this._ngrokKey = key
+    return this
+  }
+
   enableCors() {
     this.app.enableCors({
       credentials: true,
@@ -292,6 +304,56 @@ export class KoalaApp {
       eventJob.setupSubscriptions()
     }
 
+    if (this._ngrokKey) {
+      const envService = this.app.get(EnvService)
+      const port = envService.get('PORT') ?? 3000
+
+      await ngrok
+        .connect({
+          authtoken: this._ngrokKey,
+          addr: port,
+        })
+        .then((url) => {
+          this._ngrokUrl = url
+        })
+    }
+
     return this.app
+  }
+
+  async serve() {
+    const envService = this.app.get(EnvService)
+    const port = envService.get('PORT') ?? 3000
+
+    this.app.listen(port).then(() => this.showListeningMessage(port))
+  }
+
+  async buildAndServe() {
+    await this.build()
+    await this.serve()
+  }
+
+  private showListeningMessage(port: number) {
+    const envService = this.app.get(EnvService)
+
+    console.log('------------------------------')
+
+    if (this._apiReferenceEndpoint) {
+      consola.info(
+        'API Reference:',
+        `http://localhost:${port}${this._apiReferenceEndpoint}`,
+      )
+    }
+
+    consola.info('Internal Host:', `http://localhost:${port}`)
+
+    if (this._ngrokUrl) {
+      consola.info('External Host:', this._ngrokUrl)
+      consola.info('External Inspect:', 'http://localhost:4040/inspect/http')
+    }
+
+    consola.box('Environment:', envService.get('NODE_ENV'))
+
+    console.log('------------------------------')
   }
 }
