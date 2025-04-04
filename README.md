@@ -16,6 +16,10 @@
 
     4.2. [Ngrok](#ngrok)
 
+    4.3. [ApiPropertyEnum](#apipropertyenum)
+
+    4.4. [Upload](#upload)
+
 ---
 
 ## Introdução
