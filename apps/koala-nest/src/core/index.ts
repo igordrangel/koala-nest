@@ -1,3 +1,8 @@
+import { Multer } from 'multer'
+import { Express } from 'express'
+
+export type FileType = Express.Multer.File
+
 /**
  * Make some property optional on type
  *
