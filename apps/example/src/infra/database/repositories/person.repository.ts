@@ -29,13 +29,7 @@ export class PersonRepository
   }
 
   async save(person: Person): Promise<CreatedRegistreWithIdResponse | null> {
-    return this.saveChanges(person).then((response) => {
-      if (response) {
-        return { id: response.id }
-      }
-
-      return null
-    })
+    return this.saveChanges(person)
   }
 
   read(id: number): Promise<Person | null> {
