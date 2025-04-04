@@ -1,9 +1,10 @@
 import {
+  CanActivate,
   INestApplication,
   InternalServerErrorException,
   Type,
 } from '@nestjs/common'
-import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
+import { BaseExceptionFilter, HttpAdapterHost, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
@@ -70,6 +71,7 @@ export class KoalaApp {
   private _domainExceptionFilter: BaseExceptionFilter
   private _zodExceptionFilter: BaseExceptionFilter
 
+  private _guards: CanActivate[] = []
   private _cronJobs: CronJobClass[] = []
   private _eventJobs: EventJobClass[] = []
   private _apiReferenceEndpoint: string
@@ -96,6 +98,12 @@ export class KoalaApp {
     )
     this._domainExceptionFilter = new DomainErrorsFilter(loggingService)
     this._zodExceptionFilter = new ZodErrorsFilter(loggingService)
+  }
+
+  addGlobalGuard(Guard: Type<CanActivate>) {
+    const reflector = this.app.get(Reflector)
+    this._guards.push(new Guard(reflector))
+    return this
   }
 
   addCronJob(job: CronJobClass) {
@@ -302,6 +310,10 @@ export class KoalaApp {
 
     for (const eventJob of eventJobs) {
       eventJob.setupSubscriptions()
+    }
+
+    for (const guard of this._guards) {
+      this.app.useGlobalGuards(guard)
     }
 
     if (this._ngrokKey) {

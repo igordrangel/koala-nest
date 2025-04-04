@@ -14,9 +14,6 @@ async function bootstrap() {
         endpoint: '/doc',
         title: 'API de Demonstração',
         version: '1.0',
-        authorizations: [
-          { name: 'ApiKey', config: { type: 'apiKey', name: 'ApiKey' } },
-        ],
       })
       .addCronJob(CreatePersonJob)
       .addCronJob(DeleteInactiveJob)

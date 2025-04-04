@@ -34,7 +34,12 @@ abstract class ApiKeyStrategyBase extends Strategy {
   ): Promise<void> | void
 }
 
-export declare class ApiKeyStrategy extends ApiKeyStrategyBase {
-  constructor(options: ApiKeyStrategyOptions)
-  validate(apikey: string, done: DoneFn, request: Request): Promise<void> | void
+export class ApiKeyStrategy extends ApiKeyStrategyBase {
+  constructor(options: ApiKeyStrategyOptions) {
+    super(options)
+  }
+
+  validate(apikey: string, done: DoneFn, request: Request) {
+    throw new Error('Method not implemented.')
+  }
 }
