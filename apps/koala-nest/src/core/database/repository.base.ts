@@ -110,7 +110,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async saveChanges<TWhere = any>(
     entity: TEntity,
     updateWhere?: TWhere,
-  ): Promise<TEntity | null> {
+  ): Promise<TEntity> {
     const prismaEntity = this.entityToPrisma(entity)
 
     if (entity._action === EntityActionType.create) {
@@ -121,10 +121,12 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
         })
         .then((response: TEntity) => this.createEntity(response))
     } else {
+      const where = updateWhere ?? { id: entity._id }
+
       return this.withTransaction((client) =>
         this.context(client)
           .update({
-            where: updateWhere ?? { id: entity._id },
+            where,
             data: prismaEntity,
           })
           .then(() => {
@@ -140,7 +142,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
               ),
             ])
           }),
-      ).then(() => null)
+      ).then(() => this.findFirst(where))
     }
   }
 
