@@ -1,6 +1,15 @@
 import { EntityBase } from './entity.base'
 
-export function Entity<T extends new (...args: any[]) => EntityBase<any>>() {
+type EntityProps<T> = Omit<
+  {
+    [K in keyof T as T[K] extends Function ? never : K]: T[K]
+  },
+  '_id' | '_action'
+>
+
+export function Entity<T extends new (...args: any[]) => EntityBase<any>>(
+  id?: keyof EntityProps<InstanceType<T>>,
+) {
   return function (target: T) {
     // Sobrescreve o comportamento do construtor
     const originalConstructor = target
@@ -41,6 +50,8 @@ export function Entity<T extends new (...args: any[]) => EntityBase<any>>() {
       value: target.name,
       writable: false,
     })
+
+    Reflect.defineMetadata('entity:id', id, NewConstructor.prototype)
 
     return NewConstructor
   }
