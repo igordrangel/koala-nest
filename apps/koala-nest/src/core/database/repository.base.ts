@@ -40,7 +40,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return this.context()
       .findFirst({
         include: this._include,
-        where: { id },
+        where: { [this.getIdPropName()]: id },
       })
       .then((response: TEntity) => {
         if (response) {
@@ -288,5 +288,9 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       .forEach((key) => (where[key] = entity[key]))
 
     return client[toCamelCase(entity.constructor.name)].delete({ where })
+  }
+
+  private getIdPropName() {
+    return Reflect.getMetadata('entity:id', this._modelName.prototype) ?? 'id'
   }
 }
