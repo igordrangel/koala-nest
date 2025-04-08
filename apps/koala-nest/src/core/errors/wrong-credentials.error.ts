@@ -1,5 +1,7 @@
-export class WrongCredentialsError extends Error {
-  constructor() {
-    super('Credentials are not valid')
+import { ErrorBase } from './error.base'
+
+export class WrongCredentialsError extends ErrorBase {
+  constructor(data?: any) {
+    super('Credentials are not valid', data)
   }
 }
