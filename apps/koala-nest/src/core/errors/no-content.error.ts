@@ -1,7 +1,8 @@
+import { ErrorBase } from './error.base'
 import { UseCaseError } from './use-case-error'
 
-export class NoContentError extends Error implements UseCaseError {
-  constructor(message?: string) {
-    super(message ?? 'No Content')
+export class NoContentError extends ErrorBase implements UseCaseError {
+  constructor(message?: string, data?: any) {
+    super(message ?? 'No Content', data)
   }
 }

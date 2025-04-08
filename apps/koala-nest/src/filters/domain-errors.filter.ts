@@ -67,6 +67,7 @@ export class DomainErrorsFilter extends BaseExceptionFilter {
     const mappedException = {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: exception.message,
+      data: exception.data,
     }
 
     switch (exception.constructor) {
