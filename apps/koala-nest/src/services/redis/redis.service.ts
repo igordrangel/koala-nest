@@ -14,12 +14,14 @@ export class RedisService implements IRedisService, OnModuleDestroy {
       const url = new URL(env.get('REDIS_CONNECTION_STRING'))
       this.environment = env.get('NODE_ENV')
 
-      this.redisClient = new Redis({
-        host: url.hostname,
-        port: Number(url.port),
-        password: url.password,
-        username: url.username,
-      })
+      if (url) {
+        this.redisClient = new Redis({
+          host: url.hostname,
+          port: Number(url.port),
+          password: url.password,
+          username: url.username,
+        })
+      }
     }
   }
 
