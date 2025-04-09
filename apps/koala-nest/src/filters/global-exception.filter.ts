@@ -1,5 +1,6 @@
 import { ArgumentsHost, Catch, HttpException, HttpStatus } from '@nestjs/common'
 import { AbstractHttpAdapter, BaseExceptionFilter } from '@nestjs/core'
+import { IncomingMessage } from 'node:http'
 import { KoalaGlobalVars } from '../core/koala-global-vars'
 import { EnvConfig } from '../core/utils/env.config'
 import { FilterRequestParams } from '../core/utils/filter-request-params'
@@ -16,6 +17,8 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter {
 
   catch(exception: Error, host: ArgumentsHost): void {
     const filterRequestParams = FilterRequestParams.get(host)
+    const request: IncomingMessage | null =
+      host.getArgs().find((arg) => arg instanceof IncomingMessage) ?? null
 
     const statusCode =
       exception instanceof HttpException
@@ -40,6 +43,7 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter {
     if (
       !exception.message?.includes('Cannot GET /socket.io') &&
       !exception.message?.includes('Cannot GET /favicon.ico') &&
+      !['/'].includes(request?.url ?? '') &&
       statusCode !== HttpStatus.UNAUTHORIZED
     ) {
       if (!EnvConfig.isEnvTest) {

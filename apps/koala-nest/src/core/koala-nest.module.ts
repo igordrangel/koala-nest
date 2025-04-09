@@ -12,11 +12,13 @@ import { IRedLockService } from '../services/redlock/ired-lock.service'
 import { RedLockService } from '../services/redlock/red-lock.service'
 import { CronJobHandlerBase } from './backgroud-services/cron-service/cron-job.handler.base'
 import { EventHandlerBase } from './backgroud-services/event-service/event-handler.base'
+import { HealthCheckModule } from './health-check/health-check.module'
 
 interface KoalaNestModuleConfig {
   logging?: Provider<ILoggingService>
   env?: ZodType
   controllers?: Type<any>[]
+  healthCheck?: Type<any>
   cronJobs?: Type<CronJobHandlerBase>[]
   eventJobs?: Type<EventHandlerBase<any>>[]
 }
@@ -25,6 +27,7 @@ interface KoalaNestModuleConfig {
 export class KoalaNestModule {
   static register(config?: KoalaNestModuleConfig): DynamicModule {
     const controllers = config?.controllers ?? []
+    const healthCheck = config?.healthCheck ?? HealthCheckModule
     const cronJobsProviders = config?.cronJobs ?? []
     const eventJobsProviders = config?.eventJobs ?? []
     const loggingServiceClass = config?.logging ?? LoggingService
@@ -37,6 +40,7 @@ export class KoalaNestModule {
           isGlobal: true,
         }),
         EnvModule,
+        healthCheck,
         ...controllers,
       ],
       providers: [

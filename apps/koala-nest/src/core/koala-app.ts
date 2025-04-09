@@ -357,6 +357,7 @@ export class KoalaApp {
       )
     }
 
+    consola.info('Health Check:', `http://localhost:${port}/health`)
     consola.info('Internal Host:', `http://localhost:${port}`)
 
     if (this._ngrokUrl) {
