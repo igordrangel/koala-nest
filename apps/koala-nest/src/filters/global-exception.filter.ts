@@ -31,6 +31,8 @@ export class GlobalExceptionsFilter extends BaseExceptionFilter {
             path: filterRequestParams.filterParams.endpoint,
           }
 
+    console.log(filterRequestParams, request, statusCode, responseBody)
+
     if (
       !exception.message?.includes('Cannot GET /socket.io') &&
       !exception.message?.includes('Cannot GET /favicon.ico') &&
