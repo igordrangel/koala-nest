@@ -1,5 +1,5 @@
-import { ExceptionFilter, INestApplication, Type } from '@nestjs/common'
-import { BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
+import { INestApplication, Type } from '@nestjs/common'
+import { BaseExceptionFilter } from '@nestjs/core'
 import { PrismaTransactionalClient } from '../core/database/prisma-transactional-client'
 import { KoalaGlobalVars } from '../core/koala-global-vars'
 import { instanciateClassWithDependenciesInjection } from '../core/utils/instanciate-class-with-dependencies-injection'
@@ -10,13 +10,12 @@ import { ZodErrorsFilter } from '../filters/zod-errors.filter'
 import { ILoggingService } from '../services/logging/ilogging.service'
 
 export class KoalaAppTest {
-  private _globalExceptionFilter: ExceptionFilter
+  private _globalExceptionFilter: BaseExceptionFilter
   private _prismaValidationExceptionFilter: BaseExceptionFilter
   private _domainExceptionFilter: BaseExceptionFilter
   private _zodExceptionFilter: BaseExceptionFilter
 
   constructor(private readonly app: INestApplication<any>) {
-    const httpAdapterHost = app.get(HttpAdapterHost)
     let loggingService = app.get(ILoggingService)
 
     if (!loggingService.report) {
@@ -26,10 +25,7 @@ export class KoalaAppTest {
       )
     }
 
-    this._globalExceptionFilter = new GlobalExceptionsFilter(
-      httpAdapterHost,
-      loggingService,
-    )
+    this._globalExceptionFilter = new GlobalExceptionsFilter(loggingService)
     this._prismaValidationExceptionFilter = new PrismaValidationExceptionFilter(
       loggingService,
     )
