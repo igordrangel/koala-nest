@@ -1,11 +1,10 @@
 import {
   CanActivate,
-  ExceptionFilter,
   INestApplication,
   InternalServerErrorException,
   Type,
 } from '@nestjs/common'
-import { BaseExceptionFilter, HttpAdapterHost, Reflector } from '@nestjs/core'
+import { BaseExceptionFilter, Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
@@ -67,7 +66,7 @@ type CronJobClass = string | symbol | Function | Type<CronJobHandlerBase>
 type EventJobClass = string | symbol | Function | Type<EventHandlerBase<any>>
 
 export class KoalaApp {
-  private _globalExceptionFilter: ExceptionFilter
+  private _globalExceptionFilter: BaseExceptionFilter
   private _prismaValidationExceptionFilter: BaseExceptionFilter
   private _domainExceptionFilter: BaseExceptionFilter
   private _zodExceptionFilter: BaseExceptionFilter
@@ -80,7 +79,6 @@ export class KoalaApp {
   private _ngrokUrl: string
 
   constructor(private readonly app: INestApplication<any>) {
-    const httpAdapterHost = this.app.get(HttpAdapterHost)
     let loggingService = this.app.get(ILoggingService)
 
     if (!loggingService.report) {
@@ -90,10 +88,7 @@ export class KoalaApp {
       )
     }
 
-    this._globalExceptionFilter = new GlobalExceptionsFilter(
-      httpAdapterHost,
-      loggingService,
-    )
+    this._globalExceptionFilter = new GlobalExceptionsFilter(loggingService)
     this._prismaValidationExceptionFilter = new PrismaValidationExceptionFilter(
       loggingService,
     )
