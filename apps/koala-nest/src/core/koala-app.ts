@@ -1,5 +1,6 @@
 import {
   CanActivate,
+  ExceptionFilter,
   INestApplication,
   InternalServerErrorException,
   Type,
@@ -66,7 +67,7 @@ type CronJobClass = string | symbol | Function | Type<CronJobHandlerBase>
 type EventJobClass = string | symbol | Function | Type<EventHandlerBase<any>>
 
 export class KoalaApp {
-  private _globalExceptionFilter: BaseExceptionFilter
+  private _globalExceptionFilter: ExceptionFilter
   private _prismaValidationExceptionFilter: BaseExceptionFilter
   private _domainExceptionFilter: BaseExceptionFilter
   private _zodExceptionFilter: BaseExceptionFilter
@@ -79,7 +80,7 @@ export class KoalaApp {
   private _ngrokUrl: string
 
   constructor(private readonly app: INestApplication<any>) {
-    const { httpAdapter } = this.app.get(HttpAdapterHost)
+    const httpAdapterHost = this.app.get(HttpAdapterHost)
     let loggingService = this.app.get(ILoggingService)
 
     if (!loggingService.report) {
@@ -90,7 +91,7 @@ export class KoalaApp {
     }
 
     this._globalExceptionFilter = new GlobalExceptionsFilter(
-      httpAdapter,
+      httpAdapterHost,
       loggingService,
     )
     this._prismaValidationExceptionFilter = new PrismaValidationExceptionFilter(
