@@ -11,10 +11,12 @@ export class RedisService implements IRedisService, OnModuleDestroy {
 
   constructor(env: EnvService) {
     if (!EnvConfig.isEnvTest) {
-      const url = new URL(env.get('REDIS_CONNECTION_STRING'))
-      this.environment = env.get('NODE_ENV')
+      const redisUrl = env.get('REDIS_CONNECTION_STRING')
 
-      if (url) {
+      if (redisUrl) {
+        const url = new URL(redisUrl)
+        this.environment = env.get('NODE_ENV')
+
         this.redisClient = new Redis({
           host: url.hostname,
           port: Number(url.port),
