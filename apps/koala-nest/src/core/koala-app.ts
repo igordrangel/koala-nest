@@ -285,9 +285,12 @@ export class KoalaApp {
   }
 
   async build() {
+    if (KoalaGlobalVars.dbTransactionContext) {
+      this.app.useGlobalFilters(this._prismaValidationExceptionFilter)
+    }
+
     this.app.useGlobalFilters(
       this._globalExceptionFilter,
-      this._prismaValidationExceptionFilter,
       this._domainExceptionFilter,
       this._zodExceptionFilter,
     )
