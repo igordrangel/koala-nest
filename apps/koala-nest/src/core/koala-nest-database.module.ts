@@ -1,4 +1,10 @@
-import { DynamicModule, InjectionToken, Module, Type } from '@nestjs/common'
+import {
+  DynamicModule,
+  ForwardReference,
+  InjectionToken,
+  Module,
+  Type,
+} from '@nestjs/common'
 import { RepositoryBase } from '../core/database/repository.base'
 import { EnvService } from '../env/env.service'
 import { PrismaService } from './database/prisma.service'
@@ -13,6 +19,9 @@ export interface KoalaNestDatabaseProviderConfig<T> {
 interface KoalaNestDatabaseModuleConfig {
   repositories: KoalaNestDatabaseProviderConfig<RepositoryBase<any>>[]
   services: KoalaNestDatabaseProviderConfig<any>[]
+  imports?: Array<
+    Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference<any>
+  >
 }
 
 @Module({})
@@ -36,6 +45,7 @@ export class KoalaNestDatabaseModule {
 
     return {
       module: KoalaNestDatabaseModule,
+      imports: config.imports ?? [],
       providers: [
         {
           provide: PRISMA_TOKEN,

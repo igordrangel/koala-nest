@@ -1,5 +1,6 @@
 import {
   DynamicModule,
+  ForwardReference,
   MiddlewareConsumer,
   Module,
   NestMiddleware,
@@ -11,6 +12,9 @@ import { AutoMappingProfile } from './mapping/auto-mapping-profile'
 import { AutoMappingModule } from './mapping/auto-mapping.module'
 
 interface KoalaNestHttpModuleConfig {
+  imports?: Array<
+    Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference<any>
+  >
   automapperProfile: Type<AutoMappingProfile>
   middlewares?: Type<NestMiddleware>[]
 }
@@ -24,7 +28,10 @@ export class KoalaNestHttpModule implements NestModule {
 
     return {
       module: KoalaNestHttpModule,
-      imports: [AutoMappingModule.register(config.automapperProfile)],
+      imports: [
+        ...(config.imports ?? []),
+        AutoMappingModule.register(config.automapperProfile),
+      ],
       providers: [EnvService],
       exports: [AutoMappingModule],
     }
