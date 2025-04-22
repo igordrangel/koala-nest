@@ -19,14 +19,13 @@ export interface KoalaNestDatabaseProviderConfig<T> {
 interface KoalaNestDatabaseModuleConfig {
   repositories: KoalaNestDatabaseProviderConfig<RepositoryBase<any>>[]
   services: KoalaNestDatabaseProviderConfig<any>[]
-  imports?: Array<
-    Type<any> | DynamicModule | Promise<DynamicModule> | ForwardReference<any>
-  >
+  imports?: Array<Type<any> | DynamicModule | ForwardReference<any>>
 }
 
 @Module({})
 export class KoalaNestDatabaseModule {
   static register(config: KoalaNestDatabaseModuleConfig): DynamicModule {
+    const imports = config.imports ?? []
     const repositoriesToExport =
       config.repositories?.map((repository) => repository.interface) ?? []
     const repositoriesToProvide =
@@ -45,7 +44,7 @@ export class KoalaNestDatabaseModule {
 
     return {
       module: KoalaNestDatabaseModule,
-      imports: config.imports ?? [],
+      imports,
       providers: [
         {
           provide: PRISMA_TOKEN,
@@ -55,7 +54,12 @@ export class KoalaNestDatabaseModule {
         ...servicesToProvide,
         EnvService,
       ],
-      exports: [PRISMA_TOKEN, ...repositoriesToExport, ...servicesToExport],
+      exports: [
+        PRISMA_TOKEN,
+        ...repositoriesToExport,
+        ...servicesToExport,
+        ...imports,
+      ],
     }
   }
 }
