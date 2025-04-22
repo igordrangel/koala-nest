@@ -6,11 +6,11 @@ import { Module } from '@nestjs/common'
 @Module({
   imports: [
     KoalaNestHttpModule.register({
+      imports: [InfraModule],
       automapperProfile: MappingProfile,
       middlewares: [],
     }),
-    InfraModule,
   ],
-  exports: [KoalaNestHttpModule, InfraModule],
+  exports: [KoalaNestHttpModule],
 })
 export class ControllerModule {}
