@@ -1,4 +1,4 @@
-import { toCamelCase } from '@koalarx/utils/operators/string'
+import { toCamelCase } from '@koalarx/utils/KlString'
 import { Type } from '@nestjs/common'
 import { ListResponse } from '..'
 import { PaginationDto } from '../dtos/pagination.dto'

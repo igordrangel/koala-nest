@@ -1,6 +1,6 @@
 import { QUERY_FILTER_PARAMS } from '@koalarx/nest/core/constants/query-params'
 import { PaginationDto } from '@koalarx/nest/core/dtos/pagination.dto'
-import { klArray } from '@koalarx/utils/operators/array'
+import { KlArray } from '@koalarx/utils/KlArray'
 import { randomUUID } from 'node:crypto'
 import { ListResponseBase } from '../../core/controllers/list-response.base'
 import { EntityActionType, EntityBase } from '../../core/database/entity.base'
@@ -28,9 +28,8 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
     const page = query.page ?? QUERY_FILTER_PARAMS.page
     const limit = query.limit ?? QUERY_FILTER_PARAMS.limit
 
-    return klArray(predicate ? this.items.filter(predicate) : this.items)
-      .orderBy(query.orderBy ?? '', query.direction === 'desc')
-      .getValue()
+    return new KlArray(predicate ? this.items.filter(predicate) : this.items)
+      .orderBy(query.orderBy ?? '', query.direction)
       .slice(page * limit, (page + 1) * limit)
       .map((item) => {
         item._action = EntityActionType.update
@@ -84,8 +83,8 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
 
   private getNewId(): IComparableId {
     return this.typeId === 'number'
-      ? (klArray(this.items).orderBy('_id', true).getValue()[0]
-          ?._id as number) ?? 0 + 1
+      ? (new KlArray(this.items).orderBy('_id', 'desc')[0]?._id as number) ??
+          0 + 1
       : randomUUID()
   }
 }
