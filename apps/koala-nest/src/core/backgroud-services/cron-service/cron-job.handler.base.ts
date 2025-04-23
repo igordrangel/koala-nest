@@ -1,8 +1,8 @@
-import { klDelay } from '@koalarx/utils/operators/delay'
+import { delay } from '@koalarx/utils/KlDelay'
 import { ILoggingService } from '../../../services/logging/ilogging.service'
 import { IRedLockService } from '../../../services/redlock/ired-lock.service'
-import { RequestResult } from '../../request-overflow/request-result'
 import { KoalaGlobalVars } from '../../koala-global-vars'
+import { RequestResult } from '../../request-overflow/request-result'
 
 export type CronJobResponse = RequestResult<Error, null>
 
@@ -57,7 +57,7 @@ export abstract class CronJobHandlerBase {
         }
       }
 
-      await klDelay(this._timeout)
+      await delay(this._timeout)
 
       await this.redlockService.releaseLock(name)
     }

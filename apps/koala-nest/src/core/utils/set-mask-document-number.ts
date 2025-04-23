@@ -1,4 +1,4 @@
-import { maskCnpj, maskCpf } from '@koalarx/utils/operators/string'
+import { maskCnpj, maskCpf } from '@koalarx/utils/KlString'
 
 export function setMaskDocumentNumber(document?: string) {
   if (!document) {

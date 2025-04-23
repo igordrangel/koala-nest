@@ -1,4 +1,4 @@
-import { klDelay } from '@koalarx/utils/operators/delay'
+import { delay } from '@koalarx/utils/KlDelay'
 import { vi } from 'vitest'
 import { FakeLoggingService } from '../../../test/services/fake-logging.service'
 import { FakeRedLockService } from '../../../test/services/fake-red-lock.service'
@@ -32,7 +32,7 @@ test('cron job', async () => {
 
   new CronJobTest().start()
 
-  await klDelay(100)
+  await delay(100)
 
   expect(callbackSpy).toHaveBeenCalled()
 })

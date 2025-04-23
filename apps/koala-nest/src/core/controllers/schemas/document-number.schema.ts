@@ -1,4 +1,4 @@
-import { validateCnpj, validateCpf } from '@koalarx/utils/operators/string'
+import { validateCnpj, validateCpf } from '@koalarx/utils/KlString'
 
 export function documentNumberSchema(value: string) {
   if (value !== '' && value !== 'undefined' && value !== 'null') {
