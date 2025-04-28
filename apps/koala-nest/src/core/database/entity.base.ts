@@ -1,3 +1,4 @@
+import { KlArray, KlDate, KlTime } from '@koalarx/utils'
 import { Type } from '@nestjs/common'
 import { Overwrite } from '..'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
@@ -60,6 +61,15 @@ export abstract class EntityBase<T extends IComparable<T>>
           }
 
           this[key].setList(value)
+        } else if (
+          propDefinitions?.type === 'KlArray' &&
+          (props[key] instanceof Array || Array.isArray(props[key]))
+        ) {
+          this[key] = new KlArray(props[key])
+        } else if (propDefinitions?.type === 'KlDate' && props[key] instanceof Date) {
+          this[key] = new KlDate(props[key])
+        } else if (propDefinitions?.type === 'KlTime' && props[key] instanceof Date) {
+          this[key] = new KlTime(props[key].getHours(), props[key].getMinutes(), props[key].getSeconds(), props[key].getMilliseconds())
         } else if (EntityOnPropKey) {
           if (props[key]) {
             const entity = new EntityOnPropKey()
