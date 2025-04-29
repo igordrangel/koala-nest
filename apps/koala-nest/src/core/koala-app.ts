@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   Type,
 } from '@nestjs/common'
-import { BaseExceptionFilter, Reflector } from '@nestjs/core'
+import { BaseExceptionFilter } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
 import { apiReference } from '@scalar/nestjs-api-reference'
@@ -97,8 +97,9 @@ export class KoalaApp {
   }
 
   addGlobalGuard(Guard: Type<CanActivate>) {
-    const reflector = this.app.get(Reflector)
-    this._guards.push(new Guard(reflector))
+    this._guards.push(
+      instanciateClassWithDependenciesInjection(this.app, Guard),
+    )
     return this
   }
 
