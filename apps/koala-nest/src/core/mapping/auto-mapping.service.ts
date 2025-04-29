@@ -77,13 +77,13 @@ export class AutoMappingService {
       }
     })
 
-    Object.keys(mappedTarget).forEach((key) => {
+    propTargetContext?.props.forEach((prop) => {
       const formMemberDefinition = mapContext.forMemberDifinitions?.find(
-        (def) => def[key],
-      )?.[key]
+        (def) => def[prop.name],
+      )?.[prop.name]
 
       if (formMemberDefinition) {
-        mappedTarget[key] = formMemberDefinition(data)
+        mappedTarget[prop.name] = formMemberDefinition(data)
       }
     })
 
