@@ -3,6 +3,7 @@ import { List } from '../utils/list'
 import { AutoMappingClassContext } from './auto-mapping-class-context'
 import { AutoMappingContext } from './auto-mapping-context'
 import { ForMemberDefinition } from './for-member'
+import { findOnList } from '../utils/find-on-list'
 
 interface AutoMappingGetContext {
   mapContext: AutoMappingContext | null
@@ -31,11 +32,12 @@ export class AutoMappingList {
 
   static get(source: Type<any>, target: Type<any>): AutoMappingGetContext {
     return {
-      mapContext: this._mappingProfileList.find(
+      mapContext: findOnList(
+        this._mappingProfileList,
         (mp) =>
-          (mp.source.name === source.name ||
-            Object.getPrototypeOf(mp.source.prototype.constructor) ===
-              source) &&
+          mp.source.name === source.name && mp.target.name === target.name,
+        (mp) =>
+          Object.getPrototypeOf(mp.source.prototype.constructor) === source &&
           mp.target.name === target.name,
       ),
       propSourceContext: this._mappedPropList.find(
