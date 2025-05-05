@@ -8,11 +8,18 @@ import { List } from '../utils/list'
 import { EntityActionType, EntityBase } from './entity.base'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
 
-type RepositoryInclude<TEntity> = {
-  [key in keyof TEntity]?: boolean | RepositoryInclude<TEntity[keyof TEntity]>
-}
+type RepositoryInclude<TEntity> = Omit<
+  {
+    [K in keyof TEntity as TEntity[K] extends Function ? never : K]?:
+      | boolean
+      | (TEntity[K] extends List<infer U>
+          ? RepositoryInclude<U>
+          : RepositoryInclude<TEntity[K]>)
+  },
+  '_id' | '_action'
+>
 
-interface RepositoryInitProps<TEntity> {
+interface RepositoryInitProps<TEntity extends EntityBase<TEntity>> {
   context: PrismaTransactionalClient
   modelName: Type<TEntity>
   transactionContext?: Type<PrismaTransactionalClient>
@@ -39,7 +46,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async findById(id: IComparableId): Promise<TEntity | null> {
     return this.context()
       .findFirst({
-        include: this._include,
+        include: this.getInclude(),
         where: { [this.getIdPropName()]: id },
       })
       .then((response: TEntity) => {
@@ -54,7 +61,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async findFirst<T>(where: T) {
     return this.context()
       .findFirst({
-        include: this._include,
+        include: this.getInclude(),
         where,
       })
       .then((response: TEntity) => {
@@ -69,7 +76,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async findUnique<T>(where: T) {
     return this.context()
       .findUnique({
-        include: this._include,
+        include: this.getInclude(),
         where,
       })
       .then((response: TEntity) => {
@@ -117,7 +124,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       return this.context()
         .create({
           data: prismaEntity,
-          include: this._include,
+          include: this.getInclude(),
         })
         .then((response: TEntity) => this.createEntity(response))
     } else {
@@ -234,22 +241,26 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
             }
           }
         } else if (entity[key] instanceof EntityBase) {
-
           if (entity[key]._action === EntityActionType.create) {
             if (entity[key][this.getIdPropName()]) {
               prismaSchema[key] = {
                 connectOrCreate: {
-                  where: { [this.getIdPropName()]: entity[key][this.getIdPropName()] },
+                  where: {
+                    [this.getIdPropName()]: entity[key][this.getIdPropName()],
+                  },
                   create: this.entityToPrisma(entity[key] as any),
-                }
+                },
               }
             } else {
-              prismaSchema[key] = { create: this.entityToPrisma(entity[key] as any) }
+              prismaSchema[key] = {
+                create: this.entityToPrisma(entity[key] as any),
+              }
             }
           } else {
-            prismaSchema[key] = { update: this.entityToPrisma(entity[key] as any) }
+            prismaSchema[key] = {
+              update: this.entityToPrisma(entity[key] as any),
+            }
           }
-          
         } else {
           prismaSchema[key] = entity[key]
         }
@@ -273,7 +284,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
 
   private findManySchema<T>(where: T, pagination?: PaginationDto) {
     return {
-      include: this._include,
+      include: this.getInclude(),
       where,
       orderBy: pagination?.generateOrderBy(),
       skip: pagination?.skip(),
@@ -304,5 +315,23 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
 
   private getIdPropName() {
     return Reflect.getMetadata('entity:id', this._modelName.prototype) ?? 'id'
+  }
+
+  private getInclude(include?: RepositoryInclude<TEntity>) {
+    include = include ?? this._include ?? {}
+
+    const result = {}
+
+    Object.keys(include).forEach((key) => {
+      if (typeof include[key] === 'boolean') {
+        result[key] = include[key]
+      } else {
+        result[key] = {
+          include: this.getInclude(include[key]),
+        }
+      }
+    })
+
+    return result
   }
 }
