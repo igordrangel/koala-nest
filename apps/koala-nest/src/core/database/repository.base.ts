@@ -234,10 +234,22 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
             }
           }
         } else if (entity[key] instanceof EntityBase) {
-          prismaSchema[key] =
-            entity[key]._action === EntityActionType.create
-              ? { create: this.entityToPrisma(entity[key] as any) }
-              : { update: this.entityToPrisma(entity[key] as any) }
+
+          if (entity[key]._action === EntityActionType.create) {
+            if (entity[key][this.getIdPropName()]) {
+              prismaSchema[key] = {
+                connectOrCreate: {
+                  where: { [this.getIdPropName()]: entity[key][this.getIdPropName()] },
+                  create: this.entityToPrisma(entity[key] as any),
+                }
+              }
+            } else {
+              prismaSchema[key] = { create: this.entityToPrisma(entity[key] as any) }
+            }
+          } else {
+            prismaSchema[key] = { update: this.entityToPrisma(entity[key] as any) }
+          }
+          
         } else {
           prismaSchema[key] = entity[key]
         }
