@@ -1,4 +1,4 @@
-import { INestApplication, Type } from '@nestjs/common'
+import { CanActivate, INestApplication, Type } from '@nestjs/common'
 import { BaseExceptionFilter } from '@nestjs/core'
 import { PrismaTransactionalClient } from '../core/database/prisma-transactional-client'
 import { KoalaGlobalVars } from '../core/koala-global-vars'
@@ -10,6 +10,7 @@ import { ZodErrorsFilter } from '../filters/zod-errors.filter'
 import { ILoggingService } from '../services/logging/ilogging.service'
 
 export class KoalaAppTest {
+  private _guards: CanActivate[] = []
   private _globalExceptionFilter: BaseExceptionFilter
   private _prismaValidationExceptionFilter: BaseExceptionFilter
   private _domainExceptionFilter: BaseExceptionFilter
@@ -31,6 +32,13 @@ export class KoalaAppTest {
     )
     this._domainExceptionFilter = new DomainErrorsFilter(loggingService)
     this._zodExceptionFilter = new ZodErrorsFilter(loggingService)
+  }
+
+  addGlobalGuard(Guard: Type<CanActivate>) {
+    this._guards.push(
+      instanciateClassWithDependenciesInjection(this.app, Guard),
+    )
+    return this
   }
 
   addCustomGlobalExceptionFilter(filter: BaseExceptionFilter) {
@@ -85,6 +93,10 @@ export class KoalaAppTest {
       this._domainExceptionFilter,
       this._zodExceptionFilter,
     )
+
+    for (const guard of this._guards) {
+      this.app.useGlobalGuards(guard)
+    }
 
     return this.app
   }
