@@ -93,9 +93,11 @@ export class AutoMappingService {
   private mapNestedProp(data: any, source: Type<any>) {
     const targets = this._contextList.getTargets(source.prototype.constructor)
 
-    if (targets.length >= 1) {
-      return this.map(data, source.prototype.constructor, targets[0])
+    if (targets.length === 0) {
+      throw new Error(`No mapping context found for ${source.name}`)
     }
+
+    return this.map(data, source.prototype.constructor, targets[0])
   }
 
   private mapListToArray(value: List<any>) {
