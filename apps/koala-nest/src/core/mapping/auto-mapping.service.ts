@@ -91,6 +91,10 @@ export class AutoMappingService {
   }
 
   private mapNestedProp(data: any, source: Type<any>) {
+    if (this.isPrimitiveType(data)) {
+      return data
+    }
+
     const targets = this._contextList.getTargets(source.prototype.constructor)
 
     if (targets.length === 0) {
@@ -138,5 +142,20 @@ export class AutoMappingService {
       (item) =>
         this.mapNestedProp(item, compositionType.prototype.constructor) ?? {},
     )
+  }
+
+  private isPrimitiveType(value: any) {
+    switch (typeof value) {
+      case 'string':
+      case 'number':
+      case 'bigint':
+      case 'boolean':
+        return true
+      case 'symbol':
+      case 'undefined':
+      case 'object':
+      case 'function':
+        return false
+    }
   }
 }
