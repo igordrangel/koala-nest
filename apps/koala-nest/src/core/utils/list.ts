@@ -165,6 +165,7 @@ export class List<T> {
     if (item instanceof EntityBase) {
       return list
         .filter((i) => i instanceof EntityBase)
+        .filter((i) => !!i._id)
         .findIndex(
           (i) =>
             (item as any)._id === (i as any)._id ||
