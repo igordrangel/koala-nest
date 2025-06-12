@@ -58,7 +58,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       })
   }
 
-  protected async findFirst<T>(where: T) {
+  protected async findFirst<T>(where: T): Promise<TEntity | null> {
     return this.context()
       .findFirst({
         include: this.getInclude(),
@@ -73,7 +73,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       })
   }
 
-  protected async findUnique<T>(where: T) {
+  protected async findUnique<T>(where: T): Promise<TEntity | null> {
     return this.context()
       .findUnique({
         include: this.getInclude(),
@@ -88,7 +88,10 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       })
   }
 
-  protected async findMany<T>(where: T, pagination?: PaginationDto) {
+  protected async findMany<T>(
+    where: T,
+    pagination?: PaginationDto,
+  ): Promise<TEntity[]> {
     return this.context()
       .findMany(this.findManySchema(where, pagination))
       .then((result: TEntity[]) =>
@@ -149,7 +152,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
               ),
             ])
           }),
-      ).then(() => this.findFirst(where))
+      ).then(() => this.findFirst(where) as Promise<TEntity>)
     }
   }
 
@@ -158,6 +161,10 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     externalServices?: Promise<any>,
   ) {
     const entity = await this.findUnique(where)
+
+    if (!entity) {
+      throw new Error(`Entity not found for where: ${JSON.stringify(where)}`)
+    }
 
     const relationEntity: EntityBase<TEntity>[] = []
 
