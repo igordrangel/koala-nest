@@ -317,7 +317,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       .filter((key: string) => key === 'id' || key.includes('Id'))
       .forEach((key) => (where[key] = entity[key]))
 
-    return client[toCamelCase(entity.constructor.name)].remove({ where })
+    return client[toCamelCase(entity.constructor.name)].delete({ where })
   }
 
   private getIdPropName() {
