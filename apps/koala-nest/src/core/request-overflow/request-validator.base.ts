@@ -3,7 +3,7 @@ import { ZodType } from 'zod'
 export abstract class RequestValidatorBase<
   TRequest extends Record<string, any>,
 > {
-  private _request: Record<string, any>
+  protected _request: Record<string, any>
 
   constructor(request: TRequest) {
     this._request = { ...request }
