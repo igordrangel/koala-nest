@@ -20,7 +20,7 @@ interface KoalaNestModuleConfig {
   controllers?: Type<any>[]
   healthCheck?: Type<any>
   cronJobs?: Type<CronJobHandlerBase>[]
-  eventJobs?: Type<EventHandlerBase<any>>[]
+  eventJobs?: Type<EventHandlerBase>[]
 }
 
 @Module({})

@@ -11,7 +11,7 @@ export abstract class EventJob<TEntity> {
 
   constructor() {}
 
-  abstract defineHandlers(): Array<Type<EventHandlerBase<any>>>
+  abstract defineHandlers(): Array<Type<EventHandlerBase>>
 
   get eventQueue(): EventQueue[] {
     return this._eventQueue

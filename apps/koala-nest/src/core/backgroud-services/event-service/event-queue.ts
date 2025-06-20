@@ -3,9 +3,14 @@ import { EventClass } from './event-class'
 import { EventJob } from './event-job'
 
 type EventJobCallback = (event: any) => void
+interface EventQueueJobItem {
+  eventClassName: string
+  callback: EventJobCallback
+}
 
 export class EventQueue {
-  private static handlersMap: Record<string, EventJobCallback[]> = {}
+  private static handlersMap: Record<string, EventQueueJobItem[]> = {}
+
   private static markedAggregates: EventJob<any>[] = []
 
   public static markAggregateForDispatch(aggregate: EventJob<any>) {
@@ -26,14 +31,21 @@ export class EventQueue {
     }
   }
 
-  public static register(callback: EventJobCallback, eventClassName: string) {
-    const wasEventRegisteredBefore = eventClassName in this.handlersMap
+  public static register(
+    callback: EventJobCallback,
+    handlerClassName: string,
+    eventClassName: string,
+  ) {
+    const wasEventRegisteredBefore = handlerClassName in this.handlersMap
 
     if (!wasEventRegisteredBefore) {
-      this.handlersMap[eventClassName] = []
+      this.handlersMap[handlerClassName] = []
     }
 
-    this.handlersMap[eventClassName].push(callback)
+    this.handlersMap[handlerClassName].push({
+      eventClassName,
+      callback,
+    })
   }
 
   public static clearHandlers() {
@@ -82,7 +94,9 @@ export class EventQueue {
       const handlers = this.handlersMap[eventHandler]
 
       for (const handler of handlers) {
-        handler(event)
+        if (event.constructor.name === handler.eventClassName) {
+          handler.callback(event)
+        }
       }
     }
   }
