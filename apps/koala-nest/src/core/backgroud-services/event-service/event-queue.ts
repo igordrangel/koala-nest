@@ -85,18 +85,22 @@ export class EventQueue {
     const eventHandler = Object.keys(this.handlersMap).find((handlerName) =>
       eventJobHandlers
         ?.defineHandlers()
-        .find((handler) => handler.name === handlerName),
+        .find(
+          (handler) =>
+            handler.name === handlerName &&
+            this.handlersMap[handler.name].some(
+              (job) => job.eventClassName === event.constructor.name,
+            ),
+        ),
     )
 
     const isEventRegistered = !!eventHandler
 
     if (isEventRegistered) {
-      const handlers = this.handlersMap[eventHandler]
+      const jobs = this.handlersMap[eventHandler]
 
-      for (const handler of handlers) {
-        if (event.constructor.name === handler.eventClassName) {
-          handler.callback(event)
-        }
+      for (const job of jobs) {
+        job.callback(event)
       }
     }
   }
