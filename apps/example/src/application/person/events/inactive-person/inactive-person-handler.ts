@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common'
 import { InactivePersonEvent } from './inactive-person-event'
 
 @Injectable()
-export class InactivePersonHandler extends EventHandlerBase<InactivePersonEvent> {
+export class InactivePersonHandler extends EventHandlerBase {
   constructor(private readonly repository: IPersonRepository) {
-    super()
+    super(InactivePersonEvent)
   }
 
   async handleEvent(): Promise<void> {

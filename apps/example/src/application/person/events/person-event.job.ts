@@ -5,7 +5,7 @@ import { Type } from '@nestjs/common'
 import { InactivePersonHandler } from './inactive-person/inactive-person-handler'
 
 export class PersonEventJob extends EventJob<Person> {
-  defineHandlers(): Type<EventHandlerBase<any>>[] {
+  defineHandlers(): Type<EventHandlerBase>[] {
     return [InactivePersonHandler]
   }
 }

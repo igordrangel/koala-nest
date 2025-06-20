@@ -63,7 +63,7 @@ interface ApiDocConfig {
 }
 
 type CronJobClass = string | symbol | Function | Type<CronJobHandlerBase>
-type EventJobClass = string | symbol | Function | Type<EventHandlerBase<any>>
+type EventJobClass = string | symbol | Function | Type<EventHandlerBase>
 
 export class KoalaApp {
   private _globalExceptionFilter: BaseExceptionFilter
