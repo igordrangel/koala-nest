@@ -7,18 +7,23 @@ import { EventQueue } from './event-queue'
 
 class CustomEvent extends EventClass {}
 
-class CustomEventHandler extends EventHandlerBase<CustomEvent> {
+class CustomEventHandler extends EventHandlerBase {
+  constructor() {
+    super(CustomEvent)
+  }
+
   static async isCalled(): Promise<null> {
     return null
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async handleEvent(event: CustomEvent): Promise<void> {
     await CustomEventHandler.isCalled()
   }
 }
 
 class CustomEventJob extends EventJob<any> {
-  defineHandlers(): Array<Type<EventHandlerBase<any>>> {
+  defineHandlers(): Array<Type<EventHandlerBase>> {
     return [CustomEventHandler]
   }
 }

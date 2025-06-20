@@ -13,5 +13,5 @@ export abstract class EventHandlerBase {
     )
   }
 
-  abstract handleEvent(event: typeof this.event): Promise<void>
+  abstract handleEvent(event: InstanceType<this['event']>): Promise<void>
 }
