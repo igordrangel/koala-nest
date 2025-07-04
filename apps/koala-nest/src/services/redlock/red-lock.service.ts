@@ -8,7 +8,7 @@ export class RedLockService implements IRedLockService {
   constructor(private readonly redisService: IRedisService) {}
 
   async acquiredLock(key: string, ttlSecondsLock: number): Promise<boolean> {
-    if (EnvConfig.isEnvTest) {
+    if (EnvConfig.isEnvTest || !this.redisService.isConnected) {
       return true
     }
 
@@ -25,7 +25,7 @@ export class RedLockService implements IRedLockService {
   }
 
   async releaseLock(key: string): Promise<void> {
-    if (!EnvConfig.isEnvTest) {
+    if (!EnvConfig.isEnvTest && this.redisService.isConnected) {
       await this.redisService.deleteCache(this.getLockKey(key))
     }
   }
