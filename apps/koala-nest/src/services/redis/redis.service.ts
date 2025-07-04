@@ -9,6 +9,10 @@ export class RedisService implements IRedisService, OnModuleDestroy {
   private readonly redisClient: Redis
   private readonly environment: string
 
+  get isConnected(): boolean {
+    return !!this.redisClient
+  }
+
   constructor(env: EnvService) {
     if (!EnvConfig.isEnvTest) {
       const redisUrl = env.get('REDIS_CONNECTION_STRING')

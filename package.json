@@ -1,6 +1,6 @@
 {
   "name": "@koalarx/nest",
-  "version": "1.14.3",
+  "version": "1.14.4",
   "description": "",
   "author": "Igor D. Rangel",
   "private": true,
@@ -25,7 +25,7 @@
     "deploy:release": "npm version major"
   },
   "dependencies": {
-    "@koalarx/utils": "^4.2.0",
+    "@koalarx/utils": "^4.2.1",
     "@nestjs/common": "^11.0.12",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.12",

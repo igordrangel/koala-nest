@@ -1,4 +1,5 @@
 export abstract class IRedisService {
+  abstract isConnected: boolean
   abstract getCache(key: string): Promise<string | null>
   abstract setCache(
     key: string,
