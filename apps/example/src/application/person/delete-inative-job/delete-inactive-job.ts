@@ -2,6 +2,7 @@ import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
 import {
   CronJobHandlerBase,
   CronJobResponse,
+  CronJobSettings,
 } from '@koalarx/nest/core/backgroud-services/cron-service/cron-job.handler.base'
 import { ok } from '@koalarx/nest/core/request-overflow/request-result'
 import { ILoggingService } from '@koalarx/nest/services/logging/ilogging.service'
@@ -21,6 +22,13 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
     super(redlockService, loggingService)
   }
 
+  protected async settings(): Promise<CronJobSettings> {
+    return {
+      isActive: true,
+      timeInMinutes: 1,
+    }
+  }
+
   protected async run(): Promise<CronJobResponse> {
     const result = await this.readManyPerson.handle(
       new ReadManyPersonDto({ active: false }),
@@ -37,13 +45,5 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
     }
 
     return ok(null)
-  }
-
-  protected async isActive(): Promise<boolean> {
-    return true
-  }
-
-  protected defineTimeInMinutes(): number {
-    return 1
   }
 }
