@@ -2,6 +2,7 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository'
 import {
   CronJobHandlerBase,
   CronJobResponse,
+  CronJobSettings,
 } from '@koalarx/nest/core/backgroud-services/cron-service/cron-job.handler.base'
 import { EventQueue } from '@koalarx/nest/core/backgroud-services/event-service/event-queue'
 import { ok } from '@koalarx/nest/core/request-overflow/request-result'
@@ -21,6 +22,13 @@ export class CreatePersonJob extends CronJobHandlerBase {
     private readonly repository: IPersonRepository,
   ) {
     super(redlockService, loggingService)
+  }
+
+  protected async settings(): Promise<CronJobSettings> {
+    return {
+      isActive: true,
+      timeInMinutes: 1,
+    }
   }
 
   protected async run(): Promise<CronJobResponse> {
@@ -46,13 +54,5 @@ export class CreatePersonJob extends CronJobHandlerBase {
     }
 
     return ok(null)
-  }
-
-  protected async isActive(): Promise<boolean> {
-    return true
-  }
-
-  protected defineTimeInMinutes(): number {
-    return 1
   }
 }
