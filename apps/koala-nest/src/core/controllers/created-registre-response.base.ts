@@ -12,6 +12,6 @@ export abstract class CreatedRegistreWithUUIDResponse extends CreatedRegistreRes
 }
 
 export abstract class CreatedRegistreWithIdResponse extends CreatedRegistreResponseBase<number> {
-  @ApiProperty()
+  @ApiProperty({ type: 'integer', format: 'int32' })
   declare id: number
 }
