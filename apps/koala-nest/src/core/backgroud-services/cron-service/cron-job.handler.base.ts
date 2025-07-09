@@ -5,29 +5,30 @@ import { KoalaGlobalVars } from '../../koala-global-vars'
 import { RequestResult } from '../../request-overflow/request-result'
 
 export type CronJobResponse = RequestResult<Error, null>
+export interface CronJobSettings {
+  isActive: boolean
+  timeInMinutes: number
+}
 
 export abstract class CronJobHandlerBase {
-  private readonly _timeout: number
-
   constructor(
     private readonly redlockService: IRedLockService,
     private readonly loggingService: ILoggingService,
-  ) {
-    this._timeout = this.defineTimeInMinutes() * 60 * 1000
-  }
+  ) {}
 
   protected abstract run(): Promise<CronJobResponse>
 
-  protected abstract isActive(): Promise<boolean>
-
-  protected abstract defineTimeInMinutes(): number
+  protected abstract settings(): Promise<CronJobSettings>
 
   async start(): Promise<void> {
     const name = this.constructor.name
 
     while (true) {
-      if (await this.isActive()) {
-        const ttlSecondsLock = this._timeout / 1000
+      const settings = await this.settings()
+      const timeout = settings.timeInMinutes * 60 * 1000
+
+      if (settings.isActive) {
+        const ttlSecondsLock = timeout / 1000
         const acquiredLock = await this.redlockService.acquiredLock(
           name,
           ttlSecondsLock,
@@ -57,7 +58,7 @@ export abstract class CronJobHandlerBase {
         }
       }
 
-      await delay(this._timeout)
+      await delay(timeout)
 
       await this.redlockService.releaseLock(name)
     }
