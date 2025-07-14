@@ -192,6 +192,44 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     )
   }
 
+  protected async removeMany<TWhere = any>(
+    where: TWhere,
+    externalServices?: Promise<any>,
+  ): Promise<void> {
+    const entities = await this.findMany(where)
+
+    if (entities.length === 0) {
+      throw new Error(`Entities not found for where: ${JSON.stringify(where)}`)
+    }
+
+    return this.withTransaction((client) =>
+      (externalServices
+        ? externalServices.then(() => client)
+        : Promise.resolve(client)
+      ).then(async (client) => {
+        for (const entity of entities) {
+          const relationEntity: EntityBase<TEntity>[] = []
+
+          Object.keys(entity).forEach((key) => {
+            if (entity[key] instanceof EntityBase) {
+              relationEntity.push(entity[key])
+            }
+          })
+
+          await this.context(client)
+            .delete({ where })
+            .then((response) =>
+              Promise.all(
+                relationEntity.map((entity) =>
+                  this.orphanRemoval(client, entity),
+                ),
+              ).then(() => response),
+            )
+        }
+      }),
+    )
+  }
+
   private listToRelationActionList(entity: TEntity) {
     type RelationActionList = Array<{
       modelName: string
