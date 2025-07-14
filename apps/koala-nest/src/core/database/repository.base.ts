@@ -207,25 +207,25 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
         ? externalServices.then(() => client)
         : Promise.resolve(client)
       ).then(async (client) => {
-        for (const entity of entities) {
-          const relationEntity: EntityBase<TEntity>[] = []
+        const relationEntity: EntityBase<TEntity>[] = []
 
+        for (const entity of entities) {
           Object.keys(entity).forEach((key) => {
             if (entity[key] instanceof EntityBase) {
               relationEntity.push(entity[key])
             }
           })
-
-          await this.context(client)
-            .delete({ where })
-            .then((response) =>
-              Promise.all(
-                relationEntity.map((entity) =>
-                  this.orphanRemoval(client, entity),
-                ),
-              ).then(() => response),
-            )
         }
+
+        return this.context(client)
+          .deleteMany({ where })
+          .then((response) =>
+            Promise.all(
+              relationEntity.map((entity) =>
+                this.orphanRemoval(client, entity),
+              ),
+            ).then(() => response),
+          )
       }),
     )
   }
