@@ -3,11 +3,19 @@ import { vi } from 'vitest'
 import { FakeLoggingService } from '../../../test/services/fake-logging.service'
 import { FakeRedLockService } from '../../../test/services/fake-red-lock.service'
 import { ok } from '../../request-overflow/request-result'
-import { CronJobHandlerBase, CronJobResponse } from './cron-job.handler.base'
+import {
+  CronJobHandlerBase,
+  CronJobResponse,
+  CronJobSettings,
+} from './cron-job.handler.base'
 
 export class CronJobTest extends CronJobHandlerBase {
   constructor() {
     super(new FakeRedLockService(), new FakeLoggingService())
+  }
+
+  protected async settings(): Promise<CronJobSettings> {
+    return { isActive: true, timeInMinutes: 0.01 }
   }
 
   static async isCalled(): Promise<CronJobResponse> {
@@ -16,14 +24,6 @@ export class CronJobTest extends CronJobHandlerBase {
 
   protected run(): Promise<CronJobResponse> {
     return CronJobTest.isCalled()
-  }
-
-  protected async isActive(): Promise<boolean> {
-    return true
-  }
-
-  protected defineTimeInMinutes(): number {
-    return 0.01
   }
 }
 
