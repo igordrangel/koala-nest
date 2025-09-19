@@ -333,19 +333,19 @@ export class KoalaApp {
     return this.app
   }
 
-  async serve() {
+  async serve(host?: string) {
     const envService = this.app.get(EnvService)
     const port = envService.get('PORT') ?? 3000
 
-    this.app.listen(port).then(() => this.showListeningMessage(port))
+    this.app.listen(port).then(() => this.showListeningMessage(port, host))
   }
 
-  async buildAndServe() {
+  async buildAndServe(host?: string) {
     await this.build()
-    await this.serve()
+    await this.serve(host)
   }
 
-  private showListeningMessage(port: number) {
+  private showListeningMessage(port: number, host: string = 'localhost') {
     const envService = this.app.get(EnvService)
 
     console.log('------------------------------')
@@ -353,16 +353,16 @@ export class KoalaApp {
     if (this._apiReferenceEndpoint) {
       consola.info(
         'API Reference:',
-        `http://localhost:${port}${this._apiReferenceEndpoint}`,
+        `http://${host}:${port}${this._apiReferenceEndpoint}`,
       )
     }
 
-    consola.info('Health Check:', `http://localhost:${port}/health`)
-    consola.info('Internal Host:', `http://localhost:${port}`)
+    consola.info('Health Check:', `http://${host}:${port}/health`)
+    consola.info('Internal Host:', `http://${host}:${port}`)
 
     if (this._ngrokUrl) {
       consola.info('External Host:', this._ngrokUrl)
-      consola.info('External Inspect:', 'http://localhost:4040/inspect/http')
+      consola.info('External Inspect:', `http://${host}:4040/inspect/http`)
     }
 
     consola.box('Environment:', envService.get('NODE_ENV'))
