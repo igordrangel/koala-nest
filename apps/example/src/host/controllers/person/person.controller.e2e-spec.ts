@@ -6,6 +6,7 @@ import { PERSON_ROUTER_CONFIG } from './router.config'
 describe(`CRUD OF PERSON`, () => {
   let app: INestApplication
   let personId: number
+  let addressId: number
 
   beforeAll(async () => {
     app = await createE2ETestApp()
@@ -35,13 +36,16 @@ describe(`CRUD OF PERSON`, () => {
       `${PERSON_ROUTER_CONFIG.group}/${personId}`,
     )
 
+    // Capturar o ID do endereço da resposta
+    addressId = response.body.address.id
+
     expect(response.statusCode).toBe(200)
     expect(response.body).toStrictEqual({
       id: personId,
       name: 'John Doe',
       phones: [],
       address: {
-        id: 1,
+        id: expect.any(Number),
         address: 'Streat 1',
       },
       active: true,
@@ -61,7 +65,7 @@ describe(`CRUD OF PERSON`, () => {
           name: 'John Doe',
           phones: [],
           address: {
-            id: 1,
+            id: addressId,
             address: 'Streat 1',
           },
           active: true,
@@ -96,7 +100,7 @@ describe(`CRUD OF PERSON`, () => {
           name: 'John Doe',
           phones: [],
           address: {
-            id: 1,
+            id: addressId,
             address: 'Streat 1',
           },
           active: true,
@@ -113,7 +117,7 @@ describe(`CRUD OF PERSON`, () => {
         name: 'John Doe Updated',
         phones: [],
         address: {
-          id: 1,
+          id: addressId,
           address: 'Streat 2',
         },
         active: true,
@@ -130,7 +134,7 @@ describe(`CRUD OF PERSON`, () => {
       name: 'John Doe Updated',
       phones: [],
       address: {
-        id: 1,
+        id: addressId,
         address: 'Streat 2',
       },
       active: true,

@@ -8,6 +8,9 @@ export default defineConfig({
     root: './',
     include: ['**/*.e2e-spec.ts'],
     setupFiles: ['./apps/example/src/test/setup-e2e.ts'],
+    env: {
+      NODE_ENV: 'test',
+    },
   },
   plugins: [
     tsConfigPatchs(),
