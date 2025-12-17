@@ -17,7 +17,7 @@
     "test:watch": "vitest",
     "test:e2e": "vitest run --config ./vitest.config.e2e.mts",
     "test:all": "npm run test && npm run test:e2e",
-    "prepare": "npm run build:publish",
+    "prepare": "npx prisma generate && npm run build:publish",
     "prepublishOnly": "npm test",
     "postversion": "git push && git push --tags",
     "deploy:hotfix": "npm version patch",

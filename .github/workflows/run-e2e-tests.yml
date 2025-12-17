@@ -27,7 +27,7 @@ jobs:
           cache: "npm"
           secrets: ${{ toJSON(secrets) }}
 
-      - run: npm ci && npx prisma generate
+      - run: npm ci
 
       - run: npm run test:e2e
         env:
