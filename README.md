@@ -4,333 +4,388 @@
 
 <h1 align="center">@koalarx/nest</h1>
 
-<p align="center">Uma abstração <a href="https://nestjs.com" target="_blank">Nest.js</a> para APIs escaláveis.</p>
+<p align="center">Uma abstração <a href="https://nestjs.com" target="_blank">NestJS</a> robusta para criar APIs escaláveis seguindo os princípios do Domain-Driven Design (DDD).</p>
 
-# Índice
-1. [Introdução](#introdução)  
-2. [Estrutura do Projeto](#estrutura-do-projeto)  
-3. [Uso da CLI @koalarx/nest-cli](#uso-da-cli-koalarxnest-cli)  
-4. [Recursos Optionais](#recursos-opcionais)
+<div align="center">
 
-    4.1. [API Key Strategy](#api-key-strategy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.1%2B-blue)](https://www.typescriptlang.org/)
+[![CLI](https://img.shields.io/badge/CLI-@koalarx/nest--cli-brightgreen)](https://www.npmjs.com/package/@koalarx/nest-cli)
 
-    4.2. [Ngrok](#ngrok)
+</div>
 
-    4.3. [ApiPropertyEnum](#apipropertyenum)
+## Documentação Completa
 
-    4.4. [Upload](#upload)
+Toda a documentação está organizada em arquivos separados para facilitar a navegação:
 
----
+| Documento | Descrição |
+|-----------|-----------|
+| [**CLI Reference**](./docs/00-cli-reference.md) | Guia da CLI oficial - Forma rápida de criar projetos |
+| [**Guia de Instalação**](./docs/01-guia-instalacao.md) | Como instalar e configurar a biblioteca |
+| [**Configuração Inicial**](./docs/02-configuracao-inicial.md) | Setup do projeto com KoalaNestModule e KoalaApp |
+| [**Exemplo Prático**](./docs/03-exemplo-pratico.md) | Criar uma API completa de usuários passo a passo |
+| [**Tratamento de Erros**](./docs/04-tratamento-erros.md) | Sistema robusto de tratamento e filtros de exceção |
+| [**Features Avançadas**](./docs/05-features-avancadas.md) | Cron Jobs, Event Handlers, Guards, Redis, Transações |
+| [**Decoradores**](./docs/06-decoradores.md) | @IsPublic, @Upload, @Cookies e mais |
 
-## Introdução
+## Quick Start
 
-Este projeto utiliza a CLI `@koalarx/nest-cli` para facilitar a criação de aplicações seguindo os princípios do Domain-Driven Design (DDD). A CLI automatiza a configuração inicial e a estruturação do projeto, permitindo que você comece rapidamente a desenvolver sua aplicação.  
-
----
-
-## Estrutura do Projeto
-
-A estrutura do projeto gerada pela CLI segue os princípios do DDD, separando as responsabilidades em camadas:  
-
-- **application**: Contém a lógica de mapeamento e casos de uso.  
-- **core**: Configurações e variáveis de ambiente.  
-- **domain**: Entidades, DTOs, repositórios e serviços do domínio.  
-- **host**: Controladores e ponto de entrada da aplicação.  
-- **infra**: Implementações de infraestrutura, como banco de dados e serviços externos.
-
----
-
-## Uso da CLI @koalarx/nest-cli
-
-### Instalação da CLI
-
-Certifique-se de instalar a CLI globalmente no seu ambiente:  
+### Forma Rápida com CLI (Recomendado)
 
 ```bash
+# Instalar a CLI globalmente
 npm install -g @koalarx/nest-cli
+
+# Criar novo projeto estruturado
+koala-nest new meu-projeto
+
+# Entrar na pasta
+cd meu-projeto
+
+# Iniciar em modo desenvolvimento
+npm run start:dev
 ```
 
-### Criação de um Novo Projeto
+**Pronto!** Seu projeto está estruturado com:
+- [x] Módulo DDD configurado
+- [x] Documentação da API (Scalar UI)
+- [x] Tratamento de erros robusto
+- [x] Autenticação JWT
+- [x] Banco de dados Prisma
+- [x] Redis para background services
 
-Para criar um novo projeto, execute o seguinte comando:  
+### Forma Manual
 
 ```bash
-koala-nest new my-project
+npm install @koalarx/nest
 ```
 
-Este comando irá gerar um projeto com a estrutura recomendada e todas as dependências configuradas.
+### 2. Criar Módulo Principal
 
-### Recursos Opcionais
-
-#### API Key Strategy
-
-Tendo em vista a falta de uma opção para o Nest 11 de estratégias de autenticação para APIKey, foi disponibilizada uma abstração para o mesmo no Koala Nest.
-
-Abaixo está a estrutura de pastas recomendada para a implementação de segurança no diretório `host/security`:
-
-```
-host
-└── security
-  ├── strategies
-  │   └── api-key.strategy.ts
-  ├── guards
-  │   └── auth.guard.ts
-  └── security.module.ts
-```
-
-##### Exemplo de implementação
-
-###### api-key.strategy.ts
-```ts
-import {
-  DoneFn,
-  ApiKeyStrategy as KoalaApiKeyStrategy,
-} from '@koalarx/nest/core/security/strategies/api-key.strategy'
-import { Injectable } from '@nestjs/common'
-import { PassportStrategy } from '@nestjs/passport'
-import { Request } from 'express'
-
-@Injectable()
-export class ApiKeyStrategy extends PassportStrategy(
-  KoalaApiKeyStrategy,
-  'apikey',
-) {
-  constructor() {
-    super({ header: 'ApiKey' })
-  }
-
-  validate(apikey: string, done: DoneFn, request: Request) {
-    // Valide a chave de API aqui
-    // Por exemplo, verifique se ela corresponde a um valor específico
-    if (apikey === 'valid-api-key') {
-      // Se for válida, chame done com o objeto do usuário
-      return done(null, { userId: 1, username: 'testuser' })
-    } else {
-      // Se for inválida, chame done com false
-      return done(null, false)
-    }
-  }
-}
-```
-
-###### auth.guard.ts
-```ts
-import { IS_PUBLIC_KEY } from '@koalarx/nest/decorators/is-public.decorator'
-import { ExecutionContext, Injectable } from '@nestjs/common'
-import { Reflector } from '@nestjs/core'
-import { AuthGuard as NestAuthGuard } from '@nestjs/passport'
-
-@Injectable()
-export class AuthGuard extends NestAuthGuard(['apikey']) {
-  constructor(private readonly reflector: Reflector) {
-    super()
-  }
-
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])
-
-    const request = context.switchToHttp().getRequest()
-
-    if (isPublic) {
-      return true
-    }
-
-    const canActivate = super.canActivate(context)
-
-    if (typeof canActivate === 'boolean') {
-      return canActivate
-    }
-
-    return (canActivate as Promise<boolean>).then(async (activated) => {
-      if (!request.user) {
-        const user = {} // busque o usuário aqui
-
-        if (user) {
-          request.user = user
-        }
-      }
-
-      return activated
-    })
-  }
-}
-```
-
-###### security.module.ts
-```ts
-import { EnvService } from '@koalarx/nest/env/env.service'
-import { Module } from '@nestjs/common'
-import { PassportModule } from '@nestjs/passport'
-import { ApiKeyStrategy } from './strategies/api-key.strategy'
-
-@Module({
-  imports: [PassportModule],
-  providers: [EnvService, ApiKeyStrategy],
-})
-export class SecurityModule {}
-```
-
-Agora basta importar o módulo de segurança em seu `app.module.ts` e utilizar globalmente ou em um endpoint específico
-
-###### app.module.ts
-```ts
-import { CreatePersonJob } from '@/application/person/create-person-job/create-person-job'
-import { DeleteInactiveJob } from '@/application/person/delete-inative-job/delete-inactive-job'
-import { InactivePersonHandler } from '@/application/person/events/inactive-person/inactive-person-handler'
-import { env } from '@/core/env'
+```typescript
+// src/host/app.module.ts
 import { KoalaNestModule } from '@koalarx/nest/core/koala-nest.module'
 import { Module } from '@nestjs/common'
-import { PersonModule } from './controllers/person/person.module'
-import { SecurityModule } from './security/security.module'
+import { env } from '../core/env'
+import { UserModule } from './controllers/user/user.module'
 
 @Module({
   imports: [
-    SecurityModule,
     KoalaNestModule.register({
       env,
-      controllers: [PersonModule],
-      cronJobs: [DeleteInactiveJob, CreatePersonJob],
-      eventJobs: [InactivePersonHandler],
+      controllers: [UserModule],
     }),
   ],
 })
 export class AppModule {}
 ```
 
-Para configurar globalmente inclua o guard em seu arquivo `main.ts`
+### 3. Inicializar Aplicação
 
-###### main.ts
-```ts
-import { CreatePersonJob } from '@/application/person/create-person-job/create-person-job'
-import { DeleteInactiveJob } from '@/application/person/delete-inative-job/delete-inactive-job'
-import { InactivePersonHandler } from '@/application/person/events/inactive-person/inactive-person-handler'
-import { DbTransactionContext } from '@/infra/database/db-transaction-context'
-import { KoalaApp } from '@koalarx/nest/core/koala-app'
+```typescript
+// src/main.ts
+import 'dotenv/config'
 import { NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
-import { AuthGuard } from './security/guards/auth.guard'
+import { KoalaApp } from '@koalarx/nest/core/koala-app'
+import { AppModule } from './host/app.module'
 
 async function bootstrap() {
-  return NestFactory.create(AppModule).then((app) =>
-    new KoalaApp(app)
-      .useDoc({
-        ui: 'scalar',
-        endpoint: '/doc',
-        title: 'API de Demonstração',
-        version: '1.0',
-        authorizations: [
-          { name: 'ApiKey', config: { type: 'apiKey', name: 'ApiKey' } },
-        ],
-      })
-      .addGlobalGuard(AuthGuard)
-      .addCronJob(CreatePersonJob)
-      .addCronJob(DeleteInactiveJob)
-      .addEventJob(InactivePersonHandler)
-      .setAppName('example')
-      .setInternalUserName('integration.bot')
-      .setDbTransactionContext(DbTransactionContext)
-      .enableCors()
-      .buildAndServe(),
-  )
+  const app = await NestFactory.create(AppModule)
+  
+  await new KoalaApp(app)
+    .useDoc({
+      ui: 'scalar',
+      endpoint: '/doc',
+      title: 'Minha API',
+      version: '1.0.0',
+    })
+    .enableCors()
+    .buildAndServe()
 }
+
 bootstrap()
 ```
 
-#### Ngrok
+### 4. Executar
 
-[Ngrok](https://ngrok.com) é uma ferramenta que cria túneis seguros para expor servidores locais à internet. Ele é útil para testar webhooks, compartilhar aplicações em desenvolvimento ou acessar serviços locais remotamente.
-
-##### Exemplo de implementação
-
-Inclua seu token no arquivo `main.ts` no método `.useNgrok()` e inicie a aplicação. O servidor Ngrok será configurado automaticamente para expor sua aplicação local à internet.  
-
-Certifique-se de substituir `'erarwrqwrqwr...'` pelo seu token de autenticação do Ngrok. Após iniciar a aplicação, você poderá acessar o endereço gerado pelo Ngrok para testar webhooks ou compartilhar sua aplicação em desenvolvimento.
-
-###### main.ts
-```ts
-...
-import { KoalaApp } from '@koalarx/nest/core/koala-app'
-import { NestFactory } from '@nestjs/core'
-import { AppModule } from './app.module'
-
-async function bootstrap() {
-  return NestFactory.create(AppModule).then((app) =>
-    new KoalaApp(app)
-      ...
-      .useNgrok('erarwrqwrqwr...') // Inclua sua Chave do Ngrok aqui
-      ...
-      .buildAndServe(),
-  )
-}
-bootstrap()
+```bash
+npm run start:dev
 ```
 
-### ApiPropertyEnum
+Acesse `http://localhost:3000/doc` para a documentação interativa!
 
-Um decorador para aprimorar o `@ApiProperty` do `@nestjs/swagger`, fornecendo suporte adicional para enumerações. Ele gera uma descrição para os valores do enum, incluindo suas representações numéricas e descrições, e aplica isso à propriedade na documentação.
+## Principais Features
 
-#### Parâmetros
+### Segurança
 
-- **options** - Opções de configuração para o decorador.
-  - **options.enum** - A enumeração a ser documentada. Deve ser um objeto onde as chaves são os nomes dos enums e os valores são suas representações numéricas.
-  - **options.required** - (Opcional) Indica se a propriedade é obrigatória.
+- **Guards Globais**: Proteja endpoints com autenticação
+- **API Key Strategy**: Autenticação via chave de API integrada
+- **@IsPublic()**: Marca endpoints como públicos
 
-#### Exemplo de Uso
+### Tratamento de Erros
 
-```ts
-import { ApiPropertyEnum } from './decorators/api-property-enum.decorator';
+Filtros automáticos para:
+- **Domain Errors** (ConflictError, ResourceNotFoundError, etc)
+- **Prisma Validation** (validação de banco de dados)
+- **Zod Validation** (validação de dados de entrada)
+- **Global Exceptions** (erros não capturados)
 
-enum Status {
-  Ativo = 1,
-  Inativo = 2,
+```typescript
+throw new ConflictError('Email já registrado') // 409
+throw new ResourceNotFoundError('Usuário não encontrado') // 404
+throw new BadRequestError('Dados inválidos') // 400
+```
+
+### Processamento em Background
+
+**Cron Jobs** - Execute tarefas agendadas:
+```typescript
+@Injectable()
+export class SendReportJob extends CronJobHandlerBase {
+  protected async settings() {
+    return { isActive: true, timeInMinutes: 1440 }
+  }
+  protected async run(): Promise<CronJobResponse> {
+    await emailService.sendReport()
+    return ok(null)
+  }
 }
 
-class ExemploDto {
-  @ApiPropertyEnum({ enum: Status, required: true })
-  status: Status;
+.addCronJob(SendReportJob)
+```
+
+**Event Handlers** - Processe eventos assincronamente:
+```typescript
+@Injectable()
+export class UserCreatedHandler extends EventHandlerBase {
+  get eventName(): string { return 'user:created' }
+  async handle(data: any): Promise<void> { /* sua lógica */ }
+}
+
+.addEventJob(UserCreatedHandler)
+```
+
+### Banco de Dados
+
+- **Prisma ORM** com suporte a todos os drivers (PostgreSQL, MySQL, SQLite, MariaDB, SQL Server, MongoDB)
+- **Transações Automáticas** com context gerenciado
+- **Query Logging** em desenvolvimento
+
+### Documentação
+
+Dois UIs disponíveis:
+- **Scalar** - Interface moderna e interativa
+- **Swagger UI** - Documentação clássica
+
+```typescript
+.useDoc({
+  ui: 'scalar', // ou 'swagger'
+  endpoint: '/doc',
+  title: 'API Documentation',
+  version: '1.0.0',
+})
+```
+
+### Funcionalidades Adicionais
+
+- **Redis Integration** - Sincronização de Cron Jobs e Event Handlers (RedLock)
+- **CORS** - Requisições cross-origin
+- **Zod Validation** - Validação de dados com tipos
+- **Ngrok** - Exposição segura em desenvolvimento
+- **Decoradores Customizados** - @Upload, @Cookies, @ApiPropertyEnum
+
+## Exemplo Completo
+
+Veja como criar um CRUD de usuários:
+
+```typescript
+// src/domain/entities/user.entity.ts
+export interface UserEntity {
+  id: string
+  name: string
+  email: string
+  createdAt: Date
 }
 ```
 
-Na documentação, a propriedade `status` exibirá uma descrição com os valores do enum e suas representações numéricas correspondentes, por exemplo:
+```typescript
+// src/domain/dtos/create-user.dto.ts
+import { z } from 'zod'
 
+export const CreateUserSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+})
+
+export type CreateUserDto = z.infer<typeof CreateUserSchema>
 ```
-Ativo: 1
-Inativo: 2
-```
 
-### ApiExcludeEndpointDiffDevelop
+```typescript
+// src/domain/services/user.service.ts
+import { Injectable } from '@nestjs/common'
+import { ConflictError } from '@koalarx/nest/core/errors/conflict.error'
+import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
 
-O decorator `ApiExcludeEndpointDiffDevelop` é utilizado para condicionar a exclusão de endpoints na documentação com base no ambiente de execução da aplicação. Ele utiliza a configuração de ambiente definida na classe `EnvConfig` para determinar se o endpoint será ou não excluído.
+@Injectable()
+export class UserService {
+  constructor(private readonly repository: IUserRepository) {}
 
-#### Como funciona
+  async create(data: CreateUserDto): Promise<UserEntity> {
+    const exists = await this.repository.findByEmail(data.email)
+    if (exists) throw new ConflictError('Email já registrado')
+    
+    return this.repository.create(data)
+  }
 
-- Se o ambiente atual for de desenvolvimento (`isEnvDevelop` for `true`), o endpoint será incluído na documentação.
-- Caso contrário, o endpoint será excluído da documentação.
+  async findById(id: string): Promise<UserEntity> {
+    const user = await this.repository.findById(id)
+    if (!user) throw new ResourceNotFoundError('Usuário não encontrado')
+    return user
+  }
 
-### Upload
-
-Um decorator personalizado para lidar com o upload de arquivos em um controlador NestJS.
-
-@param {number} maxSizeInKb - O tamanho máximo permitido para os arquivos em kilobytes.
-
-@param {RegExp} filetype - Um padrão de expressão regular para validar os tipos de arquivo permitidos.
-
-@returns {MethodDecorator} - Um decorator que pode ser aplicado a métodos de controladores para processar uploads de arquivos.
-
-Este decorator utiliza o `UploadedFiles` do NestJS para processar múltiplos arquivos enviados em uma requisição.
-Ele valida os arquivos com base no tamanho máximo permitido e no tipo de arquivo especificado.
-
-Exemplos de uso:
-
-```ts
-@Post('upload')
-@UploadDecorator(1024, /\.(jpg|jpeg|png)$/)
-uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
-  console.log(files);
+  async delete(id: string): Promise<void> {
+    await this.findById(id) // Valida existência
+    await this.repository.delete(id)
+  }
 }
 ```
 
-No exemplo acima, o método `uploadFiles` aceita múltiplos arquivos com tamanho máximo de 1MB (1024 KB) e tipos de arquivo `.jpg`, `.jpeg` ou `.png`.
+```typescript
+// src/host/controllers/user/user.controller.ts
+import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common'
+import { ApiTags, ApiCreatedResponse } from '@nestjs/swagger'
+import { IsPublic } from '@koalarx/nest/decorators/is-public.decorator'
+
+@ApiTags('Users')
+@Controller('users')
+export class UserController {
+  constructor(private readonly service: UserService) {}
+
+  @Post()
+  @IsPublic()
+  @ApiCreatedResponse({ type: UserResponseDto })
+  async create(@Body() data: CreateUserRequestDto) {
+    const validated = CreateUserSchema.parse(data)
+    return this.service.create(validated)
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.service.findById(id)
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    await this.service.delete(id)
+  }
+}
+```
+
+Erros são automaticamente transformados em respostas HTTP apropriadas!
+
+## Estrutura de Projeto Recomendada
+
+Seguindo DDD:
+
+```
+src/
+├── application/          # Lógica de aplicação e mapeadores
+├── core/                # Configurações globais
+├── domain/              # Lógica de negócio
+│   ├── entities/
+│   ├── dtos/
+│   ├── repositories/    # Interfaces
+│   └── services/
+├── host/                # Controladores e entrada
+│   ├── controllers/
+│   ├── security/        # Guards e estratégias
+│   └── app.module.ts
+├── infra/               # Implementações de infraestrutura
+│   ├── database/
+│   ├── repositories/    # Implementações
+│   └── services/
+└── main.ts
+```
+
+## Configuração de Ambiente
+
+```env
+NODE_ENV=develop
+DATABASE_URL=postgresql://user:password@localhost:5432/db
+REDIS_URL=redis://localhost:6379
+SWAGGER_USERNAME=admin
+SWAGGER_PASSWORD=password123
+```
+
+## Índice da Documentação Original
+
+A documentação abaixo foi mantida para referência de recursos específicos:
+
+### API Key Strategy
+
+Uma estratégia de autenticação via chave de API integrada ao Passport.js:
+
+[Ver documentação completa →](./docs/01-guia-instalacao.md#api-key-strategy)
+
+### Ngrok
+
+Exponha sua aplicação local na internet com segurança:
+
+```typescript
+.useNgrok(process.env.NGROK_AUTH_TOKEN!)
+```
+
+[Ver documentação completa →](./docs/05-features-avancadas.md#10-ngrok-exposição-em-produção)
+
+### Decoradores
+
+- **@ApiPropertyEnum()** - Documento enums no Swagger
+- **@ApiPropertyOnlyDevelop()** - Propriedades apenas em dev
+- **@ApiExcludeEndpointDiffDevelop()** - Endpoints apenas em dev
+- **@Upload()** - Documentação de upload de arquivos
+- **@Cookies()** - Extrai cookies da requisição
+- **@IsPublic()** - Marca endpoint como público
+
+[Ver todos os decoradores →](./docs/06-decoradores.md)
+
+## Arquitetura
+
+A biblioteca utiliza duas classes principais:
+
+1. **KoalaNestModule** - Módulo NestJS com configuração
+2. **KoalaApp** - Classe fluent para setup da aplicação
+
+Ambas seguem o padrão de **Fluent Interface** para configuração clara e intuitiva.
+
+## Dependências Principais
+
+- `@nestjs/*` - Framework NestJS
+- `@prisma/client` - ORM Prisma
+- `zod` - Validação de dados
+- `ioredis` - Cliente Redis
+- `@nestjs/swagger` - Documentação automática
+
+## Links Importantes
+
+- **[CLI (@koalarx/nest-cli)](https://www.npmjs.com/package/@koalarx/nest-cli)** - Ferramenta oficial para criar projetos rapidamente
+- **[GitHub da Library](https://github.com/igordrangel/koala-nest)** - Repositório principal
+- **[GitHub da CLI](https://github.com/igordrangel/koala-nest-cli)** - Repositório da CLI
+
+## Licença
+
+MIT License © 2023-2025 Igor D. Rangel
+
+## Contribuindo
+
+Contribuições são bem-vindas! Abra uma issue ou pull request no repositório.
+
+## Suporte
+
+Para dúvidas, abra uma issue no repositório ou consulte a [documentação completa](./docs).
+
+---
+
+<p align="center">
+  Feito para desenvolvedores NestJS
+</p>
