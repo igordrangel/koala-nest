@@ -1,24 +1,24 @@
 {
   "name": "@koalarx/nest",
-  "version": "1.17.1",
+  "version": "1.18.0",
   "description": "",
   "author": "Igor D. Rangel",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npm run build:app",
+    "build": "bun run build:app",
     "build:app": "nest build example",
     "build:lib": "nest build koala-nest",
-    "build:publish": "node .github/scripts/publish.mjs",
+    "build:publish": "bun .github/scripts/publish.mjs",
     "start": "nest start example",
     "start:dev": "nest start example --watch",
     "start:debug": "nest start example --debug --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run --config ./vitest.config.e2e.mts",
-    "test:all": "npm run test && npm run test:e2e",
-    "prepare": "npx prisma generate && npm run build:publish",
-    "prepublishOnly": "npm test",
+    "test:all": "bun run test && bun run test:e2e",
+    "prepare": "bunx prisma generate && bun run build:publish",
+    "prepublishOnly": "bun run test",
     "postversion": "git push && git push --tags",
     "deploy:hotfix": "npm version patch",
     "deploy:feature": "npm version minor",
@@ -78,5 +78,8 @@
     "unplugin-swc": "^1.5.1",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.9"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
   }
 }

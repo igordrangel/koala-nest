@@ -2,12 +2,31 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "start:debug",
+      "type": "shell",
+      "command": "bun",
+      "args": ["run", "start:debug"],
       "group": "build",
       "problemMatcher": [],
-      "label": "npm: start:debug",
-      "detail": "nest start --debug --watch"
+      "label": "bun: start:debug",
+      "detail": "bun run start:debug"
+    },
+    {
+      "type": "shell",
+      "command": "bun",
+      "args": ["run", "test"],
+      "group": "test",
+      "problemMatcher": [],
+      "label": "bun: test",
+      "detail": "bun run test"
+    },
+    {
+      "type": "shell",
+      "command": "bun",
+      "args": ["run", "build"],
+      "group": "build",
+      "problemMatcher": [],
+      "label": "bun: build",
+      "detail": "bun run build"
     }
   ]
 }

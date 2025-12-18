@@ -1,0 +1,14 @@
+# Configuração do Bun para o projeto koala-nest
+
+[build]
+# Compilar com SWC por padrão
+minify = true
+
+[test]
+# Configurações de teste
+root = "."
+preload = ["./apps/example/test/setup-e2e.ts"]
+
+[bun]
+# Auto-atualizar tipos do Bun
+autoinstall = true
