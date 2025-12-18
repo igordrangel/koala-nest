@@ -9,7 +9,7 @@
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green)](https://nodejs.org/)
+[![Bun](https://img.shields.io/badge/Bun-1.3%2B-black)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.1%2B-blue)](https://www.typescriptlang.org/)
 [![CLI](https://img.shields.io/badge/CLI-@koalarx/nest--cli-brightgreen)](https://www.npmjs.com/package/@koalarx/nest-cli)
 
@@ -31,6 +31,37 @@ Toda a documentação está organizada em arquivos separados para facilitar a na
 
 ## Quick Start
 
+### Usando Bun (Recomendado - Mais Rápido)
+
+O projeto agora usa **Bun** como runtime JavaScript. Para instalar o Bun:
+
+```bash
+# Instalar Bun (Windows, macOS, Linux)
+curl -fsSL https://bun.sh/install | bash
+
+# Ou em Windows com PowerShell:
+powershell -Command "irm https://bun.sh/install.ps1 | iex"
+
+# Instalar dependências
+bun install
+
+# Iniciar em modo desenvolvimento
+bun run start:dev
+
+# Executar testes
+bun run test
+
+# Fazer build
+bun run build
+```
+
+**Vantagens do Bun:**
+- ⚡ Runtime ~3x mais rápido que Node.js
+- 📦 Package manager integrado (mais rápido que npm)
+- 🧪 Test runner nativo (compatível com Vitest)
+- 🔄 Hot reload automático
+- 💾 Menor consumo de memória
+
 ### Forma Rápida com CLI (Recomendado)
 
 ```bash
@@ -43,8 +74,8 @@ koala-nest new meu-projeto
 # Entrar na pasta
 cd meu-projeto
 
-# Iniciar em modo desenvolvimento
-npm run start:dev
+# Iniciar em modo desenvolvimento (com Bun)
+bun run start:dev
 ```
 
 **Pronto!** Seu projeto está estruturado com:
@@ -57,9 +88,13 @@ npm run start:dev
 
 ### Forma Manual
 
-> ⚠️ **Requisito Obrigatório**: A abstração de banco de dados da biblioteca requer **Prisma como ORM**. Siga a [Configuração Inicial - Prisma](./docs/02-configuracao-inicial.md#configurar-prisma-obrigatório) para setup correto.
+> ⚠️ **Requisito Obrigatório**: A abstração de banco de dados da biblioteca requer **Prisma como ORM**. 
 
 ```bash
+# Com Bun (Recomendado - Mais rápido)
+bun install @koalarx/nest
+
+# Ou com npm (Alternativa)
 npm install @koalarx/nest
 ```
 

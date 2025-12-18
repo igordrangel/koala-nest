@@ -4,16 +4,26 @@ Bem-vindo à documentação completa da biblioteca `@koalarx/nest`! Aqui você e
 
 ## Comece Agora com a CLI
 
-A forma mais rápida de começar é usar a **@koalarx/nest-cli**:
+A forma mais rápida de começar é usar a **@koalarx/nest-cli** com **Bun**:
 
 ```bash
+# Instalar Bun (se ainda não tiver)
+# Windows: powershell -Command "irm https://bun.sh/install.ps1 | iex"
+# macOS/Linux: curl -fsSL https://bun.sh/install | bash
+
+# Instalar a CLI
 npm install -g @koalarx/nest-cli
+
+# Criar novo projeto
 koala-nest new meu-projeto
 cd meu-projeto
-npm run start:dev
+
+# Usar Bun para desenvolvimento
+bun install
+bun run start:dev
 ```
 
-Seu projeto estará pronto com toda a estrutura configurada!
+Seu projeto estará pronto com toda a estrutura configurada e com a performance do Bun!
 
 ---
 
@@ -36,7 +46,8 @@ Aprenda como instalar a biblioteca e configurar seu ambiente de desenvolvimento.
 
 **Tópicos:**
 - Usar a CLI (recomendado) para criar novo projeto
-- Instalação manual via NPM
+- Instalação manual com Bun (recomendado)
+- Instalação manual via NPM (alternativa)
 - Configuração de variáveis de ambiente
 - Estrutura recomendada do projeto
 
@@ -159,6 +170,25 @@ async login(@Body() credentials: LoginDto) {
   // Endpoint público
 }
 ```
+
+---
+
+### 7. **[Guia de Uso do Bun](./07-guia-bun.md)**
+Documentação completa sobre o runtime Bun e como usá-lo no projeto.
+
+**Tópicos:**
+- O que é Bun e suas vantagens
+- Instalação em Windows, macOS e Linux
+- Comandos principais (bun install, bun add, bun run, bunx)
+- Como usar Prisma com Bun
+- Troubleshooting e resolução de problemas
+- Performance tips
+
+**Destaques:**
+- ⚡ 3x mais rápido que Node.js
+- 📦 Package manager integrado e otimizado
+- 🧪 Test runner nativo compatível com Vitest
+- 🔄 Hot reload automático em desenvolvimento
 
 ---
 
