@@ -1,4 +1,5 @@
-import { Prisma, PrismaPromise } from '@prisma/client'
+import { Prisma } from 'prisma/generated/client'
+import { PrismaPromise } from 'prisma/generated/internal/prismaNamespace'
 
 export abstract class PrismaTransactionalClient {
   constructor(

@@ -1,15 +1,16 @@
 import { EnvService } from '@koalarx/nest/env/env.service'
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { Prisma, PrismaClient } from '@prisma/client'
 import { PrismaClientWithCustomTransaction } from './prisma-client-with-custom-transaction.interface'
+import { Prisma, PrismaClient } from 'prisma/generated/client'
+import { PrismaClientOptions } from 'prisma/generated/internal/prismaNamespace'
 
 /**
  * Configure opções padrão do PrismaClient (ex: adapter).
  * Use isso na sua aplicação antes de inicializar o módulo Nest.
  */
-let globalPrismaOptions: Record<string, any> = {}
+let globalPrismaOptions = {} as PrismaClientOptions
 
-export function setPrismaClientOptions(options: Record<string, any>) {
+export function setPrismaClientOptions(options: PrismaClientOptions) {
   globalPrismaOptions = options
 }
 
@@ -19,19 +20,10 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy, PrismaClientWithCustomTransaction
 {
   constructor(private readonly env: EnvService) {
-    const defaultOptions: Record<string, any> = {
-      log: [
-        {
-          emit: 'event',
-          level: 'query',
-        },
-      ],
-    }
-
     super({
-      ...defaultOptions,
+      log: [{ emit: 'event', level: 'query' }],
       ...globalPrismaOptions,
-    })
+    } as PrismaClientOptions)
   }
 
   async onModuleInit() {
