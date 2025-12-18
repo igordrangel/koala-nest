@@ -200,7 +200,7 @@ export class PersonEventJob extends EventJob<Person> {
 
 ```typescript
 // src/host/app.module.ts
-import { InactivePersonHandler } from '@/application/person/events/inactive-person/inactive-person-handler'
+import { PersonEventJob } from '@/application/person/events/person-event-job'
 import { env } from '@/core/env'
 import { KoalaNestModule } from '@koalarx/nest/core/koala-nest.module'
 import { Module } from '@nestjs/common'
@@ -211,7 +211,7 @@ import { PersonModule } from './controllers/person/person.module'
     KoalaNestModule.register({
       env,
       controllers: [PersonModule],
-      eventJobs: [InactivePersonHandler],  // Registrar handlers
+      eventJobs: [PersonEventJob],  // Registrar a EventJob
     }),
   ],
 })
@@ -222,7 +222,7 @@ export class AppModule {}
 
 ```typescript
 // src/main.ts
-import { InactivePersonHandler } from '@/application/person/events/inactive-person/inactive-person-handler'
+import { PersonEventJob } from '@/application/person/events/person-event-job'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -234,7 +234,7 @@ async function bootstrap() {
       title: 'API de Demonstração',
       version: '1.0',
     })
-    .addEventJob(InactivePersonHandler)  // Registrar event handler
+    .addEventJob(PersonEventJob)  // Registrar a EventJob
     .setAppName('example')
     .setInternalUserName('integration.bot')
     .setDbTransactionContext(DbTransactionContext)
@@ -246,11 +246,11 @@ bootstrap()
 ```
 
 **Resumo de Registro:**
-- Event Handlers são registrados em **duas** etapas:
-  1. **AppModule**: Via `eventJobs: [InactivePersonHandler]` em `KoalaNestModule.register()`
-  2. **main.ts**: Via `.addEventJob(InactivePersonHandler)` em `KoalaApp`
+- Event Handlers são agrupados em uma **EventJob** e registrados em duas etapas:
+  1. **AppModule**: Via `eventJobs: [PersonEventJob]` em `KoalaNestModule.register()`
+  2. **main.ts**: Via `.addEventJob(PersonEventJob)` em `KoalaApp`
 - A EventJob agrupa handlers por entidade (PersonEventJob agrupa InactivePersonHandler)
-- Múltiplos handlers podem ser registrados na mesma aplicação
+- Múltiplos handlers podem estar na mesma EventJob
 
 ## Fluxo de Eventos
 
@@ -325,7 +325,48 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 }
 ```
 
-### Criar Guard de Autenticação com JWT e API Key
+### Estratégia de Autenticação com API Key
+
+Para suportar autenticação via API Key, estenda a classe base da biblioteca:
+
+```typescript
+// src/host/security/strategies/api-key.strategy.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
+import { ApiKeyStrategyBase } from '@koalarx/nest/core/security/strategies/api-key.strategy'
+import { Request } from 'express'
+
+export type DoneFn = (err: Error | null, user?: any) => void
+
+@Injectable()
+export class ApiKeyStrategy extends ApiKeyStrategyBase {
+  constructor(private readonly jwtService: JwtService) {
+    super({ header: 'x-api-key' })
+  }
+
+  async validate(apikey: string, done: DoneFn, request: Request) {
+    try {
+      // Validar API Key usando JWT com chave pública
+      const publicKey = process.env.JWT_PUBLIC_KEY
+        ? Buffer.from(process.env.JWT_PUBLIC_KEY, 'base64')
+        : undefined
+
+      const user = await this.jwtService.verifyAsync(apikey, {
+        algorithms: ['RS256'],
+        publicKey,
+      })
+
+      done(null, user)
+    } catch {
+      done(new UnauthorizedException('API Key inválida ou expirada'))
+    }
+  }
+}
+```
+
+### Criar Guard de Autenticação
+
+Crie um guard que suporta múltiplas estratégias (JWT e API Key):
 
 ```typescript
 // src/host/security/guards/auth.guard.ts
@@ -415,46 +456,7 @@ export const RestrictByProfile = (profiles: UserProfileEnum[]) =>
   SetMetadata('profiles', profiles)
 ```
 
-### Estratégia de Autenticação com API Key
-
-Para suportar autenticação via API Key, estenda a classe base da biblioteca:
-
-```typescript
-// src/core/security/strategies/api-key.strategy.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
-import { ApiKeyStrategyBase } from '@koalarx/nest/core/security/strategies/api-key.strategy'
-import { Request } from 'express'
-
-export type DoneFn = (err: Error | null, user?: any) => void
-
-@Injectable()
-export class ApiKeyStrategy extends ApiKeyStrategyBase {
-  constructor(private readonly jwtService: JwtService) {
-    super({ header: 'x-api-key' })
-  }
-
-  async validate(apikey: string, done: DoneFn, request: Request) {
-    try {
-      // Validar API Key usando JWT com chave pública
-      const publicKey = process.env.JWT_PUBLIC_KEY
-        ? Buffer.from(process.env.JWT_PUBLIC_KEY, 'base64')
-        : undefined
-
-      const user = await this.jwtService.verifyAsync(apikey, {
-        algorithms: ['RS256'],
-        publicKey,
-      })
-
-      done(null, user)
-    } catch {
-      done(new UnauthorizedException('API Key inválida ou expirada'))
-    }
-  }
-}
-```
-
-### Registrar Estratégia e Guards
+### Registrar Estratégias e Guards
 
 Crie um módulo de segurança com suporte a JWT e API Key:
 
@@ -464,7 +466,7 @@ import { Module } from '@nestjs/common'
 import { PassportModule } from '@nestjs/passport'
 import { JwtModule } from '@nestjs/jwt'
 import { JwtStrategy } from './strategies/jwt.strategy'
-import { ApiKeyStrategy } from '@/core/security/strategies/api-key.strategy'
+import { ApiKeyStrategy } from './strategies/api-key.strategy'
 import { InfraModule } from '@/infra/infra.module'
 
 @Module({
@@ -489,7 +491,7 @@ import { AuthGuard } from './security/guards/auth.guard'
 import { ProfilesGuard } from './security/guards/profiles.guard'
 
 await new KoalaApp(app)
-  .addGlobalGuard(AuthGuard)        // Guard de autenticação
+  .addGlobalGuard(AuthGuard)        // Guard de autenticação (JWT + API Key)
   .addGlobalGuard(ProfilesGuard)    // Guard de autorização
   .buildAndServe()
 ```

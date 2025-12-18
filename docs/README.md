@@ -113,7 +113,7 @@ Aproveite recursos poderosos da biblioteca.
 **Tópicos:**
 1. **Cron Jobs** - Tarefas agendadas
 2. **Event Jobs** - Processamento assincronado de eventos
-3. **Guards Globais** - Autenticação e autorização (JWT, API Key)
+3. **Guards** - Autenticação e autorização (JWT, API Key)
 4. **Documentação Swagger/Scalar** - Personalização
 5. **CORS** - Requisições cross-origin
 6. **Validação com Zod** - Validação de dados
@@ -130,8 +130,9 @@ Aproveite recursos poderosos da biblioteca.
 // Event Handler
 .addEventJob(UserCreatedHandler)
 
-// Guard Global
-.addGlobalGuard(JwtGuard)
+// Guards Globais
+.addGlobalGuard(AuthGuard)        // Autenticação (JWT + API Key)
+.addGlobalGuard(ProfilesGuard)    // Autorização por perfil
 
 // Ngrok
 .useNgrok(process.env.NGROK_AUTH_TOKEN!)
@@ -169,8 +170,8 @@ async login(@Body() credentials: LoginDto) {
 3. Siga [Exemplo Prático](./03-exemplo-pratico.md)
 
 ### Quero adicionar autenticação
-1. Veja [Features Avançadas - Guards Globais](./05-features-avancadas.md#3-guards-globais-autenticaçãoautorização)
-2. Use `@IsPublic()` em [Decoradores](./06-decoradores.md#ispublic)
+1. Veja [Features Avançadas - Guards](./05-features-avancadas.md#3-guards-proteção-de-rotas)
+2. Use `@IsPublic()` e `@RestrictByProfile()` em [Decoradores](./06-decoradores.md#ispublic)
 
 ### Quero processar erros adequadamente
 1. Estude [Tratamento de Erros](./04-tratamento-erros.md)

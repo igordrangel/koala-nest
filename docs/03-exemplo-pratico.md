@@ -435,9 +435,9 @@ src/
 ## Próximas Etapas
 
 1. Adicione mais controllers (Read, Update, Delete)
-2. Implemente Cron Jobs para tarefas agendadas
-3. Configure Event Handlers para reações a eventos
-4. Use Guards para autenticação e autorização
+2. Implemente Cron Jobs para tarefas agendadas - veja [05-features-avancadas.md](05-features-avancadas.md#1-cron-jobs-tarefas-agendadas)
+3. Configure Event Handlers para reações a eventos - veja [05-features-avancadas.md](05-features-avancadas.md#2-event-jobs-handlers-de-eventos)
+4. Use Guards para autenticação e autorização - veja [05-features-avancadas.md](05-features-avancadas.md#3-guards-proteção-de-rotas) e [06-decoradores.md](06-decoradores.md)
 
 ## 10. Executar
 
@@ -498,6 +498,6 @@ src/
 ## Próximas Etapas
 
 1. Adicione mais controllers (Read, Update, Delete)
-2. Implemente Cron Jobs para tarefas agendadas
-3. Configure Event Handlers para reações a eventos
-4. Use Guards para autenticação e autorização
+2. Implemente Cron Jobs para tarefas agendadas - veja [05-features-avancadas.md](05-features-avancadas.md#1-cron-jobs-tarefas-agendadas)
+3. Configure Event Handlers para reações a eventos - veja [05-features-avancadas.md](05-features-avancadas.md#2-event-jobs-handlers-de-eventos)
+4. Use Guards para autenticação e autorização - veja [05-features-avancadas.md](05-features-avancadas.md#3-guards-proteção-de-rotas) e [06-decoradores.md](06-decoradores.md)

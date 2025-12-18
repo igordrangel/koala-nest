@@ -118,6 +118,36 @@ export class AuthController {
 - Sem parâmetro: Extrai todos os cookies
 - Com nome: Extrai um cookie específico
 
+## @RestrictByProfile()
+
+Marca um endpoint como restrito a perfis específicos de usuário. Funciona em conjunto com `ProfilesGuard`.
+
+```typescript
+import { RestrictByProfile } from '@/host/decorators/restriction-by-profile.decorator'
+import { UserProfileEnum } from '@/domain/entities/user/enums/user-profile.enum'
+
+@Controller('admin')
+export class AdminController {
+  @Delete('users/:id')
+  @RestrictByProfile([UserProfileEnum.ADMIN])
+  async deleteUser(@Param('id') id: number) {
+    // Apenas administradores podem deletar usuários
+    return { success: true }
+  }
+
+  @Get('reports')
+  @RestrictByProfile([UserProfileEnum.ADMIN, UserProfileEnum.MANAGER])
+  async getReports() {
+    // Apenas admin e manager podem acessar
+    return { reports: [] }
+  }
+}
+```
+
+**Comportamento**: Quando `ProfilesGuard` é ativo, valida se o usuário autenticado possui um dos perfis requeridos. Se não possuir, retorna `403 Forbidden`.
+
+> **Nota**: Veja a seção "Guards" em [05-features-avancadas.md](05-features-avancadas.md) para configurar os guards e estratégias de autenticação necessárias.
+
 ## @ApiExcludeEndpointDiffDevelop()
 
 Exclui um endpoint da documentação exceto em desenvolvimento.
@@ -141,7 +171,7 @@ export class DebugController {
 ## Exemplo Completo
 
 ```typescript
-import { Controller, Get, Post, Body, UseInterceptors, UploadedFile } from '@nestjs/common'
+import { Controller, Get, Post, Body, UseInterceptors, UploadedFile, Delete, Param } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiProperty, ApiTags } from '@nestjs/swagger'
 import { IsPublic } from '@koalarx/nest/decorators/is-public.decorator'
@@ -149,6 +179,8 @@ import { ApiPropertyEnum } from '@koalarx/nest/decorators/api-property-enum.deco
 import { Upload } from '@koalarx/nest/decorators/upload.decorator'
 import { Cookies } from '@koalarx/nest/decorators/cookies.decorator'
 import { ApiExcludeEndpointDiffDevelop } from '@koalarx/nest/decorators/api-exclude-endpoint-diff-develop.decorator'
+import { RestrictByProfile } from '@/host/decorators/restriction-by-profile.decorator'
+import { UserProfileEnum } from '@/domain/entities/user/enums/user-profile.enum'
 
 enum FileType {
   PDF = 'pdf',
@@ -191,25 +223,24 @@ export class PublicController {
     return { debug: 'info' }
   }
 }
-```
 
-## Combinando Decoradores
+@ApiTags('Admin API')
+@Controller('admin')
+export class AdminController {
+  // Endpoint restrito a admin
+  @Delete('users/:id')
+  @RestrictByProfile([UserProfileEnum.ADMIN])
+  async deleteUser(@Param('id') id: number) {
+    return { success: true }
+  }
 
-```typescript
-@Controller('resources')
-export class ResourceController {
-  @Post('create-with-file')
-  @Upload()
-  @UseInterceptors(FileInterceptor('attachment'))
-  async create(
-    @Body() dto: CreateResourceDto,
-    @UploadedFile() file: Express.Multer.File,
-    @Cookies('trackingId') trackingId: string,
-  ) {
-    // Processar com arquivo e tracking
-    return { id: 'resource-id' }
+  // Endpoint para múltiplos perfis
+  @Get('reports')
+  @RestrictByProfile([UserProfileEnum.ADMIN, UserProfileEnum.MANAGER])
+  async getReports() {
+    return { reports: [] }
   }
 }
 ```
 
-Todos esses decoradores facilitam a documentação e o desenvolvimento de APIs robustas e bem documentadas!
+Todos esses decoradores facilitam a documentação, autenticação e autorização de APIs robustas e bem documentadas!
