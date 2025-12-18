@@ -51,11 +51,13 @@ npm run start:dev
 - [x] Módulo DDD configurado
 - [x] Documentação da API (Scalar UI)
 - [x] Tratamento de erros robusto
-- [x] Autenticação JWT
+- [x] Guards de autenticação (JWT + API Key)
 - [x] Banco de dados Prisma
 - [x] Redis para background services
 
 ### Forma Manual
+
+> ⚠️ **Requisito Obrigatório**: A abstração de banco de dados da biblioteca requer **Prisma como ORM**. Siga a [Configuração Inicial - Prisma](./docs/02-configuracao-inicial.md#configurar-prisma-obrigatório) para setup correto.
 
 ```bash
 npm install @koalarx/nest
@@ -119,9 +121,10 @@ Acesse `http://localhost:3000/doc` para a documentação interativa!
 
 ### Segurança
 
-- **Guards Globais**: Proteja endpoints com autenticação
-- **API Key Strategy**: Autenticação via chave de API integrada
+- **Guards**: Autenticação e autorização (JWT + API Key)
+- **Estratégias Customizadas**: JwtStrategy e ApiKeyStrategy
 - **@IsPublic()**: Marca endpoints como públicos
+- **@RestrictByProfile()**: Restringe acesso por perfil de usuário
 
 ### Tratamento de Erros
 
@@ -155,15 +158,24 @@ export class SendReportJob extends CronJobHandlerBase {
 .addCronJob(SendReportJob)
 ```
 
-**Event Handlers** - Processe eventos assincronamente:
+**Event Jobs** - Processe eventos assincronamente:
 ```typescript
 @Injectable()
 export class UserCreatedHandler extends EventHandlerBase {
-  get eventName(): string { return 'user:created' }
-  async handle(data: any): Promise<void> { /* sua lógica */ }
+  async handleEvent(): Promise<void> {
+    // Processar evento de criação de usuário
+    console.log('Usuário criado!')
+  }
 }
 
-.addEventJob(UserCreatedHandler)
+// Registrar em EventJob
+export class UserEventJob extends EventJob<User> {
+  defineHandlers(): Type<EventHandlerBase>[] {
+    return [UserCreatedHandler]
+  }
+}
+
+.addEventJob(UserEventJob)
 ```
 
 ### Banco de Dados
@@ -310,13 +322,24 @@ src/
 
 ## Configuração de Ambiente
 
+A lib já valida automaticamente as variáveis padrão. Crie seu `.env` com:
+
 ```env
+# Variáveis obrigatórias
 NODE_ENV=develop
 DATABASE_URL=postgresql://user:password@localhost:5432/db
-REDIS_URL=redis://localhost:6379
+
+# Variáveis opcionais (padrão da lib)
+REDIS_CONNECTION_STRING=redis://localhost:6379
 SWAGGER_USERNAME=admin
 SWAGGER_PASSWORD=password123
+PRISMA_QUERY_LOG=false
+
+# Suas variáveis customizadas
+# CUSTOM_VAR=value
 ```
+
+Ver [Configuração Inicial - Variáveis de Ambiente](./docs/02-configuracao-inicial.md#2-configurar-variáveis-de-ambiente) para detalhes.
 
 ## Índice da Documentação Original
 

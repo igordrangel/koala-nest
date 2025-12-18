@@ -34,21 +34,35 @@ import { PersonModule } from './controllers/person/person.module'
 export class AppModule {}
 ```
 
+> **Nota sobre Autenticação**: Para adicionar Guards de autenticação (JWT + API Key), veja [Features Avançadas - Guards](./05-features-avancadas.md#3-guards-proteção-de-rotas).
+
 ### 2. Configurar Variáveis de Ambiente
+
+A lib `@koalarx/nest` já possui um schema padrão com as variáveis essenciais. Estenda-o para adicionar as suas:
 
 ```typescript
 // src/core/env.ts
+import { envSchema } from '@koalarx/nest/env/env'
 import { z } from 'zod'
 
-export const env = z.object({
-  NODE_ENV: z.enum(['develop', 'staging', 'production', 'test']).default('develop'),
-  DATABASE_URL: z.string().url(),
-  REDIS_URL: z.string().url().optional(),
-  PORT: z.coerce.number().default(3000),
-})
+// Schema padrão da lib já inclui: PORT, NODE_ENV, DATABASE_URL, PRISMA_QUERY_LOG, etc
+// Faça merge para adicionar suas próprias variáveis
+export const env = envSchema.merge(z.object({
+  // Suas variáveis customizadas aqui
+  CUSTOM_VAR: z.string().optional(),
+}))
 
 export type Env = z.infer<typeof env>
 ```
+
+**Variáveis padrão da lib (já validadas):**
+- `PORT` - Porta da aplicação (padrão: 3000)
+- `NODE_ENV` - Ambiente (test|develop|staging|production)
+- `DATABASE_URL` - String de conexão PostgreSQL (obrigatória)
+- `PRISMA_QUERY_LOG` - Log de queries SQL (opcional)
+- `SWAGGER_USERNAME` - Usuário para Swagger (opcional)
+- `SWAGGER_PASSWORD` - Senha para Swagger (opcional)
+- `REDIS_CONNECTION_STRING` - Conexão Redis (opcional)
 
 ### 3. Inicializar a Aplicação
 
@@ -78,7 +92,9 @@ async function bootstrap() {
 bootstrap()
 ```
 
-## Configurar Prisma (Opcional)
+## Configurar Prisma (Obrigatório)
+
+> ⚠️ **Importante**: A abstração de banco de dados da biblioteca **requer obrigatoriamente o Prisma como ORM**. O `RepositoryBase` e toda a camada de acesso a dados são construídos sobre o Prisma.
 
 Prisma suporta múltiplos drivers de banco de dados. Exemplo com PostgreSQL:
 
