@@ -10,8 +10,7 @@ function generateUniqueDatabaseURL() {
   }
 
   const url = new URL(process.env.DATABASE_URL)
-
-  url.searchParams.set('schema', schemaId)
+  url.pathname = `/${schemaId}`
 
   return {
     url: url.toString(),

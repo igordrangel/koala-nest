@@ -6,7 +6,7 @@ import { ListResponseBase } from '@koalarx/nest/core/controllers/list-response.b
 import { RepositoryBase } from '@koalarx/nest/core/database/repository.base'
 import { PRISMA_TOKEN } from '@koalarx/nest/core/koala-nest-database.module'
 import { Inject, Injectable } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import { Prisma } from 'prisma/generated/client'
 import { DbTransactionContext } from '../db-transaction-context'
 
 @Injectable()
