@@ -20,9 +20,9 @@
     "prepare": "bunx prisma generate && bun run build:publish",
     "prepublishOnly": "bun run test",
     "postversion": "git push && git push --tags",
-    "deploy:hotfix": "bun version patch",
-    "deploy:feature": "bun version minor",
-    "deploy:release": "bun version major"
+    "deploy:hotfix": "npm version patch",
+    "deploy:feature": "npm version minor",
+    "deploy:release": "npm version major"
   },
   "dependencies": {
     "@koalarx/utils": "^4.2.1",
