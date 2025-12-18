@@ -21,15 +21,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: 📦 Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 18
-          cache: "npm"
-          secrets: ${{ toJSON(secrets) }}
+          bun-version: latest
 
-      - run: npm ci
+      - run: bun install
 
-      - run: npm run test:e2e
+      - run: bun run test:e2e
         env:
           DATABASE_URL: "postgres://postgres:root@localhost:5432/app_demo"
           DIRECT_URL: "postgres://postgres:root@localhost:5432/app_demo"
