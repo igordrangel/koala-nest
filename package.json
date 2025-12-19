@@ -1,14 +1,14 @@
 {
   "name": "@koalarx/nest",
-  "version": "1.18.3",
+  "version": "1.18.4",
   "description": "",
   "author": "Igor D. Rangel",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "bun run build:app",
+    "build": "bun run build:app && bun scripts/organize-all-builds.mjs",
     "build:app": "nest build example",
-    "build:lib": "nest build koala-nest && bun scripts/organize-build.mjs",
+    "build:lib": "nest build koala-nest && bun scripts/organize-all-builds.mjs",
     "build:publish": "bun .github/scripts/publish.mjs",
     "start": "nest start example",
     "start:dev": "nest start example --watch",
