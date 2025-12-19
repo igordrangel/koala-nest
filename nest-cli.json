@@ -15,7 +15,7 @@
     "example": {
       "type": "application",
       "root": "apps/example",
-      "entryFile": "example/src/host/main",
+      "entryFile": "host/main",
       "sourceRoot": "apps/example/src",
       "compilerOptions": {
         "deleteOutDir": true,
