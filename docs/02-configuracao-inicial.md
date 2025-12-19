@@ -126,7 +126,7 @@ npx prisma init
 import 'dotenv/config'
 import { NestFactory } from '@nestjs/core'
 import { KoalaApp } from '@koalarx/nest/core/koala-app'
-import { setPrismaClientOptions } from '@koalarx/nest/core/database/prisma.service'
+import { setPrismaClientOptions } from '@koalarx/nest'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 import { AppModule } from './host/app.module'
