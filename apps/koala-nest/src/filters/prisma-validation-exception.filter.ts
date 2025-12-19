@@ -1,6 +1,6 @@
 import { ArgumentsHost, Catch, HttpStatus } from '@nestjs/common'
 import { BaseExceptionFilter } from '@nestjs/core'
-import { Prisma } from '@prisma/client'
+import { Prisma } from 'prisma/generated/client'
 import { KoalaGlobalVars } from '../core/koala-global-vars'
 import { EnvConfig } from '../core/utils/env.config'
 import { FilterRequestParams } from '../core/utils/filter-request-params'
