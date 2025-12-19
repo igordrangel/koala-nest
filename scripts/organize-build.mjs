@@ -10,11 +10,11 @@ const srcDir = path.resolve(distDir, 'apps/koala-nest/src')
 
 async function copyRecursively(src, dest) {
   const stat = await fs.stat(src)
-  
+
   if (stat.isDirectory()) {
     await fs.mkdir(dest, { recursive: true })
     const files = await fs.readdir(src)
-    
+
     for (const file of files) {
       const srcPath = path.join(src, file)
       const destPath = path.join(dest, file)
