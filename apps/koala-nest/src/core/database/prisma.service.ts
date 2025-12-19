@@ -25,11 +25,42 @@ async function loadPrismaClient() {
   return PrismaClientClass
 }
 
-// Classe base que será estendida dinamicamente
-class BasePrismaService implements OnModuleInit, OnModuleDestroy {
+@Injectable()
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export class PrismaService
+  implements OnModuleInit, OnModuleDestroy, PrismaClientWithCustomTransaction
+{
   private prismaInstance: any
 
-  constructor(private readonly env: EnvService) {}
+  constructor(private readonly env: EnvService) {
+    // Retorna um proxy para permitir acesso transparente às models
+    // Isso é necessário porque repository.base.ts tenta acessar this._context[modelName]
+    return new Proxy(this, {
+      get: (target, prop, receiver) => {
+        // Propriedades e métodos da instância têm prioridade
+        if (prop in target) {
+          const value = Reflect.get(target, prop, receiver)
+          if (typeof value === 'function') {
+            return value.bind(target)
+          }
+          return value
+        }
+
+        // Caso a propriedade não exista, tenta acessar no prismaInstance
+        // Isso permite acessar models (person, user, etc.) e métodos como $queryRaw
+        if (target.prismaInstance && typeof prop === 'string') {
+          const value = target.prismaInstance[prop]
+          if (typeof value === 'function') {
+            return value.bind(target.prismaInstance)
+          }
+          return value
+        }
+
+        return Reflect.get(target, prop, receiver)
+      },
+    }) as any
+  }
 
   async initialize() {
     const PrismaClientType = await loadPrismaClient()
@@ -41,7 +72,48 @@ class BasePrismaService implements OnModuleInit, OnModuleDestroy {
     } as PrismaClientOptions)
   }
 
-  // Proxy para métodos do PrismaClient
+  async onModuleInit() {
+    await this.initialize()
+    if (this.env.get('PRISMA_QUERY_LOG')) {
+      this.prismaInstance?.$on?.('query', async (e: any) => {
+        console.log(`${e.query} ${e.params}`)
+      })
+    }
+    return this.prismaInstance?.$connect?.()
+  }
+
+  onModuleDestroy() {
+    return this.prismaInstance?.$disconnect?.()
+  }
+
+  async withTransaction<F>(
+    fn: (prisma: Prisma.TransactionClient) => Promise<F>,
+    options?: {
+      maxWait?: number
+      timeout?: number
+      isolationLevel?: Prisma.TransactionIsolationLevel
+    },
+  ): Promise<F> {
+    return this.prismaInstance?.$transaction?.(
+      fn,
+      options ?? {
+        maxWait: 20000,
+        timeout: 20000,
+      },
+    )
+  }
+
+  // Expõe métodos e properties do PrismaClient dynamicamente
+  // Isso permite que o repositório acesse models (person, user, etc.) via Proxy
+  [Symbol.toPrimitive]() {
+    return this.prismaInstance
+  }
+
+  toString() {
+    return '[PrismaService]'
+  }
+
+  // Métodos úteis do PrismaClient
   get $connect() {
     return this.prismaInstance?.$connect?.bind(this.prismaInstance)
   }
@@ -58,45 +130,8 @@ class BasePrismaService implements OnModuleInit, OnModuleDestroy {
     return this.prismaInstance?.$on?.bind(this.prismaInstance)
   }
 
-  async onModuleInit() {
-    await this.initialize()
-    if (this.env.get('PRISMA_QUERY_LOG')) {
-      this.$on('query', async (e: any) => {
-        console.log(`${e.query} ${e.params}`)
-      })
-    }
-    return this.$connect()
-  }
-
-  onModuleDestroy() {
-    return this.$disconnect()
-  }
-
-  async withTransaction<F>(
-    fn: (prisma: Prisma.TransactionClient) => Promise<F>,
-    options?: {
-      maxWait?: number
-      timeout?: number
-      isolationLevel?: Prisma.TransactionIsolationLevel
-    },
-  ): Promise<F> {
-    return this.$transaction(
-      fn,
-      options ?? {
-        maxWait: 20000,
-        timeout: 20000,
-      },
-    )
-  }
-}
-@Injectable()
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export class PrismaService
-  extends BasePrismaService
-  implements PrismaClientWithCustomTransaction
-{
-  constructor(env: EnvService) {
-    super(env)
+  // Proxy transparente para acessar models e qualquer outro property do PrismaClient
+  [Symbol.for('nodejs.util.inspect.custom')]() {
+    return this.prismaInstance
   }
 }

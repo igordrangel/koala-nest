@@ -69,7 +69,9 @@ async function resolvePrismaClient() {
 
   try {
     // Carrega dinamicamente o módulo
-    cachedPrismaClient = await import(prismaPath)
+    const module = await import(prismaPath)
+    // Extrai PrismaClient do módulo (pode ser default export ou named export)
+    cachedPrismaClient = module.PrismaClient || module.default || module
     return cachedPrismaClient
   } catch (error) {
     throw new Error(

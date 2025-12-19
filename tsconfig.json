@@ -6,8 +6,7 @@
     "types": ["vitest/globals"],
     "paths": {
       "@/*": ["./apps/example/src/*"],
-      "@koalarx/nest/*": ["./apps/koala-nest/src/*"],
-      "prisma-client-provider": ["./apps/example/prisma-client-provider.ts"]
+      "@koalarx/nest/*": ["./apps/koala-nest/src/*"]
     },
     "removeComments": true,
     "emitDecoratorMetadata": true,
