@@ -707,7 +707,7 @@ Execute múltiplas operações de banco em uma transação atômica através do 
 ```typescript
 // src/infra/database/db-transaction-context.ts
 import { PrismaTransactionalClient } from '@koalarx/nest/core/database/prisma-transactional-client'
-import { Prisma } from '@prisma/client'
+import { Prisma } from 'prisma/generated/client'
 import { DefaultArgs } from '@prisma/client/runtime/library'
 
 export class DbTransactionContext

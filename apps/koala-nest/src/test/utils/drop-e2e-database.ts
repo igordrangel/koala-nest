@@ -1,7 +1,7 @@
-import 'dotenv/config'
-import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import 'dotenv/config'
 import { Pool } from 'pg'
+import { PrismaClient } from 'prisma/generated/client'
 
 export function dropE2EDatabase(schemaId: string) {
   const pool = new Pool({
