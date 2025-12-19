@@ -192,12 +192,33 @@ Documentação completa sobre o runtime Bun e como usá-lo no projeto.
 
 ---
 
+### 8. **[Integração com Prisma](./08-prisma-client.md)**
+Guia completo sobre como usar Prisma com a biblioteca.
+
+**Tópicos:**
+- Configuração automática do PrismaClient
+- Busca inteligente e resolução de caminhos
+- Como usar PrismaService em serviços e repositórios
+- Suporte transparente para transações
+- Query logging para debug
+- Resolução de problemas comuns
+- Configuração avançada e fallbacks
+
+**Destaques:**
+- ✅ Sem configuração necessária
+- ✅ Proxy transparente para acesso a models
+- ✅ Busca automática de múltiplos caminhos
+- ✅ Suporte completo a transações
+
+---
+
 ## Guia por Caso de Uso
 
 ### Quero criar uma API simples
 1. Leia [Guia de Instalação](./01-guia-instalacao.md)
 2. Leia [Configuração Inicial](./02-configuracao-inicial.md)
 3. Siga [Exemplo Prático](./03-exemplo-pratico.md)
+4. Configure Prisma em [Integração com Prisma](./08-prisma-client.md)
 
 ### Quero adicionar autenticação
 1. Veja [Features Avançadas - Guards](./05-features-avancadas.md#3-guards-proteção-de-rotas)
@@ -217,8 +238,16 @@ Documentação completa sobre o runtime Bun e como usá-lo no projeto.
 2. Redis é usado automaticamente para sincronizar Cron Jobs e Event Handlers
 3. Você também pode usá-lo para cache opcional
 
+### Quero usar Prisma com minha aplicação
+1. Leia [Integração com Prisma](./08-prisma-client.md) para configuração automática
+2. Configure o schema em `prisma/schema.prisma`
+3. Gere o cliente com `bunx prisma generate`
+4. Use `PrismaService` em seus serviços
+
 ### Quero transações no banco de dados
-1. Leia [Features Avançadas - Transações](./05-features-avancadas.md#8-transações-com-prisma)
+1. Leia [Integração com Prisma - Transações](./08-prisma-client.md#transações)
+2. Use `prisma.withTransaction()` para garantir consistência
+3. Veja também [Features Avançadas - Transações](./05-features-avancadas.md#8-transações-com-prisma)
 
 ---
 
