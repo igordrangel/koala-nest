@@ -35,7 +35,7 @@ async function organizeDistFolder() {
       .catch(() => false)
 
     if (!srcDirExists) {
-      console.log('Pasta de origem não encontrada:', srcDir)
+      console.log('Build já está organizado ou pasta de origem não existe')
       return
     }
 

@@ -51,3 +51,5 @@ export type FileResponse = {
 }
 
 export type QueryDirectionType = 'asc' | 'desc'
+// Exportar funções para resolver Prisma
+export { setPrismaClient } from './database/prisma-resolver'
