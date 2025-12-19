@@ -23,6 +23,7 @@ import { PrismaTransactionalClient } from './database/prisma-transactional-clien
 import { KoalaGlobalVars } from './koala-global-vars'
 import { EnvConfig } from './utils/env.config'
 import { instanciateClassWithDependenciesInjection } from './utils/instanciate-class-with-dependencies-injection'
+import { delay } from '@koalarx/utils'
 
 interface ApiDocAuthorizationConfig {
   name: string
@@ -94,6 +95,51 @@ export class KoalaApp {
     )
     this._domainExceptionFilter = new DomainErrorsFilter(loggingService)
     this._zodExceptionFilter = new ZodErrorsFilter(loggingService)
+  }
+
+  private showListeningMessage(port: number, host: string = 'localhost') {
+    const envService = this.app.get(EnvService)
+
+    console.log('------------------------------')
+
+    if (this._apiReferenceEndpoint) {
+      consola.info(
+        'API Reference:',
+        `http://${host}:${port}${this._apiReferenceEndpoint}`,
+      )
+    }
+
+    consola.info('Health Check:', `http://${host}:${port}/health`)
+    consola.info('Internal Host:', `http://${host}:${port}`)
+
+    if (this._ngrokUrl) {
+      consola.info('External Host:', this._ngrokUrl)
+      consola.info('External Inspect:', `http://${host}:4040/inspect/http`)
+    }
+
+    consola.box('Environment:', envService.get('NODE_ENV'))
+
+    console.log('------------------------------')
+  }
+
+  private async startJobs() {
+    await delay(5000) // Aguarda 5 segundos para garantir que a aplicação esteja totalmente inicializada
+
+    const cronJobs = await Promise.all(
+      this._cronJobs.map((job) => this.app.resolve(job)),
+    )
+
+    for (const cronJob of cronJobs) {
+      cronJob.start()
+    }
+
+    const eventJobs = await Promise.all(
+      this._eventJobs.map((job) => this.app.resolve(job)),
+    )
+
+    for (const eventJob of eventJobs) {
+      eventJob.setupSubscriptions()
+    }
   }
 
   addGlobalGuard(Guard: Type<CanActivate>) {
@@ -296,22 +342,6 @@ export class KoalaApp {
       this._zodExceptionFilter,
     )
 
-    const cronJobs = await Promise.all(
-      this._cronJobs.map((job) => this.app.resolve(job)),
-    )
-
-    for (const cronJob of cronJobs) {
-      cronJob.start()
-    }
-
-    const eventJobs = await Promise.all(
-      this._eventJobs.map((job) => this.app.resolve(job)),
-    )
-
-    for (const eventJob of eventJobs) {
-      eventJob.setupSubscriptions()
-    }
-
     for (const guard of this._guards) {
       this.app.useGlobalGuards(guard)
     }
@@ -330,6 +360,8 @@ export class KoalaApp {
         })
     }
 
+    this.startJobs()
+
     return this.app
   }
 
@@ -343,30 +375,5 @@ export class KoalaApp {
   async buildAndServe(host?: string) {
     await this.build()
     await this.serve(host)
-  }
-
-  private showListeningMessage(port: number, host: string = 'localhost') {
-    const envService = this.app.get(EnvService)
-
-    console.log('------------------------------')
-
-    if (this._apiReferenceEndpoint) {
-      consola.info(
-        'API Reference:',
-        `http://${host}:${port}${this._apiReferenceEndpoint}`,
-      )
-    }
-
-    consola.info('Health Check:', `http://${host}:${port}/health`)
-    consola.info('Internal Host:', `http://${host}:${port}`)
-
-    if (this._ngrokUrl) {
-      consola.info('External Host:', this._ngrokUrl)
-      consola.info('External Inspect:', `http://${host}:4040/inspect/http`)
-    }
-
-    consola.box('Environment:', envService.get('NODE_ENV'))
-
-    console.log('------------------------------')
   }
 }

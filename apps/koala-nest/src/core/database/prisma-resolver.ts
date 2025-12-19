@@ -10,10 +10,10 @@ let cachedPrismaClient: any = null
 function findPrismaClient(): string | null {
   // Lista de caminhos possíveis onde o Prisma pode estar
   const possiblePaths = [
-    // Quando a lib está em node_modules, procura no projeto consumidor
     path.join(process.cwd(), 'prisma/generated/client.js'),
+    path.join(__dirname, '../../../../../prisma/generated/client.js'),
     path.join(process.cwd(), 'prisma/generated/client.ts'),
-    // Tenta encontrar via require.main
+    path.join(__dirname, '../../../../../prisma/generated/client.ts'),
     ...(require.main?.filename
       ? [
           path.join(
@@ -26,9 +26,6 @@ function findPrismaClient(): string | null {
           ),
         ]
       : []),
-    // Quando rodando localmente (desenvolvimento)
-    path.join(__dirname, '../../../prisma/generated/client.js'),
-    path.join(__dirname, '../../../prisma/generated/client.ts'),
   ]
 
   for (const prismaPath of possiblePaths) {

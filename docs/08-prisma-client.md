@@ -45,51 +45,6 @@ Uma vez encontrado, o cliente é carregado **dinamicamente** e exposto através 
 
 Tudo funciona **out-of-the-box**!
 
-## Uso Básico
-
-### Injetar PrismaService
-
-```typescript
-import { PrismaService } from '@koalarx/nest'
-import { Injectable } from '@nestjs/common'
-
-@Injectable()
-export class MyService {
-  constructor(private prisma: PrismaService) {}
-
-  async findAll() {
-    // Use como se fosse o PrismaClient direto
-    return this.prisma.person.findMany()
-  }
-
-  async findById(id: number) {
-    return this.prisma.person.findFirst({
-      where: { id }
-    })
-  }
-}
-```
-
-### Em Repositórios
-
-A biblioteca já fornece `RepositoryBase` que usa automaticamente o `PrismaService`:
-
-```typescript
-import { RepositoryBase } from '@koalarx/nest'
-import { Injectable } from '@nestjs/common'
-import { Person } from '../domain/entities/person'
-
-@Injectable()
-export class PersonRepository extends RepositoryBase<Person> {
-  constructor(prisma: PrismaService) {
-    super({
-      context: prisma,
-      modelName: Person,
-    })
-  }
-}
-```
-
 ## Transações
 
 ### Usando withTransaction
