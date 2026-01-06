@@ -1,4 +1,4 @@
-import { QueryDirectionType } from '..'
+import type { QueryDirectionType } from '..'
 import { QUERY_FILTER_PARAMS } from '../constants/query-params'
 import { AutoMap } from '../mapping/auto-mapping.decorator'
 

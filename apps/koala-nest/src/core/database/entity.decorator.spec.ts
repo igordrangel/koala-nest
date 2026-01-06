@@ -62,7 +62,7 @@ describe('Entity decorator', () => {
     expect(person.phones.toArray()[0].phone).toBeDefined()
     expect(person.phones.toArray()[1].phone).toBeDefined()
 
-    expect(person.address.constructor.name).equal(PersonAddress.name)
+    expect(person.address.constructor.name).toBe(PersonAddress.name)
     expect(person.address.address).toBeDefined()
 
     expect(person.name).toBeDefined()
