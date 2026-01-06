@@ -12,74 +12,88 @@ interface AutoMappingGetContext {
 }
 
 export class AutoMappingList {
-  private static _mappedPropList = new List(AutoMappingClassContext)
-  private static _mappingProfileList = new List(AutoMappingContext)
+  private static _mappedPropList: List<AutoMappingClassContext> | undefined
+  private static _mappingProfileList: List<AutoMappingContext> | undefined
+
+  private static initializeLists() {
+    if (!this._mappedPropList) {
+      this._mappedPropList = new List(AutoMappingClassContext)
+    }
+    if (!this._mappingProfileList) {
+      this._mappingProfileList = new List(AutoMappingContext)
+    }
+  }
 
   static add(
     source: Type<any>,
     target: Type<any>,
     ...forMember: ForMemberDefinition<any, any>
   ) {
-    this._mappingProfileList.add(
+    this.initializeLists()
+    this._mappingProfileList!.add(
       new AutoMappingContext(source, target, forMember),
     )
-    this._mappedPropList.add(new AutoMappingClassContext(source))
-    this._mappedPropList.add(new AutoMappingClassContext(target))
+    this._mappedPropList!.add(new AutoMappingClassContext(source))
+    this._mappedPropList!.add(new AutoMappingClassContext(target))
 
     this.addExtendedPropsIntoSubClass(source)
     this.addExtendedPropsIntoSubClass(target)
   }
 
   static get(source: Type<any>, target: Type<any>): AutoMappingGetContext {
+    this.initializeLists()
     return {
       mapContext: findOnList(
-        this._mappingProfileList,
+        this._mappingProfileList!,
         (mp) =>
           mp.source.name === source.name && mp.target.name === target.name,
         (mp) =>
           Object.getPrototypeOf(mp.source.prototype.constructor) === source &&
           mp.target.name === target.name,
       ),
-      propSourceContext: this._mappedPropList.find(
+      propSourceContext: this._mappedPropList!.find(
         (mp) => mp.source.name === source.name,
       ),
-      propTargetContext: this._mappedPropList.find(
+      propTargetContext: this._mappedPropList!.find(
         (mp) => mp.source.name === target.name,
       ),
     }
   }
 
   static getSourceByName(sourceName: string) {
-    return this._mappedPropList.find((mp) => mp.source.name === sourceName)
+    this.initializeLists()
+    return this._mappedPropList!.find((mp) => mp.source.name === sourceName)
       ?.source
   }
 
   static getPropDefinitions(source: Type<any>, propName: string) {
-    return this._mappedPropList
-      .find((mp) => mp.source.name === source.name)
-      ?.props.find((prop) => prop.name === propName)
+    this.initializeLists()
+    return this._mappedPropList!.find(
+      (mp) => mp.source.name === source.name,
+    )?.props.find((prop) => prop.name === propName)
   }
 
   static getTargets(source: Type<any>) {
-    return this._mappingProfileList
-      .filter(
-        (mp) =>
-          mp.source.name === source.name ||
-          Object.getPrototypeOf(mp.source.prototype.constructor) === source,
-      )
+    this.initializeLists()
+    return this._mappingProfileList!.filter(
+      (mp) =>
+        mp.source.name === source.name ||
+        Object.getPrototypeOf(mp.source.prototype.constructor) === source,
+    )
       .map((mp) => mp.target)
       .toArray()
   }
 
   static addMappedProp(source: Type<any>, propName: string) {
-    let mappedClass = this._mappedPropList.find(
+    this.initializeLists()
+    let mappedClass = this._mappedPropList!.find(
       (mp) => mp.source.name === source.name,
     )
 
     if (!mappedClass) {
       mappedClass = new AutoMappingClassContext(source)
 
-      const mappedExtendedClass = this._mappedPropList.find(
+      const mappedExtendedClass = this._mappedPropList!.find(
         (mp) =>
           mp.source === Object.getPrototypeOf(source.prototype.constructor),
       )
@@ -88,7 +102,7 @@ export class AutoMappingList {
         mappedClass.props.setList(mappedExtendedClass.props.toArray())
       }
 
-      this._mappedPropList.add(mappedClass)
+      this._mappedPropList!.add(mappedClass)
     }
 
     const metadata = Reflect.getMetadata(
@@ -117,11 +131,12 @@ export class AutoMappingList {
   }
 
   static addExtendedPropsIntoSubClass(source: Type<any>) {
-    const mappedExtendedClass = this._mappedPropList.find(
+    this.initializeLists()
+    const mappedExtendedClass = this._mappedPropList!.find(
       (mp) => mp.source === Object.getPrototypeOf(source.prototype.constructor),
     )
     if (mappedExtendedClass) {
-      const mappedClass = this._mappedPropList.find(
+      const mappedClass = this._mappedPropList!.find(
         (mp) => mp.source.name === source.name,
       )
       if (mappedClass) {

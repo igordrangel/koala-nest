@@ -1,5 +1,5 @@
 import { Type } from '@nestjs/common'
-import { vi } from 'vitest'
+import { describe, expect, it, spyOn } from 'bun:test'
 import { EventClass } from './event-class'
 import { EventHandlerBase } from './event-handler.base'
 import { EventJob } from './event-job'
@@ -30,7 +30,7 @@ class CustomEventJob extends EventJob<any> {
 
 describe('event queue', () => {
   it('should be able to dispatch and listen to events', () => {
-    const callbackSpy = vi.spyOn(CustomEventHandler, 'isCalled')
+    const callbackSpy = spyOn(CustomEventHandler, 'isCalled')
 
     new CustomEventHandler().setupSubscriptions()
 

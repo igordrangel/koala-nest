@@ -9,36 +9,21 @@
       "request": "launch",
       "name": "Nest Debug (Bun)",
       "runtimeExecutable": "bun",
-      "runtimeArgs": ["run", "start:debug"],
+      "runtimeArgs": [
+        "run",
+        "start:debug"
+      ],
       "console": "integratedTerminal",
       "restart": true,
-      "protocol": "auto",
-      "port": 9229,
       "autoAttachChildProcesses": true
     },
     {
-      "type": "node",
+      "type": "bun",
       "request": "launch",
-      "name": "Debug Unit Tests (Bun)",
-      "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**"],
-      "runtimeExecutable": "bun",
-      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
-      "args": ["run", "${relativeFile}"],
-      "smartStep": true,
-      "console": "integratedTerminal"
+      "name": "Debug Bun File",
+      "program": "${file}", // This runs the currently active file
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false // Set to true to pause on the first line
     },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug E2E Tests (Bun)",
-      "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**"],
-      "runtimeExecutable": "bun",
-      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
-      "args": ["run", "${relativeFile}", "--config", "./vitest.config.e2e.ts"],
-      "smartStep": true,
-      "console": "integratedTerminal"
-    }
   ]
 }

@@ -1,5 +1,5 @@
 import { delay } from '@koalarx/utils/KlDelay'
-import { vi } from 'vitest'
+import { expect, spyOn, test } from 'bun:test'
 import { FakeLoggingService } from '../../../test/services/fake-logging.service'
 import { FakeRedLockService } from '../../../test/services/fake-red-lock.service'
 import { ok } from '../../request-overflow/request-result'
@@ -28,7 +28,7 @@ export class CronJobTest extends CronJobHandlerBase {
 }
 
 test('cron job', async () => {
-  const callbackSpy = vi.spyOn(CronJobTest, 'isCalled')
+  const callbackSpy = spyOn(CronJobTest, 'isCalled')
 
   new CronJobTest().start()
 

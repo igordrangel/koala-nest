@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { AutoMap } from '../mapping/auto-mapping.decorator'
 import { QUERY_FILTER_PARAMS } from '../constants/query-params'
-import { QueryDirectionType } from '..'
+import type { QueryDirectionType } from '..'
 
 export type PaginatedRequestProps<T extends PaginationRequest> = Omit<
   { [K in keyof T as T[K] extends Function ? never : K]: T[K] },

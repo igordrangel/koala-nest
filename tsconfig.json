@@ -3,7 +3,6 @@
     "module": "commonJs",
     "outDir": "./dist",
     "baseUrl": "./",
-    "types": ["vitest/globals"],
     "paths": {
       "@/*": ["./apps/example/src/*"],
       "@koalarx/nest/*": ["./apps/koala-nest/src/*"]
@@ -24,8 +23,6 @@
   },
   "exclude": [
     "node_modules",
-    "dist",
-    "vitest.config.e2e.mts",
-    "vitest.config.mts"
+    "dist"
   ]
 }

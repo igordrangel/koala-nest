@@ -1,14 +1,16 @@
-# Configuração do Bun para o projeto koala-nest
+# Configuração Bun
+# Compatível com npm (npm install vai ignorar este arquivo)
 
 [build]
-# Compilar com SWC por padrão
-minify = true
+outdir = "dist"
 
 [test]
-# Configurações de teste
-root = "."
-preload = ["./apps/example/test/setup-e2e.ts"]
+root = "apps"
+testPatterns = [
+  "**/*.spec.ts",
+  "**/*.e2e-spec.ts"
+]
+timeoutMs = 60000
 
-[bun]
-# Auto-atualizar tipos do Bun
-autoinstall = true
+[loader]
+".ts" = "tsx"
