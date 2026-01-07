@@ -159,6 +159,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async remove<TWhere = any>(
     where: TWhere,
     externalServices?: Promise<any>,
+    notCascadeEntityProps?: Array<keyof TEntity>,
   ) {
     const entity = await this.findUnique(where)
 
@@ -169,7 +170,10 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     const relationEntity: EntityBase<TEntity>[] = []
 
     Object.keys(entity).forEach((key) => {
-      if (entity[key] instanceof EntityBase) {
+      if (
+        entity[key] instanceof EntityBase &&
+        !notCascadeEntityProps?.includes(key as keyof TEntity)
+      ) {
         relationEntity.push(entity[key])
       }
     })
@@ -195,6 +199,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   protected async removeMany<TWhere = any>(
     where: TWhere,
     externalServices?: Promise<any>,
+    notCascadeEntityProps?: Array<keyof TEntity>,
   ): Promise<void> {
     const entities = await this.findMany(where)
 
@@ -211,7 +216,10 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
 
         for (const entity of entities) {
           Object.keys(entity).forEach((key) => {
-            if (entity[key] instanceof EntityBase) {
+            if (
+              entity[key] instanceof EntityBase &&
+              !notCascadeEntityProps?.includes(key as keyof TEntity)
+            ) {
               relationEntity.push(entity[key])
             }
           })
