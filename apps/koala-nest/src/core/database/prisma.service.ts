@@ -3,15 +3,14 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { PrismaClientWithCustomTransaction } from './prisma-client-with-custom-transaction.interface'
 import { getPrismaClientClass } from './prisma-resolver'
 import type { Prisma } from 'prisma/generated/client'
-import type { PrismaClientOptions } from 'prisma/generated/internal/prismaNamespace'
 
 /**
  * Configure opções padrão do PrismaClient (ex: adapter).
  * Use isso na sua aplicação antes de inicializar o módulo Nest.
  */
-let globalPrismaOptions = {} as PrismaClientOptions
+let globalPrismaOptions = {} as Prisma.PrismaClientOptions
 
-export function setPrismaClientOptions(options: PrismaClientOptions) {
+export function setPrismaClientOptions(options: Prisma.PrismaClientOptions) {
   globalPrismaOptions = options
 }
 
@@ -69,7 +68,7 @@ export class PrismaService
     this.prismaInstance = new PrismaClientType({
       log: [{ emit: 'event', level: 'query' }],
       ...globalPrismaOptions,
-    } as PrismaClientOptions)
+    } as Prisma.PrismaClientOptions)
   }
 
   async onModuleInit() {

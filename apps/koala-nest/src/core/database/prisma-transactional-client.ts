@@ -1,5 +1,4 @@
 import { Prisma } from 'prisma/generated/client'
-import { PrismaPromise } from 'prisma/generated/internal/prismaNamespace'
 
 export abstract class PrismaTransactionalClient {
   constructor(
@@ -15,25 +14,28 @@ export abstract class PrismaTransactionalClient {
   $executeRaw(
     query: TemplateStringsArray | Prisma.Sql,
     ...values: any[]
-  ): PrismaPromise<number> {
+  ): Prisma.PrismaPromise<number> {
     return this.transactionalClient.$executeRaw(query, ...values)
   }
 
-  $executeRawUnsafe(query: string, ...values: any[]): PrismaPromise<number> {
+  $executeRawUnsafe(
+    query: string,
+    ...values: any[]
+  ): Prisma.PrismaPromise<number> {
     return this.transactionalClient.$executeRawUnsafe(query, ...values)
   }
 
   $queryRaw<T = unknown>(
     query: TemplateStringsArray | Prisma.Sql,
     ...values: any[]
-  ): PrismaPromise<T> {
+  ): Prisma.PrismaPromise<T> {
     return this.transactionalClient.$queryRaw(query, ...values)
   }
 
   $queryRawUnsafe<T = unknown>(
     query: string,
     ...values: any[]
-  ): PrismaPromise<T> {
+  ): Prisma.PrismaPromise<T> {
     return this.transactionalClient.$queryRawUnsafe(query, ...values)
   }
 }
