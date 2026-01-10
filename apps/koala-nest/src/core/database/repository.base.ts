@@ -152,7 +152,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
               ),
             ])
           }),
-      ).then(() => this.findFirst(where) as Promise<TEntity>)
+      ).then(() => this.findUnique(where) as Promise<TEntity>)
     }
   }
 
