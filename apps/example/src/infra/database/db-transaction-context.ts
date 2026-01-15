@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { PrismaClientWithCustomTransaction } from '@koalarx/nest/core/database/prisma-client-with-custom-transaction.interface'
 import { PrismaTransactionalClient } from '@koalarx/nest/core/database/prisma-transactional-client'
 import { DefaultArgs } from '@prisma/client/runtime/client'

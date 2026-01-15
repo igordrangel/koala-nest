@@ -1,6 +1,8 @@
 import { Prisma } from 'prisma/generated/client'
 
 export abstract class PrismaTransactionalClient {
+  [key: symbol]: any
+
   constructor(
     protected readonly transactionalClient: Prisma.TransactionClient,
   ) {}
