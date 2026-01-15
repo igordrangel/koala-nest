@@ -19,32 +19,52 @@ type RepositoryInclude<TEntity> = Omit<
   '_id' | '_action'
 >
 
-interface RepositoryInitProps<TEntity extends EntityBase<TEntity>> {
-  context: PrismaTransactionalClient
+interface RepositoryInitProps<
+  TEntity extends EntityBase<TEntity>,
+  TContext extends PrismaTransactionalClient,
+> {
+  context: TContext
   modelName: Type<TEntity>
-  transactionContext?: Type<PrismaTransactionalClient>
+  transactionContext?: Type<TContext>
   include?: RepositoryInclude<TEntity>
 }
 
-export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
-  protected _context: PrismaTransactionalClient
+export abstract class RepositoryBase<
+  TEntity extends EntityBase<TEntity>,
+  TContext extends PrismaTransactionalClient = PrismaTransactionalClient,
+  TModelKey extends keyof TContext = keyof TContext,
+> {
+  protected _context: TContext
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
 
-  constructor({ context, modelName, include }: RepositoryInitProps<TEntity>) {
+  constructor({
+    context,
+    modelName,
+    include,
+  }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
     this._include = include
   }
 
-  withTransaction(fn: (prisma: PrismaTransactionalClient) => Promise<any>) {
-    return this._context.withTransaction(async (client) => {
-      return fn(new (KoalaGlobalVars.dbTransactionContext as any)(client))
-    })
+  protected context(transactionalClient?: TContext): TContext[TModelKey] {
+    const modelName = this._modelName.name
+
+    if (!modelName)
+      throw new Error('modelName não informado no contrutor do repositorio')
+
+    const contextKey = toCamelCase(modelName) as TModelKey
+
+    if (transactionalClient) {
+      return transactionalClient[contextKey] as any
+    }
+
+    return this._context[contextKey] as any
   }
 
   protected async findById(id: IComparableId): Promise<TEntity | null> {
-    return this.context()
+    return (this.context() as any)
       .findFirst({
         include: this.getInclude(),
         where: { [this.getIdPropName()]: id },
@@ -59,7 +79,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   }
 
   protected async findFirst<T>(where: T): Promise<TEntity | null> {
-    return this.context()
+    return (this.context() as any)
       .findFirst({
         include: this.getInclude(),
         where,
@@ -74,7 +94,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
   }
 
   protected async findUnique<T>(where: T): Promise<TEntity | null> {
-    return this.context()
+    return (this.context() as any)
       .findUnique({
         include: this.getInclude(),
         where,
@@ -92,7 +112,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     where: T,
     pagination?: PaginationDto,
   ): Promise<TEntity[]> {
-    return this.context()
+    return (this.context() as any)
       .findMany(this.findManySchema(where, pagination))
       .then((result: TEntity[]) =>
         result.map((response) => this.createEntity(response)),
@@ -103,7 +123,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     where: T,
     pagination?: PaginationDto,
   ): Promise<ListResponse<TEntity>> {
-    const count = await this.context().count({ where })
+    const count = await (this.context() as any).count({ where })
 
     if (count > 0) {
       const items = await this.findMany(
@@ -124,7 +144,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     const prismaEntity = this.entityToPrisma(entity)
 
     if (entity._action === EntityActionType.create) {
-      return this.context()
+      return (this.context() as any)
         .create({
           data: prismaEntity,
           include: this.getInclude(),
@@ -134,7 +154,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
       const where = updateWhere ?? { id: entity._id }
 
       return this.withTransaction((client) =>
-        this.context(client)
+        (this.context(client) as any)
           .update({
             where,
             data: prismaEntity,
@@ -154,6 +174,32 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
           }),
       ).then(() => this.findUnique(where) as Promise<TEntity>)
     }
+  }
+
+  protected async saveMany<TWhere = any>(
+    entities: TEntity[],
+    updateWhere?: TWhere,
+  ): Promise<void> {
+    await this.withTransaction(async (client) => {
+      const prismaEntities = entities.map((entity) =>
+        this.entityToPrisma(entity),
+      )
+
+      return Promise.all([
+        (this.context(client) as any).createMany({
+          data: prismaEntities,
+          skipDuplicates: true,
+        }),
+        ...entities
+          .filter((entity) => !!entity._id)
+          .map((entity) =>
+            (this.context(client) as any).update({
+              data: entity,
+              where: updateWhere ?? { id: entity._id },
+            }),
+          ),
+      ])
+    })
   }
 
   protected async remove<TWhere = any>(
@@ -183,7 +229,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
         ? externalServices.then(() => client)
         : Promise.resolve(client)
       ).then((client) =>
-        this.context(client)
+        (this.context(client) as any)
           .delete({ where })
           .then((response) =>
             Promise.all(
@@ -225,7 +271,7 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
           })
         }
 
-        return this.context(client)
+        return (this.context(client) as any)
           .deleteMany({ where })
           .then((response) =>
             Promise.all(
@@ -322,19 +368,6 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     return prismaSchema
   }
 
-  private context(transactionalClient?: PrismaTransactionalClient) {
-    const modelName = this._modelName.name
-
-    if (!modelName)
-      throw new Error('modelName não informado no contrutor do repositorio')
-
-    if (transactionalClient) {
-      return transactionalClient[toCamelCase(modelName)]
-    }
-
-    return this._context[modelName]
-  }
-
   private findManySchema<T>(where: T, pagination?: PaginationDto) {
     return {
       include: this.getInclude(),
@@ -386,5 +419,11 @@ export abstract class RepositoryBase<TEntity extends EntityBase<TEntity>> {
     })
 
     return result
+  }
+
+  withTransaction(fn: (prisma: TContext) => Promise<any>) {
+    return this._context.withTransaction(async (client) => {
+      return fn(new (KoalaGlobalVars.dbTransactionContext as any)(client))
+    })
   }
 }
