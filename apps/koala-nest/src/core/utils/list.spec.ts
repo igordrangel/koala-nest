@@ -53,4 +53,29 @@ describe('List test', () => {
 
     expect(list.findById(entity.id)).toEqual(entity)
   })
+
+  it('should order items', () => {
+    const list = new List(EntityTest).setList([
+      new EntityTest({ id: 1, value: 3 }),
+      new EntityTest({ id: 2, value: 1 }),
+      new EntityTest({ id: 3, value: 2 }),
+    ])
+
+    list.orderBy('value', 'asc')
+
+    const orderedValues = list.toArray().map((item) => item.value)
+
+    expect(orderedValues).toEqual([1, 2, 3])
+  })
+
+  it('should get first and last items', () => {
+    const list = new List(EntityTest).setList([
+      new EntityTest({ id: 1, value: 1 }),
+      new EntityTest({ id: 2, value: 2 }),
+      new EntityTest({ id: 3, value: 3 }),
+    ])
+
+    expect(list.first()!.value).toBe(1)
+    expect(list.last()!.value).toBe(3)
+  })
 })
