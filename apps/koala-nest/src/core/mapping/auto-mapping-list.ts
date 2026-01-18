@@ -76,9 +76,17 @@ export class AutoMappingList {
       return undefined
     }
 
+    let type: string
+
+    try {
+      type = prop.type().name ?? prop.type.name ?? ''
+    } catch {
+      type = prop.type.name ?? ''
+    }
+
     return {
       ...prop,
-      type: prop.type().name ?? prop.type.name,
+      type,
     }
   }
 
