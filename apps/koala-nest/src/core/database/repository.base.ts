@@ -48,6 +48,222 @@ export abstract class RepositoryBase<
     this._include = include
   }
 
+  private listRelationEntities(entity: TEntity) {
+    const relationEntities: EntityBase<TEntity>[] = []
+
+    Object.keys(entity).forEach((key) => {
+      if (entity[key] instanceof List) {
+        const list = entity[key]
+
+        list.toArray('added').forEach((item) => {
+          relationEntities.push(item)
+          relationEntities.push(...this.listRelationEntities(item))
+        })
+
+        list.toArray('updated').forEach((item) => {
+          relationEntities.push(item)
+          relationEntities.push(...this.listRelationEntities(item))
+        })
+      } else if (entity[key] instanceof EntityBase) {
+        relationEntities.push(entity[key])
+        relationEntities.push(...this.listRelationEntities(entity[key] as any))
+      }
+    })
+
+    return relationEntities
+  }
+
+  private listToRelationActionList(entity: TEntity) {
+    type RelationActionList = Array<{
+      modelName: string
+      schema: any
+      relations: EntityBase<TEntity>[]
+    }>
+
+    const relationCreates: RelationActionList = []
+    const relationUpdates: RelationActionList = []
+    const relationDeletes: RelationActionList = []
+
+    Object.keys(entity).forEach((key) => {
+      if (entity[key] instanceof List) {
+        const list = entity[key]
+        const modelName = list.entityType?.name
+        const parentModelName = entity.constructor.name
+
+        if (modelName) {
+          list.toArray('removed').forEach((item) => {
+            relationDeletes.push({
+              modelName: toCamelCase(modelName),
+              schema: { where: { id: item._id } },
+              relations: [],
+            })
+          })
+
+          list.toArray('added').forEach((item) => {
+            relationCreates.push({
+              modelName: toCamelCase(modelName),
+              schema: {
+                data: {
+                  ...this.entityToPrisma(item),
+                  [toCamelCase(parentModelName)]: {
+                    connect: {
+                      [this.getIdPropName(entity)]:
+                        entity[this.getIdPropName(entity)],
+                    },
+                  },
+                },
+              },
+              relations: this.listRelationEntities(item),
+            })
+          })
+
+          list.toArray('updated').forEach((item) => {
+            relationUpdates.push({
+              modelName: toCamelCase(modelName),
+              schema: {
+                where: { id: item._id },
+                data: this.entityToPrisma(item),
+              },
+              relations: this.listRelationEntities(item),
+            })
+          })
+        }
+      }
+    })
+
+    return { relationCreates, relationUpdates, relationDeletes }
+  }
+
+  private entityToPrisma(entity: TEntity) {
+    const prismaSchema = {}
+
+    Object.keys(entity)
+      .filter((key) => !['id', '_id', '_action'].includes(key))
+      .filter(
+        (key) =>
+          !(entity[key] instanceof Function || entity[key] instanceof List),
+      )
+      .forEach((key) => {
+        if (entity[key] instanceof EntityBase) {
+          if (entity[key]._action === EntityActionType.create) {
+            if (entity[key][this.getIdPropName()]) {
+              prismaSchema[key] = {
+                connectOrCreate: {
+                  where: {
+                    [this.getIdPropName()]: entity[key][this.getIdPropName()],
+                  },
+                  create: this.entityToPrisma(entity[key] as any),
+                },
+              }
+            } else {
+              prismaSchema[key] = {
+                create: this.entityToPrisma(entity[key] as any),
+              }
+            }
+          } else {
+            prismaSchema[key] = {
+              update: this.entityToPrisma(entity[key] as any),
+            }
+          }
+        } else {
+          prismaSchema[key] = entity[key]
+        }
+      })
+
+    return prismaSchema
+  }
+
+  private findManySchema<T>(where: T, pagination?: PaginationDto) {
+    return {
+      include: this.getInclude(),
+      where,
+      orderBy: pagination?.generateOrderBy(),
+      skip: pagination?.skip(),
+      take: (pagination?.limit ?? 0) > 0 ? pagination?.limit : undefined,
+    }
+  }
+
+  private createEntity(data: any) {
+    const entity = new this._modelName()
+    entity._action = EntityActionType.update
+    entity.automap(data)
+
+    return entity
+  }
+
+  private orphanRemoval(
+    client: PrismaTransactionalClient,
+    entity: EntityBase<TEntity>,
+  ) {
+    const where = {}
+
+    Object.keys(entity)
+      .filter((key: string) => key === 'id' || key.includes('Id'))
+      .forEach((key) => (where[key] = entity[key]))
+
+    return client[toCamelCase(entity.constructor.name)].delete({ where })
+  }
+
+  private getIdPropName(entity?: TEntity) {
+    return (
+      Reflect.getMetadata(
+        'entity:id',
+        entity ? entity.constructor.prototype : this._modelName.prototype,
+      ) ?? 'id'
+    )
+  }
+
+  private getInclude(include?: RepositoryInclude<TEntity>) {
+    include = include ?? this._include ?? {}
+
+    const result = {}
+
+    Object.keys(include).forEach((key) => {
+      if (typeof include[key] === 'boolean') {
+        result[key] = include[key]
+      } else {
+        result[key] = {
+          include: this.getInclude(include[key]),
+        }
+      }
+    })
+
+    return result
+  }
+
+  private persistRelations(
+    transaction: PrismaTransactionalClient,
+    entity: TEntity,
+  ) {
+    const { relationCreates, relationUpdates, relationDeletes } =
+      this.listToRelationActionList(entity)
+
+    return Promise.all([
+      ...relationCreates.map((relationCreate) =>
+        transaction[relationCreate.modelName]
+          .create(relationCreate.schema)
+          .then((response) => {
+            return Promise.all(
+              relationCreate.relations.map((relation) => {
+                const relationEntity = entity[
+                  toCamelCase(relation.constructor.name)
+                ] as TEntity
+
+                relationEntity[this.getIdPropName(relationEntity)] =
+                  response[this.getIdPropName(relationEntity)]
+
+                return this.persistRelations(transaction, relationEntity)
+              }),
+            )
+          }),
+      ),
+      ...relationUpdates.map((relation) =>
+        transaction[relation.modelName].update(relation.schema),
+      ),
+      ...relationDeletes.map((relation) => this.removeMany(relation.schema)),
+    ])
+  }
+
   protected context(transactionalClient?: TContext): TContext[TModelKey] {
     const modelName = this._modelName.name
 
@@ -144,12 +360,22 @@ export abstract class RepositoryBase<
     const prismaEntity = this.entityToPrisma(entity)
 
     if (entity._action === EntityActionType.create) {
-      return (this.context() as any)
-        .create({
-          data: prismaEntity,
-          include: this.getInclude(),
-        })
-        .then((response: TEntity) => this.createEntity(response))
+      return this.withTransaction((client) =>
+        (this.context(client) as any)
+          .create({
+            data: prismaEntity,
+            include: this.getInclude(),
+          })
+          .then((response: TEntity) => {
+            entity[this.getIdPropName()] = response[this.getIdPropName()]
+            return this.persistRelations(client, entity).then(() => entity)
+          }),
+      ).then(
+        (response: TEntity) =>
+          this.findUnique({
+            [this.getIdPropName()]: response[this.getIdPropName()],
+          }) as Promise<TEntity>,
+      )
     } else {
       const where = updateWhere ?? { id: entity._id }
 
@@ -159,19 +385,7 @@ export abstract class RepositoryBase<
             where,
             data: prismaEntity,
           })
-          .then(() => {
-            const { relationUpdates, relationDeletes } =
-              this.listToRelationActionList(entity)
-
-            return Promise.all([
-              ...relationUpdates.map((relation) =>
-                client[relation.modelName].updateMany(relation.schema),
-              ),
-              ...relationDeletes.map((relation) =>
-                client[relation.modelName].deleteMany(relation.schema),
-              ),
-            ])
-          }),
+          .then(() => this.persistRelations(client, entity)),
       ).then(() => this.findUnique(where) as Promise<TEntity>)
     }
   }
@@ -282,143 +496,6 @@ export abstract class RepositoryBase<
           )
       }),
     )
-  }
-
-  private listToRelationActionList(entity: TEntity) {
-    type RelationActionList = Array<{
-      modelName: string
-      schema: any
-    }>
-
-    const relationUpdates: RelationActionList = []
-    const relationDeletes: RelationActionList = []
-
-    Object.keys(entity).forEach((key) => {
-      if (entity[key] instanceof List) {
-        const list = entity[key]
-        const modelName = list.entityType?.name
-
-        if (modelName) {
-          list.toArray('removed').forEach((item) => {
-            relationDeletes.push({
-              modelName: toCamelCase(modelName),
-              schema: { where: { id: item._id } },
-            })
-          })
-
-          list.toArray('updated').forEach((item) => {
-            relationUpdates.push({
-              modelName: toCamelCase(modelName),
-              schema: {
-                where: { id: item._id },
-                data: this.entityToPrisma(item),
-              },
-            })
-          })
-        }
-      }
-    })
-
-    return { relationUpdates, relationDeletes }
-  }
-
-  private entityToPrisma(entity: TEntity) {
-    const prismaSchema = {}
-
-    Object.keys(entity)
-      .filter((key) => !['id', '_id', '_action'].includes(key))
-      .filter((key) => !(entity[key] instanceof Function))
-      .forEach((key) => {
-        if (entity[key] instanceof List) {
-          if (entity[key].toArray('added').length > 0) {
-            prismaSchema[key] = {
-              createMany: {
-                data: entity[key].toArray('added').map((item) => {
-                  return this.entityToPrisma(item)
-                }),
-              },
-            }
-          }
-        } else if (entity[key] instanceof EntityBase) {
-          if (entity[key]._action === EntityActionType.create) {
-            if (entity[key][this.getIdPropName()]) {
-              prismaSchema[key] = {
-                connectOrCreate: {
-                  where: {
-                    [this.getIdPropName()]: entity[key][this.getIdPropName()],
-                  },
-                  create: this.entityToPrisma(entity[key] as any),
-                },
-              }
-            } else {
-              prismaSchema[key] = {
-                create: this.entityToPrisma(entity[key] as any),
-              }
-            }
-          } else {
-            prismaSchema[key] = {
-              update: this.entityToPrisma(entity[key] as any),
-            }
-          }
-        } else {
-          prismaSchema[key] = entity[key]
-        }
-      })
-
-    return prismaSchema
-  }
-
-  private findManySchema<T>(where: T, pagination?: PaginationDto) {
-    return {
-      include: this.getInclude(),
-      where,
-      orderBy: pagination?.generateOrderBy(),
-      skip: pagination?.skip(),
-      take: (pagination?.limit ?? 0) > 0 ? pagination?.limit : undefined,
-    }
-  }
-
-  private createEntity(data: any) {
-    const entity = new this._modelName()
-    entity._action = EntityActionType.update
-    entity.automap(data)
-
-    return entity
-  }
-
-  private orphanRemoval(
-    client: PrismaTransactionalClient,
-    entity: EntityBase<TEntity>,
-  ) {
-    const where = {}
-
-    Object.keys(entity)
-      .filter((key: string) => key === 'id' || key.includes('Id'))
-      .forEach((key) => (where[key] = entity[key]))
-
-    return client[toCamelCase(entity.constructor.name)].delete({ where })
-  }
-
-  private getIdPropName() {
-    return Reflect.getMetadata('entity:id', this._modelName.prototype) ?? 'id'
-  }
-
-  private getInclude(include?: RepositoryInclude<TEntity>) {
-    include = include ?? this._include ?? {}
-
-    const result = {}
-
-    Object.keys(include).forEach((key) => {
-      if (typeof include[key] === 'boolean') {
-        result[key] = include[key]
-      } else {
-        result[key] = {
-          include: this.getInclude(include[key]),
-        }
-      }
-    })
-
-    return result
   }
 
   withTransaction(fn: (prisma: TContext) => Promise<any>) {

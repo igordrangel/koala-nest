@@ -106,7 +106,7 @@ export class AutoMappingService {
     return mappedTarget
   }
 
-  private mapNestedProp(data: any, source: Type<any>) {
+  private getTarget(data: any, source: Type<any>) {
     if (this.isPrimitiveType(data)) {
       return data
     }
@@ -117,7 +117,15 @@ export class AutoMappingService {
       throw new Error(`No mapping context found for ${source.name}`)
     }
 
-    return this.map(data, source.prototype.constructor, targets[0])
+    return targets[0]
+  }
+
+  private mapNestedProp(data: any, source: Type<any>) {
+    return this.map(
+      data,
+      source.prototype.constructor,
+      this.getTarget(data, source),
+    )
   }
 
   private mapListToArray(value: List<any>) {
@@ -137,7 +145,9 @@ export class AutoMappingService {
     compositionType: Type<any>,
     onlySet = true,
   ) {
-    const list = new List(compositionType.prototype.constructor)
+    const list = new List(
+      this.getTarget(value, compositionType.prototype.constructor),
+    )
 
     const mappedValue = value.map(
       (item) =>
