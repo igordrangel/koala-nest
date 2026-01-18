@@ -1,9 +1,10 @@
 import { Type } from '@nestjs/common'
+import { findOnList } from '../utils/find-on-list'
+import { getTypeByProp } from '../utils/get-type-by-prop'
 import { List } from '../utils/list'
 import { AutoMappingClassContext } from './auto-mapping-class-context'
 import { AutoMappingContext } from './auto-mapping-context'
 import { ForMemberDefinition } from './for-member'
-import { findOnList } from '../utils/find-on-list'
 
 interface AutoMappingGetContext {
   mapContext: AutoMappingContext | null
@@ -76,17 +77,9 @@ export class AutoMappingList {
       return undefined
     }
 
-    let type: string
-
-    try {
-      type = prop.type().name ?? prop.type.name ?? ''
-    } catch {
-      type = prop.type.name ?? ''
-    }
-
     return {
       ...prop,
-      type,
+      type: getTypeByProp(prop),
     }
   }
 
