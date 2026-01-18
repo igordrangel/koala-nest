@@ -7,6 +7,7 @@ import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { EntityActionType, EntityBase } from './entity.base'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
+import { AutoMappingList } from '../mapping/auto-mapping-list'
 
 type RepositoryInclude<TEntity> = Omit<
   {
@@ -76,6 +77,7 @@ export abstract class RepositoryBase<
   private listToRelationActionList(entity: TEntity) {
     type RelationActionList = Array<{
       modelName: string
+      entityInstance: TEntity
       schema: any
       relations: TEntity[]
     }>
@@ -87,13 +89,15 @@ export abstract class RepositoryBase<
     Object.keys(entity).forEach((key) => {
       if (entity[key] instanceof List) {
         const list = entity[key]
-        const modelName = list.entityType?.name
+        const entityInstance = list.entityType! as any
+        const modelName = entityInstance.name
         const parentModelName = entity.constructor.name
 
         if (modelName) {
           list.toArray('removed').forEach((item) => {
             relationDeletes.push({
               modelName: toCamelCase(modelName),
+              entityInstance,
               schema: { where: { id: item._id } },
               relations: [],
             })
@@ -102,6 +106,7 @@ export abstract class RepositoryBase<
           list.toArray('added').forEach((item) => {
             relationCreates.push({
               modelName: toCamelCase(modelName),
+              entityInstance,
               schema: {
                 data: {
                   ...this.entityToPrisma(item),
@@ -120,6 +125,7 @@ export abstract class RepositoryBase<
           list.toArray('updated').forEach((item) => {
             relationUpdates.push({
               modelName: toCamelCase(modelName),
+              entityInstance,
               schema: {
                 where: { id: item._id },
                 data: this.entityToPrisma(item),
@@ -183,8 +189,8 @@ export abstract class RepositoryBase<
     }
   }
 
-  private createEntity(data: any) {
-    const entity = new this._modelName()
+  private createEntity(data: any, entityClass?: Type<TEntity>) {
+    const entity = new (entityClass || this._modelName)()
     entity._action = EntityActionType.update
     entity.automap(data)
 
@@ -233,11 +239,18 @@ export abstract class RepositoryBase<
 
   private getPropNameFromEntitySource(source: TEntity, entity: TEntity) {
     return Object.keys(source).find((key) => {
-      if (source[key] instanceof EntityBase) {
-        return source[key].constructor.name === entity.constructor.name
-      } else if (source[key] instanceof List) {
-        const list = source[key] as List<any>
-        return list.entityType?.name === entity.constructor.name
+      const propDefinitions = AutoMappingList.getPropDefinitions(
+        source as any,
+        key,
+      )
+
+      if (propDefinitions) {
+        if (propDefinitions.type === entity.constructor.name) {
+          return true
+        } else if (source[key] instanceof List) {
+          const list = source[key] as List<any>
+          return list.entityType?.name === entity.constructor.name
+        }
       }
 
       return false
@@ -259,19 +272,20 @@ export abstract class RepositoryBase<
             return Promise.all(
               relationCreate.relations.map((relation) => {
                 const relationPropName = this.getPropNameFromEntitySource(
-                  entity,
                   relation,
+                  relationCreate.entityInstance,
                 )
 
                 if (!relationPropName) {
                   throw new Error(
-                    `Propname not found for relation entity ${relation.constructor.name} on entity ${entity.constructor.name}`,
+                    `Propname not found for relation entity ${relation.constructor.name} on entity ${relationCreate.entityInstance.constructor.name}`,
                   )
                 }
 
-                entity.automap(response)
-
-                relation[relationPropName] = entity
+                relation[relationPropName] = this.createEntity(
+                  response,
+                  relationCreate.entityInstance as any,
+                )
 
                 return this.persistRelations(transaction, relation)
               }),
