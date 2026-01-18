@@ -1,8 +1,8 @@
 import { Injectable, Type } from '@nestjs/common'
+import { getTypeByProp } from '../utils/get-type-by-prop'
 import { List } from '../utils/list'
 import { AutoMappingList } from './auto-mapping-list'
 import { AutoMappingProfile } from './auto-mapping-profile'
-import { AutoMappingClassProp } from './auto-mapping-class-context'
 
 @Injectable()
 export class AutoMappingService {
@@ -12,12 +12,14 @@ export class AutoMappingService {
     automappingProfile.profile()
   }
 
-  private getType(prop: AutoMappingClassProp) {
-    return prop.type().name ?? prop.type.name
-  }
-
-  private getInstanceType(prop: () => Type<any> | ArrayConstructor) {
-    return prop() ?? prop
+  private getInstanceType(
+    prop: () => Type<any> | ArrayConstructor,
+  ): Type<any> | ArrayConstructor {
+    try {
+      return prop() ?? prop
+    } catch {
+      return prop as any
+    }
   }
 
   map<S, T>(data: any, source: Type<S>, target: Type<T>): T {
@@ -43,8 +45,8 @@ export class AutoMappingService {
         )
 
         if (targetProp) {
-          const typeSource = this.getType(propSource)
-          const typeTarget = this.getType(targetProp)
+          const typeSource = getTypeByProp(propSource)
+          const typeTarget = getTypeByProp(targetProp)
 
           const listToArray =
             typeSource === List.name &&
