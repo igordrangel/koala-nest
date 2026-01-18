@@ -283,13 +283,18 @@ export abstract class RepositoryBase<
                   )
                 }
 
-                relation[relationPropName] = this.createEntity(
+                const relationEntity = this.createEntity(
                   response,
                   relationCreate.entityInstance as any,
                 )
+                relationEntity._action = EntityActionType.create
+
+                relation[relationPropName] = relationEntity
 
                 return transaction[toCamelCase(relation.constructor.name)]
-                  .create(this.entityToPrisma(relation))
+                  .create({
+                    data: this.entityToPrisma(relation),
+                  })
                   .then((response: TEntity) => {
                     entity[this.getIdPropName(relation)] =
                       response[this.getIdPropName(relation)]
@@ -412,11 +417,6 @@ export abstract class RepositoryBase<
             entity[this.getIdPropName()] = response[this.getIdPropName()]
             return this.persistRelations(client, entity).then(() => entity)
           }),
-      ).then(
-        (response: TEntity) =>
-          this.findUnique({
-            [this.getIdPropName()]: response[this.getIdPropName()],
-          }) as Promise<TEntity>,
       )
     } else {
       const where = updateWhere ?? { id: entity._id }
