@@ -68,9 +68,18 @@ export class AutoMappingList {
 
   static getPropDefinitions(source: Type<any>, propName: string) {
     this.initializeLists()
-    return this._mappedPropList!.find(
+    const prop = this._mappedPropList!.find(
       (mp) => mp.source.name === source.name,
     )?.props.find((prop) => prop.name === propName)
+
+    if (!prop) {
+      return undefined
+    }
+
+    return {
+      ...prop,
+      type: prop.type().name ?? prop.type.name,
+    }
   }
 
   static getTargets(source: Type<any>) {
@@ -105,11 +114,7 @@ export class AutoMappingList {
       this._mappedPropList!.add(mappedClass)
     }
 
-    const metadata = Reflect.getMetadata(
-      'design:type',
-      source.prototype,
-      propName,
-    )
+    const type = Reflect.getMetadata('design:type', source.prototype, propName)
     const compositionType = Reflect.getMetadata(
       'composition:type',
       source.prototype,
@@ -120,7 +125,6 @@ export class AutoMappingList {
       source.prototype,
       propName,
     )
-    const type = metadata?.name
 
     mappedClass.props.add({
       name: propName,
