@@ -44,7 +44,7 @@ export abstract class EntityBase<T extends IComparable<T>>
           key,
         )
         const EntityOnPropKey = AutoMappingList.getSourceByName(
-          propDefinitions?.type,
+          propDefinitions?.type ?? '',
         )
 
         if (Array.isArray(props[key]) && this[key] instanceof List) {

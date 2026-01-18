@@ -2,6 +2,7 @@ import { Injectable, Type } from '@nestjs/common'
 import { List } from '../utils/list'
 import { AutoMappingList } from './auto-mapping-list'
 import { AutoMappingProfile } from './auto-mapping-profile'
+import { AutoMappingClassProp } from './auto-mapping-class-context'
 
 @Injectable()
 export class AutoMappingService {
@@ -9,6 +10,14 @@ export class AutoMappingService {
 
   constructor(automappingProfile: AutoMappingProfile) {
     automappingProfile.profile()
+  }
+
+  private getType(prop: AutoMappingClassProp) {
+    return prop.type().name ?? prop.type.name
+  }
+
+  private getInstanceType(prop: () => Type<any> | ArrayConstructor) {
+    return prop() ?? prop
   }
 
   map<S, T>(data: any, source: Type<S>, target: Type<T>): T {
@@ -34,20 +43,23 @@ export class AutoMappingService {
         )
 
         if (targetProp) {
+          const typeSource = this.getType(propSource)
+          const typeTarget = this.getType(targetProp)
+
           const listToArray =
-            propSource.type === List.name &&
-            targetProp.type === Array.name &&
+            typeSource === List.name &&
+            typeTarget === Array.name &&
             value instanceof List
 
           const arrayToList =
-            propSource.type === Array.name &&
-            targetProp.type === List.name &&
+            typeSource === Array.name &&
+            typeTarget === List.name &&
             value instanceof Array &&
             !!compositionType
 
           const arrayToArray =
-            propSource.type === Array.name &&
-            targetProp.type === Array.name &&
+            typeSource === Array.name &&
+            typeTarget === Array.name &&
             value instanceof Array &&
             !!compositionType
 
@@ -58,15 +70,17 @@ export class AutoMappingService {
           } else if (arrayToList) {
             mappedValue = this.mapArrayToList(
               value,
-              compositionType,
+              this.getInstanceType(compositionType),
               compositionAction === 'onlySet',
             )
           } else if (arrayToArray) {
-            mappedValue = this.mapArrayToArray(value, compositionType)
-          } else {
-            const propSourceInstance = this._contextList.getSourceByName(
-              propSource.type,
+            mappedValue = this.mapArrayToArray(
+              value,
+              this.getInstanceType(compositionType),
             )
+          } else {
+            const propSourceInstance =
+              this._contextList.getSourceByName(typeSource)
             if (propSourceInstance) {
               mappedValue = this.mapNestedProp(value, propSourceInstance)
             }

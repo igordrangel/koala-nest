@@ -10,7 +10,7 @@ export function AutoMap<T>(config?: AutoMapConfig<T>) {
   return function (target: any, propertyKey: string) {
     const isArray = config?.isArray
 
-    let customMetadata: any = config?.type?.()
+    let customMetadata: (() => any) | undefined = config?.type
 
     if (!customMetadata) {
       customMetadata = isArray ? Array : undefined
