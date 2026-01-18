@@ -19,10 +19,10 @@ export class PersistPersonRequest {
   name: string
 
   @ApiProperty({ type: [PersistPersonPhoneRequest] })
-  @AutoMap({ type: PersistPersonPhoneRequest, isArray: { addTo: true } })
+  @AutoMap({ type: () => PersistPersonPhoneRequest, isArray: { addTo: true } })
   phones: Array<PersistPersonPhoneRequest>
 
   @ApiProperty({ type: PersistPersonAddressRequest })
-  @AutoMap({ type: PersistPersonAddressRequest })
+  @AutoMap({ type: () => PersistPersonAddressRequest })
   address: PersistPersonAddressRequest
 }

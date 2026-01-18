@@ -31,11 +31,11 @@ export class ReadPersonResponse {
   name: string
 
   @ApiProperty({ type: [ReadPersonPhoneResponse] })
-  @AutoMap({ type: ReadPersonPhoneResponse, isArray: true })
+  @AutoMap({ type: () => ReadPersonPhoneResponse, isArray: true })
   phones: Array<ReadPersonPhoneResponse>
 
   @ApiProperty({ type: ReadPersonAddressResponse })
-  @AutoMap({ type: ReadPersonAddressResponse })
+  @AutoMap({ type: () => ReadPersonAddressResponse })
   address: ReadPersonAddressResponse
 
   @ApiProperty()

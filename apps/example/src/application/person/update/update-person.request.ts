@@ -27,10 +27,10 @@ export class UpdatePersonRequest {
   active: boolean
 
   @ApiProperty({ type: [UpdatePersonPhoneRequest] })
-  @AutoMap({ type: UpdatePersonPhoneRequest, isArray: true })
+  @AutoMap({ type: () => UpdatePersonPhoneRequest, isArray: true })
   phones: Array<UpdatePersonPhoneRequest>
 
   @ApiProperty({ type: UpdatePersonAddressRequest })
-  @AutoMap({ type: UpdatePersonAddressRequest })
+  @AutoMap({ type: () => UpdatePersonAddressRequest })
   address: UpdatePersonAddressRequest
 }

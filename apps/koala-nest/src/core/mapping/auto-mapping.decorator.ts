@@ -2,7 +2,7 @@ import { Type } from '@nestjs/common'
 import { AutoMappingList } from './auto-mapping-list'
 
 interface AutoMapConfig<T> {
-  type?: Type<T>
+  type?: () => Type<T>
   isArray?: boolean | { addTo: boolean }
 }
 
@@ -10,7 +10,7 @@ export function AutoMap<T>(config?: AutoMapConfig<T>) {
   return function (target: any, propertyKey: string) {
     const isArray = config?.isArray
 
-    let customMetadata: any = config?.type
+    let customMetadata: any = config?.type?.()
 
     if (!customMetadata) {
       customMetadata = isArray ? Array : undefined
