@@ -13,10 +13,10 @@ export class Person extends EntityBase<Person> {
   @AutoMap()
   name: string
 
-  @AutoMap({ type: List })
+  @AutoMap({ type: () => List })
   phones = new List(PersonPhone)
 
-  @AutoMap({ type: PersonAddress })
+  @AutoMap({ type: () => PersonAddress })
   address: PersonAddress
 
   @AutoMap()
