@@ -3,6 +3,7 @@ import { EnumAllowedTypes } from '@nestjs/swagger/dist/interfaces/schema-object-
 
 interface ApiPropertyEnumOptions {
   enum: EnumAllowedTypes
+  isArray?: boolean
   required?: boolean
 }
 
@@ -12,6 +13,7 @@ interface ApiPropertyEnumOptions {
  *
  * @param options - As opções para configurar o decorator.
  * @param options.enum - O enum que será documentado. Deve ser um tipo permitido pelo Swagger.
+ * @param options.isArray - Indica se a propriedade é um array de enums. Por padrão, é falso.
  * @param options.required - Indica se a propriedade é obrigatória. Por padrão, é opcional.
  *
  * @description
@@ -49,8 +51,8 @@ export function ApiPropertyEnum(options: ApiPropertyEnumOptions) {
       .map((enumValue) => `${enumValue.description}: ${enumValue.value}`)
       .join('\n')
     ApiProperty({
-      description: ['```', description, '```'].join('\n'),
       ...options,
+      description: ['```', description, '```'].join('\n'),
     })(target, propertyKey)
   }
 }
