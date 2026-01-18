@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import { EntityBase } from '../database/entity.base'
 import { IComparableId } from './interfaces/icomparable'
 
+export type OrderDirection = 'asc' | 'desc'
 export type ListActionType = 'added' | 'updated' | 'removed'
 export interface ListProps<T> {
   list?: T[]
@@ -17,8 +18,67 @@ export class List<T> {
 
   constructor(public readonly entityType?: Type<T>) {}
 
+  private indexOf(item: T, list = this._list) {
+    if (item instanceof EntityBase) {
+      return list
+        .filter((i) => i instanceof EntityBase)
+        .filter((i) => !!i._id)
+        .findIndex(
+          (i) =>
+            (item as any)._id === (i as any)._id ||
+            (item as any).id === (i as any).id,
+        )
+    }
+
+    return list
+      .filter((i) => !(i instanceof EntityBase))
+      .findIndex((i) => item === i)
+  }
+
+  private contains(item: T, list = this._list): boolean {
+    return this.indexOf(item, list) > -1
+  }
+
+  private mapInternalIdIfIsEmpty(list: T[]) {
+    return list.map((item) => {
+      if (item instanceof EntityBase && !item._id) {
+        item._id = (item as any).id
+      }
+
+      return item
+    })
+  }
+
   get length() {
     return this._list.length
+  }
+
+  orderBy(by: keyof T, direction: OrderDirection = 'asc') {
+    const inverse = direction === 'desc'
+
+    this._list.sort((a: any, b: any) => {
+      if (typeof a !== 'string' && typeof b !== 'string') {
+        if ((!inverse && a[by] > b[by]) || (inverse && a[by] < b[by])) {
+          return 1
+        } else if ((!inverse && a[by] < b[by]) || (inverse && a[by] > b[by])) {
+          return -1
+        } else {
+          return 0
+        }
+      } else {
+        return 0
+      }
+    })
+
+    return this
+  }
+
+  first() {
+    return this._list[0] ?? null
+  }
+
+  last() {
+    return this._list[this._list.length - 1] ?? null
   }
 
   findById(id: IComparableId): T | null {
@@ -159,36 +219,5 @@ export class List<T> {
       default:
         return this._list
     }
-  }
-
-  private indexOf(item: T, list = this._list) {
-    if (item instanceof EntityBase) {
-      return list
-        .filter((i) => i instanceof EntityBase)
-        .filter((i) => !!i._id)
-        .findIndex(
-          (i) =>
-            (item as any)._id === (i as any)._id ||
-            (item as any).id === (i as any).id,
-        )
-    }
-
-    return list
-      .filter((i) => !(i instanceof EntityBase))
-      .findIndex((i) => item === i)
-  }
-
-  private contains(item: T, list = this._list): boolean {
-    return this.indexOf(item, list) > -1
-  }
-
-  private mapInternalIdIfIsEmpty(list: T[]) {
-    return list.map((item) => {
-      if (item instanceof EntityBase && !item._id) {
-        item._id = (item as any).id
-      }
-
-      return item
-    })
   }
 }
