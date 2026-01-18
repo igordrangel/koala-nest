@@ -49,7 +49,7 @@ export abstract class RepositoryBase<
   }
 
   private listRelationEntities(entity: TEntity) {
-    const relationEntities: EntityBase<TEntity>[] = []
+    const relationEntities: TEntity[] = []
 
     Object.keys(entity).forEach((key) => {
       if (entity[key] instanceof List) {
@@ -65,7 +65,7 @@ export abstract class RepositoryBase<
           relationEntities.push(...this.listRelationEntities(item))
         })
       } else if (entity[key] instanceof EntityBase) {
-        relationEntities.push(entity[key])
+        relationEntities.push(entity[key] as any)
         relationEntities.push(...this.listRelationEntities(entity[key] as any))
       }
     })
@@ -77,7 +77,7 @@ export abstract class RepositoryBase<
     type RelationActionList = Array<{
       modelName: string
       schema: any
-      relations: EntityBase<TEntity>[]
+      relations: TEntity[]
     }>
 
     const relationCreates: RelationActionList = []
@@ -231,6 +231,19 @@ export abstract class RepositoryBase<
     return result
   }
 
+  private getPropNameFromEntitySource(source: TEntity, entity: TEntity) {
+    return Object.keys(source).find((key) => {
+      if (source[key] instanceof EntityBase) {
+        return source[key].constructor.name === entity.constructor.name
+      } else if (source[key] instanceof List) {
+        const list = source[key] as List<any>
+        return list.entityType?.name === entity.constructor.name
+      }
+
+      return false
+    })
+  }
+
   private persistRelations(
     transaction: PrismaTransactionalClient,
     entity: TEntity,
@@ -245,14 +258,22 @@ export abstract class RepositoryBase<
           .then((response) => {
             return Promise.all(
               relationCreate.relations.map((relation) => {
-                const relationEntity = entity[
-                  toCamelCase(relation.constructor.name)
-                ] as TEntity
+                const relationPropName = this.getPropNameFromEntitySource(
+                  entity,
+                  relation,
+                )
 
-                relationEntity[this.getIdPropName(relationEntity)] =
-                  response[this.getIdPropName(relationEntity)]
+                if (!relationPropName) {
+                  throw new Error(
+                    `Propname not found for relation entity ${relation.constructor.name} on entity ${entity.constructor.name}`,
+                  )
+                }
 
-                return this.persistRelations(transaction, relationEntity)
+                entity.automap(response)
+
+                relation[relationPropName] = entity
+
+                return this.persistRelations(transaction, relation)
               }),
             )
           }),
