@@ -1,5 +1,11 @@
 # koala-libs-mcp-docs
 
+## 1.0.1
+
+### Patch Changes
+
+- 63fc2c9: Ajustes
+
 ## 3.0.1
 
 ### Patch Changes
