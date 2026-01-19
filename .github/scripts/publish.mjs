@@ -47,4 +47,34 @@ fs.writeFileSync(
 );
 fs.writeFileSync("dist/LICENSE", fs.readFileSync("LICENSE").toString(), "utf8");
 
+// Copiar MCP Server para o dist
+console.log("Copying MCP Server...");
+execSync(`npm run build:mcp`, { stdio: "inherit" });
+
+const mcpServerSource = "apps/mcp-server/dist";
+const mcpServerDest = "dist/mcp-server";
+
+if (!fs.existsSync(mcpServerDest)) {
+  fs.mkdirSync(mcpServerDest, { recursive: true });
+}
+
+fs.cpSync(mcpServerSource, mcpServerDest, { recursive: true });
+
+// Copiar docs para o dist (necessário para o MCP server funcionar)
+console.log("Copying documentation...");
+const docsSource = "docs";
+const docsDest = "dist/docs";
+
+if (!fs.existsSync(docsDest)) {
+  fs.mkdirSync(docsDest, { recursive: true });
+}
+
+fs.cpSync(docsSource, docsDest, { recursive: true });
+
+// Copiar arquivo de exemplo mcp.json
+const mcpExampleSource = "apps/mcp-server/mcp.json.example";
+const mcpExampleDest = "dist/mcp-server/mcp.json.example";
+
+fs.copyFileSync(mcpExampleSource, mcpExampleDest);
+
 console.log("Build completed");

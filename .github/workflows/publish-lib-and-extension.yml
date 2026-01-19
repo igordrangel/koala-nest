@@ -22,8 +22,11 @@ jobs:
         with:
           bun-version: latest
 
+      - name: � Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: 🔨 Build Project
-        run: bun ci
+        run: bun run build:publish
 
       - name: 📚 Publish to NPM
         uses: actions/setup-node@v3

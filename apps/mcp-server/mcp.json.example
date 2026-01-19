@@ -1,0 +1,27 @@
+# Configuração MCP para Koala Nest Documentation
+
+Este arquivo permite que o VS Code detecte automaticamente o MCP server de documentação do Koala Nest.
+
+## Como usar
+
+1. **Instale as dependências** do projeto Koala Nest
+2. **Build o MCP server**: `bun run build:mcp`
+3. **Copie este arquivo** para a raiz do seu projeto como `.vscode/mcp.json`
+4. **Ajuste o caminho** do `command` se necessário
+5. **Reinicie o VS Code**
+
+O Copilot agora terá acesso à documentação do Koala Nest!
+
+---
+
+```json
+{
+  "mcpServers": {
+    "koala-nest-docs": {
+      "command": "node",
+      "args": ["${workspaceFolder}/node_modules/@koalarx/nest/dist/mcp-server/server.js"],
+      "env": {}
+    }
+  }
+}
+```
