@@ -15,19 +15,32 @@
 
 </div>
 
-## Documentação Completa
+## 🎯 O que você consegue fazer com @koalarx/nest
+
+- ✅ **Implementar APIs REST completas** com CRUD automático
+- ✅ **AutoMapping** transparente entre Request, Entity e Response
+- ✅ **Validação automática** com Zod integrado
+- ✅ **Testes unitários e E2E** simplificados
+- ✅ **CronJobs** com suporte a múltiplos pods via Redis
+- ✅ **EventJobs** para processamento assíncrono de eventos
+- ✅ **Paginação** automaticamente documentada
+- ✅ **Documentação OpenAPI (Swagger ou Scalar)** automática
+
+## 📚 Documentação Completa
 
 Toda a documentação está organizada em arquivos separados para facilitar a navegação:
 
 | Documento | Descrição |
 |-----------|-----------|
+| [**EXAMPLE.md**](./docs/EXAMPLE.md) | **Exemplo prático completo** - API CRUD com todas as camadas DDD |
 | [**CLI Reference**](./docs/00-cli-reference.md) | Guia da CLI oficial - Forma rápida de criar projetos |
 | [**Guia de Instalação**](./docs/01-guia-instalacao.md) | Como instalar e configurar a biblioteca |
 | [**Configuração Inicial**](./docs/02-configuracao-inicial.md) | Setup do projeto com KoalaNestModule e KoalaApp |
-| [**Exemplo Prático**](./docs/03-exemplo-pratico.md) | Criar uma API completa de usuários passo a passo |
 | [**Tratamento de Erros**](./docs/04-tratamento-erros.md) | Sistema robusto de tratamento e filtros de exceção |
 | [**Features Avançadas**](./docs/05-features-avancadas.md) | Cron Jobs, Event Handlers, Guards, Redis, Transações |
 | [**Decoradores**](./docs/06-decoradores.md) | @IsPublic, @Upload, @Cookies e mais |
+| [**Guia Bun**](./docs/07-guia-bun.md) | Por que Bun e como usá-lo |
+| [**Prisma Client**](./docs/08-prisma-client.md) | Integração com Prisma |
 
 ## Quick Start
 
@@ -82,13 +95,14 @@ bun run start:dev
 - [x] Módulo DDD configurado
 - [x] Documentação da API (Scalar UI)
 - [x] Tratamento de erros robusto
-- [x] Guards de autenticação (JWT + API Key)
 - [x] Banco de dados Prisma
 - [x] Redis para background services
 
 ### Forma Manual
 
 > ⚠️ **Requisito Obrigatório**: A abstração de banco de dados da biblioteca requer **Prisma como ORM**. 
+>
+> **💡 Dica**: Para um exemplo completo e funcionando, veja [docs/EXAMPLE.md](./docs/EXAMPLE.md)
 
 ```bash
 # Com Bun (Recomendado - Mais rápido)
@@ -105,13 +119,14 @@ npm install @koalarx/nest
 import { KoalaNestModule } from '@koalarx/nest/core/koala-nest.module'
 import { Module } from '@nestjs/common'
 import { env } from '../core/env'
-import { UserModule } from './controllers/user/user.module'
+// Importar seus módulos de controllers
+// import { PersonModule } from './controllers/person/person.module'
 
 @Module({
   imports: [
     KoalaNestModule.register({
       env,
-      controllers: [UserModule],
+      // controllers: [PersonModule], // Adicione seus módulos aqui
     }),
   ],
 })
@@ -121,22 +136,38 @@ export class AppModule {}
 ### 3. Inicializar Aplicação
 
 ```typescript
-// src/main.ts
-import 'dotenv/config'
+// src/host/main.ts
 import { NestFactory } from '@nestjs/core'
 import { KoalaApp } from '@koalarx/nest/core/koala-app'
-import { AppModule } from './host/app.module'
+import { AppModule } from './app.module'
+import { DbTransactionContext } from '@/infra/database/db-transaction-context'
+import { setPrismaClientOptions } from '@koalarx/nest/core/database/prisma.service'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
+import 'dotenv/config'
 
 async function bootstrap() {
+  // Configurar Prisma com adapter PostgreSQL
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  })
+  const adapter = new PrismaPg(pool)
+  setPrismaClientOptions({ adapter })
+
+  // Criar aplicação NestJS
   const app = await NestFactory.create(AppModule)
   
+  // Configurar e iniciar KoalaApp
   await new KoalaApp(app)
     .useDoc({
       ui: 'scalar',
       endpoint: '/doc',
-      title: 'Minha API',
-      version: '1.0.0',
+      title: 'API de Demonstração',
+      version: '1.0',
     })
+    .setAppName('example')
+    .setInternalUserName('integration.bot')
+    .setDbTransactionContext(DbTransactionContext)
     .enableCors()
     .buildAndServe()
 }
@@ -154,258 +185,254 @@ Acesse `http://localhost:3000/doc` para a documentação interativa!
 
 ## Principais Features
 
-### Segurança
+### Camadas DDD (Domain-Driven Design)
 
-- **Guards**: Autenticação e autorização (JWT + API Key)
-- **Estratégias Customizadas**: JwtStrategy e ApiKeyStrategy
-- **@IsPublic()**: Marca endpoints como públicos
-- **@RestrictByProfile()**: Restringe acesso por perfil de usuário
+A biblioteca implementa um padrão com 4 camadas bem definidas:
 
-### Tratamento de Erros
+1. **Domain** - Entidades, DTOs e interfaces de repositório
+2. **Application** - Handlers com lógica de negócio, Validators, AutoMapping
+3. **Host** - Controllers REST que expõem os endpoints
+4. **Infra** - Repositórios concretos e acesso ao banco de dados
 
-Filtros automáticos para:
-- **Domain Errors** (ConflictError, ResourceNotFoundError, etc)
-- **Prisma Validation** (validação de banco de dados)
-- **Zod Validation** (validação de dados de entrada)
-- **Global Exceptions** (erros não capturados)
+Veja [docs/EXAMPLE.md](./docs/EXAMPLE.md) para implementação completa.
+
+### AutoMapping Automático
+
+Converte Request → Entity → Response transparentemente:
 
 ```typescript
-throw new ConflictError('Email já registrado') // 409
-throw new ResourceNotFoundError('Usuário não encontrado') // 404
-throw new BadRequestError('Dados inválidos') // 400
+// Define os mapeamentos
+createMap(CreatePersonRequest, Person)
+createMap(Person, ReadPersonResponse)
+
+// Usa automaticamente
+const person = mapper.map(request, CreatePersonRequest, Person)
+const response = mapper.map(entity, Person, ReadPersonResponse)
 ```
 
-### Processamento em Background
+### Validação com Zod
 
-**Cron Jobs** - Execute tarefas agendadas:
+Validação tipada integrada com transformação de dados:
+
+```typescript
+export class CreatePersonValidator extends RequestValidatorBase<CreatePersonRequest> {
+  protected get schema(): ZodType<any, ZodTypeDef, any> {
+    return z.object({
+      name: z.string(),
+      phones: z.array(z.object({ phone: z.string() })),
+      address: z.object({ address: z.string() }),
+    })
+  }
+}
+```
+
+### Handlers e RequestResult
+
+Padrão funcional para tratamento de sucesso/erro:
+
 ```typescript
 @Injectable()
-export class SendReportJob extends CronJobHandlerBase {
-  protected async settings() {
-    return { isActive: true, timeInMinutes: 1440 }
+export class CreatePersonHandler extends RequestHandlerBase<...> {
+  async handle(req: CreatePersonRequest): Promise<RequestResult<Error, CreatePersonResponse>> {
+    const person = this.mapper.map(
+      new CreatePersonValidator(req).validate(),
+      CreatePersonRequest,
+      Person,
+    )
+    const result = await this.repository.save(person)
+    return ok({ id: result.id })
   }
+}
+
+// Controller
+const response = await handler.handle(request)
+if (response.isFailure()) {
+  throw response.value
+}
+return response.value
+```
+
+### Paginação Automática
+
+Queries com paginação documentada automaticamente:
+
+```typescript
+// Requisição
+GET /person?name=John&active=true&page=1&pageSize=10
+
+// Response com count
+{
+  "items": [...],
+  "count": 5
+}
+```
+
+### CronJobs com Redis (Sincronização)
+
+Tarefas agendadas com lock automático via RedLock em ambientes multi-pod:
+
+```typescript
+@Injectable()
+export class DeleteInactiveJob extends CronJobHandlerBase {
+  protected async settings(): Promise<CronJobSettings> {
+    return {
+      isActive: true,
+      timeInMinutes: 1,
+    }
+  }
+
   protected async run(): Promise<CronJobResponse> {
-    await emailService.sendReport()
+    // Executa apenas em um pod por vez
+    const result = await this.readManyPerson.handle(
+      new ReadManyPersonDto({ active: false })
+    )
+    
+    if (result.isOk()) {
+      for (const person of result.value.items) {
+        await this.deletePerson.handle(person.id)
+      }
+    }
+    
     return ok(null)
   }
 }
-
-.addCronJob(SendReportJob)
 ```
 
-**Event Jobs** - Processe eventos assincronamente:
-```typescript
-@Injectable()
-export class UserCreatedHandler extends EventHandlerBase {
-  async handleEvent(): Promise<void> {
-    // Processar evento de criação de usuário
-    console.log('Usuário criado!')
-  }
-}
+### EventJobs - Processamento Assíncrono
 
-// Registrar em EventJob
-export class UserEventJob extends EventJob<User> {
+Processamento de eventos assincronamente:
+
+```typescript
+export class PersonEventJob extends EventJob<Person> {
   defineHandlers(): Type<EventHandlerBase>[] {
-    return [UserCreatedHandler]
+    return [InactivePersonHandler]
   }
 }
-
-.addEventJob(UserEventJob)
-```
-
-### Banco de Dados
-
-- **Prisma ORM** com suporte a todos os drivers (PostgreSQL, MySQL, SQLite, MariaDB, SQL Server, MongoDB)
-- **Transações Automáticas** com context gerenciado
-- **Query Logging** em desenvolvimento
-
-### Documentação
-
-Dois UIs disponíveis:
-- **Scalar** - Interface moderna e interativa
-- **Swagger UI** - Documentação clássica
-
-```typescript
-.useDoc({
-  ui: 'scalar', // ou 'swagger'
-  endpoint: '/doc',
-  title: 'API Documentation',
-  version: '1.0.0',
-})
-```
-
-### Funcionalidades Adicionais
-
-- **Redis Integration** - Sincronização de Cron Jobs e Event Handlers (RedLock)
-- **CORS** - Requisições cross-origin
-- **Zod Validation** - Validação de dados com tipos
-- **Ngrok** - Exposição segura em desenvolvimento
-- **Decoradores Customizados** - @Upload, @Cookies, @ApiPropertyEnum
-
-## Exemplo Completo
-
-Veja como criar um CRUD de usuários:
-
-```typescript
-// src/domain/entities/user.entity.ts
-export interface UserEntity {
-  id: string
-  name: string
-  email: string
-  createdAt: Date
-}
-```
-
-```typescript
-// src/domain/dtos/create-user.dto.ts
-import { z } from 'zod'
-
-export const CreateUserSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-})
-
-export type CreateUserDto = z.infer<typeof CreateUserSchema>
-```
-
-```typescript
-// src/domain/services/user.service.ts
-import { Injectable } from '@nestjs/common'
-import { ConflictError } from '@koalarx/nest/core/errors/conflict.error'
-import { ResourceNotFoundError } from '@koalarx/nest/core/errors/resource-not-found.error'
 
 @Injectable()
-export class UserService {
-  constructor(private readonly repository: IUserRepository) {}
-
-  async create(data: CreateUserDto): Promise<UserEntity> {
-    const exists = await this.repository.findByEmail(data.email)
-    if (exists) throw new ConflictError('Email já registrado')
+export class InactivePersonHandler extends EventHandlerBase {
+  async handleEvent(): Promise<void> {
+    const result = await this.repository.readMany(
+      new ReadManyPersonDto({ active: true })
+    )
     
-    return this.repository.create(data)
-  }
-
-  async findById(id: string): Promise<UserEntity> {
-    const user = await this.repository.findById(id)
-    if (!user) throw new ResourceNotFoundError('Usuário não encontrado')
-    return user
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.findById(id) // Valida existência
-    await this.repository.delete(id)
+    for (const person of result.items) {
+      person.active = false
+      await this.repository.save(person)
+    }
   }
 }
+
+// Registrar na aplicação
+.addEventJob(InactivePersonHandler)
 ```
+
+### Testes Unitários
+
+Setup simplificado com dependências injetadas:
 
 ```typescript
-// src/host/controllers/user/user.controller.ts
-import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common'
-import { ApiTags, ApiCreatedResponse } from '@nestjs/swagger'
-import { IsPublic } from '@koalarx/nest/decorators/is-public.decorator'
+describe('CreatePersonHandler', () => {
+  const app = createUnitTestApp()
 
-@ApiTags('Users')
-@Controller('users')
-export class UserController {
-  constructor(private readonly service: UserService) {}
+  it('should create a person', async () => {
+    const handler = app.get(CreatePersonHandler)
+    const result = await handler.handle(createPersonRequestMockup)
 
-  @Post()
-  @IsPublic()
-  @ApiCreatedResponse({ type: UserResponseDto })
-  async create(@Body() data: CreateUserRequestDto) {
-    const validated = CreateUserSchema.parse(data)
-    return this.service.create(validated)
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.service.findById(id)
-  }
-
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    await this.service.delete(id)
-  }
-}
+    expect(result.isOk()).toBeTruthy()
+    if (result.isOk()) {
+      expect(result.value).toEqual({
+        id: expect.any(Number),
+      })
+    }
+  })
+})
 ```
 
-Erros são automaticamente transformados em respostas HTTP apropriadas!
+### Testes E2E
+
+Testes de integração completos:
+
+```typescript
+const app = await createE2ETestApp()
+
+it('should create a person', async () => {
+  const response = await request(app.getHttpServer())
+    .post('/person')
+    .send({
+      name: 'John Doe',
+      phones: [],
+      address: { address: 'Street 1' },
+    })
+
+  expect(response.statusCode).toBe(201)
+  expect(response.body.id).toBeDefined()
+})
+```
+
+## Exemplo Prático Completo
+
+Veja em [docs/EXAMPLE.md](./docs/EXAMPLE.md) um CRUD completo de **Pessoa** implementado com:
+
+- ✅ Entidades (Person, PersonAddress, PersonPhone)
+- ✅ DTOs com paginação (ReadManyPersonDto)
+- ✅ 5 Handlers (Create, Read, ReadMany, Update, Delete)
+- ✅ 5 Controllers REST
+- ✅ Repository com Prisma
+- ✅ Testes unitários e E2E
+- ✅ CronJobs e EventJobs
+- ✅ AutoMapping automático
+- ✅ Validação com Zod
 
 ## Estrutura de Projeto Recomendada
 
-Seguindo DDD:
+Seguindo DDD conforme implementado no exemplo:
 
 ```
-src/
-├── application/          # Lógica de aplicação e mapeadores
-├── core/                # Configurações globais
-├── domain/              # Lógica de negócio
-│   ├── entities/
-│   ├── dtos/
-│   ├── repositories/    # Interfaces
-│   └── services/
-├── host/                # Controladores e entrada
-│   ├── controllers/
-│   ├── security/        # Guards e estratégias
-│   └── app.module.ts
-├── infra/               # Implementações de infraestrutura
-│   ├── database/
-│   ├── repositories/    # Implementações
-│   └── services/
-└── main.ts
+apps/
+├── example/              # Projeto exemplo
+│   └── src/
+│       ├── domain/       # Entidades, DTOs, Interfaces
+│       ├── application/  # Handlers, Validators, Mapping
+│       ├── host/         # Controllers, Roteamento
+│       ├── infra/        # Repositories, Database
+│       ├── core/         # Configuração
+│       └── test/         # Setup de testes
+└── koala-nest/           # Biblioteca principal
+
+prisma/
+├── schema.prisma         # Modelo de dados
+├── migrations/           # Histórico de migrações
+└── generated/            # Cliente Prisma gerado
 ```
 
 ## Configuração de Ambiente
 
-A lib já valida automaticamente as variáveis padrão. Crie seu `.env` com:
+Crie seu `.env`:
 
 ```env
-# Variáveis obrigatórias
+# Banco de dados
+DATABASE_URL=postgresql://user:password@localhost:5432/koala_db
+
+# Aplicação (opcional)
 NODE_ENV=develop
-DATABASE_URL=postgresql://user:password@localhost:5432/db
-
-# Variáveis opcionais (padrão da lib)
-REDIS_CONNECTION_STRING=redis://localhost:6379
-SWAGGER_USERNAME=admin
-SWAGGER_PASSWORD=password123
-PRISMA_QUERY_LOG=false
-
-# Suas variáveis customizadas
-# CUSTOM_VAR=value
+LOG_LEVEL=debug
 ```
 
-Ver [Configuração Inicial - Variáveis de Ambiente](./docs/02-configuracao-inicial.md#2-configurar-variáveis-de-ambiente) para detalhes.
+Consulte [docs/02-configuracao-inicial.md](./docs/02-configuracao-inicial.md) para mais detalhes.
 
-## Índice da Documentação Original
+## Recursos Adicionais
 
-A documentação abaixo foi mantida para referência de recursos específicos:
+A biblioteca inclui vários decoradores e utilitários para facilitar o desenvolvimento:
 
-### API Key Strategy
+- **@ApiPropertyEnum()** - Documente enums corretamente no Swagger
+- **@ApiPropertyOnlyDevelop()** - Propriedades apenas em ambiente de desenvolvimento
+- **@ApiExcludeEndpointDiffDevelop()** - Endpoints apenas em dev (excluídos em produção)
+- **@Upload()** - Documentação automática de uploads de arquivos
+- **@Cookies()** - Extrai cookies da requisição HTTP
+- **@IsPublic()** - Marca endpoint como público (sem validação de token)
 
-Uma estratégia de autenticação via chave de API integrada ao Passport.js:
-
-[Ver documentação completa →](./docs/01-guia-instalacao.md#api-key-strategy)
-
-### Ngrok
-
-Exponha sua aplicação local na internet com segurança:
-
-```typescript
-.useNgrok(process.env.NGROK_AUTH_TOKEN!)
-```
-
-[Ver documentação completa →](./docs/05-features-avancadas.md#10-ngrok-exposição-em-produção)
-
-### Decoradores
-
-- **@ApiPropertyEnum()** - Documento enums no Swagger
-- **@ApiPropertyOnlyDevelop()** - Propriedades apenas em dev
-- **@ApiExcludeEndpointDiffDevelop()** - Endpoints apenas em dev
-- **@Upload()** - Documentação de upload de arquivos
-- **@Cookies()** - Extrai cookies da requisição
-- **@IsPublic()** - Marca endpoint como público
-
-[Ver todos os decoradores →](./docs/06-decoradores.md)
+Veja [docs/06-decoradores.md](./docs/06-decoradores.md) para documentação completa.
 
 ## Arquitetura
 
