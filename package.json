@@ -41,7 +41,10 @@
     "changeset": "changeset",
     "changeset:add": "changeset add",
     "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "changeset:publish": "changeset publish",
+    "dev:docs": "cd apps/koala-nest-docs && bun run dev",
+    "build:docs": "cd apps/koala-nest-docs && bun run build",
+    "preview:docs": "cd apps/koala-nest-docs && bun run preview"
   },
   "dependencies": {
     "@koalarx/utils": "^4.2.1",
