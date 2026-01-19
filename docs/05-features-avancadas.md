@@ -276,6 +276,8 @@ A biblioteca fornece o decorador `@IsPublic()` para marcar rotas públicas. Para
 
 > **Importante**: Guards e Strategies são implementações específicas do seu projeto. A biblioteca não fornece Guards/Strategies prontas, pois estas são muito particulares de cada aplicação.
 
+> **Onde Registrar Guards**: Use o método `.addGlobalGuard()` no builder do `KoalaApp` em `main.ts` para registrar seus guards globalmente. Veja a seção "Registrar Guards Globalmente" mais abaixo.
+
 ### Criar Estratégia JWT
 
 Aqui está um exemplo de como implementar uma estratégia customizada para validar tokens JWT:
@@ -487,16 +489,25 @@ export class SecurityModule {}
 
 ### Registrar Guards Globalmente
 
+A biblioteca fornece o método `.addGlobalGuard()` no builder do `KoalaApp` para registrar seus guards globalmente:
+
 ```typescript
 // src/host/main.ts
 import { AuthGuard } from './security/guards/auth.guard'
 import { ProfilesGuard } from './security/guards/profiles.guard'
 
-await new KoalaApp(app)
-  .addGlobalGuard(AuthGuard)        // Guard de autenticação (JWT + API Key)
-  .addGlobalGuard(ProfilesGuard)    // Guard de autorização
-  .buildAndServe()
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule)
+  
+  await new KoalaApp(app)
+    .useDoc({...})
+    .addGlobalGuard(AuthGuard)        // Guard de autenticação (JWT + API Key)
+    .addGlobalGuard(ProfilesGuard)    // Guard de autorização
+    .buildAndServe()
+}
 ```
+
+> **Onde Adicionar Guards**: Use `.addGlobalGuard()` no `KoalaApp` builder em `main.ts` para registrar seus guards globalmente. A ordem importa - guards são executados na ordem que são adicionados.
 
 ### Usar em Controllers
 

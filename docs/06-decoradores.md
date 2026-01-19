@@ -27,6 +27,8 @@ export class AuthController {
 
 **Comportamento**: Quando seu guard global verifica `IS_PUBLIC_KEY`, ele permite acesso sem validação.
 
+> **Dica**: Registre seus guards usando `.addGlobalGuard()` no `KoalaApp` builder em `main.ts`. O decorador `@IsPublic()` funciona junto com qualquer guard que você implementar que verifique a chave `IS_PUBLIC_KEY`.
+
 ## @ApiPropertyEnum()
 
 Decorador para documentar propriedades enum no Swagger/Scalar.
