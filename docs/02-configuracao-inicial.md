@@ -34,7 +34,7 @@ import { PersonModule } from './controllers/person/person.module'
 export class AppModule {}
 ```
 
-> **Nota sobre Autenticação**: Para adicionar Guards de autenticação (JWT + API Key), veja [Features Avançadas - Guards](./05-features-avancadas.md#3-guards-proteção-de-rotas).
+> **Nota sobre Autenticação**: Para implementar Guards de autenticação (JWT, API Key, etc.), veja padrões e exemplos em [Features Avançadas - Autenticação](./05-features-avancadas.md#3-autenticação-e-autorização).
 
 ### 2. Configurar Variáveis de Ambiente
 

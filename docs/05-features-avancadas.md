@@ -270,13 +270,15 @@ Cron Job executa
 - **Async Escalável**: EventQueue é sincronizado via Redis (RedLock) em ambientes distribuídos
 - **Agregados**: Agrupe múltiplos handlers em uma EventJob para organizar processamento por entidade
 
-## 3. Guards (Proteção de Rotas)
+## 3. Autenticação e Autorização
 
-Proteja seus endpoints com Guards do NestJS usando Passport Strategies. O `@koalarx/nest` fornece o decorador `@IsPublic()` para rotas públicas.
+A biblioteca fornece o decorador `@IsPublic()` para marcar rotas públicas. Para proteger seus endpoints com Guards do NestJS usando Passport Strategies, você implementa de acordo com suas necessidades (JWT, API Key, OAuth, etc.).
+
+> **Importante**: Guards e Strategies são implementações específicas do seu projeto. A biblioteca não fornece Guards/Strategies prontas, pois estas são muito particulares de cada aplicação.
 
 ### Criar Estratégia JWT
 
-Crie uma estratégia customizada para validar tokens JWT:
+Aqui está um exemplo de como implementar uma estratégia customizada para validar tokens JWT:
 
 ```typescript
 // src/host/security/strategies/jwt.strategy.ts

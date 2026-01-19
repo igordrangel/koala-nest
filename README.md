@@ -37,7 +37,7 @@ Toda a documentação está organizada em arquivos separados para facilitar a na
 | [**Guia de Instalação**](./docs/01-guia-instalacao.md) | Como instalar e configurar a biblioteca |
 | [**Configuração Inicial**](./docs/02-configuracao-inicial.md) | Setup do projeto com KoalaNestModule e KoalaApp |
 | [**Tratamento de Erros**](./docs/04-tratamento-erros.md) | Sistema robusto de tratamento e filtros de exceção |
-| [**Features Avançadas**](./docs/05-features-avancadas.md) | Cron Jobs, Event Handlers, Guards, Redis, Transações |
+| [**Features Avançadas**](./docs/05-features-avancadas.md) | Cron Jobs, Event Handlers, Redis, Transações e Padrões de Autenticação |
 | [**Decoradores**](./docs/06-decoradores.md) | @IsPublic, @Upload, @Cookies e mais |
 | [**Guia Bun**](./docs/07-guia-bun.md) | Por que Bun e como usá-lo |
 | [**Prisma Client**](./docs/08-prisma-client.md) | Integração com Prisma |

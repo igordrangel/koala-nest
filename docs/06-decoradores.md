@@ -2,7 +2,7 @@
 
 ## @IsPublic()
 
-Marca um endpoint como público, ignorando guards globais de autenticação.
+Marca um endpoint como público, ignorando guards globais de autenticação que você implementar.
 
 ```typescript
 import { IsPublic } from '@koalarx/nest/decorators/is-public.decorator'
@@ -25,7 +25,7 @@ export class AuthController {
 }
 ```
 
-**Comportamento**: Quando um guard global verifica `IS_PUBLIC_KEY`, ele permite acesso sem validação.
+**Comportamento**: Quando seu guard global verifica `IS_PUBLIC_KEY`, ele permite acesso sem validação.
 
 ## @ApiPropertyEnum()
 
@@ -120,7 +120,7 @@ export class AuthController {
 
 ## @RestrictByProfile()
 
-Marca um endpoint como restrito a perfis específicos de usuário. Funciona em conjunto com `ProfilesGuard`.
+Marca um endpoint como restrito a perfis específicos de usuário. Funciona em conjunto com um `ProfilesGuard` que você implementar.
 
 ```typescript
 import { RestrictByProfile } from '@/host/decorators/restriction-by-profile.decorator'
@@ -144,9 +144,9 @@ export class AdminController {
 }
 ```
 
-**Comportamento**: Quando `ProfilesGuard` é ativo, valida se o usuário autenticado possui um dos perfis requeridos. Se não possuir, retorna `403 Forbidden`.
+**Comportamento**: Quando seu `ProfilesGuard` (implementado por você) está ativo, ele valida se o usuário autenticado possui um dos perfis requeridos. Se não possuir, retorna `403 Forbidden`.
 
-> **Nota**: Veja a seção "Guards" em [05-features-avancadas.md](05-features-avancadas.md) para configurar os guards e estratégias de autenticação necessárias.
+> **Nota**: A biblioteca fornece o decorador. A implementação do guard é sua responsabilidade. Veja exemplos em [05-features-avancadas.md](05-features-avancadas.md).
 
 ## @ApiExcludeEndpointDiffDevelop()
 

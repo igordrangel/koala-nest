@@ -70,7 +70,7 @@ src/
 - ✅ **Módulo KoalaNest** - Configurado e pronto para uso
 - ✅ **Prisma ORM** - Integrado com PostgreSQL
 - ✅ **Redis** - Configurado para sincronização de background services
-- ✅ **Guards (JWT + API Key)** - Autenticação e autorização prontas para usar
+- ✅ **Padrões de Autenticação** - Templates para implementar Guards com JWT ou API Key
 - ✅ **Documentação Swagger/Scalar** - API documentada automaticamente
 - ✅ **Tratamento de Erros** - Filtros de exceção configurados
 - ✅ **Validação com Zod** - Schema validation pronto
