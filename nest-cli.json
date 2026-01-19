@@ -30,6 +30,16 @@
           }
         ]
       }
+    },
+    "mcp-server": {
+      "type": "application",
+      "root": "apps/mcp-server",
+      "entryFile": "../dist/apps/mcp-server/src/server",
+      "sourceRoot": "apps/mcp-server/src",
+      "compilerOptions": {
+        "deleteOutDir": true,
+        "tsConfigPath": "apps/mcp-server/tsconfig.app.json"
+      }
     }
   }
 }

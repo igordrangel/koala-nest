@@ -1,0 +1,11 @@
+**/*.ts
+**/*.map
+**/*.d.ts
+.vscode-test/
+.vscode/
+node_modules
+test-output.txt
+*.md
+.git
+.gitignore
+tsconfig.json
