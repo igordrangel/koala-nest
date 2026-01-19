@@ -4,7 +4,7 @@
   "commit": true,
   "commitMessage": "chore: release packages",
   "fixed": [
-    ["@koalarx/nest", "@koalarx/nest-cli", "koala-libs-mcp-docs"]
+    ["@koalarx/nest", "@koalarx/nest-cli"]
   ],
   "linked": [],
   "access": "public",
