@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.1.0
+
+### Minor Changes
+
+- c84f11d: Ajustes
+
 ## 1.0.1
 
 ### Patch Changes
