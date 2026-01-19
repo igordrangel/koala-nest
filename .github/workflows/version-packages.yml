@@ -65,11 +65,31 @@ jobs:
         run: |
           npm config set "//registry.npmjs.org/:_authToken" "${{ secrets.NPM_TOKEN }}"
 
-      - name: 📚 Publish to NPM
+      - name: 📚 Publish @koalarx/nest to NPM
         if: steps.check-changesets.outputs.has_changesets == 'true'
         run: |
-          cd dist && npm publish
-          cd ../dist-cli && npm publish
+          cd dist
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if npm view @koalarx/nest@$CURRENT_VERSION version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION already exists, skipping publish"
+          else
+            echo "Publishing version $CURRENT_VERSION"
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 📦 Publish @koalarx/nest-cli to NPM
+        if: steps.check-changesets.outputs.has_changesets == 'true'
+        run: |
+          cd dist-cli
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if npm view @koalarx/nest-cli@$CURRENT_VERSION version 2>/dev/null; then
+            echo "Version $CURRENT_VERSION already exists, skipping publish"
+          else
+            echo "Publishing version $CURRENT_VERSION"
+            npm publish
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
