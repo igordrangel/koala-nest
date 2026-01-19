@@ -27,6 +27,15 @@
       "problemMatcher": [],
       "label": "bun: build",
       "detail": "bun run build"
+    },
+    {
+      "type": "shell",
+      "command": "bun",
+      "args": ["run", "build:mcp-extension"],
+      "group": "build",
+      "problemMatcher": [],
+      "label": "bun: build:mcp-extension",
+      "detail": "bun run build:mcp-extension"
     }
   ]
 }

@@ -25,5 +25,17 @@
       "cwd": "${workspaceFolder}",
       "stopOnEntry": false // Set to true to pause on the first line
     },
+    {
+      "name": "Extension (MCP Docs)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/apps/mcp-vscode-extension"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/apps/mcp-vscode-extension/dist/**/*.js"
+      ],
+      "preLaunchTask": "bun: build:mcp-extension"
+    }
   ]
 }
