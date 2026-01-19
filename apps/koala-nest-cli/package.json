@@ -7,6 +7,9 @@
     "koala-nest": "index.js"
   },
   "type": "module",
+  "publishConfig": {
+    "directory": "../../dist-cli"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/igordrangel/koala-nest.git",

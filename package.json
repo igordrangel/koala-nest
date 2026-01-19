@@ -13,6 +13,8 @@
     "build:app": "nest build example",
     "build:lib": "nest build koala-nest && bun scripts/organize-all-builds.mjs",
     "build:cli": "node scripts/build-cli.mjs",
+    "publish:cli": "bun run build:cli && cd dist-cli && npm publish",
+    "publish:lib": "bun run build:lib && cd dist && npm publish",
     "build:mcp": "cd apps/mcp-server && tsc",
     "build:mcp-extension": "tsc -p apps/mcp-vscode-extension && cp apps/mcp-server/dist/server.js apps/mcp-vscode-extension/dist/server.js",
     "build:mcp-all": "bun run build:mcp && bun run build:mcp-extension",

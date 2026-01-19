@@ -86,15 +86,19 @@ async function organizeDistFolder() {
     }
 
     // ========================================
-    // PASSO 2.5: Copiar README para dist e apps/koala-nest
+    // PASSO 2.5: Copiar README e package.json para dist
     // ========================================
     const rootReadme = path.resolve(__dirname, '../README.md')
     const distReadme = path.join(distDir, 'README.md')
-    const appReadme = path.resolve(__dirname, '../apps/koala-nest/README.md')
     
     await fs.copyFile(rootReadme, distReadme)
-    await fs.copyFile(rootReadme, appReadme)
-    console.log('📄 README.md copiado')
+    
+    // Copiar package.json do apps/koala-nest para dist
+    const appPackageJson = path.resolve(__dirname, '../apps/koala-nest/package.json')
+    const distPackageJson = path.join(distDir, 'package.json')
+    await fs.copyFile(appPackageJson, distPackageJson)
+    
+    console.log('📄 README.md e package.json copiados para dist')
 
     // ========================================
     // PASSO 3: Limpar estrutura desnecessária
