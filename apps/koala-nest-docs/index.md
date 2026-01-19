@@ -11,7 +11,7 @@ hero:
       link: /guia-instalacao
     - theme: alt
       text: Ver no GitHub
-      link: https://github.com/koalarx/koala-nest
+      link: https://github.com/igordrangel/koala-nest
 
 features:
   - title: 🚀 NestJS com DDD

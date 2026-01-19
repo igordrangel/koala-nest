@@ -80,7 +80,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/koalarx/koala-nest' }
+      { icon: 'github', link: 'https://github.com/igordrangel/koala-nest' }
     ],
 
     footer: {

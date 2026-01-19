@@ -93,10 +93,50 @@ async function organizeDistFolder() {
     
     await fs.copyFile(rootReadme, distReadme)
     
-    // Copiar package.json do apps/koala-nest para dist
-    const appPackageJson = path.resolve(__dirname, '../apps/koala-nest/package.json')
-    const distPackageJson = path.join(distDir, 'package.json')
-    await fs.copyFile(appPackageJson, distPackageJson)
+    // Copiar package.json do apps/koala-nest para dist e adicionar dependências
+    const appPackageJsonPath = path.resolve(__dirname, '../apps/koala-nest/package.json')
+    const rootPackageJsonPath = path.resolve(__dirname, '../package.json')
+    const distPackageJsonPath = path.join(distDir, 'package.json')
+    
+    const appPackageJson = JSON.parse(await fs.readFile(appPackageJsonPath, 'utf-8'))
+    const rootPackageJson = JSON.parse(await fs.readFile(rootPackageJsonPath, 'utf-8'))
+    
+    // Remover campos que não devem estar no pacote publicado
+    delete appPackageJson.publishConfig
+    
+    // Adicionar peerDependencies (libs que já vem por padrão no NestJS)
+    appPackageJson.peerDependencies = {
+      '@nestjs/common': rootPackageJson.dependencies['@nestjs/common'],
+      '@nestjs/core': rootPackageJson.dependencies['@nestjs/core'],
+      '@nestjs/platform-express': rootPackageJson.dependencies['@nestjs/platform-express'],
+      'reflect-metadata': rootPackageJson.dependencies['reflect-metadata'],
+      'rxjs': rootPackageJson.dependencies['rxjs']
+    }
+    
+    // Adicionar dependencies (libs específicas do koala-nest)
+    appPackageJson.dependencies = {
+      '@koalarx/utils': rootPackageJson.dependencies['@koalarx/utils'],
+      '@nestjs/config': rootPackageJson.dependencies['@nestjs/config'],
+      '@nestjs/mapped-types': rootPackageJson.dependencies['@nestjs/mapped-types'],
+      '@nestjs/passport': rootPackageJson.dependencies['@nestjs/passport'],
+      '@nestjs/swagger': rootPackageJson.dependencies['@nestjs/swagger'],
+      '@prisma/adapter-pg': rootPackageJson.dependencies['@prisma/adapter-pg'],
+      '@prisma/client': rootPackageJson.dependencies['@prisma/client'],
+      '@scalar/nestjs-api-reference': rootPackageJson.dependencies['@scalar/nestjs-api-reference'],
+      'consola': rootPackageJson.dependencies['consola'],
+      'dotenv': rootPackageJson.dependencies['dotenv'],
+      'express-basic-auth': rootPackageJson.dependencies['express-basic-auth'],
+      'ioredis': rootPackageJson.dependencies['ioredis'],
+      'ngrok': rootPackageJson.dependencies['ngrok'],
+      'passport': rootPackageJson.dependencies['passport'],
+      'passport-custom': rootPackageJson.dependencies['passport-custom'],
+      'pg': rootPackageJson.dependencies['pg'],
+      'rimraf': rootPackageJson.dependencies['rimraf'],
+      'zod': rootPackageJson.dependencies['zod'],
+      'zod-validation-error': rootPackageJson.dependencies['zod-validation-error']
+    }
+    
+    await fs.writeFile(distPackageJsonPath, JSON.stringify(appPackageJson, null, 2))
     
     console.log('📄 README.md e package.json copiados para dist')
 
