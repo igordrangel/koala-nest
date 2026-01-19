@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.2
+
+### Patch Changes
+
+- 1d44d77: Ajustes
+
 ## 1.0.1
 
 ### Patch Changes
