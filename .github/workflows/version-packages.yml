@@ -1,0 +1,42 @@
+name: Version Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.changeset/**'
+      - 'package.json'
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  version:
+    name: "Update Versions with Changesets"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 📝 Create Release Pull Request or Publish
+        uses: changesets/action@v1
+        with:
+          version: bun changeset version
+          publish: bun changeset publish
+          commit: "chore: release packages"
+          title: "chore(release): update package versions"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

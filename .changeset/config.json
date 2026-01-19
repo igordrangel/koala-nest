@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": true,
+  "commitMessage": "chore: release packages",
+  "fixed": [
+    ["@koalarx/nest", "@koalarx/nest-cli", "koala-libs-mcp-docs"]
+  ],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [],
+  "privatePackages": {
+    "skipCI": true
+  }
+}

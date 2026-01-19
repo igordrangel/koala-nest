@@ -26,6 +26,7 @@ Esta pasta contém toda a documentação detalhada da biblioteca **@koalarx/nest
 - **[07-guia-bun.md](./07-guia-bun.md)** - Como usar Bun
 - **[08-prisma-client.md](./08-prisma-client.md)** - Integração com Prisma
 - **[09-mcp-vscode-extension.md](./09-mcp-vscode-extension.md)** - 🤖 Extensão MCP para VS Code
+- **[10-cli-integration.md](./10-cli-integration.md)** - 🚀 CLI integrada ao monorepo
 
 ---
 

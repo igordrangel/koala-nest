@@ -1,0 +1,28 @@
+{
+  "name": "@koalarx/nest-cli",
+  "version": "2.0.1",
+  "description": "CLI para criação de projetos utilizando Koala Nest",
+  "main": "index.js",
+  "bin": {
+    "koala-nest": "index.js"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/igordrangel/koala-nest.git",
+    "directory": "apps/koala-nest-cli"
+  },
+  "keywords": [
+    "Nest.js",
+    "CLI",
+    "DDD",
+    "Koala Nest",
+    "NestJS CLI"
+  ],
+  "author": "Igor D. Rangel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/igordrangel/koala-nest/issues"
+  },
+  "homepage": "https://github.com/igordrangel/koala-nest/tree/main/apps/koala-nest-cli#readme"
+}

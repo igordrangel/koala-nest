@@ -15,5 +15,5 @@ jobs:
         with:
           bun-version: latest
 
-      - run: bun ci
+      - run: bun i
       - run: cd scripts && bun test-mcp.ts

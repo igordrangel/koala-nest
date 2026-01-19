@@ -48,9 +48,6 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
-# VS Code Extension packaging temporary directory
-.vscode-package-temp/
-
 # Optional npm cache directory
 .npm
 
@@ -93,7 +90,6 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
-dist-cli
 
 # Gatsby files
 .cache/
@@ -125,9 +121,6 @@ dist-cli
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
-
-# VS Code extension packages
-*.vsix
 
 # yarn v2
 .yarn/cache

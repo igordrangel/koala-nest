@@ -1,0 +1,10 @@
+DATABASE_URL="postgres://postgres:root@localhost:5432/[projectName]"
+
+NODE_ENV="develop"
+
+PRISMA_QUERY_LOG="false"
+
+# SWAGGER_USERNAME="swagger"
+# SWAGGER_PASSWORD="d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f"
+
+REDIS_CONNECTION_STRING="redis://localhost:6379"

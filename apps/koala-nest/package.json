@@ -1,3 +1,11 @@
 {
-  "name": "@koalarx/nest"
+  "name": "@koalarx/nest",
+  "version": "1.19.1",
+  "description": "",
+  "author": "Igor D. Rangel",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "bun": ">=1.0.0"
+  }
 }

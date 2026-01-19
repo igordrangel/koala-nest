@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "koala-nest-docs": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/node_modules/@koalarx/nest/mcp-server/server.js"
+      ],
+      "env": {}
+    }
+  }
+}
