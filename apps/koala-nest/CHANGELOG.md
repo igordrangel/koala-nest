@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.3
+
+### Patch Changes
+
+- c87bce1: Ajuste no README ao realizar o build do KoalaNest
+
 ## 3.0.2
 
 ### Patch Changes
