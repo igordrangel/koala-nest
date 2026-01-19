@@ -81,14 +81,14 @@ export async function newProject(projectName: string) {
     })
 
     console.log(chalk.yellow('🔨 Gerando Prisma Client...'))
-    execSync(`cd ${projectName} && bun run prisma:generate`, {
+    execSync(`cd ${projectName} && bun run build:prisma`, {
       stdio: 'inherit',
     })
   } catch {
     console.log(chalk.red('⚠️  Erro ao instalar dependências. Execute manualmente:'))
     console.log(chalk.gray(`  cd ${projectName}`))
     console.log(chalk.gray(`  bun install`))
-    console.log(chalk.gray(`  bun run prisma:generate`))
+    console.log(chalk.gray(`  bun run build:prisma`))
   }
 
   console.log(chalk.green('\n✅ Projeto criado com sucesso!'))
