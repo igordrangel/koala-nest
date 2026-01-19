@@ -98,6 +98,7 @@ export async function newProject(projectName: string) {
   console.log(chalk.green('\n✅ Projeto criado com sucesso!'))
   console.log(chalk.cyan('\n📚 Próximos passos:'))
   console.log(chalk.gray(`  cd ${projectName}`))
-  console.log(chalk.gray(`  bun run start:dev`))
+  console.log(chalk.gray(`  bun run prisma:deploy  # Executar migrations no banco`))
+  console.log(chalk.gray(`  bun run start:dev       # Iniciar aplicação`))
   console.log(chalk.gray(`\n📖 Documentação: https://github.com/igordrangel/koala-nest\n`))
 }

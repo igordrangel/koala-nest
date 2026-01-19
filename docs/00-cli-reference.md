@@ -28,11 +28,11 @@ koala-nest new meu-app
 # Entrar na pasta do projeto
 cd meu-app
 
-# Instalar dependências
-npm install
+# Executar as migrations no banco de dados
+bun run prisma:deploy
 
 # Iniciar em modo desenvolvimento
-npm run start:dev
+bun run start:dev
 ```
 
 ## O que a CLI Configura Automaticamente
@@ -118,19 +118,23 @@ tsx
 
 1. **Configure as variáveis de ambiente** (.env)
    ```bash
-   # Edite o arquivo .env com seus valores
+   # O arquivo .env já foi criado com valores padrão
+   # Edite-o conforme necessário
    nano .env
    ```
 
-2. **Inicie o banco de dados** (se usar PostgreSQL)
+2. **Inicie o banco de dados** (se usar PostgreSQL via Docker)
    ```bash
-   # Crie as tabelas
-   npm run prisma:migrate:dev
+   # O projeto já vem com migrations de exemplo
+   # Execute-as no banco de dados:
+   bun run prisma:deploy
    ```
+   
+   > ⚠️ **Importante:** O CLI não executa `prisma:deploy` automaticamente. Você precisa rodá-lo manualmente após configurar o banco de dados para aplicar as migrations e poder executar o projeto de demonstração.
 
 3. **Inicie a aplicação**
    ```bash
-   npm run start:dev
+   bun run start:dev
    ```
 
 4. **Acesse a documentação**
@@ -140,14 +144,14 @@ tsx
 ## Exemplos de Uso
 
 ### Criar um Projeto Simples
-
-```bash
-koala-nest new blog-api
-cd blog-api
-npm install
-npm run start:dev
+bun run prisma:deploy  # Aplicar migrations de exemplo
+bun run start:dev
 ```
 
+Seu blog API estará rodando em `http://localhost:3000` com:
+- Exemplo de entidade (Pessoa)
+- Endpoints CRUD funcionais
+- Autenticação
 Seu blog API estará rodando em `http://localhost:3000` com:
 - Exemplo de entidade (Pessoa)
 - Endpoints CRUD funcionais
