@@ -3,11 +3,10 @@ on:
   push:
     branches: [main]
 jobs:
-  build:
-    name: "npm publish library"
+  npm-publish:
+    name: "Publish @koalarx/nest"
     runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: "postgresql://user:password@localhost:5432/dummy"
+    needs: build
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v2.3.2
@@ -20,20 +19,7 @@ jobs:
       - name: 🔨 Build Project
         run: bun ci
 
-  npm-publish:
-    name: "Publish docs"
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 🚚 Get latest code
-        uses: actions/checkout@v2.3.2
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: 📚 Publish docs
+      - name: 📚 Publish
         uses: actions/setup-node@v2-beta
         with:
           node-version: 20
