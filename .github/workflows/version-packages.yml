@@ -9,9 +9,10 @@ on:
       - 'apps/koala-nest-cli/**'
       - 'apps/mcp-server/**'
       - 'apps/mcp-vscode-extension/**'
-      - 'package.json'
     paths-ignore:
       - 'apps/koala-nest-docs/**'
+      - '**/*.md'
+      - '**/README.md'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
