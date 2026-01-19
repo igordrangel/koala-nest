@@ -13,8 +13,13 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.1%2B-blue)](https://www.typescriptlang.org/)
 [![CLI](https://img.shields.io/badge/CLI-@koalarx/nest--cli-brightgreen)](https://www.npmjs.com/package/@koalarx/nest-cli)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-MCP%20Extension-blue)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
+[![Documentation](https://img.shields.io/badge/📖-Docs-blue)](https://nest.koalarx.com/)
 
 </div>
+
+## 📖 Documentação
+
+Acesse a documentação completa e interativa em: **[nest.koalarx.com](https://nest.koalarx.com/)**
 
 ## 🤖 Extensão VS Code com MCP
 
