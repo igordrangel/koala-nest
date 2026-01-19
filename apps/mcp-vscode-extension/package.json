@@ -15,8 +15,19 @@
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Programming Languages",
-    "Other"
+    "AI",
+    "Chat",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "copilot",
+    "github-copilot",
+    "documentation",
+    "koala",
+    "nest",
+    "nestjs"
   ],
   "activationEvents": [
     "onStartupFinished"
