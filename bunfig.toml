@@ -1,5 +1,4 @@
 # Configuração Bun
-# Compatível com npm (npm install vai ignorar este arquivo)
 
 [build]
 outdir = "dist"
@@ -7,8 +6,8 @@ outdir = "dist"
 [test]
 root = "apps"
 testPatterns = [
-  "**/*.spec.ts",
-  "**/*.e2e-spec.ts"
+  "apps/**/*.spec.ts",
+  "apps/**/*.e2e-spec.ts"
 ]
 timeoutMs = 60000
 

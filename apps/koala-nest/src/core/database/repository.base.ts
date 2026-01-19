@@ -460,8 +460,8 @@ export abstract class RepositoryBase<
 
   protected async remove<TWhere = any>(
     where: TWhere,
-    externalServices?: Promise<any>,
     notCascadeEntityProps?: Array<keyof TEntity>,
+    externalServices?: Promise<any>,
   ) {
     const entity = await this.findUnique(where)
 
@@ -500,8 +500,8 @@ export abstract class RepositoryBase<
 
   protected async removeMany<TWhere = any>(
     where: TWhere,
-    externalServices?: Promise<any>,
     notCascadeEntityProps?: Array<keyof TEntity>,
+    externalServices?: Promise<any>,
   ): Promise<void> {
     const entities = await this.findMany(where)
 

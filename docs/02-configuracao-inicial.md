@@ -34,7 +34,7 @@ import { PersonModule } from './controllers/person/person.module'
 export class AppModule {}
 ```
 
-> **Nota sobre Autenticação**: Para adicionar Guards de autenticação (JWT + API Key), veja [Features Avançadas - Guards](./05-features-avancadas.md#3-guards-proteção-de-rotas).
+> **Nota sobre Autenticação**: Para implementar Guards de autenticação (JWT, API Key, etc.), veja padrões e exemplos em [Features Avançadas - Autenticação](./05-features-avancadas.md#3-autenticação-e-autorização).
 
 ### 2. Configurar Variáveis de Ambiente
 
@@ -172,5 +172,5 @@ A aplicação estará disponível em `http://localhost:3000` e a documentação 
 
 ## Próximos Passos
 
-- Veja [Criando Controladores e Serviços](./03-exemplo-pratico.md) para aprender a estruturar seus endpoints
+- Veja [EXAMPLE.md](./EXAMPLE.md) para aprender a estruturar seus endpoints e implementar a aplicação completa
 - Consulte [Tratamento de Erros](./04-tratamento-erros.md) para implementar tratamento robusto de exceções

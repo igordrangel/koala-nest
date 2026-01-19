@@ -1,6 +1,6 @@
 {
   "name": "@koalarx/nest",
-  "version": "1.18.20",
+  "version": "1.18.21",
   "description": "",
   "author": "Igor D. Rangel",
   "private": true,
@@ -12,15 +12,19 @@
     "build": "bun run build:app && bun scripts/organize-all-builds.mjs",
     "build:app": "nest build example",
     "build:lib": "nest build koala-nest && bun scripts/organize-all-builds.mjs",
+    "build:mcp": "cd apps/mcp-server && tsc",
+    "build:mcp-extension": "cd apps/mcp-vscode-extension && tsc",
+    "build:mcp-all": "bun run build:mcp && bun run build:mcp-extension",
     "build:publish": "bun .github/scripts/publish.mjs",
     "start": "nest start example",
     "start:dev": "nest start example --watch",
     "start:debug": "nest start example --debug --watch",
+    "start:mcp": "node apps/mcp-server/dist/server.js",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:cov": "bun test --coverage",
     "test:debug": "bun test --inspect-brk",
-    "test:e2e": "bun test --preload apps/example/src/test/setup-e2e.ts ./**/*.e2e-spec.ts",
+    "test:e2e": "bun test --preload apps/example/src/test/setup-e2e.ts --testNamePattern=e2e",
     "test:all": "bun run test && bun run test:e2e",
     "prepare": "bun run build:publish",
     "prepublishOnly": "bun run test",
@@ -31,6 +35,7 @@
   },
   "dependencies": {
     "@koalarx/utils": "^4.2.1",
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "@nestjs/common": "^11.0.12",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.12",
@@ -78,7 +83,7 @@
     "source-map-support": "^0.5.20",
     "supertest": "^7.1.0",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3",
+    "typescript": "^5.9.3",
     "unplugin-swc": "^1.5.1"
   }
 }

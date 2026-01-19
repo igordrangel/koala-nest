@@ -1,0 +1,19 @@
+name: Run MCP Tests
+
+on: [pull_request]
+
+jobs:
+  run-unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 📦 Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - run: bun ci
+      - run: cd scripts && bun test-mcp.ts
