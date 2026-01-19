@@ -172,5 +172,5 @@ A aplicação estará disponível em `http://localhost:3000` e a documentação 
 
 ## Próximos Passos
 
-- Veja [Criando Controladores e Serviços](./03-exemplo-pratico.md) para aprender a estruturar seus endpoints
+- Veja [EXAMPLE.md](./EXAMPLE.md) para aprender a estruturar seus endpoints e implementar a aplicação completa
 - Consulte [Tratamento de Erros](./04-tratamento-erros.md) para implementar tratamento robusto de exceções

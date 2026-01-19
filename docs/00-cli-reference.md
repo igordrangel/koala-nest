@@ -198,4 +198,4 @@ Para mais informações, contribuições ou reportar bugs:
 
 - [Guia de Instalação](./01-guia-instalacao.md) - Mais detalhes sobre setup manual
 - [Configuração Inicial](./02-configuracao-inicial.md) - Entender a estrutura criada
-- [Exemplo Prático](./03-exemplo-pratico.md) - Aprender com exemplos
+- [Exemplo Prático](./EXAMPLE.md) - Aprender com exemplos completos e funcionando
