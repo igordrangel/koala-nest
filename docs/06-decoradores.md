@@ -120,34 +120,6 @@ export class AuthController {
 - Sem parâmetro: Extrai todos os cookies
 - Com nome: Extrai um cookie específico
 
-## @RestrictByProfile()
-
-Marca um endpoint como restrito a perfis específicos de usuário. Funciona em conjunto com um `ProfilesGuard` que você implementar.
-
-```typescript
-import { RestrictByProfile } from '@/host/decorators/restriction-by-profile.decorator'
-import { UserProfileEnum } from '@/domain/entities/user/enums/user-profile.enum'
-
-@Controller('admin')
-export class AdminController {
-  @Delete('users/:id')
-  @RestrictByProfile([UserProfileEnum.ADMIN])
-  async deleteUser(@Param('id') id: number) {
-    // Apenas administradores podem deletar usuários
-    return { success: true }
-  }
-
-  @Get('reports')
-  @RestrictByProfile([UserProfileEnum.ADMIN, UserProfileEnum.MANAGER])
-  async getReports() {
-    // Apenas admin e manager podem acessar
-    return { reports: [] }
-  }
-}
-```
-
-**Comportamento**: Quando seu `ProfilesGuard` (implementado por você) está ativo, ele valida se o usuário autenticado possui um dos perfis requeridos. Se não possuir, retorna `403 Forbidden`.
-
 > **Nota**: A biblioteca fornece o decorador. A implementação do guard é sua responsabilidade. Veja exemplos em [05-features-avancadas.md](05-features-avancadas.md).
 
 ## @ApiExcludeEndpointDiffDevelop()

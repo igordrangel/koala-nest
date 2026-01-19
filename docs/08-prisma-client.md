@@ -73,6 +73,257 @@ async saveMultiple(entities: Person[]) {
 }
 ```
 
+### Acessar Tipos do DBContext em Repositórios
+
+Ao estender `RepositoryBase`, você pode acessar o `DBContext` (que pode ser `PrismaClient` ou `DbTransactionContext` em transações) de duas formas:
+
+#### Via Construtor com Configuração
+
+Passe o DBContext e uma string indicando qual model Prisma usar. Para ter type safety completo com os tipos do DBContext, use 3 type parameters:
+
+```typescript
+import { RepositoryBase } from '@koalarx/nest/core/database/repository.base'
+import { Person } from '@/domain/entities/person/person'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
+import { DbTransactionContext } from '../db-transaction-context'
+import { PRISMA_TOKEN } from '@koalarx/nest/core/koala-nest-database.module'
+import { Inject, Injectable } from '@nestjs/common'
+
+@Injectable()
+export class PersonRepository
+  extends RepositoryBase<Person, DbTransactionContext, 'person'>
+  implements IPersonRepository
+{
+  constructor(
+    @Inject(PRISMA_TOKEN)
+    prisma: DbTransactionContext,
+  ) {
+    super({
+      modelName: Person,           // Seu modelo/entidade
+      context: prisma,             // DBContext injetado
+      include: {                   // Includes opcionais
+        phones: true,
+        address: true,
+      },
+    })
+  }
+
+  // Seus métodos de repositório
+}
+```
+
+**Type Parameters do RepositoryBase**:
+- `Person` - Tipo da entidade
+- `DbTransactionContext` - Tipo do DBContext (PrismaClient ou DbTransactionContext)
+- `'person'` - String literal do model Prisma (deve corresponder ao nome da tabela/model)
+
+#### Acessar o Contexto dentro de Métodos
+
+Use `this.context()` para acessar o DBContext dentro de qualquer método. Com os 3 type parameters, você terá type safety completo:
+
+```typescript
+@Injectable()
+export class PersonRepository
+  extends RepositoryBase<Person, DbTransactionContext, 'person'>
+  implements IPersonRepository
+{
+  constructor(
+    @Inject(PRISMA_TOKEN)
+    prisma: DbTransactionContext,
+  ) {
+    super({
+      modelName: Person,
+      context: prisma,
+      include: { phones: true, address: true },
+    })
+  }
+
+  async findByNameWithDetails(name: string): Promise<Person | null> {
+    // this.context() retorna DbTransactionContext com type safety
+    // Intellisense mostrará: person, personPhone, personAddress
+    const person = await this.context().person.findFirst({
+      where: { name },
+      include: { phones: true, address: true },
+    })
+
+    return person ? this.mapToDomain(person) : null
+  }
+
+  async complexOperation(): Promise<void> {
+    // Dentro de transações, this.context() retorna o client transacional
+    // Os tipos são preservados automáticamente
+    const result = await this.context().personPhone.createMany({
+      data: [
+        { personId: 1, phone: '123456' },
+        { personId: 1, phone: '789012' },
+      ],
+    })
+  }
+}
+```
+
+**Comportamento Automático com Type Safety**:
+- **Fora de transações**: `this.context()` retorna `DbTransactionContext` com acesso tipado aos models
+- **Dentro de transações**: `this.context()` retorna o cliente transacional preservando os tipos
+- **Intellisense**: Com os 3 type parameters, o IDE autocompleta todos os models disponíveis
+
+Isso garante que suas queries sempre executem no contexto correto com segurança de tipos.
+
+### Método `remove()` com Orphan Removal
+
+O método `remove()` herdado de `RepositoryBase` possui internamente uma função de `orphanRemoval` que remove automaticamente todas as entidades associadas (relacionamentos) quando a entidade principal é deletada.
+
+```typescript
+// Exemplo: Deletar uma Pessoa
+await this.repository.delete(personId)
+
+// Internamente, o RepositoryBase.remove() executará:
+// 1. Remove PersonPhones associados (orphanRemoval)
+// 2. Remove PersonAddress associado (orphanRemoval)
+// 3. Remove Person
+```
+
+**Para evitar deletar entidades associadas**, passe um array de relacionamentos que devem ser **preservados** como segundo parâmetro:
+
+```typescript
+@Injectable()
+export class PersonRepository
+  extends RepositoryBase<Person, DbTransactionContext, 'person'>
+  implements IPersonRepository
+{
+  // ... constructor ...
+
+  delete(id: number): Promise<void> {
+    // 'address' não será deletado, apenas desvínculado
+    return this.remove<Prisma.PersonWhereUniqueInput>(
+      { id },
+      ['address']  // Preservar relacionamento
+    )
+  }
+}
+```
+
+**Sintaxe completa do método `remove()`**:
+```typescript
+protected remove<TWhere = any>(
+  where: TWhere,
+  notCascadeEntityProps?: Array<keyof TEntity>,  // Relacionamentos a preservar
+  externalServices?: Promise<any>                // Promises dentro da transação
+): Promise<void>
+```
+
+**Exemplos práticos**:
+
+```typescript
+// ❌ Deleta tudo (Person, Phones, Address)
+await this.remove({ id: 1 })
+
+// ✅ Deleta Person e Phones, mas preserva Address
+await this.remove({ id: 1 }, ['address'])
+
+// ✅ Deleta Person, mas preserva Phones e Address
+await this.remove({ id: 1 }, ['phones', 'address'])
+
+// ✅ Deleta Person e Address, mas preserva Phones
+await this.remove({ id: 1 }, ['phones'])
+```
+
+### Método `removeMany()` com Orphan Removal
+
+Similar ao `remove()`, mas deleta múltiplas entidades em uma única operação transacional.
+
+```typescript
+@Injectable()
+export class PersonRepository
+  extends RepositoryBase<Person, DbTransactionContext, 'person'>
+  implements IPersonRepository
+{
+  // ... constructor ...
+
+  async deleteInactive(): Promise<void> {
+    // Deleta múltiplas pessoas inativas
+    return this.removeMany<Prisma.PersonWhereInput>(
+      { active: false },
+      ['address']  // Preservar addresses mesmo ao deletar múltiplas pessoas
+    )
+  }
+}
+```
+
+**Sintaxe completa do método `removeMany()`**:
+```typescript
+protected removeMany<TWhere = any>(
+  where: TWhere,
+  notCascadeEntityProps?: Array<keyof TEntity>,  // Relacionamentos a preservar
+  externalServices?: Promise<any>                // Promises dentro da transação
+): Promise<void>
+```
+
+### Parâmetro `externalServices` para Transações
+
+Ambos os métodos `remove()` e `removeMany()` possuem um terceiro parâmetro `externalServices` que aceita uma `Promise`. Essa promise é **executada dentro da transação aberta**, permitindo que você execute operações externas de forma atômica.
+
+```typescript
+@Injectable()
+export class PersonRepository
+  extends RepositoryBase<Person, DbTransactionContext, 'person'>
+  implements IPersonRepository
+{
+  constructor(
+    @Inject(PRISMA_TOKEN) prisma: DbTransactionContext,
+    private readonly auditService: AuditService,
+    private readonly notificationService: NotificationService,
+  ) {
+    super({
+      modelName: Person,
+      context: prisma,
+    })
+  }
+
+  async deleteWithAudit(id: number, userId: string): Promise<void> {
+    // Executar auditoria dentro da transação
+    const auditPromise = this.auditService.logDeletion(id, userId)
+
+    return this.remove<Prisma.PersonWhereUniqueInput>(
+      { id },
+      [],
+      auditPromise  // Executado dentro da transação
+    )
+  }
+
+  async deleteInactiveWithNotification(): Promise<void> {
+    // Executar múltiplas operações externas
+    const externalOps = Promise.all([
+      this.auditService.logBulkDeletion('inactive_persons'),
+      this.notificationService.notifyAdmins('Deleted inactive persons'),
+    ])
+
+    return this.removeMany<Prisma.PersonWhereInput>(
+      { active: false },
+      ['address'],
+      externalOps  // Ambas as operações dentro da transação
+    )
+  }
+}
+```
+
+**Comportamento do `externalServices`**:
+- A promise é executada **antes** do delete/deleteMany acontecer
+- Se a promise falhar, a transação inteira é revertida
+- Todas as operações (incluindo a promise) são executadas de forma **atômica**
+- Se não informar `externalServices`, o delete acontece normalmente sem dependências
+
+**Caso de Uso**:
+Use `externalServices` para operações que devem ser garantidas atomicamente com a deleção:
+- Auditoria de exclusões
+- Notificações
+- Atualização de contadores
+- Invalidação de cache
+- Sincronização com sistemas externos
+
+**Caso de Uso**:
+Use `skipOrphanRemovalOn` quando você quer transferir relacionamentos para outro registro ou manter histórico antes de deletar a entidade principal.
+
 ## Configuração Avançada
 
 ### Configurar Opções do PrismaClient (Opcional)

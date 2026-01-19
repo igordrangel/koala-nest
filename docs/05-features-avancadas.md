@@ -449,17 +449,6 @@ export class ProfilesGuard implements CanActivate {
 }
 ```
 
-### Criar Decorador Customizado
-
-```typescript
-// src/host/decorators/restriction-by-profile.decorator.ts
-import { SetMetadata } from '@nestjs/common'
-import { UserProfileEnum } from '@/domain/entities/user/enums/user-profile.enum'
-
-export const RestrictByProfile = (profiles: UserProfileEnum[]) =>
-  SetMetadata('profiles', profiles)
-```
-
 ### Registrar Estratégias e Guards
 
 Crie um módulo de segurança com suporte a JWT e API Key:
@@ -514,8 +503,6 @@ async function bootstrap() {
 ```typescript
 // src/host/controllers/person/person.controller.ts
 import { IsPublic } from '@koalarx/nest/decorators/is-public.decorator'
-import { RestrictByProfile } from '@/host/decorators/restriction-by-profile.decorator'
-import { UserProfileEnum } from '@/domain/entities/user/enums/user-profile.enum'
 
 @Controller('persons')
 export class PersonController {
@@ -533,9 +520,8 @@ export class PersonController {
   }
 
   @Delete(':id')
-  @RestrictByProfile([UserProfileEnum.ADMIN])
   async delete(@Param('id') id: number) {
-    // Requer autenticação + perfil ADMIN
+    // Requer autenticação
     return { success: true }
   }
 }
@@ -791,7 +777,152 @@ await new KoalaApp(app)
 
 As transações são executadas **automaticamente** pelo `RepositoryBase` quando você usa métodos como `saveChanges()`, `remove()` e outras operações de escrita. Múltiplas operações dentro do repositório são garantidas como atômicas.
 
-## 9. Variáveis Globais
+## 9. Logging Customizado
+
+A biblioteca possui um sistema de logging abstrato que por padrão escreve erros no console, mas permite customização para enviar logs para diferentes destinos (Azure Storage, CloudWatch, Sentry, etc).
+
+### Entender o Contrato de Logging
+
+O contrato é definido em `apps/koala-nest/src/services/logging/ilogging.service.ts`:
+
+```typescript
+export interface LoggingReportProps {
+  loggedUsername: string      // Usuário que gerou o erro
+  packageName: string         // Pacote/módulo onde ocorreu
+  error: Error               // Objeto do erro
+  httpRequest?: {
+    method: string           // GET, POST, PUT, DELETE, etc
+    endpoint: string         // Path do endpoint
+    queryParams?: string     // Query params da requisição
+    payload?: object         // Body da requisição
+    statusCode: number       // Status HTTP da resposta
+    response?: object        // Response enviado
+  }
+}
+
+export abstract class ILoggingService {
+  abstract report(data: LoggingReportProps): Promise<void>
+}
+```
+
+### Implementação Padrão (Console)
+
+Por padrão, a biblioteca usa `LoggingService` que escreve no console:
+
+```typescript
+// apps/koala-nest/src/services/logging/logging.service.ts
+import { Injectable } from '@nestjs/common'
+import { ILoggingService, LoggingReportProps } from './ilogging.service'
+import consola from 'consola'
+
+@Injectable()
+export class LoggingService implements ILoggingService {
+  async report(data: LoggingReportProps): Promise<void> {
+    consola.error(data.error)
+  }
+}
+```
+
+### Criar Implementação Customizada
+
+Para enviar logs para um local diferente (ex: Azure Storage), crie uma nova classe implementando `ILoggingService`:
+
+```typescript
+// src/infra/logging/azure-logging.service.ts
+import { Injectable } from '@nestjs/common'
+import { ILoggingService, LoggingReportProps } from '@koalarx/nest/services/logging'
+import { BlobServiceClient } from '@azure/storage-blob'
+
+@Injectable()
+export class AzureLoggingService implements ILoggingService {
+  private blobClient: BlobServiceClient
+
+  constructor(connectionString: string) {
+    this.blobClient = BlobServiceClient.fromConnectionString(connectionString)
+  }
+
+  async report(data: LoggingReportProps): Promise<void> {
+    try {
+      const containerClient = this.blobClient.getContainerClient('logs')
+      const timestamp = new Date().toISOString()
+      const blobName = `logs/${data.packageName}/${timestamp}.json`
+
+      const logEntry = {
+        timestamp,
+        username: data.loggedUsername,
+        packageName: data.packageName,
+        error: {
+          name: data.error.name,
+          message: data.error.message,
+          stack: data.error.stack,
+        },
+        httpRequest: data.httpRequest,
+      }
+
+      const blobClient = containerClient.getBlockBlobClient(blobName)
+      await blobClient.upload(
+        JSON.stringify(logEntry),
+        Buffer.byteLength(JSON.stringify(logEntry))
+      )
+    } catch (error) {
+      console.error('Erro ao enviar log para Azure:', error)
+    }
+  }
+}
+```
+
+### Registrar no AppModule
+
+Passe a classe de logging customizada diretamente em `logging`:
+
+```typescript
+// src/host/app.module.ts
+import { AzureLoggingService } from '@/infra/logging/azure-logging.service'
+import { KoalaNestModule } from '@koalarx/nest/core/koala-nest.module'
+import { Module } from '@nestjs/common'
+
+@Module({
+  imports: [
+    KoalaNestModule.register({
+      env,
+      controllers: [PersonModule],
+      logging: AzureLoggingService,  // Passar a classe diretamente
+      // ... outras configurações
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+**Nota**: Se não configurar `logging`, a biblioteca usará `LoggingService` padrão (console).
+
+### Usar Logging em Handlers
+
+O `ILoggingService` é automaticamente injetado em serviços que precisem fazer logging manual:
+
+```typescript
+import { ILoggingService } from '@koalarx/nest/services/logging'
+import { Injectable } from '@nestjs/common'
+
+@Injectable()
+export class MyHandler {
+  constructor(private readonly loggingService: ILoggingService) {}
+
+  async handle() {
+    try {
+      // sua lógica aqui
+    } catch (error) {
+      await this.loggingService.report({
+        loggedUsername: 'system',
+        packageName: 'MyHandler',
+        error: error as Error,
+      })
+    }
+  }
+}
+```
+
+## 10. Variáveis Globais
 
 Acesse informações globais configuradas na inicialização da aplicação.
 
@@ -815,7 +946,7 @@ console.log(KoalaGlobalVars.appName)          // 'example'
 console.log(KoalaGlobalVars.internalUserName) // 'integration.bot'
 ```
 
-## 10. Ngrok (Exposição Pública em Desenvolvimento)
+## 11. Ngrok (Exposição Pública em Desenvolvimento)
 
 Exponha sua aplicação local na internet para testes ou webhooks.
 

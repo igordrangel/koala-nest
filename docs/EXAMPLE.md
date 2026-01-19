@@ -902,11 +902,22 @@ export class DeletePersonController implements IController<null, void, string> {
 #### RouterConfig.ts
 
 ```typescript
-// Define o path base dos endpoints
-export const PERSON_ROUTER_CONFIG = {
-  group: 'person', // Endpoint base: /person
+import { RouterConfigBase } from '@koalarx/nest/core/controllers/router-config.base'
+
+class PersonRouterConfig extends RouterConfigBase {
+  constructor() {
+    super('Person', '/person')
+  }
 }
+
+export const PERSON_ROUTER_CONFIG = new PersonRouterConfig()
 ```
+
+**Características**:
+- Estende `RouterConfigBase` que centraliza a configuração de rotas
+- Primeiro parâmetro: nome do recurso (`'Person'`)
+- Segundo parâmetro: path base dos endpoints (`'/person'`)
+- A instância é usada nos controllers via decorador `@Controller(PERSON_ROUTER_CONFIG)`
 
 ---
 
@@ -981,11 +992,97 @@ export class PersonRepository
 - Injeção de `DbTransactionContext` para gerenciar transações
 - Métodos utilizam internals da classe base para buscar/salvar/deletar
 
+#### Comportamento do Método `remove()` com Orphan Removal
+
+O método `remove()` (utilizado no método `delete()`) possui internamente uma função de `orphanRemoval` que remove automaticamente todas as entidades associadas (relacionamentos) quando a entidade principal é deletada.
+
+```typescript
+// Exemplo: Deletar uma Pessoa
+await this.repository.delete(personId)
+
+// Internamente, o RepositoryBase.remove() executará:
+// 1. Remove PersonPhones associados (orphanRemoval)
+// 2. Remove PersonAddress associado (orphanRemoval)
+// 3. Remove Person
+```
+
+**Para evitar deletar entidades associadas**, passe um array de relacionamentos que devem ser **preservados** como segundo parâmetro:
+
+```typescript
+// Exemplo: Deletar Person mas manter o Address
+delete(id: number): Promise<void> {
+  // 'address' não será deletado, apenas desvínculado
+  return this.remove<Prisma.PersonWhereUniqueInput>({ id }, ['address'])
+}
+```
+
+**Sintaxe completa**:
+```typescript
+// Método remove com orphanRemoval seletivo
+remove<T extends Prisma.Args>(
+  where: T,
+  skipOrphanRemovalOn?: string[]  // Relacionamentos a preservar
+): Promise<void>
+```
+
+**Exemplos práticos**:
+
+```typescript
+// ❌ Deleta tudo (Person, Phones, Address)
+await this.remove({ id: 1 })
+
+// ✅ Deleta Person e Phones, mas preserva Address
+await this.remove({ id: 1 }, ['address'])
+
+// ✅ Deleta Person, mas preserva Phones e Address
+await this.remove({ id: 1 }, ['phones', 'address'])
+
+// ✅ Deleta Person e Address, mas preserva Phones
+await this.remove({ id: 1 }, ['phones'])
+```
+
+**Caso de Uso**:
+Use `skipOrphanRemovalOn` quando você quer transferir relacionamentos para outro registro ou manter histórico antes de deletar a entidade principal.
+
 ### Contexto de Transação
 
 #### DbTransactionContext.ts
 
-Define como as transações serão gerenciadas com o Prisma.
+Gerencia transações com o Prisma, permitindo operações ACID em múltiplas tabelas:
+
+```typescript
+import { PrismaClientWithCustomTransaction } from '@koalarx/nest/core/database/prisma-client-with-custom-transaction.interface'
+import { PrismaTransactionalClient } from '@koalarx/nest/core/database/prisma-transactional-client'
+import { DefaultArgs } from '@prisma/client/runtime/client'
+import { Prisma } from 'prisma/generated/client'
+
+export class DbTransactionContext
+  extends PrismaTransactionalClient
+  implements PrismaClientWithCustomTransaction
+{
+  get person(): Prisma.PersonDelegate<DefaultArgs> {
+    return this.transactionalClient.person
+  }
+
+  get personPhone(): Prisma.PersonPhoneDelegate<DefaultArgs> {
+    return this.transactionalClient.personPhone
+  }
+
+  get personAddress(): Prisma.PersonAddressDelegate<
+    DefaultArgs,
+    Prisma.PrismaClientOptions
+  > {
+    return this.transactionalClient.personAddress
+  }
+}
+```
+
+**Características**:
+- Estende `PrismaTransactionalClient` que gerencia o ciclo de vida da transação
+- Implementa `PrismaClientWithCustomTransaction` interface para type-safety
+- Getters para cada modelo (`person`, `personPhone`, `personAddress`) que retornam delegates Prisma
+- Esses delegates são usados pelo `RepositoryBase` para operações CRUD dentro de transações
+- Automaticamente injetado nos repositórios via `DbTransactionContext` token
 
 ---
 
@@ -1041,6 +1138,63 @@ export function createUnitTestApp() {
   })
 }
 ```
+
+**Nota sobre PersonRepository em Testes**: A classe `PersonRepository` usada aqui é uma implementação **fake/mock** para testes. Ela estende `InMemoryBaseRepository<Person>` (armazenamento em memória) ao invés de `RepositoryBase` (que usa Prisma). Já possui **abstrações prontas** herdadas de `InMemoryBaseRepository`:
+- `saveChanges()`: Persiste em memória
+- `findById()`: Busca por ID em memória
+- `findManyAndCount()`: Lista e conta registros em memória
+- `remove()`: Remove de memória
+
+Essa implementação fake permite testes rápidos sem dependência de banco de dados real.
+
+#### PersonRepository.ts (Fake para Testes)
+
+```typescript
+import { ReadManyPersonDto } from '@/domain/dtos/read-many-person.dto'
+import { Person } from '@/domain/entities/person/person'
+import { IPersonRepository } from '@/domain/repositories/iperson.repository'
+import { ListResponseBase } from '@koalarx/nest/core/controllers/list-response.base'
+import { EntityActionType } from '@koalarx/nest/core/database/entity.base'
+import { InMemoryBaseRepository } from '@koalarx/nest/test/repositories/in-memory-base.repository'
+
+export class PersonRepository
+  extends InMemoryBaseRepository<Person>
+  implements IPersonRepository
+{
+  save(person: Person): Promise<any> {
+    // Lógica específica de teste: marcar como inativo ao criar
+    if (person._action === EntityActionType.create) {
+      person.active = false
+    }
+
+    return this.saveChanges(person, (item) => item.id === person.id)
+  }
+
+  read(id: number): Promise<Person | null> {
+    return this.findById(id)
+  }
+
+  readMany(query: ReadManyPersonDto): Promise<ListResponseBase<Person>> {
+    return this.findManyAndCount<ReadManyPersonDto>(
+      query,
+      (person) =>
+        (!query.name || person.name.includes(query.name)) &&
+        (query.active === undefined || person.active === query.active),
+    )
+  }
+
+  delete(id: number): Promise<void> {
+    return this.remove((person) => person.id === id)
+  }
+}
+```
+
+**Características**:
+- Estende `InMemoryBaseRepository<Person>` para armazenamento em memória (não usa banco de dados)
+- Implementa `IPersonRepository` mantendo o mesmo contrato da versão real
+- Métodos utilizam abstrações herdadas (`saveChanges`, `findById`, `findManyAndCount`, `remove`)
+- Pode adicionar lógica específica de teste (ex: `person.active = false` no `save()`)
+- Usado apenas em testes unitários com `createUnitTestApp()
 
 #### Exemplo de Teste Unitário
 
@@ -1358,6 +1512,7 @@ export class CreatePersonJob extends CronJobHandlerBase {
         const jobs = new PersonEventJob()
         jobs.addEvent(new InactivePersonEvent())
 
+        // Dispatch: Enfilera os eventos para processamento assíncrono
         EventQueue.dispatchEventsForAggregate(jobs._id)
       }
 
@@ -1427,9 +1582,16 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
 
 ### EventJobs
 
-EventJobs permitem processar eventos de domínio de forma assíncrona.
+EventJobs permitem processar eventos de domínio de forma assíncrona. O fluxo é:
+
+1. **CronJob/Handler** cria evento e chama `EventQueue.dispatchEventsForAggregate(jobId)`
+2. **EventQueue** enfilera os eventos para processamento
+3. **EventHandlers** processam os eventos de forma assíncrona
+4. **Resultado**: Lógica de negócio executada sem bloquear a requisição
 
 #### PersonEventJob.ts
+
+Define quais handlers processarão os eventos da Pessoa:
 
 ```typescript
 import { Person } from '@/domain/entities/person/person'
@@ -1445,6 +1607,11 @@ export class PersonEventJob extends EventJob<Person> {
 }
 ```
 
+**Características**:
+- Estende `EventJob<Person>` tipando a entidade agregada
+- Método `defineHandlers()` retorna array de handlers que processarão os eventos
+- Cada handler é responsável por uma ação específica
+
 #### InactivePersonEvent.ts
 
 ```typescript
@@ -1452,6 +1619,11 @@ import { EventClass } from '@koalarx/nest/core/backgroud-services/event-service/
 
 export class InactivePersonEvent extends EventClass {}
 ```
+
+**Características**:
+- Estende `EventClass` como marcador de evento de domínio
+- Pode ser utilizado em múltiplos handlers
+- Pode ser disparado de qualquer handler ou CronJob
 
 #### InactivePersonHandler.ts
 
