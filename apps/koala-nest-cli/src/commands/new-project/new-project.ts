@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Caminho para a pasta example no monorepo (será o template base)
-const TEMPLATE_BASE = join(__dirname, '../../../example')
+// Caminho para a pasta startup-project nos templates
+const TEMPLATE_BASE = join(__dirname, '../../templates/startup-project')
 const TEMPLATES_DIR = join(__dirname, '../../templates')
 
 export async function newProject(projectName: string) {
