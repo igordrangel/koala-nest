@@ -82,13 +82,19 @@ async function organizeDistFolder() {
       // Remover a pasta src
       await fs.rm(libSrcDir, { recursive: true, force: true })
       
-      // Copiar README.md da raiz para dist
-      const rootReadme = path.resolve(__dirname, '../README.md')
-      const distReadme = path.join(distDir, 'README.md')
-      await fs.copyFile(rootReadme, distReadme)
-      
       console.log('✅ koala-nest lib reorganizado')
     }
+
+    // ========================================
+    // PASSO 2.5: Copiar README para dist e apps/koala-nest
+    // ========================================
+    const rootReadme = path.resolve(__dirname, '../README.md')
+    const distReadme = path.join(distDir, 'README.md')
+    const appReadme = path.resolve(__dirname, '../apps/koala-nest/README.md')
+    
+    await fs.copyFile(rootReadme, distReadme)
+    await fs.copyFile(rootReadme, appReadme)
+    console.log('📄 README.md copiado')
 
     // ========================================
     // PASSO 3: Limpar estrutura desnecessária
