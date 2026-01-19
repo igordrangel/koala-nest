@@ -2,7 +2,7 @@
   "name": "koala-libs-mcp-docs",
   "displayName": "Koala Nest Documentation MCP",
   "description": "MCP server exposing Koala Nest documentation directly in VS Code",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "author": "Igor D. Rangel",
   "license": "UNLICENSED",
   "publisher": "koalarx",
@@ -13,7 +13,10 @@
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": ["Programming Languages", "Other"],
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -30,7 +33,9 @@
         "id": "koala-nest-docs",
         "name": "Koala Nest Documentation",
         "command": "node",
-        "args": ["${extensionPath}/dist/server.js"]
+        "args": [
+          "${extensionPath}/dist/server.js"
+        ]
       }
     ]
   }
