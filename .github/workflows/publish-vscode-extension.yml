@@ -79,9 +79,17 @@ jobs:
         run: |
           git add .
           if git commit -m "chore: version vscode extension"; then
-            # Pull com rebase para evitar conflitos
-            git pull --rebase origin main || true
-            git push origin main
+            # Tentar push com retry em caso de conflito
+            for i in {1..5}; do
+              git pull --rebase origin main && git push origin main && break || {
+                if [ $i -eq 5 ]; then
+                  echo "Failed to push after 5 attempts"
+                  exit 1
+                fi
+                echo "Push failed, retrying in 2 seconds... (attempt $i/5)"
+                sleep 2
+              }
+            done
           else
             echo "No changes to commit"
           fi
