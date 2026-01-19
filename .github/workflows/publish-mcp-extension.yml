@@ -4,14 +4,16 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/mcp-server/**'
-      - 'apps/mcp-vscode-extension/**'
-      - '!apps/mcp-vscode-extension/README.md'
+      - '.changeset/*/mcp*'
+      - 'package.json'
 
 jobs:
   vscode-extension:
     name: "Publish MCP VS Code Extension"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v3

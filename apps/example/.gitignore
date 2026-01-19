@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Coverage directory used by tools like istanbul
+./coverage
+*.lcov
+
+# Optional npm cache directory
+.npm
+
+# dotenv environment variable files
+.env
+
+# Build output
+dist
+
+# Prisma Client generated files
+prisma/generated
