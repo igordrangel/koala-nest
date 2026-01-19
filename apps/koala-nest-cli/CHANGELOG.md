@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.16
+
+### Patch Changes
+
+- 44aadde: Ajustes CLI
+
 ## 3.0.15
 
 ### Patch Changes
