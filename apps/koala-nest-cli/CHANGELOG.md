@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.5
+
+### Patch Changes
+
+- 442e197: Ajustes de publicação
+
 ## 3.0.4
 
 ### Patch Changes
