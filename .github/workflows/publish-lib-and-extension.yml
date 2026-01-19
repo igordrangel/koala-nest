@@ -8,6 +8,7 @@ on:
       - 'apps/example/**'
       - 'docs/**'
       - 'README.md'
+      - 'apps/mcp-vscode-extension/README.md'
 
 jobs:
   npm-publish:

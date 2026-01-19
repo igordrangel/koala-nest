@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/mcp-server/**'
       - 'apps/mcp-vscode-extension/**'
+      - '!apps/mcp-vscode-extension/README.md'
 
 jobs:
   vscode-extension:
