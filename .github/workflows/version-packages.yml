@@ -5,8 +5,13 @@ on:
     branches: [main]
     paths:
       - '.changeset/**'
-      - 'apps/**'
+      - 'apps/koala-nest/**'
+      - 'apps/koala-nest-cli/**'
+      - 'apps/mcp-server/**'
+      - 'apps/mcp-vscode-extension/**'
       - 'package.json'
+    paths-ignore:
+      - 'apps/koala-nest-docs/**'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 

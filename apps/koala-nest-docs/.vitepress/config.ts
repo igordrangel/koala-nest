@@ -5,6 +5,25 @@ export default defineConfig({
   description: "Framework NestJS com DDD e Prisma",
   base: '/',
   ignoreDeadLinks: true,
+  cleanUrls: true,
+  
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }]
+  ],
+  
+  rewrites: {
+    '00-cli-reference.md': 'cli-reference.md',
+    '01-guia-instalacao.md': 'guia-instalacao.md',
+    '02-configuracao-inicial.md': 'configuracao-inicial.md',
+    '04-tratamento-erros.md': 'tratamento-erros.md',
+    '05-features-avancadas.md': 'features-avancadas.md',
+    '06-decoradores.md': 'decoradores.md',
+    '07-guia-bun.md': 'guia-bun.md',
+    '08-prisma-client.md': 'prisma-client.md',
+    '09-mcp-vscode-extension.md': 'mcp-vscode-extension.md',
+    '10-cli-integration.md': 'cli-integration.md',
+    'EXAMPLE.md': 'exemplo.md'
+  },
   
   themeConfig: {
     logo: {
@@ -14,7 +33,7 @@ export default defineConfig({
     
     nav: [
       { text: 'Início', link: '/' },
-      { text: 'Documentação', link: '/01-guia-instalacao' },
+      { text: 'Documentação', link: '/guia-instalacao' },
       { text: 'Koalarx', link: 'https://koalarx.com' },
       { text: 'GitHub', link: 'https://github.com/koalarx/koala-nest' }
     ],
@@ -23,32 +42,32 @@ export default defineConfig({
       {
         text: 'Introdução',
         items: [
-          { text: 'CLI Reference', link: '/00-cli-reference' },
-          { text: 'Guia de Instalação', link: '/01-guia-instalacao' },
-          { text: 'Configuração Inicial', link: '/02-configuracao-inicial' }
+          { text: 'CLI Reference', link: '/cli-reference' },
+          { text: 'Guia de Instalação', link: '/guia-instalacao' },
+          { text: 'Configuração Inicial', link: '/configuracao-inicial' }
         ]
       },
       {
         text: 'Recursos',
         items: [
-          { text: 'Tratamento de Erros', link: '/04-tratamento-erros' },
-          { text: 'Features Avançadas', link: '/05-features-avancadas' },
-          { text: 'Decoradores', link: '/06-decoradores' }
+          { text: 'Tratamento de Erros', link: '/tratamento-erros' },
+          { text: 'Features Avançadas', link: '/features-avancadas' },
+          { text: 'Decoradores', link: '/decoradores' }
         ]
       },
       {
         text: 'Guias',
         items: [
-          { text: 'Guia Bun', link: '/07-guia-bun' },
-          { text: 'Prisma Client', link: '/08-prisma-client' },
-          { text: 'MCP VS Code Extension', link: '/09-mcp-vscode-extension' },
-          { text: 'CLI Integration', link: '/10-cli-integration' }
+          { text: 'Guia Bun', link: '/guia-bun' },
+          { text: 'Prisma Client', link: '/prisma-client' },
+          { text: 'MCP VS Code Extension', link: '/mcp-vscode-extension' },
+          { text: 'CLI Integration', link: '/cli-integration' }
         ]
       },
       {
         text: 'Exemplos',
         items: [
-          { text: 'Exemplo Completo', link: '/EXAMPLE' }
+          { text: 'Exemplo Completo', link: '/exemplo' }
         ]
       }
     ],
