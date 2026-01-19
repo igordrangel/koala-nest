@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.4
+
+### Patch Changes
+
+- 8be2e67: Ajustes de publicação
+
 ## 3.0.3
 
 ### Patch Changes
