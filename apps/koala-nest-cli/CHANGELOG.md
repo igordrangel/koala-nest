@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.15
+
+### Patch Changes
+
+- 11e0029: Corrigido filtro do cpSync que estava bloqueando todos os arquivos quando CLI instalado globalmente. O filtro agora verifica apenas caminhos relativos ao template, evitando conflito com `/node_modules/` no caminho de instalação
+
 ## 3.0.14
 
 ### Patch Changes
