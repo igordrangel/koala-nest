@@ -33,6 +33,7 @@
   /* Code blocks */
   --vp-code-bg: hsl(240, 5%, 96%);
   --vp-code-block-bg: hsl(240, 5%, 96%);
+  --vp-c-bg-alt: hsl(240, 5%, 96%);
 }
 
 .dark {
@@ -59,8 +60,9 @@
   --vp-c-gutter: hsl(240, 3.7%, 6%);
 
   /* Code blocks dark */
-  --vp-code-bg: hsl(240, 3.7%, 15.9%);
-  --vp-code-block-bg: hsl(240, 10%, 3.9%);
+  --vp-code-bg: hsl(240, 3.7%, 8%);
+  --vp-code-block-bg: hsl(240, 3.7%, 8%);
+  --vp-c-bg-alt: hsl(240, 3.7%, 8%);
 }
 
 /**

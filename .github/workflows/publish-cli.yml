@@ -4,11 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - '.changeset/*/nest-cli*'
+      - '.changeset/**/*nest-cli*'
       - 'apps/koala-nest-cli/**'
-      - 'package.json'
     paths-ignore:
       - 'apps/koala-nest-docs/**'
+      - '**/*.md'
+      - '**/README.md'
 
 jobs:
   npm-publish:
