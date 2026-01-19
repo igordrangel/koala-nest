@@ -5,6 +5,7 @@
   "version": "3.0.0",
   "author": "Igor D. Rangel",
   "license": "UNLICENSED",
+  "private": true,
   "publisher": "koalarx",
   "repository": {
     "type": "git",

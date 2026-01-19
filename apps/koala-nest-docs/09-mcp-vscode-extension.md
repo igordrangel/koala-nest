@@ -1,0 +1,1 @@
+../../docs/09-mcp-vscode-extension.md
