@@ -24,7 +24,7 @@
     "test:watch": "bun test --watch",
     "test:cov": "bun test --coverage",
     "test:debug": "bun test --inspect-brk",
-    "test:e2e": "bun test --preload apps/example/src/test/setup-e2e.ts ./**/*.e2e-spec.ts",
+    "test:e2e": "bun test --preload apps/example/src/test/setup-e2e.ts apps/example/**/*.e2e-spec.ts",
     "test:all": "bun run test && bun run test:e2e",
     "prepare": "bun run build:publish",
     "prepublishOnly": "bun run test",
