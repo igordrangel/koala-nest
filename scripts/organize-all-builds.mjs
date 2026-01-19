@@ -81,6 +81,12 @@ async function organizeDistFolder() {
       }
       // Remover a pasta src
       await fs.rm(libSrcDir, { recursive: true, force: true })
+      
+      // Copiar README.md da raiz para dist
+      const rootReadme = path.resolve(__dirname, '../README.md')
+      const distReadme = path.join(distDir, 'README.md')
+      await fs.copyFile(rootReadme, distReadme)
+      
       console.log('✅ koala-nest lib reorganizado')
     }
 
