@@ -3,12 +3,6 @@ name: Version and Publish Packages
 on:
   push:
     branches: [main]
-    paths:
-      - '.changeset/**'
-      - 'apps/koala-nest/src/**'
-      - 'apps/koala-nest-cli/src/**'
-      - 'apps/mcp-server/**'
-      - 'apps/mcp-vscode-extension/**'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -32,37 +26,63 @@ jobs:
       - name: 📦 Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: � Check for changesets
+        id: check-changesets
+        run: |
+          if ls .changeset/*.md 1> /dev/null 2>&1; then
+            echo "has_changesets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changesets=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: 🔨 Build Project
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: bun run build:lib
 
       - name: 📝 Version Packages
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: bun run changeset:version
 
       - name: 🔐 Configure Git
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-      - name: � Configure NPM credentials
+      - name: � Commit version changes
+        if: steps.check-changesets.outputs.has_changesets == 'true'
+        run: |
+          git add .
+          git commit -m "chore: version packages" || echo "No changes to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔑 Configure NPM credentials
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: |
           npm config set "//registry.npmjs.org/:_authToken" "${{ secrets.NPM_TOKEN }}"
 
       - name: 📚 Publish to NPM
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: bun run changeset:publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: 🔄 Push version changes
+      - name: 🔄 Push tags
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: |
-          git push origin main --follow-tags
+          git push origin main --tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔄 Sync changes back to develop
+        if: steps.check-changesets.outputs.has_changesets == 'true'
         run: |
+          git fetch origin main
           git fetch origin develop
           git checkout develop
-          git merge main --no-edit
+          git merge origin/main --no-edit
           git push origin develop
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

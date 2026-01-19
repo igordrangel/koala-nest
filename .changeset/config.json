@@ -10,7 +10,7 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [],
+  "ignore": ["@koalarx/koala-nest-docs"],
   "privatePackages": {
     "skipCI": true
   }
