@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.8
+
+### Patch Changes
+
+- e7adc7c: Ajustes comando new da CLI
+
 ## 3.0.7
 
 ### Patch Changes
