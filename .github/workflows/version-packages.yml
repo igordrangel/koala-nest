@@ -1,21 +1,21 @@
-name: Version Packages
+name: Version and Publish Packages
 
 on:
   push:
     branches: [main]
     paths:
       - '.changeset/**'
+      - 'apps/**'
       - 'package.json'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  version:
-    name: "Update Versions with Changesets"
+  publish:
+    name: "Version and Publish Packages to NPM"
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v3
@@ -30,13 +30,24 @@ jobs:
       - name: 📦 Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: 📝 Create Release Pull Request or Publish
-        uses: changesets/action@v1
-        with:
-          version: bun changeset version
-          publish: bun changeset publish
-          commit: "chore: release packages"
-          title: "chore(release): update package versions"
+      - name: 🔨 Build Project
+        run: bun run build:lib
+
+      - name: 📝 Version Packages
+        run: bun run changeset:version
+
+      - name: 🔐 Configure Git
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: 📚 Publish to NPM
+        run: bun run changeset:publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 🔄 Push version changes
+        run: |
+          git push origin main --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
