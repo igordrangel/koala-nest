@@ -6,6 +6,10 @@
   "author": "Igor D. Rangel",
   "license": "UNLICENSED",
   "publisher": "koalarx",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/igordrangel/koala-nest"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },

@@ -6,7 +6,6 @@ on:
     paths:
       - 'apps/mcp-server/**'
       - 'apps/mcp-vscode-extension/**'
-      - '.github/workflows/publish-mcp-extension.yml'
 
 jobs:
   vscode-extension:
@@ -35,10 +34,13 @@ jobs:
       - name: 🔨 Build MCP Server & Extension
         run: bun run build:mcp-all
 
-      - name: 📤 Publish to VS Code Marketplace
+      - name: 📦 Prepare Extension for Publishing
         run: |
-          cd ./apps/mcp-vscode-extension
-          vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
+          cp LICENSE apps/mcp-vscode-extension/LICENSE
+          echo "✅ LICENSE copied to extension folder"
+
+      - name: 📤 Publish to VS Code Marketplace
+        run: bun run package:vscode-extension && vsce publish -p ${{ secrets.VSCODE_MARKETPLACE_TOKEN }} --packagePath apps/mcp-vscode-extension/*.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
 

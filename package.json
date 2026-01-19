@@ -19,12 +19,13 @@
     "build:mcp-extension": "tsc -p apps/mcp-vscode-extension && cp apps/mcp-server/dist/server.js apps/mcp-vscode-extension/dist/server.js",
     "build:mcp-all": "bun run build:mcp && bun run build:mcp-extension",
     "build:publish": "bun .github/scripts/publish.mjs",
+    "package:vscode-extension": "bun scripts/package-vscode-extension.mjs",
     "watch:mcp-extension": "tsc -w -p apps/mcp-vscode-extension",
-    "test:mcp-extension": "node apps/mcp-vscode-extension/dist/test/runTest.js",
+    "test:mcp-extension": "bun apps/mcp-vscode-extension/dist/test/runTest.js",
     "start": "nest start example",
     "start:dev": "nest start example --watch",
     "start:debug": "nest start example --debug --watch",
-    "start:mcp": "node apps/mcp-server/dist/server.js",
+    "start:mcp": "bun apps/mcp-server/dist/server.js",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:cov": "bun test --coverage",
@@ -34,9 +35,9 @@
     "prepare": "bun run build:publish",
     "prepublishOnly": "bun run test",
     "postversion": "git push && git push --tags",
-    "deploy:hotfix": "npm version patch",
-    "deploy:feature": "npm version minor",
-    "deploy:release": "npm version major"
+    "deploy:hotfix": "bun pm version patch",
+    "deploy:feature": "bun pm version minor",
+    "deploy:release": "bun pm version major"
   },
   "dependencies": {
     "@koalarx/utils": "^4.2.1",

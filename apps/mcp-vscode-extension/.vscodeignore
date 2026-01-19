@@ -1,11 +1,44 @@
+# Source files
+src/**
 **/*.ts
 **/*.map
-**/*.d.ts
-.vscode-test/
-.vscode/
-node_modules
-test-output.txt
-*.md
-.git
-.gitignore
+
+# Config files
 tsconfig.json
+.eslintrc.js
+.prettierrc
+
+# Test files
+.vscode-test/
+test/
+**/*.test.js
+
+# Build artifacts (except .js in dist/)
+**/*.d.ts
+**/*.d.ts.map
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation - exclude all except README
+TESTING.md
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Node
+node_modules/
+bun.lock
+package-lock.json
+yarn.lock
+
+# Misc
+*.log
+.DS_Store
+test-output.txt
+
+# CRITICAL: Exclude entire parent directory structure
+../
