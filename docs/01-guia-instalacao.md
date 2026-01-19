@@ -18,11 +18,16 @@ koala-nest new meu-projeto
 # Entrar na pasta
 cd meu-projeto
 
+# Aplicar migrations no banco de dados
+bun run prisma:deploy
+
 # Iniciar a aplicação
-npm run start:dev
+bun run start:dev
 ```
 
-**Pronto!** Seu projeto está estruturado com todas as best practices incluídas.
+> ⚠️ **Importante:** Após criar o projeto, você precisa executar `bun run prisma:deploy` para aplicar as migrations de exemplo no banco de dados antes de iniciar a aplicação.
+
+**Pronto!** Seu projeto está estruturado com todas as melhores práticas incluídas.
 
 ## Instalação Manual
 
