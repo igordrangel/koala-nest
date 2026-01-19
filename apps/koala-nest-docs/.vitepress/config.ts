@@ -8,13 +8,10 @@ export default defineConfig({
   cleanUrls: true,
   
   markdown: {
-    languages: [
-      {
-        id: 'env',
-        scopeName: 'source.shell',
-        aliases: ['dotenv', '.env']
-      }
-    ]
+    languageAlias: {
+      env: 'bash',
+      dotenv: 'bash'
+    }
   },
   
   head: [
