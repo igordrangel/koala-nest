@@ -67,7 +67,9 @@ jobs:
 
       - name: 📚 Publish to NPM
         if: steps.check-changesets.outputs.has_changesets == 'true'
-        run: bun run changeset:publish
+        run: |
+          cd dist && npm publish
+          cd ../dist-cli && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
