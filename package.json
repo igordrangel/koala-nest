@@ -42,8 +42,9 @@
     "changeset:add": "changeset add",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
-    "dev:docs": "cd apps/koala-nest-docs && bun run dev",
-    "build:docs": "cd apps/koala-nest-docs && bun run build",
+    "sync:docs": "cp docs/*.md apps/koala-nest-docs/",
+    "dev:docs": "bun run sync:docs && cd apps/koala-nest-docs && bun run dev",
+    "build:docs": "bun run sync:docs && cd apps/koala-nest-docs && bun run build",
     "preview:docs": "cd apps/koala-nest-docs && bun run preview"
   },
   "dependencies": {

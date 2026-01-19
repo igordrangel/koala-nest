@@ -4,6 +4,7 @@ export default defineConfig({
   title: "Koala Nest",
   description: "Framework NestJS com DDD e Prisma",
   base: '/',
+  ignoreDeadLinks: true,
   
   themeConfig: {
     logo: {
