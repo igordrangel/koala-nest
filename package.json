@@ -8,14 +8,19 @@
   "engines": {
     "bun": ">=1.0.0"
   },
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "build": "bun run build:app && bun scripts/organize-all-builds.mjs",
     "build:app": "nest build example",
     "build:lib": "nest build koala-nest && bun scripts/organize-all-builds.mjs",
     "build:mcp": "cd apps/mcp-server && tsc",
-    "build:mcp-extension": "cd apps/mcp-vscode-extension && tsc",
+    "build:mcp-extension": "tsc -p apps/mcp-vscode-extension && cp apps/mcp-server/dist/server.js apps/mcp-vscode-extension/dist/server.js",
     "build:mcp-all": "bun run build:mcp && bun run build:mcp-extension",
     "build:publish": "bun .github/scripts/publish.mjs",
+    "watch:mcp-extension": "tsc -w -p apps/mcp-vscode-extension",
+    "test:mcp-extension": "node apps/mcp-vscode-extension/dist/test/runTest.js",
     "start": "nest start example",
     "start:dev": "nest start example --watch",
     "start:debug": "nest start example --debug --watch",
@@ -53,6 +58,7 @@
     "ngrok": "^5.0.0-beta.2",
     "passport": "^0.7.0",
     "passport-custom": "^1.1.1",
+    "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "zod": "^3.22.4",
@@ -70,7 +76,9 @@
     "@types/jest": "^29.5.14",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.11",
+    "@types/pg": "^8.11.6",
     "@types/supertest": "^6.0.2",
+    "@types/vscode": "^1.90.0",
     "@typescript-eslint/eslint-plugin": "^8.27.0",
     "@typescript-eslint/parser": "^8.27.0",
     "eslint": "^8.57.0",

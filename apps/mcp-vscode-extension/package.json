@@ -1,7 +1,7 @@
 {
   "name": "koala-libs-mcp-docs",
-  "displayName": "Koala Libs Documentation MCP",
-  "description": "MCP server exposing Koala Libs documentation directly in VS Code",
+  "displayName": "Koala Nest Documentation MCP",
+  "description": "MCP server exposing Koala Nest documentation directly in VS Code",
   "version": "1.0.0",
   "author": "Igor D. Rangel",
   "license": "UNLICENSED",
@@ -10,27 +10,25 @@
     "vscode": "^1.90.0"
   },
   "categories": ["Documentation", "Other"],
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:koala-nest-mcp.openDocs"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "koala-nest-mcp.openDocs",
+        "title": "Koala Nest: Open Documentation"
+      }
+    ],
     "mcpServers": [
       {
-        "id": "koala-libs-docs",
-        "name": "Koala Libs Documentation",
+        "id": "koala-nest-docs",
+        "name": "Koala Nest Documentation",
         "command": "node",
         "args": ["${extensionPath}/dist/server.js"]
       }
     ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run build",
-    "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "test": "node ./dist/test/runTest.js"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.90.0",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
   }
 }

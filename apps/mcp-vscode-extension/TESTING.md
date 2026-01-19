@@ -6,26 +6,36 @@ Este guia explica como testar a extensão MCP localmente antes de publicá-la.
 
 - VS Code instalado
 - Projeto Koala Nest clonado
-- Node.js/Bun instalado
+- Bun instalado (`bun --version`)
 
-## 1. Build da Extensão
+## 1. Setup Inicial
+
+Na raiz do projeto Koala Nest:
+
+```bash
+# Instalar dependências do monorepo
+bun install
+
+# Compilar a extensão
+bun run build:mcp-extension
+```
+
+## 2. Executar a Extensão em Modo de Desenvolvimento
+
+### Opção A: Via Launch Configuration (Recomendado)
 
 Na raiz do projeto:
 
-```bash
-bun run build:mcp-all
-```
+1. Pressione **F5** ou vá em **Run → Start Debugging**
+2. Selecione **"Extension (MCP Docs)"** na dropdown
+3. Uma nova janela do VS Code abrirá com a extensão carregada
 
-Isso irá:
-- Compilar o servidor MCP
-- Compilar a extensão VS Code
-- Copiar o servidor para a pasta dist da extensão
+A extensão irá:
+- Mostrar uma mensagem de boas-vindas ao ativar
+- Registrar um comando disponível via Command Palette: `Koala Nest: Open Documentation`
+- Criar um output channel "Koala Nest Documentation" com logs da extensão
 
-## 2. Abrir VS Code em Modo de Teste
-
-Existem duas formas de testar:
-
-### Opção A: Teste na Pasta da Extensão
+### Opção B: Teste Manual na Pasta da Extensão
 
 ```bash
 cd apps/mcp-vscode-extension
@@ -33,22 +43,67 @@ code .
 ```
 
 Dentro do VS Code:
-- Pressione **F5** ou vá em **Run → Start Debugging**
-- Uma nova janela do VS Code abrirá com a extensão instalada
+- Pressione **F5** para iniciar o debug
+- Uma nova janela abrirá com a extensão
 
-### Opção B: Instalar Extensão Localmente
+## 3. Verificar se a Extensão Está Ativa
+
+Na janela de teste do VS Code:
+
+1. Abra a **Command Palette** (`Ctrl+Shift+P` ou `Cmd+Shift+P`)
+2. Digite "Koala Nest" e procure por **"Koala Nest: Open Documentation"**
+3. Se o comando aparecer, a extensão está ativa ✅
+
+Ou verifique no painel de **Output** → selecione "Koala Nest Documentation" para ver os logs.
+
+## 4. Testar Comandos
+
+Execute qualquer um destes comandos pela Command Palette:
+
+- **"Koala Nest: Open Documentation"** - Abre a documentação (mostra mensagem de informação)
+
+## 5. Empacotar e Instalar a Extensão
+
+Para criar um arquivo `.vsix` para distribuição:
 
 ```bash
 cd apps/mcp-vscode-extension
 
-# Empacotar extensão
-npx vsce package
+# Instalar vsce globalmente (se necessário)
+bun add -g @vscode/vsce
 
-# Isso cria um arquivo: koala-libs-mcp-docs-1.0.0.vsix
+# Empacotar
+vsce package
 
-# Instalar no VS Code
+# Isso cria: koala-libs-mcp-docs-1.0.0.vsix
+```
+
+Para instalar localmente:
+
+```bash
 code --install-extension ./koala-libs-mcp-docs-1.0.0.vsix
 ```
+
+## 6. Troubleshooting
+
+### Extensão não aparece nas abas
+
+- Verifique se há erros no **Output → Extension Host**
+- Certifique-se de que o build foi executado: `bun run build:mcp-extension`
+- Tente fechar todas as janelas do VS Code e reiniciar
+
+### Comandos não funcionam
+
+- Abra a **Command Palette** e execute "Developer: Show Running Extensions"
+- Procure por "koala-libs-mcp-docs" na lista
+- Se não estiver na lista, clique em **Watch** para ver logs em tempo real
+
+### Servidor MCP não inicia
+
+- Verifique se o arquivo `dist/server.js` existe
+- Tente executar manualmente: `node apps/mcp-vscode-extension/dist/server.js`
+- Verifique se há erros no Output channel "Koala Nest Documentation"
+
 
 ## 3. Verificar Instalação
 
@@ -58,18 +113,44 @@ Na janela de teste do VS Code:
 2. Procure por "Koala Nest"
 3. Deve aparecer como instalado
 
-## 4. Testar com Claude
+## 4. Testar com GitHub Copilot
 
-Se tiver Claude instalado no VS Code:
+Para testar o MCP Server com o GitHub Copilot:
 
-1. Abra o painel de Chat
-2. A documentação do Koala Nest estará disponível automaticamente
-3. Faça uma pergunta sobre o Koala Nest:
+### Verificar se o MCP está carregado
+
+1. Abra o **Output** panel (`Ctrl+Shift+U`)
+2. Selecione **"Koala Nest Documentation"** no dropdown
+3. Você deve ver a mensagem: `🚀 Extension "Koala Nest Documentation MCP" is now active!`
+
+### Verificar MCP Servers disponíveis
+
+O VS Code com Copilot deve reconhecer o servidor MCP automaticamente. Para confirmar:
+
+1. Abra o painel de Chat do Copilot
+2. No canto superior direito, clique no ícone de configurações ou na lista de ferramentas disponíveis
+3. Procure por **"Koala Nest Documentation"** na lista de MCP servers
+
+### Fazer perguntas usando o MCP
+
+1. Abra o painel de Chat do Copilot
+2. Faça uma pergunta específica sobre a documentação:
    ```
-   Como usar decoradores no Koala Libs?
+   @koala-nest-docs Como usar decoradores no Koala Nest?
+   ```
+   
+   Ou simplesmente:
+   ```
+   Como configurar o Prisma no Koala Nest?
    ```
 
-4. Claude deve responder com a documentação correta
+3. O Copilot deve consultar a documentação do Koala Nest através do MCP server
+4. Você verá logs no Output channel mostrando as ferramentas sendo chamadas
+
+**Nota:** Se o Copilot não reconhecer automaticamente o MCP server, pode ser necessário:
+- Reiniciar completamente o VS Code
+- Verificar se a extensão do GitHub Copilot suporta MCP servers (versão recente)
+- Verificar nas configurações do Copilot se MCP servers estão habilitados
 
 ## 5. Debug
 
@@ -78,7 +159,7 @@ Se algo não funcionar, verifique:
 ### Logs da Extensão
 
 1. Pressione `Ctrl+Shift+U` para abrir Output panel
-2. No dropdown, selecione "Koala Libs Documentation MCP"
+2. No dropdown, selecione "Koala Nest Documentation"
 3. Veja se há mensagens de erro
 
 ### Teste Manual do Servidor
@@ -121,7 +202,7 @@ Deve retornar resultados encontrados no arquivo 08-prisma-client.md
 
 Peça:
 ```
-O que fala sobre decoradores no Koala Libs?
+O que fala sobre decoradores no Koala Nest?
 ```
 
 Deve extrair informações do arquivo 06-decoradores.md

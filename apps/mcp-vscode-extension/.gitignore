@@ -1,6 +1,4 @@
 .vscode-test/
 out/
-node_modules/
-dist/
-*.vsix
+
 .DS_Store
