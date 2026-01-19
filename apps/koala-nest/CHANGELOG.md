@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.6
+
+### Patch Changes
+
+- 9b535e5: Ajustes no package.json de koala-nest
+
 ## 3.0.5
 
 ### Patch Changes
