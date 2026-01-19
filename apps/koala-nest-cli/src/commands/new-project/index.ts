@@ -28,11 +28,12 @@ export async function newProject(projectName: string) {
   cpSync(TEMPLATE_BASE, targetDir, {
     recursive: true,
     filter: (src) => {
-      // Ignorar node_modules, dist (mas não dist-cli), e .git
+      // Ignorar apenas node_modules, dist (mas não dist-cli), e pasta .git (não arquivos .git*)
       const isBlacklisted =
         src.includes('node_modules') ||
         (src.includes('dist') && !src.includes('dist-cli')) ||
-        src.includes('.git')
+        src.endsWith('/.git') ||
+        src.includes('/.git/')
       return !isBlacklisted
     }
   })
