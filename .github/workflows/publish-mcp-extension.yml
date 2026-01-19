@@ -5,7 +5,11 @@ on:
     branches: [main]
     paths:
       - '.changeset/*/mcp*'
+      - 'apps/mcp-server/**'
+      - 'apps/mcp-vscode-extension/**'
       - 'package.json'
+    paths-ignore:
+      - 'apps/koala-nest-docs/**'
 
 jobs:
   vscode-extension:

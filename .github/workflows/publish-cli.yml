@@ -5,7 +5,10 @@ on:
     branches: [main]
     paths:
       - '.changeset/*/nest-cli*'
+      - 'apps/koala-nest-cli/**'
       - 'package.json'
+    paths-ignore:
+      - 'apps/koala-nest-docs/**'
 
 jobs:
   npm-publish:
