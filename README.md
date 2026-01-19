@@ -414,9 +414,18 @@ Crie seu `.env`:
 # Banco de dados
 DATABASE_URL=postgresql://user:password@localhost:5432/koala_db
 
-# Aplicação (opcional)
+# Aplicação
 NODE_ENV=develop
-LOG_LEVEL=debug
+
+# Prisma (opcional - habilita logs das queries)
+PRISMA_QUERY_LOG=true
+
+# Swagger/Scalar (opcional)
+SWAGGER_USERNAME=admin
+SWAGGER_PASSWORD=password123
+
+# Redis (opcional - necessário para CronJobs em múltiplas instâncias)
+REDIS_CONNECTION_STRING=redis://localhost:6379
 ```
 
 Consulte [docs/02-configuracao-inicial.md](./docs/02-configuracao-inicial.md) para mais detalhes.
