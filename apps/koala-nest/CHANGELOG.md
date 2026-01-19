@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.2
+
+### Patch Changes
+
+- a446e40: Incluindo README.md
+
 ## 3.0.1
 
 ### Patch Changes
