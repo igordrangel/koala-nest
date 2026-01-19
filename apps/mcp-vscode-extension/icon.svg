@@ -1,0 +1,17 @@
+<svg
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="128"
+  height="128"
+  viewBox="0 0 128 128">
+  
+  <!-- Fundo com cantos arredondados -->
+  <rect x="0" y="0" width="128" height="128" rx="16" ry="16" fill="#000000"/>
+  
+  <!-- Logo do Koala em branco com padding -->
+  <g transform="translate(20, 20) scale(0.176)">
+    <path fill="#ffffff" d="M39.017,471.944V27.194h78.276v378.927l-23.72-14.825L391.259,27.194h84.799l-367.066,444.75H39.017z M250.718,248.383
+      l55.149-53.963l176.714,277.524h-89.543L250.718,248.383z"/>
+  </g>
+</svg>

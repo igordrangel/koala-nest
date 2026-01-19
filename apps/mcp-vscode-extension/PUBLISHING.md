@@ -32,10 +32,10 @@ Este documento descreve como publicar a extensão no VS Code Marketplace.
 
 O workflow `.github/workflows/publish-vscode-extension.yml` está configurado para publicar automaticamente quando:
 
-1. Você cria um changeset mencionando `koala-libs-mcp-docs`:
+1. Você cria um changeset mencionando `koala-nest-mcp-docs`:
    ```bash
    bun changeset add
-   # Selecione: koala-libs-mcp-docs
+   # Selecione: koala-nest-mcp-docs
    # Escolha o tipo: patch/minor/major
    # Descreva a mudança
    ```
@@ -78,7 +78,7 @@ bun x vsce publish
 
 Após a publicação, sua extensão estará disponível em:
 
-- **Marketplace**: https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs
+- **Marketplace**: https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs
 - **VS Code**: Pesquise "Koala Nest" na aba Extensions
 
 ## Troubleshooting

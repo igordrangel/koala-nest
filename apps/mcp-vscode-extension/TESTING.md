@@ -75,13 +75,13 @@ bun add -g @vscode/vsce
 # Empacotar
 vsce package
 
-# Isso cria: koala-libs-mcp-docs-1.0.0.vsix
+# Isso cria: koala-nest-mcp-docs-1.0.0.vsix
 ```
 
 Para instalar localmente:
 
 ```bash
-code --install-extension ./koala-libs-mcp-docs-1.0.0.vsix
+code --install-extension ./koala-nest-mcp-docs-1.0.0.vsix
 ```
 
 ## 6. Troubleshooting
@@ -95,7 +95,7 @@ code --install-extension ./koala-libs-mcp-docs-1.0.0.vsix
 ### Comandos não funcionam
 
 - Abra a **Command Palette** e execute "Developer: Show Running Extensions"
-- Procure por "koala-libs-mcp-docs" na lista
+- Procure por "koala-nest-mcp-docs" na lista
 - Se não estiver na lista, clique em **Watch** para ver logs em tempo real
 
 ### Servidor MCP não inicia
@@ -226,7 +226,7 @@ Deve extrair informações do arquivo 06-decoradores.md
 Para desinstalar a extensão de teste:
 
 ```bash
-code --uninstall-extension koalarx.koala-libs-mcp-docs
+code --uninstall-extension koalarx.koala-nest-mcp-docs
 ```
 
 ## 9. Próximos Passos

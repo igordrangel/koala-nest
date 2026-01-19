@@ -12,7 +12,7 @@
 [![Bun](https://img.shields.io/badge/Bun-1.3%2B-black)](https://bun.sh)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.1%2B-blue)](https://www.typescriptlang.org/)
 [![CLI](https://img.shields.io/badge/CLI-@koalarx/nest--cli-brightgreen)](https://www.npmjs.com/package/@koalarx/nest-cli)
-[![VS Code Extension](https://img.shields.io/badge/VS%20Code-MCP%20Extension-blue)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
+[![VS Code Extension](https://img.shields.io/badge/VS%20Code-MCP%20Extension-blue)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
 [![Documentation](https://img.shields.io/badge/📖-Docs-blue)](https://nest.koalarx.com/)
 
 </div>
@@ -25,7 +25,7 @@ Acesse a documentação completa e interativa em: **[nest.koalarx.com](https://n
 
 Acelere seu desenvolvimento com a **extensão oficial para VS Code**! Toda a documentação do Koala Nest integrada diretamente no GitHub Copilot através do Model Context Protocol.
 
-**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)**
+**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
 
 Basta instalar e perguntar ao Copilot sobre o Koala Nest - ele terá acesso instantâneo à documentação oficial!
 

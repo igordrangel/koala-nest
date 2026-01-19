@@ -2,9 +2,9 @@
 
 > Extensão VS Code que integra toda a documentação do **Koala Nest** diretamente no **GitHub Copilot** através do Model Context Protocol (MCP).
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/koalarx.koala-libs-mcp-docs)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/koalarx.koala-libs-mcp-docs)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/koalarx.koala-libs-mcp-docs)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/koalarx.koala-nest-mcp-docs)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/koalarx.koala-nest-mcp-docs)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/koalarx.koala-nest-mcp-docs)](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
 
 ## ✨ O que é isso?
 
@@ -38,7 +38,7 @@ Esta extensão conecta o **GitHub Copilot** à documentação oficial do Koala N
 
 ### Via VS Code Marketplace (Recomendado)
 
-**[📦 Instalar Agora](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)**
+**[📦 Instalar Agora](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
 
 Ou busque no VS Code:
 
@@ -50,7 +50,7 @@ Ou busque no VS Code:
 ### Via Linha de Comando
 
 ```bash
-code --install-extension koalarx.koala-libs-mcp-docs
+code --install-extension koalarx.koala-nest-mcp-docs
 ```
 
 ## 🎯 Como Usar
@@ -213,7 +213,7 @@ Todos os arquivos markdown da pasta `/docs`:
 code --list-extensions | grep koala
 
 # Reinstalar
-code --install-extension koalarx.koala-libs-mcp-docs --force
+code --install-extension koalarx.koala-nest-mcp-docs --force
 
 # Recarregar VS Code
 Ctrl+Shift+P → "Developer: Reload Window"
@@ -251,7 +251,7 @@ Esta extensão faz parte do projeto **Koala Nest** e usa a mesma licença.
 
 ## 🔗 Links
 
-- [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
+- [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
 - [📖 Documentação Completa](https://github.com/igordrangel/koala-nest/blob/main/docs/09-mcp-vscode-extension.md)
 - [🐙 Repositório GitHub](https://github.com/igordrangel/koala-nest)
 - [📚 Koala Nest no NPM](https://www.npmjs.com/package/@koalarx/nest)

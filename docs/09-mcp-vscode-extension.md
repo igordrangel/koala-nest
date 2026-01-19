@@ -13,7 +13,7 @@ Você pode usar o MCP server de **duas formas diferentes**:
 ✅ Atualização automática via Marketplace  
 ✅ Zero configuração necessária
 
-**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)**
+**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
 
 ### 2️⃣ Via Arquivo de Configuração (Avançado)
 
@@ -52,7 +52,7 @@ bun run build:mcp-all
 bun run package:vscode-extension
 
 # Instale manualmente
-code --install-extension apps/mcp-vscode-extension/koala-libs-mcp-docs-*.vsix
+code --install-extension apps/mcp-vscode-extension/koala-nest-mcp-docs-*.vsix
 ```
 
 ---
@@ -333,7 +333,7 @@ Todos os arquivos markdown da pasta `/docs`:
 
 **Extensão não está ativa:**
 1. Verifique se está instalada: `code --list-extensions | grep koala`
-2. Reinstale: `code --install-extension koalarx.koala-libs-mcp-docs --force`
+2. Reinstale: `code --install-extension koalarx.koala-nest-mcp-docs --force`
 3. Recarregue: `Ctrl+Shift+P` → "Developer: Reload Window"
 4. Verifique o Output Channel: `Ctrl+Shift+U` → "Koala Nest Documentation"
 
@@ -424,7 +424,7 @@ Para adicionar novos documentos ao MCP:
 ## 🔗 Links Úteis
 
 - [Repositório GitHub](https://github.com/igordrangel/koala-nest)
-- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [GitHub Copilot](https://github.com/features/copilot)
 

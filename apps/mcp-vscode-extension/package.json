@@ -1,11 +1,12 @@
 {
-  "name": "koala-libs-mcp-docs",
+  "name": "koala-nest-mcp-docs",
   "displayName": "Koala Nest Documentation MCP",
   "description": "MCP server exposing Koala Nest documentation directly in VS Code",
   "version": "1.0.1",
   "author": "Igor D. Rangel",
   "license": "MIT",
   "publisher": "koalarx",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/igordrangel/koala-nest"

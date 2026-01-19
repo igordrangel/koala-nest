@@ -36,7 +36,7 @@ Agora o GitHub Copilot terá acesso à documentação oficial do Koala Nest!
 
 Para uma experiência mais simples, instale a extensão oficial:
 
-**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-libs-mcp-docs)**
+**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
 
 ## Documentação Completa
 

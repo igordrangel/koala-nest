@@ -31,7 +31,7 @@ jobs:
         run: |
           if ls .changeset/*.md 1> /dev/null 2>&1; then
             # Verificar se algum changeset menciona a extensão
-            if grep -l "koala-libs-mcp-docs" .changeset/*.md 2>/dev/null; then
+            if grep -l "koala-nest-mcp-docs" .changeset/*.md 2>/dev/null; then
               echo "has_extension_changes=true" >> $GITHUB_OUTPUT
               echo "Found changesets for VS Code extension"
             else

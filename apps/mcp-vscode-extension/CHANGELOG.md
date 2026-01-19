@@ -1,4 +1,4 @@
-# koala-libs-mcp-docs
+# koala-nest-mcp-docs
 
 ## 1.0.1
 
