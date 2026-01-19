@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.13
+
+### Patch Changes
+
+- c259f24: Corrigido filtro do cpSync que bloqueava arquivos .gitignore e .gitattributes, e ajustado script de geração do Prisma Client para build:prisma
+
 ## 3.0.12
 
 ### Patch Changes
