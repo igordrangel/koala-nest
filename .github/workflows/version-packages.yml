@@ -55,8 +55,13 @@ jobs:
         if: steps.check-changesets.outputs.has_changesets == 'true'
         run: |
           git add .
-          git commit -m "chore: version packages" || echo "No changes to commit"
-          git push origin main
+          if git commit -m "chore: version packages"; then
+            # Pull com rebase para evitar conflitos com outros workflows
+            git pull --rebase origin main || true
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
