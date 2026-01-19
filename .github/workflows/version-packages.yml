@@ -57,3 +57,12 @@ jobs:
           git push origin main --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Sync changes back to develop
+        run: |
+          git fetch origin develop
+          git checkout develop
+          git merge main --no-edit
+          git push origin develop
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
