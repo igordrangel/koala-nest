@@ -4,8 +4,7 @@
   "description": "MCP server exposing Koala Nest documentation directly in VS Code",
   "version": "3.0.0",
   "author": "Igor D. Rangel",
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
   "publisher": "koalarx",
   "repository": {
     "type": "git",

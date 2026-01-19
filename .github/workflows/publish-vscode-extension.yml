@@ -1,0 +1,99 @@
+name: Publish VS Code Extension
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish-extension:
+    name: "Build and Publish VS Code Extension"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 Check for extension changesets
+        id: check-changesets
+        run: |
+          if ls .changeset/*.md 1> /dev/null 2>&1; then
+            # Verificar se algum changeset menciona a extensão
+            if grep -l "koala-libs-mcp-docs" .changeset/*.md 2>/dev/null; then
+              echo "has_extension_changes=true" >> $GITHUB_OUTPUT
+              echo "Found changesets for VS Code extension"
+            else
+              echo "has_extension_changes=false" >> $GITHUB_OUTPUT
+              echo "No changesets for VS Code extension"
+            fi
+          else
+            echo "has_extension_changes=false" >> $GITHUB_OUTPUT
+            echo "No changesets found"
+          fi
+
+      - name: 📝 Version Extension
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: bun run changeset:version
+
+      - name: 🔨 Build MCP Server and Extension
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: bun run build:mcp-all
+
+      - name: 📦 Package Extension
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: |
+          cd apps/mcp-vscode-extension
+          bun x vsce package --no-dependencies
+
+      - name: 🔐 Configure Git
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: 💾 Commit version changes
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: |
+          git add .
+          git commit -m "chore: version vscode extension" || echo "No changes to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Publish to VS Code Marketplace
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: |
+          cd apps/mcp-vscode-extension
+          bun x vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: 🔄 Push tags
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: |
+          git push origin main --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔄 Sync changes back to develop
+        if: steps.check-changesets.outputs.has_extension_changes == 'true'
+        run: |
+          git fetch origin main
+          git fetch origin develop
+          git checkout develop
+          git merge origin/main --no-edit
+          git push origin develop
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
