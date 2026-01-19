@@ -74,6 +74,12 @@ cpSync('apps/example', join(cliDistDir, 'templates', 'startup-project'), {
     )
   },
 })
+cpSync(
+  'apps/koala-nest-cli/templates/root-files-folders',
+  join(cliDistDir, 'templates', 'startup-project'),
+  { recursive: true },
+)
+rmSync(join(cliDistDir, 'templates', 'root-files-folders'), { recursive: true })
 
 // 4.7. Copiar prisma/ (schema e config)
 console.log('📁 Copying prisma schema...')

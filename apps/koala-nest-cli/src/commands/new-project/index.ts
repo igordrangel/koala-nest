@@ -1,9 +1,8 @@
 import chalk from 'chalk'
 import { execSync } from 'node:child_process'
-import { cpSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { cpSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { dirname } from 'node:path'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -45,7 +44,9 @@ export async function newProject(projectName: string) {
   const dockerfilePath = join(TEMPLATES_DIR, 'startup-project', 'Dockerfile')
   try {
     cpSync(dockerfilePath, join(targetDir, 'Dockerfile'))
-  } catch {}
+  } catch {
+    console.log(chalk.red('⚠️  Dockerfile não encontrado nos templates, pulando...'))
+  }
 
   // 3. Atualizar package.json
   console.log(chalk.yellow('⚙️  Configurando package.json...'))
@@ -83,7 +84,7 @@ export async function newProject(projectName: string) {
     execSync(`cd ${projectName} && bun run prisma:generate`, {
       stdio: 'inherit',
     })
-  } catch (error) {
+  } catch {
     console.log(chalk.red('⚠️  Erro ao instalar dependências. Execute manualmente:'))
     console.log(chalk.gray(`  cd ${projectName}`))
     console.log(chalk.gray(`  bun install`))
