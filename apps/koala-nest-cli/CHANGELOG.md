@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.14
+
+### Patch Changes
+
+- 92c6978: Corrigido filtro do cpSync que bloqueava todos os arquivos quando CLI instalado globalmente (o caminho ~/.bun/install continha 'dist' em 'install'), ajustado script de geração do Prisma Client para build:prisma
+
 ## 3.0.13
 
 ### Patch Changes
