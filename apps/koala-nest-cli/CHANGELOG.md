@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.12
+
+### Patch Changes
+
+- 508d634: Corrigido script de geração do Prisma Client de prisma:generate para build:prisma
+
 ## 3.0.11
 
 ### Patch Changes
