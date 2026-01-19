@@ -7,6 +7,16 @@ export default defineConfig({
   ignoreDeadLinks: true,
   cleanUrls: true,
   
+  markdown: {
+    languages: [
+      {
+        id: 'env',
+        scopeName: 'source.shell',
+        aliases: ['dotenv', '.env']
+      }
+    ]
+  },
+  
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }]
   ],
@@ -34,8 +44,8 @@ export default defineConfig({
     nav: [
       { text: 'Início', link: '/' },
       { text: 'Documentação', link: '/guia-instalacao' },
-      { text: 'Koalarx', link: 'https://koalarx.com' },
-      { text: 'GitHub', link: 'https://github.com/koalarx/koala-nest' }
+      { text: '@koalarx/nest', link: 'https://www.npmjs.com/package/@koalarx/nest' },
+      { text: '@koalarx/nest-cli', link: 'https://www.npmjs.com/package/@koalarx/nest-cli' }
     ],
 
     sidebar: [
