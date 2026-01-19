@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.3
+
+### Patch Changes
+
+- 3adf5d0: Ajustes categorias da extensão MCP
+
 ## 1.0.2
 
 ### Patch Changes

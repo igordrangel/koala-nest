@@ -2,7 +2,7 @@
   "name": "koala-nest-mcp-docs",
   "displayName": "Koala Nest Documentation MCP",
   "description": "MCP server exposing Koala Nest documentation directly in VS Code",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Igor D. Rangel",
   "license": "MIT",
   "publisher": "koalarx",
