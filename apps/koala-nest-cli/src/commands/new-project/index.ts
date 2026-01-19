@@ -28,11 +28,15 @@ export async function newProject(projectName: string) {
   cpSync(TEMPLATE_BASE, targetDir, {
     recursive: true,
     filter: (src) => {
-      // Ignorar node_modules e pasta .git
+      // Extrair o caminho relativo ao template
+      const relativePath = src.replace(TEMPLATE_BASE, '')
+      
+      // Ignorar node_modules e pasta .git dentro do template
       const isBlacklisted =
-        src.includes('/node_modules/') ||
-        src.endsWith('/.git') ||
-        src.includes('/.git/')
+        relativePath.includes('/node_modules/') ||
+        relativePath === '/.git' ||
+        relativePath.startsWith('/.git/')
+      
       return !isBlacklisted
     }
   })
