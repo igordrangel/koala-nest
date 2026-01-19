@@ -13,10 +13,9 @@
   "engines": {
     "vscode": "^1.90.0"
   },
-  "categories": ["Documentation", "Other"],
+  "categories": ["Programming Languages", "Other"],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:koala-nest-mcp.openDocs"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
