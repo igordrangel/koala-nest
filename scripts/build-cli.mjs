@@ -34,6 +34,10 @@ const packageJson = JSON.parse(
 )
 const rootPackageJson = JSON.parse(readFileSync('package.json', 'utf-8'))
 
+// Limpar campos que não devem estar no dist-cli
+delete packageJson.publishConfig
+delete packageJson.scripts
+
 // Adicionar dependências necessárias
 packageJson.dependencies = {
   chalk: rootPackageJson.dependencies.chalk,
@@ -42,8 +46,8 @@ packageJson.dependencies = {
   shelljs: rootPackageJson.dependencies.shelljs,
 }
 
-// Atualizar version do root
-packageJson.version = rootPackageJson.version
+// Garantir que version está correta (já vem do apps/koala-nest-cli/package.json)
+// Não sobrescrever com version do root que é privado
 
 writeFileSync(
   join(cliDistDir, 'package.json'),
