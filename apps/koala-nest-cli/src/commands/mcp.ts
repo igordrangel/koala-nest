@@ -76,7 +76,7 @@ export async function installMcpServer(): Promise<void> {
         stdio: 'inherit'
       })
       console.log(chalk.green(`   ✅ Dependencies installed`))
-    } catch (error) {
+    } catch {
       console.log(chalk.yellow(`   ⚠  Could not install dependencies`))
       console.log(chalk.gray(`   You may need to run: cd ${INSTALL_DIR} && npm install`))
     }
@@ -294,7 +294,7 @@ function findMcpJsonInProject(dir: string, maxDepth = 5, currentDepth = 0): stri
 async function configureMcpJson(): Promise<void> {
   console.log(chalk.blue(`   ⚙️  Configuring mcp.json...`))
   
-  const serverPath = path.join(INSTALL_DIR, 'dist', 'server.js')
+  const serverPath = path.join(INSTALL_DIR, 'server.js')
   
   let mcpJsonPath: string
   
@@ -310,7 +310,7 @@ async function configureMcpJson(): Promise<void> {
     console.log(chalk.gray(`   📝 Creating mcp.json in current directory`))
   }
 
-  let config: any
+  let config
   let serverKey = 'mcpServers' // padrão
 
   // Ler arquivo existente se houver
@@ -419,7 +419,7 @@ export async function uninstallMcpServer(): Promise<void> {
 
 export function getMcpServerPath(): string | null {
   if (fs.existsSync(INSTALL_DIR)) {
-    return path.join(INSTALL_DIR, 'dist', 'server.js')
+    return path.join(INSTALL_DIR, 'server.js')
   }
   return null
 }
