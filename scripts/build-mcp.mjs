@@ -17,9 +17,21 @@ try {
     shell: '/bin/bash'
   })
   
+  // Verificar se a dist foi criada
+  const distDir = path.join(mcpServerDir, 'dist')
+  if (!fs.existsSync(distDir)) {
+    throw new Error('TypeScript compilation failed - dist folder not created')
+  }
+  
+  // Verificar se server.js existe
+  const serverJsPath = path.join(distDir, 'server.js')
+  if (!fs.existsSync(serverJsPath)) {
+    throw new Error('TypeScript compilation failed - server.js not found')
+  }
+  
   // Copiar pasta docs para dentro da dist do MCP Server
   const docsSourceDir = path.join(rootDir, 'docs')
-  const docsDestDir = path.join(mcpServerDir, 'dist/docs')
+  const docsDestDir = path.join(distDir, 'docs')
   
   if (fs.existsSync(docsSourceDir)) {
     // Remover pasta docs antiga se existir
@@ -42,7 +54,7 @@ try {
   
   // Copiar README.md do root para dentro da dist do MCP Server
   const readmeSource = path.join(rootDir, 'README.md')
-  const readmeDest = path.join(mcpServerDir, 'dist/README-PROJECT.md')
+  const readmeDest = path.join(distDir, 'README-PROJECT.md')
   if (fs.existsSync(readmeSource)) {
     fs.copyFileSync(readmeSource, readmeDest)
     console.log('✅ README copied to dist/README-PROJECT.md')
