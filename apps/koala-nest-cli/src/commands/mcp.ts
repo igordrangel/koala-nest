@@ -4,6 +4,7 @@ import path from 'path'
 import os from 'os'
 import * as tar from 'tar'
 import chalk from 'chalk'
+import { execSync } from 'child_process'
 
 const GITHUB_REPO = 'igordrangel/koala-nest'
 const MCP_SERVER_TAG_PREFIX = 'mcp-server@'
@@ -23,17 +24,17 @@ export async function installMcpServer(): Promise<void> {
     const release = await getLatestRelease()
     const version = release.tag_name.replace(MCP_SERVER_TAG_PREFIX, '')
     
-    console.log(chalk.gray(`\n   Found version: ${version}`))
+    console.log(chalk.gray(`\n   Found version: ${version}\n`))
 
     // Verificar se já está instalado
     if (fs.existsSync(INSTALL_DIR)) {
       const currentVersion = await getInstalledVersion()
       if (currentVersion === version) {
         console.log(chalk.yellow(`   ⚠  MCP Server v${version} is already installed`))
-        console.log(chalk.gray(`   Run 'koala-nest mcp update' to check for updates\n`))
+        console.log(chalk.gray(`   Run 'koala-nest mcp:update' to check for updates\n`))
         return
       }
-      console.log(chalk.gray(`   Upgrading from v${currentVersion} to v${version}`))
+      console.log(chalk.gray(`   Upgrading from v${currentVersion} to v${version}\n`))
     }
 
     // Baixar release
@@ -45,12 +46,12 @@ export async function installMcpServer(): Promise<void> {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'koala-mcp-'))
     const tarballPath = path.join(tempDir, 'server.tar.gz')
     
-    console.log(chalk.blue(`   📥 Downloading MCP Server v${version}...`))
+    process.stdout.write(chalk.blue(`   📥 Downloading MCP Server v${version}...`))
     await downloadFile(asset.browser_download_url, tarballPath)
-    console.log(chalk.green(`   ✅ Download completed`))
+    process.stdout.write('\r' + chalk.green(`   ✅ Downloaded MCP Server v${version}   \n`))
 
     // Extrair
-    console.log(chalk.blue(`   📦 Extracting files...`))
+    process.stdout.write(chalk.blue(`   📦 Extracting files...`))
     if (fs.existsSync(INSTALL_DIR)) {
       fs.rmSync(INSTALL_DIR, { recursive: true })
     }
@@ -60,10 +61,23 @@ export async function installMcpServer(): Promise<void> {
       file: tarballPath,
       cwd: INSTALL_DIR
     })
-    console.log(chalk.green(`   ✅ Extraction completed`))
+    process.stdout.write('\r' + chalk.green(`   ✅ Files extracted successfully   \n`))
 
     // Limpar
     fs.rmSync(tempDir, { recursive: true })
+
+    // Instalar dependências do servidor
+    process.stdout.write(chalk.blue(`   📦 Installing server dependencies...`))
+    try {
+      execSync('npm install --production --silent', {
+        cwd: INSTALL_DIR,
+        stdio: 'pipe'
+      })
+      process.stdout.write('\r' + chalk.green(`   ✅ Dependencies installed        \n`))
+    } catch (error) {
+      process.stdout.write('\r' + chalk.yellow(`   ⚠  Could not install dependencies\n`))
+      console.log(chalk.gray(`   You may need to run: cd ${INSTALL_DIR} && npm install`))
+    }
 
     // Salvar versão
     fs.writeFileSync(
@@ -71,13 +85,13 @@ export async function installMcpServer(): Promise<void> {
       version
     )
 
-    console.log(chalk.green(`\n   ✅ MCP Server v${version} installed successfully!`))
+    console.log(chalk.green(`   ✅ MCP Server v${version} installed successfully!`))
     console.log(chalk.gray(`   📂 Installation directory: ${INSTALL_DIR}`))
 
     // Configurar mcp.json
     await configureMcpJson()
-
-    console.log(chalk.blue('\n   Installing Koala Nest MCP Server...\n'))
+    
+    console.log(chalk.cyan(`\n✨ Installation completed successfully!\n`))
 
   } catch (error) {
     console.error(chalk.red(`\n   ❌ Installation failed:`), error)
@@ -158,7 +172,7 @@ async function getLatestRelease(): Promise<GitHubRelease> {
       }
     }
 
-    https.get(options, (res) => {
+    const request = https.get(options, (res) => {
       let data = ''
       res.on('data', chunk => data += chunk)
       res.on('end', () => {
@@ -176,7 +190,11 @@ async function getLatestRelease(): Promise<GitHubRelease> {
           reject(error)
         }
       })
-    }).on('error', reject)
+      res.on('error', reject)
+    })
+    
+    request.on('error', reject)
+    request.end()
   })
 }
 
@@ -184,23 +202,34 @@ function downloadFile(url: string, dest: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest)
     
-    https.get(url, (response) => {
+    const request = https.get(url, (response) => {
       if (response.statusCode === 302 || response.statusCode === 301) {
-        file.close()
-        fs.unlinkSync(dest)
-        downloadFile(response.headers.location!, dest).then(resolve).catch(reject)
+        file.close(() => {
+          fs.unlinkSync(dest)
+          downloadFile(response.headers.location!, dest).then(resolve).catch(reject)
+        })
         return
       }
       
       response.pipe(file)
+      
       file.on('finish', () => {
-        file.close()
-        resolve()
+        file.close(() => resolve())
       })
-    }).on('error', (err) => {
-      file.close()
-      fs.unlinkSync(dest)
-      reject(err)
+      
+      file.on('error', (err) => {
+        file.close(() => {
+          if (fs.existsSync(dest)) fs.unlinkSync(dest)
+          reject(err)
+        })
+      })
+    })
+    
+    request.on('error', (err) => {
+      file.close(() => {
+        if (fs.existsSync(dest)) fs.unlinkSync(dest)
+        reject(err)
+      })
     })
   })
 }
@@ -222,30 +251,49 @@ async function getInstalledVersion(): Promise<string | null> {
   return null
 }
 
+function findMcpJsonInProject(dir: string, maxDepth = 5, currentDepth = 0): string | null {
+  if (currentDepth > maxDepth) return null
+
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+    
+    // Procurar mcp.json no diretório atual
+    const mcpJsonFile = entries.find(e => e.isFile() && e.name === 'mcp.json')
+    if (mcpJsonFile) {
+      return path.join(dir, 'mcp.json')
+    }
+
+    // Buscar recursivamente em subdiretórios (ignorar node_modules, .git, dist)
+    for (const entry of entries) {
+      if (entry.isDirectory() && !['node_modules', '.git', 'dist', 'build', '.next'].includes(entry.name)) {
+        const result = findMcpJsonInProject(path.join(dir, entry.name), maxDepth, currentDepth + 1)
+        if (result) return result
+      }
+    }
+  } catch {
+    // Ignorar erros de permissão
+  }
+
+  return null
+}
+
 async function configureMcpJson(): Promise<void> {
-  console.log(chalk.blue(`\n   ⚙️  Configuring mcp.json...`))
+  console.log(chalk.blue(`   ⚙️  Configuring mcp.json...`))
   
   const serverPath = path.join(INSTALL_DIR, 'dist', 'server.js')
   
-  // Definir localização do mcp.json
-  const currentDirMcpJson = path.join(process.cwd(), 'mcp.json')
-  const homeDirMcpJson = path.join(os.homedir(), 'mcp.json')
-  
   let mcpJsonPath: string
   
-  // Estratégia: priorizar diretório atual (recomendado para projetos)
-  // Só usar home se já existir lá E não existir no diretório atual
-  if (fs.existsSync(currentDirMcpJson)) {
-    mcpJsonPath = currentDirMcpJson
-    console.log(chalk.gray(`   📝 Updating existing mcp.json in current directory`))
-  } else if (fs.existsSync(homeDirMcpJson)) {
-    // Avisar que existe no home, mas vamos criar no projeto
-    console.log(chalk.yellow(`   ⚠  Found mcp.json in home directory, but creating project-specific config`))
-    mcpJsonPath = currentDirMcpJson
+  // Buscar mcp.json recursivamente no projeto
+  const existingMcpJson = findMcpJsonInProject(process.cwd())
+  
+  if (existingMcpJson) {
+    mcpJsonPath = existingMcpJson
+    console.log(chalk.gray(`   📝 Found existing mcp.json at: ${path.relative(process.cwd(), existingMcpJson)}`))
   } else {
     // Criar no diretório atual por padrão
-    console.log(chalk.gray(`   📝 Creating mcp.json in current directory (project-specific)`))
-    mcpJsonPath = currentDirMcpJson
+    mcpJsonPath = path.join(process.cwd(), 'mcp.json')
+    console.log(chalk.gray(`   📝 Creating mcp.json in current directory`))
   }
 
   let config: any = { mcpServers: {} }
@@ -271,9 +319,59 @@ async function configureMcpJson(): Promise<void> {
   // Salvar
   fs.writeFileSync(mcpJsonPath, JSON.stringify(config, null, 2))
 
-  console.log(chalk.green(`\n   ✅ MCP configuration completed!`))
+  console.log(chalk.green(`   ✅ MCP configuration completed!`))
   console.log(chalk.gray(`   📝 Configuration file: ${mcpJsonPath}`))
-  console.log(chalk.gray(`   🚀 Server path: ${serverPath}\n`))
+  console.log(chalk.gray(`   🚀 Server path: ${serverPath}`))
+}
+
+export async function uninstallMcpServer(): Promise<void> {
+  console.log(chalk.blue('\n🗑️  Uninstalling Koala Nest MCP Server...\n'))
+
+  try {
+    if (!fs.existsSync(INSTALL_DIR)) {
+      console.log(chalk.yellow('   ⚠  MCP Server is not installed\n'))
+      return
+    }
+
+    const version = await getInstalledVersion()
+    
+    // Remover diretório de instalação
+    console.log(chalk.gray(`   Removing installation directory...`))
+    fs.rmSync(INSTALL_DIR, { recursive: true })
+    console.log(chalk.green(`   ✅ MCP Server v${version || 'unknown'} removed`))
+
+    // Perguntar se quer remover do mcp.json
+    console.log(chalk.yellow('\n   Do you want to remove the server from mcp.json? (y/N)'))
+    const inquirer = await import('inquirer')
+    const { removeMcpJson } = await inquirer.default.prompt([{
+      type: 'confirm',
+      name: 'removeMcpJson',
+      message: 'Remove from mcp.json?',
+      default: false
+    }])
+
+    if (removeMcpJson) {
+      const existingMcpJson = findMcpJsonInProject(process.cwd())
+      if (existingMcpJson) {
+        try {
+          const config = JSON.parse(fs.readFileSync(existingMcpJson, 'utf-8'))
+          if (config.mcpServers && config.mcpServers['koala-nest-docs']) {
+            delete config.mcpServers['koala-nest-docs']
+            fs.writeFileSync(existingMcpJson, JSON.stringify(config, null, 2))
+            console.log(chalk.green(`   ✅ Removed from ${path.relative(process.cwd(), existingMcpJson)}`))
+          }
+        } catch {
+          console.log(chalk.yellow('   ⚠  Could not update mcp.json'))
+        }
+      }
+    }
+
+    console.log(chalk.green('\n   ✅ Uninstall completed!\n'))
+
+  } catch (error) {
+    console.error(chalk.red(`\n   ❌ Uninstall failed:`), error)
+    throw error
+  }
 }
 
 export function getMcpServerPath(): string | null {

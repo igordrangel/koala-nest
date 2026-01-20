@@ -3,7 +3,7 @@
 import program from 'commander'
 import inquirer from 'inquirer'
 import { newProject } from './commands/new-project/index.js'
-import { installMcpServer, updateMcpServer } from './commands/mcp.js'
+import { installMcpServer, updateMcpServer, uninstallMcpServer } from './commands/mcp.js'
 import { checkKoalaUpdates } from './commands/check-updates.js'
 import chalk from 'chalk'
 import { readFileSync } from 'fs'
@@ -55,6 +55,7 @@ program
   .description('Instala o MCP Server localmente')
   .action(async () => {
     await installMcpServer()
+    process.exit(0)
   })
 
 program
@@ -62,6 +63,15 @@ program
   .description('Atualiza o MCP Server para a versão mais recente')
   .action(async () => {
     await updateMcpServer()
+    process.exit(0)
+  })
+
+program
+  .command('mcp:uninstall')
+  .description('Remove o MCP Server instalado')
+  .action(async () => {
+    await uninstallMcpServer()
+    process.exit(0)
   })
 
 program
