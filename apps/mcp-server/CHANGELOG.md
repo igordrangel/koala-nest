@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.7
+
+### Patch Changes
+
+- 752619f: Ajustes de MCP
+
 ## 1.0.6
 
 ### Patch Changes
