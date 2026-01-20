@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.8
+
+### Patch Changes
+
+- b0bc0d8: Ajustes MCP Server
+
 ## 1.0.7
 
 ### Patch Changes
