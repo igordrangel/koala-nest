@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.20
+
+### Patch Changes
+
+- ff07214: Ajuste na CLI
+
 ## 3.0.19
 
 ### Patch Changes
