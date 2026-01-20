@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.3
+
+### Patch Changes
+
+- 7be2c7b: Publicação do MCP Server como release no GitHub
+
 ## 1.0.2
 
 ### Patch Changes
