@@ -3,6 +3,7 @@ import { execSync } from 'child_process'
 import { join } from 'path'
 
 const cliDistDir = 'dist-cli'
+const rootDir = process.cwd()
 
 console.log('🔨 Building CLI...\n')
 
@@ -13,8 +14,10 @@ if (rmSync) {
 
 // 2. Compilar TypeScript
 console.log('📦 Compiling TypeScript...')
-execSync('tsc -p apps/koala-nest-cli/tsconfig.json --outDir dist-cli', {
+const tscPath = join(rootDir, 'node_modules/.bin/tsc')
+execSync(`"${tscPath}" -p apps/koala-nest-cli/tsconfig.json --outDir dist-cli`, {
   stdio: 'inherit',
+  shell: '/bin/bash'
 })
 
 // Mover tsconfig.tsbuildinfo para dist-cli

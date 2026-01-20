@@ -20,11 +20,13 @@ interface GitHubRelease {
 
 export async function installMcpServer(): Promise<void> {
   try {
+    console.log(chalk.blue('\n🔍 Checking latest MCP Server version...\n'))
+    
     // Buscar última release
     const release = await getLatestRelease()
     const version = release.tag_name.replace(MCP_SERVER_TAG_PREFIX, '')
     
-    console.log(chalk.gray(`\n   Found version: ${version}\n`))
+    console.log(chalk.gray(`   Found version: ${version}\n`))
 
     // Verificar se já está instalado
     if (fs.existsSync(INSTALL_DIR)) {
@@ -168,7 +170,10 @@ async function getLatestRelease(): Promise<GitHubRelease> {
       method: 'GET',
       headers: {
         'User-Agent': 'Koala-Nest-CLI',
-        'Accept': 'application/vnd.github+json'
+        'Accept': 'application/vnd.github+json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       }
     }
 
@@ -202,7 +207,16 @@ function downloadFile(url: string, dest: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest)
     
-    const request = https.get(url, (response) => {
+    const options = {
+      headers: {
+        'User-Agent': 'Koala-Nest-CLI',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    }
+    
+    const request = https.get(url, options, (response) => {
       if (response.statusCode === 302 || response.statusCode === 301) {
         file.close(() => {
           fs.unlinkSync(dest)
