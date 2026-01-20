@@ -1,6 +1,6 @@
 {
   "name": "@koalarx/mcp-server",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "MCP Server for Koala Nest Documentation",
   "type": "module",
   "main": "dist/server.js",
