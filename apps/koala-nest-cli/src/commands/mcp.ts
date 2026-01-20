@@ -67,15 +67,15 @@ export async function installMcpServer(): Promise<void> {
     fs.rmSync(tempDir, { recursive: true })
 
     // Instalar dependências do servidor
-    process.stdout.write(chalk.blue(`   📦 Installing server dependencies...`))
+    process.stdout.write(chalk.blue(`   📦 Installing server dependencies...\n`))
     try {
-      execSync('npm install --production --silent', {
+      execSync('npm install --omit=dev', {
         cwd: INSTALL_DIR,
-        stdio: 'pipe'
+        stdio: 'inherit'
       })
-      process.stdout.write('\r' + chalk.green(`   ✅ Dependencies installed        \n`))
+      console.log(chalk.green(`   ✅ Dependencies installed`))
     } catch (error) {
-      process.stdout.write('\r' + chalk.yellow(`   ⚠  Could not install dependencies\n`))
+      console.log(chalk.yellow(`   ⚠  Could not install dependencies`))
       console.log(chalk.gray(`   You may need to run: cd ${INSTALL_DIR} && npm install`))
     }
 
@@ -296,22 +296,40 @@ async function configureMcpJson(): Promise<void> {
     console.log(chalk.gray(`   📝 Creating mcp.json in current directory`))
   }
 
-  let config: any = { mcpServers: {} }
+  let config: any
+  let serverKey = 'mcpServers' // padrão
 
   // Ler arquivo existente se houver
   if (fs.existsSync(mcpJsonPath)) {
     try {
       config = JSON.parse(fs.readFileSync(mcpJsonPath, 'utf-8'))
-      if (!config.mcpServers) {
-        config.mcpServers = {}
+      
+      // Detectar qual chave usar: "servers" ou "mcpServers"
+      // Priorizar "servers" se já existir no arquivo
+      if (config.servers) {
+        serverKey = 'servers'
+      } else if (config.mcpServers) {
+        serverKey = 'mcpServers'
+      } else {
+        // Se não tem nenhuma, usar mcpServers como padrão
+        serverKey = 'mcpServers'
+      }
+      
+      // Garantir que a chave existe
+      if (!config[serverKey]) {
+        config[serverKey] = {}
       }
     } catch {
       console.log(chalk.yellow('   ⚠  Could not parse existing mcp.json, creating new one'))
+      config = { mcpServers: {} }
     }
+  } else {
+    // Arquivo novo
+    config = { mcpServers: {} }
   }
 
   // Adicionar/atualizar servidor Koala Nest
-  config.mcpServers['koala-nest-docs'] = {
+  config[serverKey]['koala-nest-docs'] = {
     command: 'node',
     args: [serverPath]
   }
@@ -355,8 +373,19 @@ export async function uninstallMcpServer(): Promise<void> {
       if (existingMcpJson) {
         try {
           const config = JSON.parse(fs.readFileSync(existingMcpJson, 'utf-8'))
+          
+          // Detectar qual chave usar
+          let removed = false
+          if (config.servers && config.servers['koala-nest-docs']) {
+            delete config.servers['koala-nest-docs']
+            removed = true
+          }
           if (config.mcpServers && config.mcpServers['koala-nest-docs']) {
             delete config.mcpServers['koala-nest-docs']
+            removed = true
+          }
+          
+          if (removed) {
             fs.writeFileSync(existingMcpJson, JSON.stringify(config, null, 2))
             console.log(chalk.green(`   ✅ Removed from ${path.relative(process.cwd(), existingMcpJson)}`))
           }

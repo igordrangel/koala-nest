@@ -81,6 +81,19 @@ export class McpServerManager {
 
       fs.unlinkSync(tarballPath)
 
+      // Instalar dependências do servidor
+      const { execSync } = await import('child_process')
+      try {
+        execSync('npm install --omit=dev', {
+          cwd: this.serverPath!,
+          stdio: 'pipe'
+        })
+      } catch (error) {
+        vscode.window.showWarningMessage(
+          'Could not install MCP Server dependencies. The server may not work correctly.'
+        )
+      }
+
       this.currentVersion = version
       await this.context.globalState.update('mcpServerVersion', version)
       await this.context.globalState.update('lastUpdateCheck', Date.now())

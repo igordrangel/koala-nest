@@ -9,5 +9,8 @@
       "import": "./dist/server.js",
       "types": "./dist/server.d.ts"
     }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
   }
 }
