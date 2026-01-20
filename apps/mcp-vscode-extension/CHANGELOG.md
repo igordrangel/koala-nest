@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.4
+
+### Patch Changes
+
+- 49be4d9: Disponibilizando servidor MCP via GitHub Releases
+
 ## 1.0.3
 
 ### Patch Changes

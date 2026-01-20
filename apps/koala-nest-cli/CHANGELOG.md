@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.17
+
+### Patch Changes
+
+- 49be4d9: Disponibilizando servidor MCP via GitHub Releases
+
 ## 3.0.16
 
 ### Patch Changes
