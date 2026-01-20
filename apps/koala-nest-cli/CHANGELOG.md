@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.22
+
+### Patch Changes
+
+- 8db966c: Inclusão de comando de uninstall do MCP e melhorias no install
+
 ## 3.0.21
 
 ### Patch Changes
