@@ -24,5 +24,9 @@
   "bugs": {
     "url": "https://github.com/igordrangel/koala-nest/issues"
   },
-  "homepage": "https://github.com/igordrangel/koala-nest/tree/main/apps/koala-nest-cli#readme"
+  "homepage": "https://github.com/igordrangel/koala-nest/tree/main/apps/koala-nest-cli#readme",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "tar": "^7.5.4"
+  }
 }

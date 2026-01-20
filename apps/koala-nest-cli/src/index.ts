@@ -3,6 +3,8 @@
 import program from 'commander'
 import inquirer from 'inquirer'
 import { newProject } from './commands/new-project/index.js'
+import { installMcpServer, updateMcpServer } from './commands/mcp.js'
+import { checkKoalaUpdates } from './commands/check-updates.js'
 import chalk from 'chalk'
 import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
@@ -46,6 +48,32 @@ program
     }
 
     await newProject(projectName)
+  })
+
+program
+  .command('mcp')
+  .description('Gerenciar Koala Nest MCP Server')
+  .addCommand(
+    program.createCommand('install')
+      .description('Instala o MCP Server localmente')
+      .action(async () => {
+        await installMcpServer()
+      })
+  )
+  .addCommand(
+    program.createCommand('update')
+      .description('Atualiza o MCP Server para a versão mais recente')
+      .action(async () => {
+        await updateMcpServer()
+      })
+  )
+
+program
+  .command('check-updates')
+  .description('Verifica atualizações disponíveis dos pacotes Koala')
+  .option('-p, --path <path>', 'Caminho do projeto para verificar')
+  .action(async (options) => {
+    await checkKoalaUpdates(options.path || process.cwd())
   })
 
 program.parse(process.argv)

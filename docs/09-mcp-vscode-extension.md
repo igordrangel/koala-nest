@@ -2,20 +2,43 @@
 
 A extensão **Koala Nest Documentation MCP** integra toda a documentação do Koala Nest diretamente no GitHub Copilot através do Model Context Protocol (MCP).
 
-## 📦 Duas Formas de Usar
+## 📦 Três Formas de Usar
 
-Você pode usar o MCP server de **duas formas diferentes**:
+Você pode usar o MCP server de **três formas diferentes**:
 
 ### 1️⃣ Via Extensão VS Code (Recomendado - Mais Fácil)
 
 ✅ Instalação com 1 clique  
 ✅ Funciona em qualquer workspace  
-✅ Atualização automática via Marketplace  
+✅ **Atualização automática do servidor MCP**  
 ✅ Zero configuração necessária
 
 **[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
 
-### 2️⃣ Via Arquivo de Configuração (Avançado)
+A extensão baixa automaticamente o servidor MCP das GitHub Releases e verifica atualizações diariamente. Quando uma nova versão estiver disponível, você será notificado e poderá atualizar com um clique.
+
+**Comando para forçar atualização:**
+- Abra a paleta de comandos (`Ctrl+Shift+P` ou `Cmd+Shift+P`)
+- Digite: `Koala Nest: Update MCP Server`
+
+### 2️⃣ Via CLI Local (Recomendado para Desenvolvimento)
+
+✅ Controle total sobre a versão instalada  
+✅ Funciona sem VS Code  
+✅ Compartilhado entre todos os projetos  
+✅ Fácil atualização via CLI
+
+```bash
+# Instalar o MCP Server localmente
+koala-nest mcp install
+
+# Atualizar para a versão mais recente
+koala-nest mcp update
+```
+
+O servidor será instalado em `~/.koala-nest/mcp-server/` e o arquivo `~/mcp.json` será configurado automaticamente.
+
+### 3️⃣ Via Arquivo de Configuração (Avançado)
 
 ✅ Controle total sobre a configuração  
 ✅ Sem dependência de extensão  
@@ -34,6 +57,12 @@ Crie um arquivo `.vscode/mcp.json` no seu projeto (veja detalhes abaixo).
 2. Vá até a aba de extensões (`Ctrl+Shift+X` ou `Cmd+Shift+X`)
 3. Busque por **"Koala Nest Documentation MCP"**
 4. Clique em **Instalar**
+
+A extensão automaticamente:
+- Baixa o servidor MCP da última release do GitHub
+- Configura tudo para funcionar imediatamente
+- Verifica atualizações diariamente
+- Notifica quando houver nova versão disponível
 
 ### Via Arquivo VSIX (Desenvolvimento)
 

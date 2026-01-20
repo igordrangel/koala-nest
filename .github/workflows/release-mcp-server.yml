@@ -1,0 +1,96 @@
+name: Release MCP Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-mcp-server:
+    name: Release MCP Server to GitHub
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Check for MCP Server changes
+        id: check_changes
+        run: |
+          # Verifica se há changesets mencionando mcp-server
+          if ls .changeset/*.md 1> /dev/null 2>&1; then
+            if grep -l "koala-nest-mcp-server" .changeset/*.md 2>/dev/null; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              
+              # Pega a versão do package.json do mcp-server
+              VERSION=$(cat apps/mcp-server/package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "tag=mcp-server@$VERSION" >> $GITHUB_OUTPUT
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build MCP Server
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          bun run build:mcp-extension
+          
+      - name: Package MCP Server
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          cd apps/mcp-server
+          mkdir -p release-package
+          cp -r dist release-package/
+          cp package.json release-package/
+          cp README.md release-package/
+          cp ../../LICENSE release-package/
+          cd release-package
+          tar -czf ../koala-nest-mcp-server-${{ steps.check_changes.outputs.version }}.tar.gz .
+          cd ..
+          rm -rf release-package
+
+      - name: Check if release exists
+        if: steps.check_changes.outputs.has_changes == 'true'
+        id: check_release
+        run: |
+          if gh release view ${{ steps.check_changes.outputs.tag }} &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_release.outputs.exists == 'false'
+        run: |
+          gh release create ${{ steps.check_changes.outputs.tag }} \
+            apps/mcp-server/koala-nest-mcp-server-${{ steps.check_changes.outputs.version }}.tar.gz \
+            --title "MCP Server v${{ steps.check_changes.outputs.version }}" \
+            --notes "Release of Koala Nest MCP Server version ${{ steps.check_changes.outputs.version }}" \
+            --target main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to existing release
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_release.outputs.exists == 'true'
+        run: |
+          gh release upload ${{ steps.check_changes.outputs.tag }} \
+            apps/mcp-server/koala-nest-mcp-server-${{ steps.check_changes.outputs.version }}.tar.gz \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

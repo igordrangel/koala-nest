@@ -19,6 +19,8 @@ npm install -g @koalarx/nest-cli
 koala-nest new <nome-do-projeto>
 ```
 
+Durante a criação, a CLI perguntará se você deseja instalar o MCP Server localmente.
+
 **Exemplos:**
 
 ```bash
@@ -33,6 +35,45 @@ bun run prisma:deploy
 
 # Iniciar em modo desenvolvimento
 bun run start:dev
+```
+
+### Gerenciar MCP Server
+
+#### Instalar MCP Server
+
+```bash
+koala-nest mcp install
+```
+
+Baixa e instala a última versão do Koala Nest MCP Server localmente em `~/.koala-nest/mcp-server/` e configura automaticamente o arquivo `~/mcp.json`.
+
+#### Atualizar MCP Server
+
+```bash
+koala-nest mcp update
+```
+
+Verifica se há uma nova versão disponível e atualiza o MCP Server instalado localmente.
+
+### Verificar Atualizações
+
+```bash
+koala-nest check-updates
+```
+
+Verifica se há atualizações disponíveis para os pacotes Koala (`@koalarx/nest` e `@koalarx/nest-cli`) comparando com as versões no npm registry.
+
+**Opções:**
+- `-p, --path <path>` - Caminho do projeto para verificar (padrão: diretório atual)
+
+**Exemplo:**
+
+```bash
+# Verificar atualizações no projeto atual
+koala-nest check-updates
+
+# Verificar atualizações em um projeto específico
+koala-nest check-updates -p /caminho/para/projeto
 ```
 
 ## O que a CLI Configura Automaticamente

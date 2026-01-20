@@ -38,6 +38,10 @@
       {
         "command": "koala-nest-mcp.openDocs",
         "title": "Koala Nest: Open Documentation"
+      },
+      {
+        "command": "koala-nest-mcp.updateServer",
+        "title": "Koala Nest: Update MCP Server"
       }
     ],
     "mcpServers": [
@@ -50,5 +54,8 @@
         ]
       }
     ]
+  },
+  "dependencies": {
+    "tar": "^7.5.4"
   }
 }

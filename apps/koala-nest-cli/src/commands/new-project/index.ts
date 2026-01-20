@@ -3,6 +3,7 @@ import { execSync } from 'node:child_process'
 import { cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import inquirer from 'inquirer'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -95,10 +96,37 @@ export async function newProject(projectName: string) {
     console.log(chalk.gray(`  bun run build:prisma`))
   }
 
+  // 8. Perguntar sobre instalação do MCP Server
+  const installMcp = await inquirer
+    .prompt([
+      {
+        type: 'confirm',
+        name: 'install',
+        message: 'Deseja instalar o Koala Nest MCP Server localmente?',
+        default: true,
+      },
+    ])
+    .then((answers) => answers.install)
+
+  if (installMcp) {
+    const { installMcpServer } = await import('../mcp.js')
+    try {
+      await installMcpServer()
+    } catch {
+      console.log(chalk.red('⚠️  Erro ao instalar MCP Server'))
+      console.log(chalk.gray('  Você pode instalar manualmente depois com:'))
+      console.log(chalk.gray('  koala-nest mcp install'))
+    }
+  }
+
   console.log(chalk.green('\n✅ Projeto criado com sucesso!'))
   console.log(chalk.cyan('\n📚 Próximos passos:'))
   console.log(chalk.gray(`  cd ${projectName}`))
   console.log(chalk.gray(`  bun run prisma:deploy  # Executar migrations no banco`))
   console.log(chalk.gray(`  bun run start:dev       # Iniciar aplicação`))
+  if (!installMcp) {
+    console.log(chalk.gray(`\n💡 Para instalar o MCP Server depois:`))
+    console.log(chalk.gray(`  koala-nest mcp install`))
+  }
   console.log(chalk.gray(`\n📖 Documentação: https://github.com/igordrangel/koala-nest\n`))
 }
