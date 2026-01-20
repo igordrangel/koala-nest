@@ -10,14 +10,14 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import * as fs from 'fs'
 import * as path from 'path'
 import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 
 // Configurar caminhos para os arquivos de documentação
-// Usando dirname de __filename para obter o diretório do arquivo
-const __filename = resolve(process.argv[1])
+// Buscar docs dentro do próprio pacote MCP (mesmo diretório que server.js)
+const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const PROJECT_ROOT = path.resolve(__dirname, '../../')
-const DOCS_DIR = path.join(PROJECT_ROOT, 'docs')
-const README_PATH = path.join(PROJECT_ROOT, 'README.md')
+const DOCS_DIR = path.join(__dirname, 'docs')
+const README_PATH = path.join(__dirname, 'README-PROJECT.md')
 
 interface DocumentationResource {
   uri: string
@@ -63,11 +63,15 @@ class KoalaMCPServer {
         description: 'Documentação principal do projeto Koala Nest',
         mimeType: 'text/markdown',
       })
+      console.error(`📚 README carregado de: ${README_PATH}`)
+    } else {
+      console.error(`⚠️  README não encontrado em: ${README_PATH}`)
     }
 
     // Carregar arquivos da pasta docs
     if (fs.existsSync(DOCS_DIR)) {
       const files = fs.readdirSync(DOCS_DIR)
+      console.error(`📂 Encontrados ${files.length} arquivos em: ${DOCS_DIR}`)
       files.forEach((file) => {
         if (file.endsWith('.md')) {
           const resourceId = file.replace('.md', '')
@@ -79,6 +83,9 @@ class KoalaMCPServer {
           })
         }
       })
+      console.error(`✅ ${this.documentationResources.size} recursos de documentação carregados`)
+    } else {
+      console.error(`⚠️  Pasta docs não encontrada em: ${DOCS_DIR}`)
     }
   }
 

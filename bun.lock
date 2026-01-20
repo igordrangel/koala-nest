@@ -74,7 +74,7 @@
     },
     "apps/koala-nest-cli": {
       "name": "@koalarx/nest-cli",
-      "version": "3.0.16",
+      "version": "3.0.22",
       "bin": {
         "koala-nest": "index.js",
       },
@@ -93,11 +93,14 @@
     },
     "apps/mcp-server": {
       "name": "@koalarx/mcp-server",
-      "version": "1.0.2",
+      "version": "1.0.6",
+      "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.0.4",
+      },
     },
     "apps/mcp-vscode-extension": {
       "name": "koala-nest-mcp-docs",
-      "version": "1.0.3",
+      "version": "1.0.5",
       "dependencies": {
         "tar": "^7.5.4",
       },

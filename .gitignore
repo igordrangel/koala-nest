@@ -129,6 +129,10 @@ dist-cli
 # VS Code extension packages
 *.vsix
 
+# MCP Server build artifacts (docs são copiados durante build)
+apps/mcp-server/docs/
+apps/mcp-server/README-PROJECT.md
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

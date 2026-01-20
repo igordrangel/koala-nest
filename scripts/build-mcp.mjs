@@ -10,10 +10,44 @@ const mcpExtensionDir = path.join(rootDir, 'apps/mcp-vscode-extension')
 
 console.log('🔨 Building MCP Server...')
 try {
-  execSync(`${path.join(rootDir, 'node_modules/.bin/tsc')}`, {
+  const tscPath = path.join(rootDir, 'node_modules/.bin/tsc')
+  execSync(`"${tscPath}"`, {
     cwd: mcpServerDir,
     stdio: 'inherit',
+    shell: '/bin/bash'
   })
+  
+  // Copiar pasta docs para dentro da dist do MCP Server
+  const docsSourceDir = path.join(rootDir, 'docs')
+  const docsDestDir = path.join(mcpServerDir, 'dist/docs')
+  
+  if (fs.existsSync(docsSourceDir)) {
+    // Remover pasta docs antiga se existir
+    if (fs.existsSync(docsDestDir)) {
+      fs.rmSync(docsDestDir, { recursive: true })
+    }
+    
+    // Copiar pasta docs
+    fs.mkdirSync(docsDestDir, { recursive: true })
+    const docFiles = fs.readdirSync(docsSourceDir)
+    docFiles.forEach(file => {
+      const srcFile = path.join(docsSourceDir, file)
+      const destFile = path.join(docsDestDir, file)
+      if (fs.statSync(srcFile).isFile()) {
+        fs.copyFileSync(srcFile, destFile)
+      }
+    })
+    console.log('✅ Documentation files copied to dist/docs')
+  }
+  
+  // Copiar README.md do root para dentro da dist do MCP Server
+  const readmeSource = path.join(rootDir, 'README.md')
+  const readmeDest = path.join(mcpServerDir, 'dist/README-PROJECT.md')
+  if (fs.existsSync(readmeSource)) {
+    fs.copyFileSync(readmeSource, readmeDest)
+    console.log('✅ README copied to dist/README-PROJECT.md')
+  }
+  
   console.log('✅ MCP Server built successfully')
 } catch {
   console.error('❌ Failed to build MCP Server')
@@ -28,9 +62,11 @@ try {
     execSync('bun install', { cwd: mcpExtensionDir, stdio: 'inherit' })
   }
 
-  execSync(`${path.join(mcpExtensionDir, 'node_modules/.bin/tsc')} -p .`, {
+  const tscExtPath = path.join(rootDir, 'node_modules/.bin/tsc')
+  execSync(`"${tscExtPath}" -p .`, {
     cwd: mcpExtensionDir,
     stdio: 'inherit',
+    shell: '/bin/bash'
   })
   console.log('✅ VS Code Extension built successfully')
 } catch {
