@@ -42,7 +42,7 @@ bun run start:dev
 #### Instalar MCP Server
 
 ```bash
-koala-nest mcp install
+koala-nest mcp:install
 ```
 
 Baixa e instala a última versão do Koala Nest MCP Server localmente em `~/.koala-nest/mcp-server/` e configura automaticamente o arquivo `~/mcp.json`.
@@ -50,7 +50,7 @@ Baixa e instala a última versão do Koala Nest MCP Server localmente em `~/.koa
 #### Atualizar MCP Server
 
 ```bash
-koala-nest mcp update
+koala-nest mcp:update
 ```
 
 Verifica se há uma nova versão disponível e atualiza o MCP Server instalado localmente.

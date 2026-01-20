@@ -38,12 +38,16 @@ const rootPackageJson = JSON.parse(readFileSync('package.json', 'utf-8'))
 delete packageJson.publishConfig
 delete packageJson.scripts
 
-// Adicionar dependências necessárias
-packageJson.dependencies = {
-  chalk: rootPackageJson.dependencies.chalk,
-  commander: rootPackageJson.dependencies.commander,
-  inquirer: rootPackageJson.dependencies.inquirer,
-  shelljs: rootPackageJson.dependencies.shelljs,
+// As dependências já estão corretas no package.json da CLI
+// Apenas garantir que commander, inquirer e shelljs estejam presentes
+if (!packageJson.dependencies.commander) {
+  packageJson.dependencies.commander = rootPackageJson.dependencies.commander
+}
+if (!packageJson.dependencies.inquirer) {
+  packageJson.dependencies.inquirer = rootPackageJson.dependencies.inquirer
+}
+if (!packageJson.dependencies.shelljs) {
+  packageJson.dependencies.shelljs = rootPackageJson.dependencies.shelljs
 }
 
 // Garantir que version está correta (já vem do apps/koala-nest-cli/package.json)

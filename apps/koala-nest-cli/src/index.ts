@@ -51,22 +51,18 @@ program
   })
 
 program
-  .command('mcp')
-  .description('Gerenciar Koala Nest MCP Server')
-  .addCommand(
-    program.createCommand('install')
-      .description('Instala o MCP Server localmente')
-      .action(async () => {
-        await installMcpServer()
-      })
-  )
-  .addCommand(
-    program.createCommand('update')
-      .description('Atualiza o MCP Server para a versão mais recente')
-      .action(async () => {
-        await updateMcpServer()
-      })
-  )
+  .command('mcp:install')
+  .description('Instala o MCP Server localmente')
+  .action(async () => {
+    await installMcpServer()
+  })
+
+program
+  .command('mcp:update')
+  .description('Atualiza o MCP Server para a versão mais recente')
+  .action(async () => {
+    await updateMcpServer()
+  })
 
 program
   .command('check-updates')
