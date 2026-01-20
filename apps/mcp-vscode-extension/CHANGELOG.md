@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.5
+
+### Patch Changes
+
+- 10c7123: Melhorias na disponibilidade do servidor MCP
+
 ## 1.0.4
 
 ### Patch Changes

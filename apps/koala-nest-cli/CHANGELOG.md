@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.18
+
+### Patch Changes
+
+- 10c7123: Melhorias na disponibilidade do servidor MCP
+
 ## 3.0.17
 
 ### Patch Changes
