@@ -2,7 +2,7 @@ import https from 'https'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import tar from 'tar'
+import * as tar from 'tar'
 import chalk from 'chalk'
 
 const GITHUB_REPO = 'igordrangel/koala-nest'
