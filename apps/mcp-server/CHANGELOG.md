@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.11
+
+### Patch Changes
+
+- eeef26f: Ajustes CLI update e install MCP
+
 ## 1.0.10
 
 ### Patch Changes

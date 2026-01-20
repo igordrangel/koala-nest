@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.27
+
+### Patch Changes
+
+- eeef26f: Ajustes CLI update e install MCP
+
 ## 3.0.26
 
 ### Patch Changes
