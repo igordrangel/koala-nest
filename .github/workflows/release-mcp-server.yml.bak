@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_run:
+    workflows: ["Version and Publish Packages"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   release-mcp-server:
@@ -28,16 +34,15 @@ jobs:
       - name: Check for MCP Server changes
         id: check_changes
         run: |
-          # Verifica se há changesets mencionando mcp-server
-          if ls .changeset/*.md 1> /dev/null 2>&1; then
-            if grep -l "koala-nest-mcp-server" .changeset/*.md 2>/dev/null; then
-              echo "has_changes=true" >> $GITHUB_OUTPUT
-              
-              # Pega a versão do package.json do mcp-server
-              VERSION=$(cat apps/mcp-server/package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "tag=mcp-server@$VERSION" >> $GITHUB_OUTPUT
-            else
+          # Verifica se houve mudanças no package.json do mcp-server
+          if git diff HEAD~1 HEAD -- apps/mcp-server/package.json | grep -q '"version"'; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            
+            # Pega a versão do package.json do mcp-server
+            VERSION=$(cat apps/mcp-server/package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "tag=mcp-server@$VERSION" >> $GITHUB_OUTPUT
+          else
               echo "has_changes=false" >> $GITHUB_OUTPUT
             fi
           else

@@ -1,0 +1,352 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  # Job 1: Detectar mudanças e versionar pacotes
+  version:
+    name: "Detect Changes and Version Packages"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      has_changes: ${{ steps.detect.outputs.has_changes }}
+      changed_packages: ${{ steps.detect.outputs.changed_packages }}
+      has_nest: ${{ steps.detect.outputs.has_nest }}
+      has_cli: ${{ steps.detect.outputs.has_cli }}
+      has_mcp_server: ${{ steps.detect.outputs.has_mcp_server }}
+      has_vscode_extension: ${{ steps.detect.outputs.has_vscode_extension }}
+    steps:
+      - name: 🚚 Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 Detect changes
+        id: detect
+        run: |
+          if ls .changeset/*.md 1> /dev/null 2>&1; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            
+            # Verificar quais pacotes mudaram
+            CHANGED=""
+            if grep -l "@koalarx/nest" .changeset/*.md 2>/dev/null; then
+              echo "has_nest=true" >> $GITHUB_OUTPUT
+              CHANGED="$CHANGED nest"
+            else
+              echo "has_nest=false" >> $GITHUB_OUTPUT
+            fi
+            
+            if grep -l "@koalarx/nest-cli" .changeset/*.md 2>/dev/null; then
+              echo "has_cli=true" >> $GITHUB_OUTPUT
+              CHANGED="$CHANGED cli"
+            else
+              echo "has_cli=false" >> $GITHUB_OUTPUT
+            fi
+            
+            if grep -l "@koalarx/mcp-server" .changeset/*.md 2>/dev/null; then
+              echo "has_mcp_server=true" >> $GITHUB_OUTPUT
+              CHANGED="$CHANGED mcp-server"
+            else
+              echo "has_mcp_server=false" >> $GITHUB_OUTPUT
+            fi
+            
+            if grep -l "koala-nest-mcp-docs" .changeset/*.md 2>/dev/null; then
+              echo "has_vscode_extension=true" >> $GITHUB_OUTPUT
+              CHANGED="$CHANGED vscode-extension"
+            else
+              echo "has_vscode_extension=false" >> $GITHUB_OUTPUT
+            fi
+            
+            echo "changed_packages=$CHANGED" >> $GITHUB_OUTPUT
+            echo "📦 Changed packages:$CHANGED"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_nest=false" >> $GITHUB_OUTPUT
+            echo "has_cli=false" >> $GITHUB_OUTPUT
+            echo "has_mcp_server=false" >> $GITHUB_OUTPUT
+            echo "has_vscode_extension=false" >> $GITHUB_OUTPUT
+            echo "changed_packages=" >> $GITHUB_OUTPUT
+            echo "ℹ️ No changesets found"
+          fi
+
+      - name: 🔨 Build packages
+        if: steps.detect.outputs.has_changes == 'true'
+        run: |
+          if [ "${{ steps.detect.outputs.has_nest }}" == "true" ]; then
+            echo "🔨 Building @koalarx/nest..."
+            bun run build:lib
+          fi
+          
+          if [ "${{ steps.detect.outputs.has_cli }}" == "true" ]; then
+            echo "🔨 Building @koalarx/nest-cli..."
+            bun run build:cli
+          fi
+          
+          if [ "${{ steps.detect.outputs.has_mcp_server }}" == "true" ] || [ "${{ steps.detect.outputs.has_vscode_extension }}" == "true" ]; then
+            echo "🔨 Building MCP Server..."
+            bun run build:mcp
+          fi
+          
+          if [ "${{ steps.detect.outputs.has_vscode_extension }}" == "true" ]; then
+            echo "🔨 Building VS Code Extension..."
+            bun run build:mcp-extension
+          fi
+
+      - name: 📝 Version packages
+        if: steps.detect.outputs.has_changes == 'true'
+        run: bun run changeset:version
+
+      - name: 🔐 Configure Git
+        if: steps.detect.outputs.has_changes == 'true'
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: 💾 Commit and push version changes
+        if: steps.detect.outputs.has_changes == 'true'
+        run: |
+          git add .
+          if git commit -m "chore: version packages"; then
+            for i in {1..5}; do
+              git pull --rebase origin main && git push origin main && break || {
+                if [ $i -eq 5 ]; then
+                  echo "❌ Failed to push after 5 attempts"
+                  exit 1
+                fi
+                echo "⏳ Push failed, retrying in 2 seconds... (attempt $i/5)"
+                sleep 2
+              }
+            done
+          else
+            echo "ℹ️ No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job 2: Publicar pacotes NPM (roda em paralelo após version)
+  publish-npm:
+    name: "Publish NPM Packages"
+    runs-on: ubuntu-latest
+    needs: version
+    if: needs.version.outputs.has_changes == 'true' && (needs.version.outputs.has_nest == 'true' || needs.version.outputs.has_cli == 'true')
+    steps:
+      - name: 🚚 Checkout (após version)
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔨 Rebuild packages
+        run: |
+          if [ "${{ needs.version.outputs.has_nest }}" == "true" ]; then
+            echo "🔨 Building @koalarx/nest..."
+            bun run build:lib
+          fi
+          
+          if [ "${{ needs.version.outputs.has_cli }}" == "true" ]; then
+            echo "🔨 Building @koalarx/nest-cli..."
+            bun run build:cli
+          fi
+
+      - name: 🔑 Configure NPM
+        run: npm config set "//registry.npmjs.org/:_authToken" "${{ secrets.NPM_TOKEN }}"
+
+      - name: 📚 Publish @koalarx/nest
+        if: needs.version.outputs.has_nest == 'true'
+        run: |
+          cd dist
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if npm view @koalarx/nest@$CURRENT_VERSION version 2>/dev/null; then
+            echo "⚠️ Version $CURRENT_VERSION already exists, skipping"
+          else
+            echo "✅ Publishing version $CURRENT_VERSION"
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 📦 Publish @koalarx/nest-cli
+        if: needs.version.outputs.has_cli == 'true'
+        run: |
+          cd dist-cli
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if npm view @koalarx/nest-cli@$CURRENT_VERSION version 2>/dev/null; then
+            echo "⚠️ Version $CURRENT_VERSION already exists, skipping"
+          else
+            echo "✅ Publishing version $CURRENT_VERSION"
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Job 3: Publicar VS Code Extension (roda em paralelo após version)
+  publish-vscode:
+    name: "Publish VS Code Extension"
+    runs-on: ubuntu-latest
+    needs: version
+    if: needs.version.outputs.has_changes == 'true' && needs.version.outputs.has_vscode_extension == 'true'
+    steps:
+      - name: 🚚 Checkout (após version)
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔨 Build extension
+        run: bun run build:mcp-all
+
+      - name: 🔍 Validate VSCODE_MARKETPLACE_TOKEN
+        run: |
+          if [ -z "${{ secrets.VSCODE_MARKETPLACE_TOKEN }}" ]; then
+            echo "❌ ERROR: VSCODE_MARKETPLACE_TOKEN not configured!"
+            exit 1
+          fi
+          echo "✅ VSCODE_MARKETPLACE_TOKEN is configured"
+
+      - name: 📦 Package extension
+        run: |
+          cd apps/mcp-vscode-extension
+          bun x vsce package --no-dependencies
+
+      - name: 🚀 Publish to Marketplace
+        run: |
+          cd apps/mcp-vscode-extension
+          bun x vsce publish --no-dependencies -p "${{ secrets.VSCODE_MARKETPLACE_TOKEN }}"
+        env:
+          VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
+
+  # Job 4: Criar Release do MCP Server (roda em paralelo após version)
+  release-mcp:
+    name: "Release MCP Server"
+    runs-on: ubuntu-latest
+    needs: version
+    if: needs.version.outputs.has_changes == 'true' && needs.version.outputs.has_mcp_server == 'true'
+    steps:
+      - name: 🚚 Checkout (após version)
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔨 Build MCP Server
+        run: bun run build:mcp
+
+      - name: 📊 Get version
+        id: version
+        run: |
+          VERSION=$(cat apps/mcp-server/package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=mcp-server@$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $VERSION"
+
+      - name: 📦 Package MCP Server
+        run: |
+          cd apps/mcp-server
+          mkdir -p release-package
+          cp -r dist release-package/
+          cp package.json release-package/
+          cp README.md release-package/
+          cp ../../LICENSE release-package/
+          cd release-package
+          tar -czf ../koala-nest-mcp-server-${{ steps.version.outputs.version }}.tar.gz .
+          cd ..
+          rm -rf release-package
+
+      - name: 🔍 Check if release exists
+        id: check_release
+        run: |
+          if gh release view ${{ steps.version.outputs.tag }} &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Release already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Release does not exist yet"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          gh release create ${{ steps.version.outputs.tag }} \
+            apps/mcp-server/koala-nest-mcp-server-${{ steps.version.outputs.version }}.tar.gz \
+            --title "MCP Server v${{ steps.version.outputs.version }}" \
+            --notes "Release of Koala Nest MCP Server version ${{ steps.version.outputs.version }}" \
+            --target main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Upload to existing release
+        if: steps.check_release.outputs.exists == 'true'
+        run: |
+          gh release upload ${{ steps.version.outputs.tag }} \
+            apps/mcp-server/koala-nest-mcp-server-${{ steps.version.outputs.version }}.tar.gz \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job 5: Sync para develop (roda após todos os outros)
+  sync-develop:
+    name: "Sync to Develop Branch"
+    runs-on: ubuntu-latest
+    needs: [version, publish-npm, publish-vscode, release-mcp]
+    if: always() && needs.version.outputs.has_changes == 'true'
+    steps:
+      - name: 🚚 Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🔐 Configure Git
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: 🔄 Sync to develop
+        run: |
+          git fetch origin main
+          git fetch origin develop
+          git checkout develop
+          git merge origin/main --no-edit
+          git push origin develop
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Push tags
+        run: git push origin main --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
