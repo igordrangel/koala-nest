@@ -265,7 +265,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🔨 Build MCP Server
-        run: bun run build:mcp
+        run: bun scripts/build-mcp.mjs
 
       - name: 📊 Get version
         id: version
