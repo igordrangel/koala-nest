@@ -279,7 +279,7 @@ jobs:
         run: |
           cd apps/mcp-server
           mkdir -p release-package
-          cp -r dist release-package/
+          cp -r dist/* release-package/
           cp package.json release-package/
           cp README.md release-package/
           cp ../../LICENSE release-package/
