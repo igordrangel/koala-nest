@@ -327,6 +327,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [version, publish-npm, publish-vscode, release-mcp]
     if: always() && needs.version.outputs.has_changes == 'true'
+    permissions:
+      contents: write
     steps:
       - name: 🚚 Checkout
         uses: actions/checkout@v3
