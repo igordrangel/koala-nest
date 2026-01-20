@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.6
+
+### Patch Changes
+
+- e432144: Disponibilizando MCP Server no GitHub Releases
+
 ## 1.0.5
 
 ### Patch Changes
