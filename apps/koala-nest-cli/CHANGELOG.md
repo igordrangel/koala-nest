@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.29
+
+### Patch Changes
+
+- 16790ba: Ajustes comando MCP da CLI
+
 ## 3.0.28
 
 ### Patch Changes
