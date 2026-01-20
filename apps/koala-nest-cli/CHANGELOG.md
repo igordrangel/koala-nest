@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.26
+
+### Patch Changes
+
+- eb85398: Ajustes MCP Server
+
 ## 3.0.25
 
 ### Patch Changes

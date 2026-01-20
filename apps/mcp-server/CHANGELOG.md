@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.10
+
+### Patch Changes
+
+- eb85398: Ajustes MCP Server
+
 ## 1.0.9
 
 ### Patch Changes
