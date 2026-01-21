@@ -259,6 +259,12 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup Node for NPM
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
       - name: 📦 Install dependencies
         run: bun install --frozen-lockfile
 
@@ -275,10 +281,9 @@ jobs:
       - name: 📤 Publish to NPM
         run: |
           cd apps/mcp-server
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
           npm publish --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # Job 5: Sync para develop (roda após todos os outros)
   sync-develop:
