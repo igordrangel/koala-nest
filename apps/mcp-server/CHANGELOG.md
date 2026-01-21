@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.14
+
+### Patch Changes
+
+- 1c79d23: Ajustes MCP Server
+
 ## 1.0.13
 
 ### Patch Changes
