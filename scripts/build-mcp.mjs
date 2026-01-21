@@ -29,6 +29,15 @@ try {
     throw new Error('TypeScript compilation failed - server.js not found')
   }
 
+  // Adicionar shebang ao topo do server.js se não existir
+  const serverJsContent = fs.readFileSync(serverJsPath, 'utf-8')
+  const shebang = '#!/usr/bin/env bun\n'
+  if (!serverJsContent.startsWith(shebang)) {
+    fs.writeFileSync(serverJsPath, shebang + serverJsContent, 'utf-8')
+    fs.chmodSync(serverJsPath, 0o755)
+    console.log('✅ Shebang adicionado ao dist/server.js')
+  }
+
   // Copiar pasta docs para dentro da dist do MCP Server
   const docsSourceDir = path.join(rootDir, 'docs')
   const docsDestDir = path.join(distDir, 'docs')
@@ -96,4 +105,3 @@ Next steps:
 2. Package extension: vsce package
 3. Publish: vsce publish
 `)
-
