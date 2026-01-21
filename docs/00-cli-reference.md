@@ -37,23 +37,33 @@ bun run prisma:deploy
 bun run start:dev
 ```
 
-### Gerenciar MCP Server
+### Configurar MCP Server
 
-#### Instalar MCP Server
+#### Instalar/Configurar MCP Server
 
 ```bash
 koala-nest mcp:install
 ```
 
-Baixa e instala a última versão do Koala Nest MCP Server localmente em `~/.koala-nest/mcp-server/` e configura automaticamente o arquivo `~/mcp.json`.
+Configura o arquivo `mcp.json` no seu projeto para usar o Koala Nest MCP Server via NPM. O servidor será instalado automaticamente pelo NPM quando você iniciar seu cliente MCP.
 
-#### Atualizar MCP Server
+**O que faz:**
+1. Procura por um arquivo `mcp.json` existente no projeto
+2. Se encontrar, adiciona a configuração do Koala Nest
+3. Se não encontrar, pergunta se deseja criar um novo
+4. Configura com `bunx @koalarx/mcp-server` (sempre atualizado via NPM)
 
-```bash
-koala-nest mcp:update
+**Configuração gerada:**
+```json
+{
+  "mcpServers": {
+    "koala-nest-docs": {
+      "command": "bunx",
+      "args": ["@koalarx/mcp-server"]
+    }
+  }
+}
 ```
-
-Verifica se há uma nova versão disponível e atualiza o MCP Server instalado localmente.
 
 ### Verificar Atualizações
 
@@ -185,15 +195,20 @@ tsx
 ## Exemplos de Uso
 
 ### Criar um Projeto Simples
-bun run prisma:deploy  # Aplicar migrations de exemplo
+
+```bash
+# Criar projeto
+koala-nest new my-api
+cd my-api
+
+# Aplicar migrations de exemplo
+bun run prisma:deploy
+
+# Iniciar desenvolvimento
 bun run start:dev
 ```
 
-Seu blog API estará rodando em `http://localhost:3000` com:
-- Exemplo de entidade (Pessoa)
-- Endpoints CRUD funcionais
-- Autenticação
-Seu blog API estará rodando em `http://localhost:3000` com:
+Seu projeto estará rodando em `http://localhost:3000` com:
 - Exemplo de entidade (Pessoa)
 - Endpoints CRUD funcionais
 - Autenticação JWT configurada

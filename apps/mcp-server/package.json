@@ -4,6 +4,14 @@
   "description": "MCP Server for Koala Nest Documentation",
   "type": "module",
   "main": "dist/server.js",
+  "bin": {
+    "koala-mcp-server": "./dist/server.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "import": "./dist/server.js",
@@ -12,5 +20,8 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

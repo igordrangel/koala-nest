@@ -1,466 +1,266 @@
-# 🤖 Extensão MCP para VS Code
+# 🤖 MCP Server - Model Context Protocol
 
-A extensão **Koala Nest Documentation MCP** integra toda a documentação do Koala Nest diretamente no GitHub Copilot através do Model Context Protocol (MCP).
+O **Koala Nest MCP Server** expõe toda a documentação do framework para assistentes de IA através do Model Context Protocol (MCP), permitindo que ferramentas como GitHub Copilot, Claude Desktop e outros clientes MCP acessem a documentação em tempo real.
 
-## 📦 Três Formas de Usar
+## 📦 Formas de Uso
 
-Você pode usar o MCP server de **três formas diferentes**:
+Existem **duas formas principais** de usar o MCP Server:
 
-### 1️⃣ Via Extensão VS Code (Recomendado - Mais Fácil)
+### 1️⃣ Via NPM (Recomendado - Mais Simples)
 
-✅ Instalação com 1 clique  
-✅ Funciona em qualquer workspace  
-✅ **Atualização automática do servidor MCP**  
-✅ Zero configuração necessária
+✅ Sempre atualizado  
+✅ Sem instalação local  
+✅ Gerenciado automaticamente pelo NPM  
+✅ Zero manutenção
 
-**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
-
-A extensão baixa automaticamente o servidor MCP das GitHub Releases e verifica atualizações diariamente. Quando uma nova versão estiver disponível, você será notificado e poderá atualizar com um clique.
-
-**Comando para forçar atualização:**
-- Abra a paleta de comandos (`Ctrl+Shift+P` ou `Cmd+Shift+P`)
-- Digite: `Koala Nest: Update MCP Server`
-
-### 2️⃣ Via CLI Local (Recomendado para Desenvolvimento)
-
-✅ Controle total sobre a versão instalada  
-✅ Funciona sem VS Code  
-✅ Compartilhado entre todos os projetos  
-✅ Fácil atualização via CLI
-
+**Instalação via CLI:**
 ```bash
-# Instalar o MCP Server localmente
-koala-nest mcp install
-
-# Atualizar para a versão mais recente
-koala-nest mcp update
+npx @koalarx/nest-cli mcp:install
 ```
 
-O servidor será instalado em `~/.koala-nest/mcp-server/` e o arquivo `~/mcp.json` será configurado automaticamente.
-
-### 3️⃣ Via Arquivo de Configuração (Avançado)
-
-✅ Controle total sobre a configuração  
-✅ Sem dependência de extensão  
-✅ Ideal para projetos específicos  
-✅ Pode usar versão customizada do server
-
-Crie um arquivo `.vscode/mcp.json` no seu projeto (veja detalhes abaixo).
-
----
-
-## 📦 Instalação - Método 1: Extensão VS Code
-
-### Via VS Code Marketplace
-
-1. Abra o VS Code
-2. Vá até a aba de extensões (`Ctrl+Shift+X` ou `Cmd+Shift+X`)
-3. Busque por **"Koala Nest Documentation MCP"**
-4. Clique em **Instalar**
-
-A extensão automaticamente:
-- Baixa o servidor MCP da última release do GitHub
-- Configura tudo para funcionar imediatamente
-- Verifica atualizações diariamente
-- Notifica quando houver nova versão disponível
-
-### Via Arquivo VSIX (Desenvolvimento)
-
-Se você estiver testando uma versão em desenvolvimento:
-
-```bash
-# Clone o repositório
-git clone https://github.com/igordrangel/koala-nest
-cd koala-nest
-
-# Instale as dependências
-bun install
-
-# Build e empacote a extensão
-bun run build:mcp-all
-bun run package:vscode-extension
-
-# Instale manualmente
-code --install-extension apps/mcp-vscode-extension/koala-nest-mcp-docs-*.vsix
-```
-
----
-
-## 📦 Instalação - Método 2: Arquivo de Configuração
-
-Esta abordagem permite usar o MCP server sem instalar a extensão, através de um arquivo `.vscode/mcp.json`.
-
-### Passo 1: Instalar o Koala Nest
-
-```bash
-npm install @koalarx/nest
-# ou
-bun add @koalarx/nest
-```
-
-### Passo 2: Criar arquivo `.vscode/mcp.json`
-
-Crie o arquivo `.vscode/mcp.json` na raiz do seu projeto:
+Ou configure manualmente criando/editando `mcp.json` ou `.vscode/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "koala-nest-docs": {
-      "command": "node",
-      "args": [
-        "${workspaceFolder}/node_modules/@koalarx/nest/mcp-server/server.js"
-      ],
-      "env": {}
+      "command": "bunx",
+      "args": ["@koalarx/mcp-server"]
     }
   }
 }
 ```
 
-### Passo 3: Reiniciar o VS Code
+### 2️⃣ Via Extensão VS Code (Alternativa)
+
+✅ Interface gráfica  
+✅ Funciona em qualquer workspace  
+✅ Gerenciamento visual
+
+**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
+
+---
+
+## 🚀 Instalação Rápida
+
+### Usando Koala CLI
 
 ```bash
-# Ou use o Command Palette
-Ctrl+Shift+P → "Developer: Reload Window"
+# Instalar Koala CLI globalmente
+npm install -g @koalarx/nest-cli
+
+# Configurar MCP no projeto atual
+koala-nest mcp:install
 ```
 
-### Alternativa: Configuração Global
+O comando irá:
+1. Procurar por um arquivo `mcp.json` existente no projeto
+2. Se encontrar, adicionar a configuração do Koala Nest
+3. Se não encontrar, perguntar se deseja criar um novo
+4. Configurar com `bunx @koalarx/mcp-server` (sempre atualizado via NPM)
 
-Se você quer o MCP server disponível em **todos os seus projetos**, adicione ao settings do VS Code:
+### Configuração Manual
 
-1. Abra Settings (`Ctrl+,`)
-2. Busque por "MCP Servers"
-3. Ou edite diretamente `settings.json`:
+Crie ou edite o arquivo `mcp.json` na raiz do projeto ou em `.vscode/mcp.json`:
 
 ```json
 {
-  "mcp.servers": {
+  "mcpServers": {
     "koala-nest-docs": {
-      "command": "node",
-      "args": [
-        "/caminho/absoluto/para/node_modules/@koalarx/nest/mcp-server/server.js"
-      ]
+      "command": "bunx",
+      "args": ["@koalarx/mcp-server"]
     }
   }
 }
 ```
 
-### Arquivo de Exemplo
+---
 
-O pacote `@koalarx/nest` inclui um arquivo de exemplo em:
-```
-node_modules/@koalarx/nest/mcp-server/mcp.json.example
-```
+## 📚 Documentação Disponível
 
-Você pode copiá-lo e ajustar conforme necessário.
+O MCP Server expõe todos os guias oficiais do Koala Nest:
+
+- **00-cli-reference.md** - Referência completa da CLI
+- **01-guia-instalacao.md** - Guia de instalação
+- **02-configuracao-inicial.md** - Configuração inicial
+- **04-tratamento-erros.md** - Sistema de tratamento de erros
+- **05-features-avancadas.md** - Features avançadas
+- **06-decoradores.md** - Decoradores disponíveis
+- **07-guia-bun.md** - Uso com Bun
+- **08-prisma-client.md** - Integração com Prisma
+- **09-mcp-vscode-extension.md** - Este guia
+- **10-cli-integration.md** - Integração CLI
+- **EXAMPLE.md** - Exemplo completo
+- **README.md** - Visão geral do projeto
 
 ---
 
-## ⚙️ Configuração
+## 🔧 Como Funciona
 
-### Ativação Automática
+1. **Seu cliente MCP** (VS Code, Claude Desktop, etc.) lê o arquivo `mcp.json`
+2. **Quando necessário**, executa o comando configurado (`bunx @koalarx/mcp-server`)
+3. **NPM/Bun baixa** e instala o servidor automaticamente (se não estiver em cache)
+4. **O servidor inicia** e expõe a documentação via protocolo MCP
+5. **Assistentes de IA** podem consultar a documentação em tempo real
 
-A extensão é ativada automaticamente ao iniciar o VS Code. Você verá uma notificação confirmando que está ativa:
+### Vantagens do Modelo NPM
 
-> 🚀 Koala Nest Documentation MCP extension is ready!
+- ✅ **Sempre atualizado**: Cada execução usa a versão mais recente publicada
+- ✅ **Zero manutenção**: Não precisa atualizar manualmente
+- ✅ **Sem instalação local**: Não ocupa espaço permanente no disco
+- ✅ **Cache automático**: NPM/Bun fazem cache para execuções rápidas
+- ✅ **Versionamento**: Pode fixar versões específicas se necessário
 
-### Verificação
+---
 
-Para verificar se a extensão está funcionando:
+## 🎯 Uso com Diferentes Clientes
 
-1. Abra o **Output Panel** (`Ctrl+Shift+U` ou `View > Output`)
-2. Selecione **"Koala Nest Documentation"** no dropdown
-3. Você verá logs como:
-   ```
-   🚀 Extension "Koala Nest Documentation MCP" is now active!
-   MCP Server path: /path/to/extension/dist/server.js
-   ```
+### GitHub Copilot (VS Code)
 
-### Comando Manual
+1. Configure o `mcp.json` como mostrado acima
+2. Reinicie o VS Code
+3. O Copilot terá acesso automático à documentação do Koala Nest
 
-Você também pode ativar manualmente via Command Palette:
+### Claude Desktop
 
-1. Abra o Command Palette (`Ctrl+Shift+P` ou `Cmd+Shift+P`)
-2. Digite: **"Koala Nest: Open Documentation"**
-3. Pressione Enter
+Adicione ao arquivo de configuração do Claude (`~/Library/Application Support/Claude/claude_desktop_config.json` no macOS):
 
-## 🎯 Como Utilizar
-
-### Com GitHub Copilot
-
-A extensão funciona integrada ao GitHub Copilot. Basta fazer perguntas relacionadas ao Koala Nest:
-
-#### Exemplos de Prompts
-
-**Instalação e Configuração:**
-```
-Como instalar o Koala Nest?
-Como configurar o Prisma no Koala Nest?
-Mostre a configuração inicial do Koala Nest
+```json
+{
+  "mcpServers": {
+    "koala-nest-docs": {
+      "command": "bunx",
+      "args": ["@koalarx/mcp-server"]
+    }
+  }
+}
 ```
 
-**Criando Controllers:**
-```
-Como criar um controller no Koala Nest?
-Exemplo de controller CRUD com Koala Nest
-Como usar decoradores customizados no Koala Nest?
-```
+### Outros Clientes MCP
 
-**Handlers e Validação:**
-```
-Como criar um request handler no Koala Nest?
-Exemplo de validação com Zod no Koala Nest
-Como fazer validação customizada?
-```
+Qualquer cliente que suporte o Model Context Protocol pode usar o servidor. Consulte a documentação específica do seu cliente para configurar servidores MCP customizados.
 
-**Repository e Database:**
-```
-Como criar um repository com Koala Nest?
-Exemplo de repository com Prisma
-Como fazer transações no Koala Nest?
-Como usar o KoalaEntityBase?
-```
+---
 
-**Jobs e Eventos:**
-```
-Como criar cron jobs no Koala Nest?
-Exemplo de event handler
-Como disparar eventos no Koala Nest?
-```
+## 🔍 Verificando se Está Funcionando
 
-**Tratamento de Erros:**
-```
-Quais são os erros disponíveis no Koala Nest?
-Como criar erros customizados?
-Como tratar exceções no Koala Nest?
-```
+### Via VS Code
 
-**Features Avançadas:**
-```
-Como usar Redis no Koala Nest?
-Como implementar RedLock?
-Como fazer auto-mapping?
-Como usar paginação?
-```
+1. Abra o Output panel (`Ctrl+Shift+U` ou `Cmd+Shift+U`)
+2. Selecione "MCP Servers" no dropdown
+3. Você deverá ver logs do servidor Koala Nest
 
-### Documentação Disponível
+### Via Terminal
 
-O MCP Server expõe toda a documentação do Koala Nest:
-
-- **00-cli-reference.md** - Referência da CLI
-- **01-guia-instalacao.md** - Guia de instalação
-- **02-configuracao-inicial.md** - Configuração inicial
-- **04-tratamento-erros.md** - Tratamento de erros
-- **05-features-avancadas.md** - Features avançadas (Redis, RedLock, Mapping, etc.)
-- **06-decoradores.md** - Decoradores customizados
-- **07-guia-bun.md** - Guia do Bun
-- **08-prisma-client.md** - Prisma Client customizado
-- **EXAMPLE.md** - Exemplo prático completo com CRUD
-
-## 🔍 Verificando a Integração
-
-### Output Channel
-
-Para ver os logs do MCP Server:
-
-1. Abra o Output Panel (`Ctrl+Shift+U`)
-2. Selecione **"Koala Nest Documentation"**
-3. Verifique se há mensagens de ativação
-
-### GitHub Copilot
-
-Quando você faz uma pergunta ao Copilot sobre Koala Nest:
-
-1. O MCP Server é consultado automaticamente
-2. A resposta incluirá informações da documentação oficial
-3. Você receberá exemplos de código atualizados
-
-## 🛠️ Desenvolvimento Local
-
-### Estrutura do Projeto
-
-```
-koala-nest/
-├── apps/
-│   ├── mcp-server/           # MCP Server (Node.js)
-│   │   ├── server.ts         # Servidor MCP principal
-│   │   └── tsconfig.json
-│   └── mcp-vscode-extension/ # Extensão VS Code
-│       ├── src/
-│       │   └── extension.ts  # Código da extensão
-│       ├── package.json
-│       └── tsconfig.json
-└── docs/                     # Documentação servida pelo MCP
-```
-
-### Build e Teste Local
+Teste manualmente:
 
 ```bash
-# Build do MCP Server
-bun run build:mcp
+# Executar o servidor diretamente
+bunx @koalarx/mcp-server
 
-# Build da extensão
-bun run build:mcp-extension
-
-# Build completo (server + extension)
-bun run build:mcp-all
-
-# Empacotar extensão
-bun run package:vscode-extension
+# Você deverá ver:
+# Koala Nest MCP Server running on stdio
+# 📚 README carregado de: ...
+# 📂 Encontrados 12 arquivos em: ...
+# ✅ 12 recursos de documentação carregados
 ```
 
-### Debug no VS Code
+---
 
-1. Abra o projeto no VS Code
-2. Vá até o painel de Debug (`Ctrl+Shift+D`)
-3. Selecione **"Extension (MCP Docs)"**
-4. Pressione `F5`
+## 🆚 Comparação: NPM vs Extensão VS Code
 
-Isso abrirá uma nova janela do VS Code com a extensão em modo de desenvolvimento.
+| Característica | Via NPM (`bunx`) | Via Extensão VS Code |
+|---------------|------------------|----------------------|
+| Instalação | Configurar mcp.json | 1 clique no marketplace |
+| Atualizações | Automáticas (sempre latest) | Manuais ou via extensão |
+| Compatibilidade | Qualquer cliente MCP | Apenas VS Code |
+| Configuração | Arquivo JSON | Interface gráfica |
+| Manutenção | Zero | Baixa |
+| Versionamento | Pode fixar versões | Versão da extensão |
+| **Recomendação** | ✅ **Recomendado** | Alternativa válida |
 
-### Testar o MCP Server Diretamente
+---
 
-```bash
-# Executar o servidor MCP standalone
-bun run start:mcp
+## 🛠️ Opções Avançadas
+
+### Fixar Versão Específica
+
+Se precisar de uma versão específica do servidor:
+
+```json
+{
+  "mcpServers": {
+    "koala-nest-docs": {
+      "command": "bunx",
+      "args": ["@koalarx/mcp-server@1.0.10"]
+    }
+  }
+}
 ```
 
-## 📊 Recursos do MCP Server
+### Usar Node em Vez de Bunx
 
-O servidor MCP expõe os seguintes recursos:
+Se preferir usar Node diretamente:
 
-### Tools (Ferramentas)
+```json
+{
+  "mcpServers": {
+    "koala-nest-docs": {
+      "command": "npx",
+      "args": ["@koalarx/mcp-server"]
+    }
+  }
+}
+```
 
-- **`get_documentation`** - Recupera documentação específica
-  - Parâmetros: `topic` (string)
-  - Retorna: Conteúdo markdown do documento
-
-- **`search_documentation`** - Busca na documentação
-  - Parâmetros: `query` (string)
-  - Retorna: Resultados relevantes
-
-- **`list_topics`** - Lista todos os tópicos disponíveis
-  - Retorna: Array de tópicos da documentação
-
-### Resources (Recursos)
-
-Todos os arquivos markdown da pasta `/docs`:
-
-- `docs://00-cli-reference`
-- `docs://01-guia-instalacao`
-- `docs://02-configuracao-inicial`
-- `docs://04-tratamento-erros`
-- `docs://05-features-avancadas`
-- `docs://06-decoradores`
-- `docs://07-guia-bun`
-- `docs://08-prisma-client`
-- `docs://EXAMPLE`
-- `docs://README`
+---
 
 ## 🐛 Troubleshooting
 
-### Método 1: Problemas com Extensão
+### Servidor não inicia
 
-**Extensão não está ativa:**
-1. Verifique se está instalada: `code --list-extensions | grep koala`
-2. Reinstale: `code --install-extension koalarx.koala-nest-mcp-docs --force`
-3. Recarregue: `Ctrl+Shift+P` → "Developer: Reload Window"
-4. Verifique o Output Channel: `Ctrl+Shift+U` → "Koala Nest Documentation"
+1. **Verifique se bunx está instalado**:
+   ```bash
+   bunx --version
+   ```
 
-**MCP Server não responde:**
-1. Verifique erros no Output Channel
-2. Reinstale a extensão
-3. Verifique se `dist/server.js` existe na pasta da extensão
+2. **Teste o servidor manualmente**:
+   ```bash
+   bunx @koalarx/mcp-server
+   ```
 
-### Método 2: Problemas com mcp.json
+3. **Verifique os logs** no Output panel do VS Code (MCP Servers)
 
-**Arquivo não é detectado:**
-1. Verifique se o arquivo está em `.vscode/mcp.json` (não `vscode/mcp.json`)
-2. Confirme que o caminho para `server.js` está correto
-3. Verifique se `@koalarx/nest` está instalado: `ls node_modules/@koalarx/nest/mcp-server/`
-4. Tente usar caminho absoluto ao invés de `${workspaceFolder}`
-5. Verifique erros no Output Panel: `Ctrl+Shift+U` → selecione "MCP"
-6. Reinicie completamente o VS Code (feche e abra)
+### Documentação não aparece
 
-**Exemplo de debug:**
+1. **Reinicie o cliente MCP** (VS Code, Claude Desktop, etc.)
+2. **Verifique a sintaxe** do arquivo `mcp.json`
+3. **Confirme o caminho** do arquivo mcp.json (raiz do projeto ou `.vscode/`)
+
+### Erros de permissão
+
 ```bash
-# Verificar se o arquivo existe
-ls -la .vscode/mcp.json
-
-# Verificar se o server existe
-ls -la node_modules/@koalarx/nest/mcp-server/server.js
-
-# Testar o server manualmente
-node node_modules/@koalarx/nest/mcp-server/server.js
+# Dar permissões ao bunx
+chmod +x $(which bunx)
 ```
-
-### Qual método usar?
-
-| Critério | Extensão | mcp.json |
-|----------|----------|----------|
-| **Facilidade** | ⭐⭐⭐⭐⭐ (1 clique) | ⭐⭐⭐ (requer configuração) |
-| **Atualizações** | ⭐⭐⭐⭐⭐ (automáticas) | ⭐⭐ (manual) |
-| **Controle** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ (controle total) |
-| **Multi-projeto** | ⭐⭐⭐⭐⭐ (funciona em todos) | ⭐⭐⭐ (por projeto) |
-| **Customização** | ⭐⭐ | ⭐⭐⭐⭐⭐ (totalmente customizável) |
-
-**Recomendação:**
-- 👉 **Use Extensão** para uso geral e simplicidade
-- 👉 **Use mcp.json** para controle fino ou testes de desenvolvimento
-
-### Erro ao instalar VSIX
-
-**Problema:** `Error: ENOENT: no such file or directory`
-
-**Solução:**
-```bash
-# Rebuild completo
-bun run build:mcp-all
-bun run package:vscode-extension
-
-# Instale novamente
-code --install-extension apps/mcp-vscode-extension/*.vsix --force
-```
-
-### GitHub Copilot não está integrado
-
-**Problema:** O Copilot não consulta o MCP
-
-**Solução:**
-1. Certifique-se de ter o GitHub Copilot instalado e ativo
-2. Verifique se você tem uma assinatura válida do Copilot
-3. Reinicie o VS Code
-4. A integração MCP requer VS Code versão 1.90.0 ou superior
-
-## 📝 Contribuindo
-
-Para contribuir com a extensão:
-
-1. Fork o repositório
-2. Crie uma branch para sua feature
-3. Faça suas alterações
-4. Teste localmente com `F5`
-5. Crie um Pull Request
-
-### Adicionando Nova Documentação
-
-Para adicionar novos documentos ao MCP:
-
-1. Crie o arquivo markdown em `/docs`
-2. O MCP Server automaticamente o detectará
-3. Rebuild o projeto: `bun run build:mcp-all`
-4. Teste com o Copilot
-
-## 🔗 Links Úteis
-
-- [Repositório GitHub](https://github.com/igordrangel/koala-nest)
-- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [GitHub Copilot](https://github.com/features/copilot)
-
-## 📄 Licença
-
-Esta extensão é parte do projeto Koala Nest e usa a mesma licença do projeto principal.
 
 ---
 
-**💡 Dica:** Use o MCP para acelerar seu desenvolvimento! O Copilot terá acesso a toda a documentação oficial do Koala Nest, fornecendo respostas mais precisas e exemplos atualizados.
+## 📖 Recursos Adicionais
+
+- **Documentação Completa**: [docs/](https://github.com/igordrangel/koala-nest/tree/main/docs)
+- **Exemplos**: [docs/EXAMPLE.md](https://github.com/igordrangel/koala-nest/blob/main/docs/EXAMPLE.md)
+- **CLI Reference**: [docs/00-cli-reference.md](https://github.com/igordrangel/koala-nest/blob/main/docs/00-cli-reference.md)
+- **Repositório**: [github.com/igordrangel/koala-nest](https://github.com/igordrangel/koala-nest)
+
+---
+
+## 🤝 Contribuindo
+
+Encontrou um problema ou tem uma sugestão? Abra uma issue no [repositório do GitHub](https://github.com/igordrangel/koala-nest/issues).
+
+---
+
+## 📄 Licença
+
+MIT License - veja [LICENSE](https://github.com/igordrangel/koala-nest/blob/main/LICENSE) para detalhes.

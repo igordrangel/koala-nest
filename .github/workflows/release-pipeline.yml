@@ -242,14 +242,12 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCODE_MARKETPLACE_TOKEN }}
 
-  # Job 4: Criar Release do MCP Server (roda em paralelo após version)
-  release-mcp:
-    name: "Release MCP Server"
+  # Job 4: Publicar MCP Server no NPM (roda em paralelo após version)
+  publish-mcp:
+    name: "Publish MCP Server to NPM"
     runs-on: ubuntu-latest
     needs: version
     if: needs.version.outputs.has_changes == 'true' && needs.version.outputs.has_mcp_server == 'true'
-    permissions:
-      contents: write
     steps:
       - name: 🚚 Checkout (após version)
         uses: actions/checkout@v3
@@ -272,60 +270,21 @@ jobs:
         run: |
           VERSION=$(cat apps/mcp-server/package.json | grep '"version"' | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=mcp-server@$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Version: $VERSION"
 
-      - name: 📦 Package MCP Server
+      - name: 📤 Publish to NPM
         run: |
           cd apps/mcp-server
-          mkdir -p release-package
-          cp -r dist/* release-package/
-          cp package.json release-package/
-          cp README.md release-package/
-          cp ../../LICENSE release-package/
-          cd release-package
-          tar -czf ../koala-nest-mcp-server-${{ steps.version.outputs.version }}.tar.gz .
-          cd ..
-          rm -rf release-package
-
-      - name: 🔍 Check if release exists
-        id: check_release
-        run: |
-          if gh release view ${{ steps.version.outputs.tag }} &>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️ Release already exists"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "✅ Release does not exist yet"
-          fi
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          npm publish --access public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🚀 Create GitHub Release
-        if: steps.check_release.outputs.exists == 'false'
-        run: |
-          gh release create ${{ steps.version.outputs.tag }} \
-            apps/mcp-server/koala-nest-mcp-server-${{ steps.version.outputs.version }}.tar.gz \
-            --title "MCP Server v${{ steps.version.outputs.version }}" \
-            --notes "Release of Koala Nest MCP Server version ${{ steps.version.outputs.version }}" \
-            --target main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 📤 Upload to existing release
-        if: steps.check_release.outputs.exists == 'true'
-        run: |
-          gh release upload ${{ steps.version.outputs.tag }} \
-            apps/mcp-server/koala-nest-mcp-server-${{ steps.version.outputs.version }}.tar.gz \
-            --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # Job 5: Sync para develop (roda após todos os outros)
   sync-develop:
     name: "Sync to Develop Branch"
     runs-on: ubuntu-latest
-    needs: [version, publish-npm, publish-vscode, release-mcp]
+    needs: [version, publish-npm, publish-vscode, publish-mcp]
     if: always() && needs.version.outputs.has_changes == 'true'
     permissions:
       contents: write

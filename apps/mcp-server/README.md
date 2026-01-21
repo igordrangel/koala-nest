@@ -1,45 +1,82 @@
 # Koala Nest MCP Server
 
-Este é o servidor Model Context Protocol (MCP) que expõe a documentação do Koala Nest para assistentes de IA.
+Servidor Model Context Protocol (MCP) que expõe a documentação completa do Koala Nest para assistentes de IA como GitHub Copilot, Claude Desktop, e outros clientes MCP compatíveis.
 
-## Uso via Arquivo de Configuração
+## 🚀 Instalação
 
-Se você instalou `@koalarx/nest` no seu projeto, pode usar o MCP server sem instalar a extensão VS Code.
+### Via Koala CLI (Recomendado)
 
-### 1. Criar arquivo `.vscode/mcp.json`
+```bash
+npx @koalarx/nest-cli mcp:install
+```
 
-Copie o arquivo `mcp.json.example` ou crie manualmente:
+Este comando irá configurar automaticamente o arquivo `mcp.json` no seu projeto com a configuração correta.
+
+### Configuração Manual
+
+Se preferir configurar manualmente, crie ou edite o arquivo `mcp.json` (ou `.vscode/mcp.json`) no seu projeto:
 
 ```json
 {
   "mcpServers": {
     "koala-nest-docs": {
-      "command": "node",
-      "args": [
-        "${workspaceFolder}/node_modules/@koalarx/nest/mcp-server/server.js"
-      ],
-      "env": {}
+      "command": "bunx",
+      "args": ["@koalarx/mcp-server"]
     }
   }
 }
 ```
 
-### 2. Reiniciar VS Code
+> **Nota:** O servidor será instalado automaticamente via NPM quando você iniciar seu cliente MCP.
 
-O VS Code detectará automaticamente o arquivo e iniciará o MCP server.
+## 📚 O que está incluído
 
-### 3. Usar com Copilot
+O MCP Server expõe toda a documentação oficial do Koala Nest:
 
-Agora o GitHub Copilot terá acesso à documentação oficial do Koala Nest!
+- ✅ Guia de Instalação
+- ✅ Configuração Inicial
+- ✅ Tratamento de Erros
+- ✅ Features Avançadas
+- ✅ Decoradores
+- ✅ Guia do Bun
+- ✅ Prisma Client
+- ✅ Exemplos práticos
+- ✅ CLI Integration
 
-## Uso via Extensão VS Code
+## 🔧 Como funciona
 
-Para uma experiência mais simples, instale a extensão oficial:
+1. Seu cliente MCP (VS Code, Claude Desktop, etc.) lê o arquivo `mcp.json`
+2. Quando necessário, executa `bunx @koalarx/mcp-server`
+3. O NPM baixa e instala o servidor automaticamente
+4. O servidor inicia e expõe a documentação via protocolo MCP
+5. Assistentes de IA podem consultar a documentação em tempo real
 
-**[📦 Instalar Extensão](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
+## 🆚 Opções de Uso
 
-## Documentação Completa
+### Opção 1: Via NPM (Atual)
+```json
+{
+  "command": "bunx",
+  "args": ["@koalarx/mcp-server"]
+}
+```
+**Vantagens:** Sempre atualizado, sem instalação local, gerenciado pelo NPM
 
-Veja a documentação completa em:
-- [Guia MCP](../../docs/09-mcp-vscode-extension.md)
-- [Repositório GitHub](https://github.com/igordrangel/koala-nest)
+### Opção 2: Via Extensão VS Code
+Instale a extensão oficial que gerencia tudo automaticamente:
+
+**[📦 Koala Nest MCP Docs](https://marketplace.visualstudio.com/items?itemName=koalarx.koala-nest-mcp-docs)**
+
+## 📖 Documentação
+
+Para mais detalhes sobre MCP e integração, consulte:
+- [Documentação Completa](https://github.com/igordrangel/koala-nest/tree/main/docs)
+- [Guia de Integração CLI](https://github.com/igordrangel/koala-nest/blob/main/docs/10-cli-integration.md)
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Veja nosso [repositório no GitHub](https://github.com/igordrangel/koala-nest).
+
+## 📄 Licença
+
+MIT License - veja LICENSE para detalhes.

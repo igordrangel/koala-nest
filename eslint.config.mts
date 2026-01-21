@@ -19,7 +19,7 @@ export default [
   ...tseslint.configs.recommended,
   prettierConfig,
   {
-    files: ['src/**/*.ts', 'scripts/*.mjs'],
+    files: ['apps/**/*.ts', 'scripts/*.mjs'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
