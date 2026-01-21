@@ -72,7 +72,7 @@ export default defineConfig({
         items: [
           { text: 'Guia Bun', link: '/guia-bun' },
           { text: 'Prisma Client', link: '/prisma-client' },
-          { text: 'MCP VS Code Extension', link: '/mcp-vscode-extension' },
+          { text: 'MCP', link: '/mcp-vscode-extension' },
         ],
       },
       {
