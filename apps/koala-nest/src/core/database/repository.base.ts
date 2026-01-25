@@ -41,17 +41,11 @@ export abstract class RepositoryBase<
   private readonly _include?: RepositoryInclude<TEntity>
   private readonly _includeFindMany?: RepositoryInclude<TEntity>
 
-  constructor({
-    context,
-    modelName,
-    include,
-    includeFindMany,
-  }: RepositoryInitProps<TEntity, TContext>) {
+  constructor({ context, modelName }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
-    this._include = include
-    this._includeFindMany =
-      includeFindMany ?? this.getSelectRootPrismaSchema(new modelName())
+    this._include = this.autogenerateIncludeSchema()
+    this._includeFindMany = this.autogenerateIncludeSchema(true)
   }
 
   private getConnectPrismaSchemaForRelation(
@@ -65,6 +59,46 @@ export abstract class RepositoryBase<
         [propIdName]: (data ?? entity)[propIdName],
       },
     }
+  }
+
+  private autogenerateIncludeSchema(
+    forList = false,
+    relation?: Type<EntityBase<TEntity>>,
+  ) {
+    const includeSchema = {}
+    const entity = relation ? new relation() : new this._modelName()
+
+    Object.keys(entity)
+      .filter((key) => !['_id', '_action'].includes(key))
+      .forEach((key) => {
+        let includes
+
+        if (entity[key] instanceof List) {
+          if (forList) {
+            includeSchema[key] = true
+          } else {
+            includes = this.autogenerateIncludeSchema(
+              forList,
+              entity[key].entityType! as any,
+            )
+          }
+        } else if (entity[key] instanceof EntityBase) {
+          includes = this.autogenerateIncludeSchema(
+            forList,
+            entity[key].constructor as any,
+          )
+        }
+
+        if (includes) {
+          if (includes === true || Object.keys(includes).length > 0) {
+            includeSchema[key] = includes
+          } else {
+            includeSchema[key] = true
+          }
+        }
+      })
+
+    return includeSchema
   }
 
   private getSelectRootPrismaSchema(entity: TEntity) {
@@ -155,7 +189,7 @@ export abstract class RepositoryBase<
           this.getPropNameFromEntitySource(
             new entityInstance(),
             entity.constructor as any,
-          ) ?? parentModelName
+          ) ?? toCamelCase(parentModelName)
 
         if (modelName) {
           list.toArray('removed').forEach((item) => {
