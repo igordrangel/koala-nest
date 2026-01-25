@@ -27,8 +27,7 @@ interface RepositoryInitProps<
   context: TContext
   modelName: Type<TEntity>
   transactionContext?: Type<TContext>
-  include?: RepositoryInclude<TEntity>
-  includeFindMany?: RepositoryInclude<TEntity>
+  deepIncludeLimit?: number
 }
 
 export abstract class RepositoryBase<
@@ -40,11 +39,26 @@ export abstract class RepositoryBase<
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
   private readonly _includeFindMany?: RepositoryInclude<TEntity>
+  private readonly deepIncludeLimit: number
+  private deepIncludeCount = 0
 
-  constructor({ context, modelName }: RepositoryInitProps<TEntity, TContext>) {
+  private resetDeepIncludeCount() {
+    this.deepIncludeCount = 0
+  }
+
+  constructor({
+    context,
+    modelName,
+    deepIncludeLimit,
+  }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
+    this.deepIncludeLimit = deepIncludeLimit ?? 5
+
     this._include = this.autogenerateIncludeSchema()
+
+    this.resetDeepIncludeCount()
+
     this._includeFindMany = this.autogenerateIncludeSchema(true)
   }
 
@@ -65,6 +79,10 @@ export abstract class RepositoryBase<
     forList = false,
     relation?: Type<EntityBase<TEntity>>,
   ) {
+    if (this.deepIncludeCount >= this.deepIncludeLimit) {
+      return true
+    }
+
     const includeSchema = {}
     const entity = relation ? new relation() : new this._modelName()
 
@@ -97,6 +115,8 @@ export abstract class RepositoryBase<
           }
         }
       })
+
+    this.deepIncludeCount += 1
 
     return includeSchema
   }
