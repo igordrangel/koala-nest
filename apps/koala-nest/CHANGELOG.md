@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.1
+
+### Patch Changes
+
+- 120f41a: Ajuste no gerador automático de include do prisma no RepositoryBase
+
 ## 3.1.0
 
 ### Minor Changes
