@@ -49,6 +49,26 @@ export abstract class RepositoryBase<
     this._include = include
   }
 
+  private getPropNameFromEntitySource(source: TEntity, entity: Type<TEntity>) {
+    return Object.keys(source).find((key) => {
+      const propDefinitions = AutoMappingList.getPropDefinitions(
+        source.constructor as any,
+        key,
+      )
+
+      if (propDefinitions) {
+        if (propDefinitions.type === entity.name) {
+          return true
+        } else if (source[key] instanceof List) {
+          const list = source[key] as List<any>
+          return list.entityType?.name === entity.name
+        }
+      }
+
+      return false
+    })
+  }
+
   private listRelationEntities(entity: TEntity) {
     const relationEntities: TEntity[] = []
 
@@ -58,16 +78,13 @@ export abstract class RepositoryBase<
 
         list.toArray('added').forEach((item) => {
           relationEntities.push(item)
-          relationEntities.push(...this.listRelationEntities(item))
         })
 
         list.toArray('updated').forEach((item) => {
           relationEntities.push(item)
-          relationEntities.push(...this.listRelationEntities(item))
         })
       } else if (entity[key] instanceof EntityBase) {
         relationEntities.push(entity[key] as any)
-        relationEntities.push(...this.listRelationEntities(entity[key] as any))
       }
     })
 
@@ -92,6 +109,11 @@ export abstract class RepositoryBase<
         const entityInstance = list.entityType! as any
         const modelName = entityInstance.name
         const parentModelName = entity.constructor.name
+        const parentPropName =
+          this.getPropNameFromEntitySource(
+            new entityInstance(),
+            entity.constructor as any,
+          ) ?? parentModelName
 
         if (modelName) {
           list.toArray('removed').forEach((item) => {
@@ -110,7 +132,7 @@ export abstract class RepositoryBase<
               schema: {
                 data: {
                   ...this.entityToPrisma(item),
-                  [toCamelCase(parentModelName)]: {
+                  [parentPropName]: {
                     connect: {
                       [this.getIdPropName(entity)]:
                         entity[this.getIdPropName(entity)],
@@ -172,7 +194,7 @@ export abstract class RepositoryBase<
               update: this.entityToPrisma(entity[key] as any),
             }
           }
-        } else {
+        } else if (!Array.isArray(entity[key])) {
           prismaSchema[key] = entity[key]
         }
       })
@@ -238,26 +260,6 @@ export abstract class RepositoryBase<
     return result
   }
 
-  private getPropNameFromEntitySource(source: TEntity, entity: Type<TEntity>) {
-    return Object.keys(source).find((key) => {
-      const propDefinitions = AutoMappingList.getPropDefinitions(
-        source.constructor as any,
-        key,
-      )
-
-      if (propDefinitions) {
-        if (propDefinitions.type === entity.name) {
-          return true
-        } else if (source[key] instanceof List) {
-          const list = source[key] as List<any>
-          return list.entityType?.name === entity.name
-        }
-      }
-
-      return false
-    })
-  }
-
   private persistRelations(
     transaction: PrismaTransactionalClient,
     entity: TEntity,
@@ -277,26 +279,23 @@ export abstract class RepositoryBase<
                   relationCreate.entityInstance,
                 )
 
-                if (!relationPropName) {
-                  throw new Error(
-                    `Propname not found for relation entity ${relation.constructor.name} on entity ${relationCreate.entityInstance.constructor.name}`,
+                if (relationPropName) {
+                  const relationEntity = this.createEntity(
+                    response,
+                    relationCreate.entityInstance as any,
                   )
+                  relationEntity._action = EntityActionType.create
+
+                  relation[relationPropName] = relationEntity
                 }
-
-                const relationEntity = this.createEntity(
-                  response,
-                  relationCreate.entityInstance as any,
-                )
-                relationEntity._action = EntityActionType.create
-
-                relation[relationPropName] = relationEntity
 
                 return transaction[toCamelCase(relation.constructor.name)]
                   .create({
                     data: this.entityToPrisma(relation),
+                    select: { [this.getIdPropName(relation)]: true },
                   })
                   .then((response: TEntity) => {
-                    entity[this.getIdPropName(relation)] =
+                    relation[this.getIdPropName(relation)] =
                       response[this.getIdPropName(relation)]
                     return this.persistRelations(transaction, relation)
                   })
