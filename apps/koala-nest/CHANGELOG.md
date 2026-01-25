@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.9
+
+### Patch Changes
+
+- bc57404: Ajuste saveChanges para relacionamentos profundos
+
 ## 3.0.8
 
 ### Patch Changes
