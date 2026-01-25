@@ -49,6 +49,43 @@ export abstract class RepositoryBase<
     this._include = include
   }
 
+  private getConnectPrismaSchemaForRelation(
+    entity: TEntity | Type<TEntity>,
+    data?: any,
+  ) {
+    const propIdName = this.getIdPropName(entity as any)
+
+    return {
+      connect: {
+        [propIdName]: (data ?? entity)[propIdName],
+      },
+    }
+  }
+
+  private getSelectRootPrismaSchema(entity: TEntity) {
+    const selectSchema = {}
+
+    Object.keys(entity)
+      .filter((key) => !['id', '_id', '_action'].includes(key))
+      .filter(
+        (key) =>
+          !(entity[key] instanceof Function || entity[key] instanceof List),
+      )
+      .forEach((key) => {
+        if (entity[key] instanceof EntityBase) {
+          selectSchema[key] = {
+            select: this.getSelectRootPrismaSchema(
+              entity[key] as unknown as TEntity,
+            ),
+          }
+        } else {
+          selectSchema[key] = true
+        }
+      })
+
+    return selectSchema
+  }
+
   private getPropNameFromEntitySource(source: TEntity, entity: Type<TEntity>) {
     return Object.keys(source).find((key) => {
       const propDefinitions = AutoMappingList.getPropDefinitions(
@@ -132,13 +169,10 @@ export abstract class RepositoryBase<
               schema: {
                 data: {
                   ...this.entityToPrisma(item),
-                  [parentPropName]: {
-                    connect: {
-                      [this.getIdPropName(entity)]:
-                        entity[this.getIdPropName(entity)],
-                    },
-                  },
+                  [parentPropName]:
+                    this.getConnectPrismaSchemaForRelation(entity),
                 },
+                select: this.getSelectRootPrismaSchema(item),
               },
               relations: this.listRelationEntities(item),
             })
@@ -151,6 +185,7 @@ export abstract class RepositoryBase<
               schema: {
                 where: { id: item._id },
                 data: this.entityToPrisma(item),
+                select: this.getSelectRootPrismaSchema(item),
               },
               relations: this.listRelationEntities(item),
             })
@@ -280,19 +315,17 @@ export abstract class RepositoryBase<
                 )
 
                 if (relationPropName) {
-                  const relationEntity = this.createEntity(
-                    response,
-                    relationCreate.entityInstance as any,
-                  )
-                  relationEntity._action = EntityActionType.create
-
-                  relation[relationPropName] = relationEntity
+                  relation[relationPropName] =
+                    this.getConnectPrismaSchemaForRelation(
+                      relationCreate.entityInstance as any,
+                      response,
+                    )
                 }
 
                 return transaction[toCamelCase(relation.constructor.name)]
                   .create({
                     data: this.entityToPrisma(relation),
-                    select: { [this.getIdPropName(relation)]: true },
+                    select: this.getSelectRootPrismaSchema(relation),
                   })
                   .then((response: TEntity) => {
                     relation[this.getIdPropName(relation)] =
