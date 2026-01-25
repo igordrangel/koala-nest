@@ -28,6 +28,7 @@ interface RepositoryInitProps<
   modelName: Type<TEntity>
   transactionContext?: Type<TContext>
   include?: RepositoryInclude<TEntity>
+  includeFindMany?: RepositoryInclude<TEntity>
 }
 
 export abstract class RepositoryBase<
@@ -38,15 +39,19 @@ export abstract class RepositoryBase<
   protected _context: TContext
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
+  private readonly _includeFindMany?: RepositoryInclude<TEntity>
 
   constructor({
     context,
     modelName,
     include,
+    includeFindMany,
   }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
     this._include = include
+    this._includeFindMany =
+      includeFindMany ?? this.getSelectRootPrismaSchema(new modelName())
   }
 
   private getConnectPrismaSchemaForRelation(
@@ -66,7 +71,7 @@ export abstract class RepositoryBase<
     const selectSchema = {}
 
     Object.keys(entity)
-      .filter((key) => !['id', '_id', '_action'].includes(key))
+      .filter((key) => !['_id', '_action'].includes(key))
       .filter(
         (key) =>
           !(entity[key] instanceof Function || entity[key] instanceof List),
@@ -237,9 +242,27 @@ export abstract class RepositoryBase<
     return prismaSchema
   }
 
+  private getInclude(include?: RepositoryInclude<TEntity>) {
+    include = include ?? this._include ?? {}
+
+    const result = {}
+
+    Object.keys(include).forEach((key) => {
+      if (typeof include[key] === 'boolean') {
+        result[key] = include[key]
+      } else {
+        result[key] = {
+          include: this.getInclude(include[key]),
+        }
+      }
+    })
+
+    return result
+  }
+
   private findManySchema<T>(where: T, pagination?: PaginationDto) {
     return {
-      include: this.getInclude(),
+      include: this.getInclude(this._includeFindMany),
       where,
       orderBy: pagination?.generateOrderBy(),
       skip: pagination?.skip(),
@@ -277,24 +300,6 @@ export abstract class RepositoryBase<
     )
   }
 
-  private getInclude(include?: RepositoryInclude<TEntity>) {
-    include = include ?? this._include ?? {}
-
-    const result = {}
-
-    Object.keys(include).forEach((key) => {
-      if (typeof include[key] === 'boolean') {
-        result[key] = include[key]
-      } else {
-        result[key] = {
-          include: this.getInclude(include[key]),
-        }
-      }
-    })
-
-    return result
-  }
-
   private persistRelations(
     transaction: PrismaTransactionalClient,
     entity: TEntity,
@@ -314,7 +319,10 @@ export abstract class RepositoryBase<
                   relationCreate.entityInstance,
                 )
 
-                if (relationPropName) {
+                if (
+                  relationPropName &&
+                  !(relation[relationPropName] instanceof List)
+                ) {
                   relation[relationPropName] =
                     this.getConnectPrismaSchemaForRelation(
                       relationCreate.entityInstance as any,
