@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.10
+
+### Patch Changes
+
+- 4bdf56c: Ajuste SaveChanges de dependências profundas
+
 ## 3.0.9
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.31
+
+### Patch Changes
+
+- 4bdf56c: Ajuste SaveChanges de dependências profundas
+
 ## 3.0.30
 
 ### Patch Changes
