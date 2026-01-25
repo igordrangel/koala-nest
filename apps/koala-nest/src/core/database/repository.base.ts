@@ -100,11 +100,19 @@ export abstract class RepositoryBase<
               entity[key].entityType! as any,
             )
           }
-        } else if (entity[key] instanceof EntityBase) {
-          includes = this.autogenerateIncludeSchema(
-            forList,
-            entity[key].constructor as any,
+        } else {
+          const propDefinitions = AutoMappingList.getPropDefinitions(
+            entity.constructor as any,
+            key,
           )
+
+          if (propDefinitions) {
+            const source = AutoMappingList.getSourceByName(propDefinitions.type)
+
+            if (source?.prototype instanceof EntityBase) {
+              includes = this.autogenerateIncludeSchema(forList, source)
+            }
+          }
         }
 
         if (includes) {
