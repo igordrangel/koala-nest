@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.0
+
+### Minor Changes
+
+- 0edec4f: Removida a necessidade de passar o include no constructor do repository, agora ele é gerado automaticamente
+
 ## 3.0.11
 
 ### Patch Changes

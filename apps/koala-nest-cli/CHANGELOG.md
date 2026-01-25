@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.33
+
+### Patch Changes
+
+- 0edec4f: Removida a necessidade de passar o include no constructor do repository, agora ele é gerado automaticamente
+
 ## 3.0.32
 
 ### Patch Changes
