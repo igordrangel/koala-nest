@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.0.11
+
+### Patch Changes
+
+- 2989056: Ajuste SaveChanges de relacionamentos profundos e otimização nas buscar de lista
+
 ## 3.0.10
 
 ### Patch Changes

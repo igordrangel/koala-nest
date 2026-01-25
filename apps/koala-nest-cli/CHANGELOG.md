@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.32
+
+### Patch Changes
+
+- 2989056: Ajuste SaveChanges de relacionamentos profundos e otimização nas buscar de lista
+
 ## 3.0.31
 
 ### Patch Changes
