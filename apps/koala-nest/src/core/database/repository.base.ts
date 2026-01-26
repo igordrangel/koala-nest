@@ -40,12 +40,6 @@ export abstract class RepositoryBase<
   private readonly _modelName: Type<TEntity>
   private readonly _include?: RepositoryInclude<TEntity>
   private readonly _includeFindMany?: RepositoryInclude<TEntity>
-  private readonly deepIncludeLimit: number
-  private deepIncludeCount = 0
-
-  private resetDeepIncludeCount() {
-    this.deepIncludeCount = 0
-  }
 
   constructor({
     context,
@@ -54,14 +48,11 @@ export abstract class RepositoryBase<
   }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
-    this.deepIncludeLimit = deepIncludeLimit ?? 5
 
     this._include = generateIncludeSchema({
       deepLimit: deepIncludeLimit || 5,
       entity: this._modelName,
     })
-
-    this.resetDeepIncludeCount()
 
     this._includeFindMany = generateIncludeSchema({
       forList: true,
@@ -127,7 +118,7 @@ export abstract class RepositoryBase<
     })
   }
 
-  private listRelationEntities(entity: TEntity) {
+  private listRelationEntities(entity: TEntity, fromList = false) {
     const relationEntities: TEntity[] = []
 
     Object.keys(entity).forEach((key) => {
@@ -141,7 +132,7 @@ export abstract class RepositoryBase<
         list.toArray('updated').forEach((item) => {
           relationEntities.push(item)
         })
-      } else if (entity[key] instanceof EntityBase) {
+      } else if (entity[key] instanceof EntityBase && !fromList) {
         relationEntities.push(entity[key] as any)
       }
     })
@@ -195,7 +186,7 @@ export abstract class RepositoryBase<
                 },
                 select: this.getSelectRootPrismaSchema(item),
               },
-              relations: this.listRelationEntities(item),
+              relations: this.listRelationEntities(item, true),
             })
           })
 
@@ -208,7 +199,7 @@ export abstract class RepositoryBase<
                 data: this.entityToPrisma(item),
                 select: this.getSelectRootPrismaSchema(item),
               },
-              relations: this.listRelationEntities(item),
+              relations: this.listRelationEntities(item, true),
             })
           })
         }
