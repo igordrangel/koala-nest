@@ -65,7 +65,7 @@ export abstract class RepositoryBase<
 
     this._includeFindMany = generateIncludeSchema({
       forList: true,
-      deepLimit: deepIncludeLimit || 1,
+      deepLimit: 3,
       entity: this._modelName,
     })
   }
