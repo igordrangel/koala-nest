@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.38
+
+### Patch Changes
+
+- bbef04f: Ajuste saveChanges
+
 ## 3.0.37
 
 ### Patch Changes

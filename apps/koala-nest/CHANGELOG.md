@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.5
+
+### Patch Changes
+
+- bbef04f: Ajuste saveChanges
+
 ## 3.1.4
 
 ### Patch Changes
