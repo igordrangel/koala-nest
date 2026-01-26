@@ -20,9 +20,9 @@ export type EntityProps<T extends IComparable<T>> = Overwrite<
   { id?: T extends { id: infer U } ? U : never }
 >
 
-export abstract class EntityBase<T extends IComparable<T>>
-  implements IComparable<T>
-{
+export abstract class EntityBase<
+  T extends IComparable<T>,
+> implements IComparable<T> {
   _id: IComparableId
   _action: EntityActionType = EntityActionType.create
 
@@ -66,10 +66,21 @@ export abstract class EntityBase<T extends IComparable<T>>
           (props[key] instanceof Array || Array.isArray(props[key]))
         ) {
           this[key] = new KlArray(props[key])
-        } else if (propDefinitions?.type === 'KlDate' && props[key] instanceof Date) {
+        } else if (
+          propDefinitions?.type === 'KlDate' &&
+          props[key] instanceof Date
+        ) {
           this[key] = new KlDate(props[key])
-        } else if (propDefinitions?.type === 'KlTime' && props[key] instanceof Date) {
-          this[key] = new KlTime(props[key].getHours(), props[key].getMinutes(), props[key].getSeconds(), props[key].getMilliseconds())
+        } else if (
+          propDefinitions?.type === 'KlTime' &&
+          props[key] instanceof Date
+        ) {
+          this[key] = new KlTime(
+            props[key].getHours(),
+            props[key].getMinutes(),
+            props[key].getSeconds(),
+            props[key].getMilliseconds(),
+          )
         } else if (EntityOnPropKey) {
           if (props[key]) {
             const entity = new EntityOnPropKey()

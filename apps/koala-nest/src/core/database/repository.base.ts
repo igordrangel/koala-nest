@@ -3,11 +3,12 @@ import { Type } from '@nestjs/common'
 import { ListResponse } from '..'
 import { PaginationDto } from '../dtos/pagination.dto'
 import { KoalaGlobalVars } from '../koala-global-vars'
+import { AutoMappingList } from '../mapping/auto-mapping-list'
+import { generateIncludeSchema } from '../utils/generate-prisma-include-schema'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { EntityActionType, EntityBase } from './entity.base'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
-import { AutoMappingList } from '../mapping/auto-mapping-list'
 
 type RepositoryInclude<TEntity> = Omit<
   {
@@ -55,11 +56,18 @@ export abstract class RepositoryBase<
     this._modelName = modelName
     this.deepIncludeLimit = deepIncludeLimit ?? 5
 
-    this._include = this.autogenerateIncludeSchema()
+    this._include = generateIncludeSchema({
+      deepLimit: deepIncludeLimit || 5,
+      entity: this._modelName,
+    })
 
     this.resetDeepIncludeCount()
 
-    this._includeFindMany = this.autogenerateIncludeSchema(true)
+    this._includeFindMany = generateIncludeSchema({
+      forList: true,
+      deepLimit: deepIncludeLimit || 1,
+      entity: this._modelName,
+    })
   }
 
   private getConnectPrismaSchemaForRelation(
@@ -73,60 +81,6 @@ export abstract class RepositoryBase<
         [propIdName]: (data ?? entity)[propIdName],
       },
     }
-  }
-
-  private autogenerateIncludeSchema(
-    forList = false,
-    relation?: Type<EntityBase<TEntity>>,
-  ) {
-    if (this.deepIncludeCount >= this.deepIncludeLimit) {
-      return true
-    }
-
-    const includeSchema = {}
-    const entity = relation ? new relation() : new this._modelName()
-
-    Object.keys(entity)
-      .filter((key) => !['_id', '_action'].includes(key))
-      .forEach((key) => {
-        let includes
-
-        if (entity[key] instanceof List) {
-          if (forList) {
-            includeSchema[key] = true
-          } else {
-            includes = this.autogenerateIncludeSchema(
-              forList,
-              entity[key].entityType! as any,
-            )
-          }
-        } else {
-          const propDefinitions = AutoMappingList.getPropDefinitions(
-            entity.constructor as any,
-            key,
-          )
-
-          if (propDefinitions) {
-            const source = AutoMappingList.getSourceByName(propDefinitions.type)
-
-            if (source?.prototype instanceof EntityBase) {
-              includes = this.autogenerateIncludeSchema(forList, source)
-            }
-          }
-        }
-
-        if (includes) {
-          if (includes === true || Object.keys(includes).length > 0) {
-            includeSchema[key] = includes
-          } else {
-            includeSchema[key] = true
-          }
-        }
-      })
-
-    this.deepIncludeCount += 1
-
-    return includeSchema
   }
 
   private getSelectRootPrismaSchema(entity: TEntity) {
