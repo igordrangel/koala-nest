@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.35
+
+### Patch Changes
+
+- 4be2d3f: Ajuste geração automática de include do Prisma
+
 ## 3.0.34
 
 ### Patch Changes
