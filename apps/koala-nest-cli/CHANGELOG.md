@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.37
+
+### Patch Changes
+
+- 9327b27: Corrigido um bug que duplicava entidades em relacionamentos de N:N
+
 ## 3.0.36
 
 ### Patch Changes
