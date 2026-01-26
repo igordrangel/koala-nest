@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.3
+
+### Patch Changes
+
+- 8ab1cb3: Ajuste deepinclude para listas
+
 ## 3.1.2
 
 ### Patch Changes

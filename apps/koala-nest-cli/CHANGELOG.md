@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.36
+
+### Patch Changes
+
+- 8ab1cb3: Ajuste deepinclude para listas
+
 ## 3.0.35
 
 ### Patch Changes
