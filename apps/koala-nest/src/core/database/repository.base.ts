@@ -237,9 +237,9 @@ export abstract class RepositoryBase<
               }
             }
           } else {
-            prismaSchema[key] = {
-              update: this.entityToPrisma(entity[key] as any),
-            }
+            prismaSchema[key] = this.getConnectPrismaSchemaForRelation(
+              entity[key] as any,
+            )
           }
         } else if (!Array.isArray(entity[key])) {
           prismaSchema[key] = entity[key]
