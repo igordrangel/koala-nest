@@ -354,7 +354,9 @@ export abstract class RepositoryBase<
       ...relationUpdates.map((relation) =>
         transaction[relation.modelName].update(relation.schema),
       ),
-      ...relationDeletes.map((relation) => this.removeMany(relation.schema)),
+      ...relationDeletes.map((relation) =>
+        transaction[relation.modelName].deleteMany({ where: relation.schema }),
+      ),
     ])
   }
 
