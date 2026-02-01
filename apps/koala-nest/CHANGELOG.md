@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.7
+
+### Patch Changes
+
+- 345add6: ajuste removeMany de dependências
+
 ## 3.1.6
 
 ### Patch Changes
