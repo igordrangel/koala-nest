@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.39
+
+### Patch Changes
+
+- 5380446: ajuste removeMany de dependências
+
 ## 3.0.38
 
 ### Patch Changes
