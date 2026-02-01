@@ -169,7 +169,7 @@ export abstract class RepositoryBase<
             relationDeletes.push({
               modelName: toCamelCase(modelName),
               entityInstance,
-              schema: { where: { id: item._id } },
+              schema: { id: item._id },
               relations: [],
             })
           })
