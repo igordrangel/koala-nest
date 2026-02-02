@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.13
+
+### Patch Changes
+
+- 75ef31b: Ajustes de acesso ao servidor MCP e documentação
+
 ## 1.0.12
 
 ### Patch Changes

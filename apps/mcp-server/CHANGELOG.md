@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.16
+
+### Patch Changes
+
+- 75ef31b: Ajustes de acesso ao servidor MCP e documentação
+
 ## 1.0.15
 
 ### Patch Changes
