@@ -434,33 +434,25 @@ export abstract class RepositoryBase<
   }
 
   protected async findFirst<T>(where: T): Promise<TEntity | null> {
-    return (this.context() as any)
-      .findFirst({
-        include: this.getInclude(),
-        where,
-      })
-      .then((response: TEntity) => {
-        if (response) {
-          return this.createEntity(response)
-        }
+    const entity = await (this.context() as any).findFirst({
+      where,
+    })
 
-        return null
-      })
+    if (!entity) return null
+
+    const enrichedEntity = await this.enrichEntityWithRelations(entity)
+    return this.createEntity(enrichedEntity)
   }
 
   protected async findUnique<T>(where: T): Promise<TEntity | null> {
-    return (this.context() as any)
-      .findUnique({
-        include: this.getInclude(),
-        where,
-      })
-      .then((response: TEntity) => {
-        if (response) {
-          return this.createEntity(response)
-        }
+    const entity = await (this.context() as any).findUnique({
+      where,
+    })
 
-        return null
-      })
+    if (!entity) return null
+
+    const enrichedEntity = await this.enrichEntityWithRelations(entity)
+    return this.createEntity(enrichedEntity)
   }
 
   protected async findMany<T>(
