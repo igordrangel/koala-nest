@@ -1,6 +1,8 @@
 # 🤖 MCP Server - Model Context Protocol
 
-O **Koala Nest MCP Server** expõe toda a documentação do framework para assistentes de IA através do Model Context Protocol (MCP), permitindo que ferramentas como GitHub Copilot, Claude Desktop e outros clientes MCP acessem a documentação em tempo real.
+O **Koala Nest MCP Server** expõe toda a documentação do framework para assistentes de IA através do Model Context Protocol (MCP), permitindo que ferramentas como **Cline**, **Claude Desktop**, **Continue.dev** e outros clientes MCP acessem a documentação em tempo real.
+
+> ⚠️ **Nota Importante**: O GitHub Copilot Chat atualmente **não suporta** chamadas automáticas de ferramentas MCP. Use **Cline** (recomendado), **Claude Desktop** ou **Continue.dev** para melhor experiência.
 
 ## 📦 Formas de Uso
 
@@ -115,16 +117,49 @@ O MCP Server expõe todos os guias oficiais do Koala Nest:
 
 ## 🎯 Uso com Diferentes Clientes
 
-### GitHub Copilot (VS Code)
+### ⚠️ Limitação Importante: GitHub Copilot Chat
+
+**O GitHub Copilot Chat no VS Code atualmente NÃO chama ferramentas MCP automaticamente.** O protocolo MCP está implementado, mas o Copilot não tem integração para usar as ferramentas expostas.
+
+**Alternativas para usar MCP:**
+
+1. **Cline** (Recomendado) - Extensão VS Code com suporte completo a MCP
+   - [Instalar Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev)
+   - Usa Claude Sonnet com integração MCP
+   - Acesso automático às ferramentas do servidor
+
+2. **Continue.dev** - Extensão VS Code com suporte a MCP
+   - [Instalar Continue](https://marketplace.visualstudio.com/items?itemName=Continue.continue)
+   - Suporta vários modelos (Claude, GPT, etc.)
+   - Integração com ferramentas MCP
+
+3. **Claude Desktop** - Aplicativo standalone da Anthropic
+   - Suporte nativo completo a MCP
+   - Melhor integração com servidores MCP
+
+### GitHub Copilot (Uso Limitado)
+
+Embora o GitHub Copilot não chame ferramentas MCP automaticamente, você pode:
 
 1. Configure o `mcp.json` como mostrado acima
-2. Reinicie o VS Code
-3. O Copilot terá acesso automático à documentação do Koala Nest
+2. Use o servidor MCP com **Cline** ou **Continue.dev** na mesma workspace
+3. O servidor estará disponível para assistentes que suportam MCP
 
-### Claude Desktop
+### Claude Desktop (Suporte Completo)
 
-Adicione ao arquivo de configuração do Claude (`~/Library/Application Support/Claude/claude_desktop_config.json` no macOS):
+Adicione ao arquivo de configuração do Claude:
 
+**macOS/Linux:**
+```bash
+# Editar: ~/Library/Application Support/Claude/claude_desktop_config.json
+```
+
+**Windows:**
+```bash
+# Editar: %APPDATA%\Claude\claude_desktop_config.json
+```
+
+**Conteúdo:**
 ```json
 {
   "mcpServers": {
@@ -136,9 +171,44 @@ Adicione ao arquivo de configuração do Claude (`~/Library/Application Support/
 }
 ```
 
+### Cline (VS Code - Suporte Completo)
+
+1. Instale a extensão [Cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev)
+2. Configure `mcp.json` na raiz do workspace
+3. Cline detectará e usará automaticamente o servidor MCP
+4. As ferramentas aparecerão disponíveis no chat
+
+### Continue.dev (VS Code - Suporte Completo)
+
+1. Instale a extensão [Continue](https://marketplace.visualstudio.com/items?itemName=Continue.continue)
+2. Configure `mcp.json` na raiz do workspace
+3. Continue detectará e usará automaticamente o servidor MCP
+
 ### Outros Clientes MCP
 
 Qualquer cliente que suporte o Model Context Protocol pode usar o servidor. Consulte a documentação específica do seu cliente para configurar servidores MCP customizados.
+
+---
+
+## 🎯 Cliente Recomendado
+
+Para melhor experiência com o Koala Nest MCP Server, recomendamos:
+
+**🥇 Cline** - Melhor integração MCP no VS Code
+- ✅ Suporte completo a ferramentas MCP
+- ✅ Usa Claude Sonnet (melhor modelo para código)
+- ✅ Interface integrada no VS Code
+- ✅ Acesso automático à documentação
+
+**🥈 Claude Desktop** - Melhor para uso standalone
+- ✅ Suporte nativo completo a MCP
+- ✅ Aplicativo dedicado
+- ✅ Sem limitações de integração
+
+**🥉 Continue.dev** - Alternativa versátil
+- ✅ Múltiplos modelos suportados
+- ✅ Suporte a MCP
+- ✅ Open source
 
 ---
 
