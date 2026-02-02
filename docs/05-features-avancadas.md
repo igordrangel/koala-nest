@@ -200,7 +200,7 @@ export class PersonEventJob extends EventJob<Person> {
 
 ```typescript
 // src/host/app.module.ts
-import { PersonEventJob } from '@/application/person/events/person-event-job'
+import { InactivePersonHandler } from '@/application/person/events/inactive-person/inactive-person-handler'
 import { env } from '@/core/env'
 import { KoalaNestModule } from '@koalarx/nest/core/koala-nest.module'
 import { Module } from '@nestjs/common'
@@ -211,7 +211,7 @@ import { PersonModule } from './controllers/person/person.module'
     KoalaNestModule.register({
       env,
       controllers: [PersonModule],
-      eventJobs: [PersonEventJob],  // Registrar a EventJob
+      eventJobs: [InactivePersonHandler],  // Registrar o Handler
     }),
   ],
 })
@@ -222,7 +222,7 @@ export class AppModule {}
 
 ```typescript
 // src/main.ts
-import { PersonEventJob } from '@/application/person/events/person-event-job'
+import { InactivePersonHandler } from '@/application/person/events/inactive-person/inactive-person-handler'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -234,7 +234,7 @@ async function bootstrap() {
       title: 'API de Demonstração',
       version: '1.0',
     })
-    .addEventJob(PersonEventJob)  // Registrar a EventJob
+    .addEventJob(InactivePersonHandler)  // Registrar o Handler
     .setAppName('example')
     .setInternalUserName('integration.bot')
     .setDbTransactionContext(DbTransactionContext)
@@ -246,11 +246,11 @@ bootstrap()
 ```
 
 **Resumo de Registro:**
-- Event Handlers são agrupados em uma **EventJob** e registrados em duas etapas:
-  1. **AppModule**: Via `eventJobs: [PersonEventJob]` em `KoalaNestModule.register()`
-  2. **main.ts**: Via `.addEventJob(PersonEventJob)` em `KoalaApp`
+- Event Handlers são registrados em duas etapas:
+  1. **AppModule**: Via `eventJobs: [InactivePersonHandler]` em `KoalaNestModule.register()`
+  2. **main.ts**: Via `.addEventJob(InactivePersonHandler)` em `KoalaApp`
 - A EventJob agrupa handlers por entidade (PersonEventJob agrupa InactivePersonHandler)
-- Múltiplos handlers podem estar na mesma EventJob
+- Múltiplos handlers da mesma entidade podem ser registrados separadamente
 
 ## Fluxo de Eventos
 

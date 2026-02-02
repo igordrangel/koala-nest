@@ -167,6 +167,31 @@ class KoalaMCPServer {
             properties: {},
           },
         },
+        {
+          name: 'read_koala_nest_doc',
+          description:
+            'Lê o conteúdo completo de um arquivo de documentação do Koala Nest',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              filename: {
+                type: 'string',
+                description:
+                  'Nome do arquivo MD na documentação (ex: README.md, 01-guia-instalacao.md)',
+              },
+            },
+            required: ['filename'],
+          },
+        },
+        {
+          name: 'list_koala_nest_docs',
+          description:
+            'Lista todos os arquivos de documentação disponíveis com suas descrições',
+          inputSchema: {
+            type: 'object',
+            properties: {},
+          },
+        },
       ]
 
       return { tools }
@@ -186,6 +211,14 @@ class KoalaMCPServer {
           return await this.searchDocumentation(query)
         } else if (name === 'list_documentation_files') {
           return this.listDocumentationFiles()
+        } else if (name === 'read_koala_nest_doc') {
+          const filename = (args as { filename: string })?.filename
+          if (!filename) {
+            throw new Error('filename parameter is required')
+          }
+          return this.readDocumentation(filename)
+        } else if (name === 'list_koala_nest_docs') {
+          return this.listKoalaNestDocs()
         }
 
         throw new Error(`Unknown tool: ${name}`)
@@ -312,6 +345,107 @@ class KoalaMCPServer {
         },
       ],
     }
+  }
+
+  private readDocumentation(filename: string): {
+    content: Array<{ type: string; text: string }>
+  } {
+    let filePath: string
+
+    // Normalizar nome do arquivo
+    const normalizedFilename = filename.endsWith('.md')
+      ? filename
+      : `${filename}.md`
+
+    // Verificar se é o README
+    if (
+      normalizedFilename.toLowerCase() === 'readme.md' ||
+      filename.toUpperCase() === 'README'
+    ) {
+      filePath = README_PATH
+    } else {
+      filePath = path.join(DOCS_DIR, normalizedFilename)
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `❌ Arquivo não encontrado: ${filename}\n\nArquivos disponíveis:\n${this.listAvailableFiles()}`,
+          },
+        ],
+      }
+    }
+
+    const content = fs.readFileSync(filePath, 'utf-8')
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `# 📄 ${normalizedFilename}\n\n${content}`,
+        },
+      ],
+    }
+  }
+
+  private listKoalaNestDocs(): {
+    content: Array<{ type: string; text: string }>
+  } {
+    const files: Array<{ name: string; description: string }> = []
+
+    if (fs.existsSync(README_PATH)) {
+      files.push({
+        name: 'README.md',
+        description: 'Documentação principal do projeto Koala Nest',
+      })
+    }
+
+    if (fs.existsSync(DOCS_DIR)) {
+      const docFiles = fs.readdirSync(DOCS_DIR).filter((f) => f.endsWith('.md'))
+      docFiles.forEach((file) => {
+        const resource = Array.from(this.documentationResources.values()).find(
+          (r) => r.name === file,
+        )
+        files.push({
+          name: file,
+          description: resource?.description || `Documentação: ${file}`,
+        })
+      })
+    }
+
+    const text =
+      files.length > 0
+        ? '# 📚 Documentação Disponível do Koala Nest\n\n' +
+          files
+            .map((f, i) => `${i + 1}. **${f.name}**\n   ${f.description}`)
+            .join('\n\n')
+        : 'Nenhum arquivo de documentação encontrado'
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text,
+        },
+      ],
+    }
+  }
+
+  private listAvailableFiles(): string {
+    const files: string[] = []
+
+    if (fs.existsSync(README_PATH)) {
+      files.push('README.md')
+    }
+
+    if (fs.existsSync(DOCS_DIR)) {
+      const docFiles = fs.readdirSync(DOCS_DIR)
+      files.push(...docFiles.filter((f) => f.endsWith('.md')))
+    }
+
+    return files.map((f, i) => `  ${i + 1}. ${f}`).join('\n')
   }
 
   async start(): Promise<void> {
