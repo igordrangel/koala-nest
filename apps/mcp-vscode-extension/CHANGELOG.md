@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.15
+
+### Patch Changes
+
+- bb3d518: Melhorias de performance nas buscas do RepositoryBase
+
 ## 1.0.14
 
 ### Patch Changes

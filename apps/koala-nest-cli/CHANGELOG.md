@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.41
+
+### Patch Changes
+
+- bb3d518: Melhorias de performance nas buscas do RepositoryBase
+
 ## 3.0.40
 
 ### Patch Changes

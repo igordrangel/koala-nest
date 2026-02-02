@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.8
+
+### Patch Changes
+
+- bb3d518: Melhorias de performance nas buscas do RepositoryBase
+
 ## 3.1.7
 
 ### Patch Changes

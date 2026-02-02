@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.18
+
+### Patch Changes
+
+- bb3d518: Melhorias de performance nas buscas do RepositoryBase
+
 ## 1.0.17
 
 ### Patch Changes
