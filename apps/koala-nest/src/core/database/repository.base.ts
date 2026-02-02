@@ -28,7 +28,6 @@ interface RepositoryInitProps<
   context: TContext
   modelName: Type<TEntity>
   transactionContext?: Type<TContext>
-  deepIncludeLimit?: number
 }
 
 export abstract class RepositoryBase<
@@ -38,25 +37,18 @@ export abstract class RepositoryBase<
 > {
   protected _context: TContext
   private readonly _modelName: Type<TEntity>
-  private readonly _include?: RepositoryInclude<TEntity>
   private readonly _includeFindMany?: RepositoryInclude<TEntity>
 
   constructor({
     context,
     modelName,
-    deepIncludeLimit,
   }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
 
-    this._include = generateIncludeSchema({
-      deepLimit: deepIncludeLimit || 5,
-      entity: this._modelName,
-    })
-
     this._includeFindMany = generateIncludeSchema({
       forList: true,
-      deepLimit: 3,
+      deepLimit: 1,
       entity: this._modelName,
     })
   }
@@ -250,7 +242,7 @@ export abstract class RepositoryBase<
   }
 
   private getInclude(include?: RepositoryInclude<TEntity>) {
-    include = include ?? this._include ?? {}
+    include = include ?? {}
 
     const result = {}
 
@@ -305,6 +297,61 @@ export abstract class RepositoryBase<
         entity ? entity.constructor.prototype : this._modelName.prototype,
       ) ?? 'id'
     )
+  }
+
+  private async enrichEntityWithRelations(entity: any): Promise<any> {
+    const relationQueries: Promise<any>[] = []
+    const relationKeys: string[] = []
+
+    Object.keys(entity).forEach((key) => {
+      const propDef = AutoMappingList.getPropDefinitions(
+        this._modelName.prototype,
+        key,
+      )
+
+      if (propDef) {
+        relationKeys.push(key)
+        relationQueries.push(
+          this.loadRelationForEntity(entity[this.getIdPropName()], key),
+        )
+      }
+    })
+
+    if (relationQueries.length > 0) {
+      const results = await Promise.all(relationQueries)
+
+      relationKeys.forEach((key, index) => {
+        entity[key] = results[index]
+      })
+    }
+
+    return entity
+  }
+
+  private async loadRelationForEntity(
+    entityId: any,
+    relationName: string,
+  ): Promise<any> {
+    const result = await (this.context() as any).findUnique({
+      where: { [this.getIdPropName()]: entityId },
+      include: {
+        [relationName]: true,
+      },
+    })
+
+    const relationData = result?.[relationName]
+
+    if (relationData) {
+      if (Array.isArray(relationData)) {
+        return Promise.all(
+          relationData.map((item) => this.enrichEntityWithRelations(item)),
+        )
+      } else {
+        return this.enrichEntityWithRelations(relationData)
+      }
+    }
+
+    return relationData
   }
 
   private persistRelations(
@@ -376,18 +423,14 @@ export abstract class RepositoryBase<
   }
 
   protected async findById(id: IComparableId): Promise<TEntity | null> {
-    return (this.context() as any)
-      .findFirst({
-        include: this.getInclude(),
-        where: { [this.getIdPropName()]: id },
-      })
-      .then((response: TEntity) => {
-        if (response) {
-          return this.createEntity(response)
-        }
+    const entity = await (this.context() as any).findFirst({
+      where: { [this.getIdPropName()]: id },
+    })
 
-        return null
-      })
+    if (!entity) return null
+
+    const enrichedEntity = await this.enrichEntityWithRelations(entity)
+    return this.createEntity(enrichedEntity)
   }
 
   protected async findFirst<T>(where: T): Promise<TEntity | null> {

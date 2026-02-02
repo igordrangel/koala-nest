@@ -777,7 +777,91 @@ await new KoalaApp(app)
 
 As transações são executadas **automaticamente** pelo `RepositoryBase` quando você usa métodos como `saveChanges()`, `remove()` e outras operações de escrita. Múltiplas operações dentro do repositório são garantidas como atômicas.
 
-## 9. Logging Customizado
+## 9. Carregamento Eficiente de Relacionamentos (Lazy Loading)
+
+Quando suas entidades possuem muitos relacionamentos aninhados, a biblioteca carrega automaticamente apenas os dados necessários de forma otimizada.
+
+### Como Funciona
+
+Ao buscar uma entidade com `findById()`, a biblioteca:
+
+1. **Busca a entidade raiz** (sem carregar relacionamentos)
+2. **Identifica automaticamente** quais propriedades são relacionamentos
+3. **Carrega os relacionamentos em paralelo** (múltiplas queries simultâneas)
+4. **Carrega recursivamente** os relacionamentos das relações (profundidade ilimitada)
+
+Isso resulta em um carregamento muito mais rápido comparado ao carregar tudo de uma vez com JOINs profundos.
+
+### Exemplo Prático
+
+```typescript
+// Sua entidade tem muitos relacionamentos
+export class User {
+  id: number
+  name: string
+  orders: Order[]        // Uma relação
+  profile: Profile       // Outra relação
+  permissions: Permission[]
+  // ... etc
+}
+
+// Você simplesmente chama findById, sem configurar nada
+const user = await userRepository.findById(123)
+
+// A biblioteca automaticamente:
+// 1. Busca o User com id=123
+// 2. Carrega orders, profile, permissions em paralelo
+// 3. Se Order tiver relacionamentos, carrega recursivamente
+// 4. Entrega tudo ao AutoMapping já populado
+```
+
+### Vantagens
+
+✅ **Performance melhorada** - Queries paralelas são mais rápidas que JOINs profundos  
+✅ **Sem limite de profundidade** - Funciona com relacionamentos circulares e muito profundos  
+✅ **Transparente** - Você não precisa fazer nada, acontece automaticamente  
+✅ **AutoMapping funciona perfeitamente** - Todos os dados já estão carregados sincronamente
+
+### Configuração do Repositório
+
+O comportamento é padrão e otimizado automaticamente:
+- **`findMany()`**: traz apenas o **1º nível** de relacionamentos (otimizado para listas)
+- **`findById()`**: traz **todas as relações recursivamente** (sem limite de profundidade)
+
+```typescript
+@Injectable()
+export class PersonRepository
+  extends RepositoryBase<Person>
+  implements IPersonRepository
+{
+  constructor(
+    @Inject(PRISMA_TOKEN)
+    prisma: DbTransactionContext,
+  ) {
+    super({
+      modelName: Person,
+      context: prisma,
+    })
+  }
+
+  // findMany: apenas 1º nível de relacionamentos
+  // Ex: Se Person tem Orders e Orders tem Items
+  //     Traz Person + Orders (mas NOT Items)
+  async readMany(query: PaginationDto): Promise<ListResponse<Person>> {
+    return this.findManyAndCount(query)
+  }
+
+  // findById: carrega tudo recursivamente, sem limite
+  // Ex: Traz Person + Orders + Items + tudo mais
+  async read(id: number): Promise<Person | null> {
+    return this.findById(id)
+  }
+}
+```
+
+Essa estratégia garante que listas sejam rápidas e responsivas, enquanto buscas por ID trazem todos os dados necessários para trabalhar com a entidade completa.
+
+## 10. Logging Customizado
 
 A biblioteca possui um sistema de logging abstrato que por padrão escreve erros no console, mas permite customização para enviar logs para diferentes destinos (Azure Storage, CloudWatch, Sentry, etc).
 
@@ -922,7 +1006,7 @@ export class MyHandler {
 }
 ```
 
-## 10. Variáveis Globais
+## 11. Variáveis Globais
 
 Acesse informações globais configuradas na inicialização da aplicação.
 
@@ -946,7 +1030,7 @@ console.log(KoalaGlobalVars.appName)          // 'example'
 console.log(KoalaGlobalVars.internalUserName) // 'integration.bot'
 ```
 
-## 11. Ngrok (Exposição Pública em Desenvolvimento)
+## 12. Ngrok (Exposição Pública em Desenvolvimento)
 
 Exponha sua aplicação local na internet para testes ou webhooks.
 
