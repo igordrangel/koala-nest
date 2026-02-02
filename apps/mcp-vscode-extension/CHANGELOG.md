@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.14
+
+### Patch Changes
+
+- 6a1795c: Ajustes documentação do MCP
+
 ## 1.0.13
 
 ### Patch Changes

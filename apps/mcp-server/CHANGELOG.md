@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.17
+
+### Patch Changes
+
+- 6a1795c: Ajustes documentação do MCP
+
 ## 1.0.16
 
 ### Patch Changes
