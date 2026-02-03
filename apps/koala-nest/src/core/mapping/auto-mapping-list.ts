@@ -83,6 +83,14 @@ export class AutoMappingList {
     }
   }
 
+  static getAllProps(source: Type<any>) {
+    this.initializeLists()
+    const mappedClass = this._mappedPropList!.find(
+      (mp) => mp.source.name === source.name,
+    )
+    return mappedClass?.props.toArray() ?? []
+  }
+
   static getTargets(source: Type<any>) {
     this.initializeLists()
     return this._mappingProfileList!.filter(

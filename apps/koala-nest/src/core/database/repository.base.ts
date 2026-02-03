@@ -39,10 +39,7 @@ export abstract class RepositoryBase<
   private readonly _modelName: Type<TEntity>
   private readonly _includeFindMany?: RepositoryInclude<TEntity>
 
-  constructor({
-    context,
-    modelName,
-  }: RepositoryInitProps<TEntity, TContext>) {
+  constructor({ context, modelName }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
 
@@ -303,16 +300,22 @@ export abstract class RepositoryBase<
     const relationQueries: Promise<any>[] = []
     const relationKeys: string[] = []
 
-    Object.keys(entity).forEach((key) => {
+    // Iterar todas as propriedades mapeadas na classe via AutoMappingList
+    // Isso garante que todas as propriedades com @AutoMap() sejam detectadas,
+    // mesmo que não estejam no resultado da query do Prisma (que retorna apenas IDs de FK)
+    const allProps = AutoMappingList.getAllProps(this._modelName)
+
+    allProps.forEach((prop) => {
+      const propName = prop.name
       const propDef = AutoMappingList.getPropDefinitions(
         this._modelName.prototype,
-        key,
+        propName,
       )
 
       if (propDef) {
-        relationKeys.push(key)
+        relationKeys.push(propName)
         relationQueries.push(
-          this.loadRelationForEntity(entity[this.getIdPropName()], key),
+          this.loadRelationForEntity(entity[this.getIdPropName()], propName),
         )
       }
     })
