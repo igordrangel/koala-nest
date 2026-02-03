@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.43
+
+### Patch Changes
+
+- a2eb71f: Ajustes na busca por lazyLoading no RepositoryBase
+
 ## 3.0.42
 
 ### Patch Changes

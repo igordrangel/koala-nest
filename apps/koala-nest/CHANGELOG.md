@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.10
+
+### Patch Changes
+
+- a2eb71f: Ajustes na busca por lazyLoading no RepositoryBase
+
 ## 3.1.9
 
 ### Patch Changes
