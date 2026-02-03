@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.12
+
+### Patch Changes
+
+- 1723ebb: Ajustes LazyLoading de métodos find no RepositoryBase
+
 ## 3.1.11
 
 ### Patch Changes
