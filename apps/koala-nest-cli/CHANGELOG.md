@@ -1,5 +1,12 @@
 # @koalarx/nest-cli
 
+## 3.0.46
+
+### Patch Changes
+
+- 49d1aea: Ajuste LazyLoading de N:N
+- dff1496: Ajustes LazyLoading do RepositoryBase
+
 ## 3.0.45
 
 ### Patch Changes

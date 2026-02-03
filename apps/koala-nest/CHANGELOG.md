@@ -1,5 +1,12 @@
 # @koalarx/nest
 
+## 3.1.13
+
+### Patch Changes
+
+- 49d1aea: Ajuste LazyLoading de N:N
+- dff1496: Ajustes LazyLoading do RepositoryBase
+
 ## 3.1.12
 
 ### Patch Changes
