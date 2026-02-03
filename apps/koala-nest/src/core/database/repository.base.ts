@@ -50,7 +50,7 @@ export abstract class RepositoryBase<
     })
   }
 
-  private getIdPropName(entity?: TEntity) {
+  private getIdPropName(entity?: TEntity): string | string[] {
     return (
       Reflect.getMetadata(
         'entity:id',
@@ -59,17 +59,37 @@ export abstract class RepositoryBase<
     )
   }
 
+  private getWhereByIdSchema(entity: TEntity, value: any) {
+    const propIdName = this.getIdPropName(entity)
+
+    if (Array.isArray(propIdName)) {
+      const whereSchema = {}
+
+      propIdName.forEach((propName) => {
+        whereSchema[propName] = value[propName]
+      })
+
+      return whereSchema
+    }
+
+    return { [propIdName]: value[propIdName] }
+  }
+
   private getConnectPrismaSchemaForRelation(
     entity: TEntity | Type<TEntity>,
     data?: any,
   ) {
-    const propIdName = this.getIdPropName(entity as any)
-
     return {
-      connect: {
-        [propIdName]: (data ?? entity)[propIdName],
-      },
+      connect: this.getWhereByIdSchema(entity as any, data ?? entity),
     }
+  }
+
+  private checkIdHasValue(entity: TEntity, value: any) {
+    const result = this.getWhereByIdSchema(entity, value)
+
+    return Object.values(result).every(
+      (val) => val !== undefined && val !== null,
+    )
   }
 
   private getSelectRootPrismaSchema(entity: TEntity) {
@@ -112,18 +132,14 @@ export abstract class RepositoryBase<
 
       if (instance instanceof EntityBase) {
         selectSchema[prop.name] = {
-          select: {
-            [this.getIdPropName(entity[prop.name] as any)]: true,
-          },
+          select: this.getSelectRootPrismaSchema(instance as any),
         }
       } else if (instance instanceof List) {
         const list = new (entity as any)()[prop.name] as List<any>
         const entityInstance = list.entityType! as any
 
         selectSchema[prop.name] = {
-          select: {
-            [this.getIdPropName(entityInstance)]: true,
-          },
+          select: this.getSelectRootPrismaSchema(new entityInstance()),
         }
       } else {
         selectSchema[prop.name] = true
@@ -256,13 +272,13 @@ export abstract class RepositoryBase<
       .forEach((key) => {
         if (entity[key] instanceof EntityBase) {
           if (entity[key]._action === EntityActionType.create) {
-            if (entity[key][this.getIdPropName(entity)]) {
+            if (entity[key] && this.checkIdHasValue(entity, entity[key])) {
               prismaSchema[key] = {
                 connectOrCreate: {
-                  where: {
-                    [this.getIdPropName(entity)]:
-                      entity[key][this.getIdPropName(entity)],
-                  },
+                  where: this.getWhereByIdSchema(
+                    (entity[key] as any).constructor,
+                    entity[key],
+                  ),
                   create: this.entityToPrisma(entity[key] as any),
                 },
               }
@@ -381,14 +397,11 @@ export abstract class RepositoryBase<
         propDef?.type ?? '',
       )
 
-      if (relationEntity) {
+      if (relationEntity && data[propName]) {
         relationKeys.push(propName)
         relationQueries.push(
           this.loadRelationForEntity(
-            {
-              [this.getIdPropName(relationEntity as any)]:
-                data[propName][this.getIdPropName(relationEntity as any)],
-            },
+            this.getWhereByIdSchema(relationEntity as any, data[propName]),
             relationEntity as any,
           ),
         )
@@ -418,6 +431,10 @@ export abstract class RepositoryBase<
         transaction[relationCreate.modelName]
           .create(relationCreate.schema)
           .then((response) => {
+            if (relationCreate.relations.length === 0) {
+              return Promise.all([])
+            }
+
             return Promise.all(
               relationCreate.relations.map((relation) => {
                 const relationPropName = this.getPropNameFromEntitySource(
@@ -442,8 +459,16 @@ export abstract class RepositoryBase<
                     select: this.getSelectRootPrismaSchema(relation),
                   })
                   .then((response: TEntity) => {
-                    relation[this.getIdPropName(relation)] =
-                      response[this.getIdPropName(relation)]
+                    const idPropName = this.getIdPropName(relation)
+
+                    if (!Array.isArray(idPropName)) {
+                      relation[idPropName] = response[idPropName]
+                    } else {
+                      idPropName.forEach((propName) => {
+                        relation[propName] = response[propName]
+                      })
+                    }
+
                     return this.persistRelations(transaction, relation)
                   })
               }),
@@ -479,7 +504,9 @@ export abstract class RepositoryBase<
       select: this.getSelectWithRelationsId(
         this._modelName.prototype.constructor,
       ),
-      where: { [this.getIdPropName()]: id },
+      where: this.getWhereByIdSchema(this._modelName.prototype.constructor, {
+        id,
+      }),
     })
 
     if (!data) return null
@@ -568,7 +595,16 @@ export abstract class RepositoryBase<
             include: this.getInclude(),
           })
           .then((response: TEntity) => {
-            entity[this.getIdPropName()] = response[this.getIdPropName()]
+            const idPropName = this.getIdPropName(entity)
+
+            if (!Array.isArray(idPropName)) {
+              entity[idPropName] = response[idPropName]
+            } else {
+              idPropName.forEach((propName) => {
+                entity[propName] = response[propName]
+              })
+            }
+
             return this.persistRelations(client, entity).then(() => entity)
           }),
       )

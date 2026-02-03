@@ -7,8 +7,31 @@ type EntityProps<T> = Omit<
   '_id' | '_action'
 >
 
+export type CompositeId = readonly (string | number)[]
+
+export interface IdConfig<T extends EntityProps<any>> {
+  // ID simples
+  single?: keyof T
+  // ID composto (para relacionamentos n:n)
+  composite?: readonly (keyof T)[]
+  // Função customizada para gerar/resolver o ID
+  custom?: (props: T) => string | number | CompositeId
+}
+
+function normalizeIdConfig<T extends EntityProps<any>>(
+  id?: keyof T | IdConfig<T>,
+): IdConfig<T> | undefined {
+  if (!id) return undefined
+  if (typeof id === 'string' || typeof id === 'symbol') {
+    return { single: id }
+  }
+  return id as IdConfig<T>
+}
+
 export function Entity<T extends new (...args: any[]) => EntityBase<any>>(
-  id?: keyof EntityProps<InstanceType<T>>,
+  id?:
+    | keyof EntityProps<InstanceType<T>>
+    | IdConfig<EntityProps<InstanceType<T>>>,
 ) {
   return function (target: T) {
     class NewConstructor extends target {
@@ -32,7 +55,8 @@ export function Entity<T extends new (...args: any[]) => EntityBase<any>>(
       writable: false,
     })
 
-    Reflect.defineMetadata('entity:id', id, NewConstructor.prototype)
+    const idConfig = normalizeIdConfig(id)
+    Reflect.defineMetadata('entity:id', idConfig, NewConstructor.prototype)
 
     return NewConstructor
   }
