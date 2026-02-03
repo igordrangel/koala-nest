@@ -9,6 +9,7 @@ import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { EntityActionType, EntityBase } from './entity.base'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
+import { IdConfig } from './entity.decorator'
 
 type RepositoryInclude<TEntity> = Omit<
   {
@@ -51,12 +52,20 @@ export abstract class RepositoryBase<
   }
 
   private getIdPropName(entity?: TEntity): string | string[] {
-    return (
-      Reflect.getMetadata(
-        'entity:id',
-        entity ? entity.constructor.prototype : this._modelName.prototype,
-      ) ?? 'id'
-    )
+    const idConfig = Reflect.getMetadata(
+      'entity:id',
+      entity ? entity.constructor.prototype : this._modelName.prototype,
+    ) as IdConfig<TEntity>
+
+    if (idConfig) {
+      if (idConfig.single) {
+        return idConfig.single as string
+      } else if (idConfig.composite) {
+        return idConfig.composite as string[]
+      }
+    }
+
+    return 'id'
   }
 
   private getWhereByIdSchema(entity: TEntity, value: any) {
@@ -66,13 +75,16 @@ export abstract class RepositoryBase<
       const whereSchema = {}
 
       propIdName.forEach((propName) => {
-        whereSchema[propName] = value[propName]
+        whereSchema[propName] =
+          typeof value === 'object' ? value[propName] : value
       })
 
       return whereSchema
     }
 
-    return { [propIdName]: value[propIdName] }
+    return {
+      [propIdName]: typeof value === 'object' ? value[propIdName] : value,
+    }
   }
 
   private getConnectPrismaSchemaForRelation(
@@ -132,14 +144,14 @@ export abstract class RepositoryBase<
 
       if (instance instanceof EntityBase) {
         selectSchema[prop.name] = {
-          select: this.getSelectRootPrismaSchema(instance as any),
+          select: this.getWhereByIdSchema(instance as any, true),
         }
       } else if (instance instanceof List) {
         const list = new (entity as any)()[prop.name] as List<any>
         const entityInstance = list.entityType! as any
 
         selectSchema[prop.name] = {
-          select: this.getSelectRootPrismaSchema(new entityInstance()),
+          select: this.getWhereByIdSchema(new entityInstance(), true),
         }
       } else {
         selectSchema[prop.name] = true
@@ -349,22 +361,42 @@ export abstract class RepositoryBase<
     return client[toCamelCase(entity.constructor.name)].delete({ where })
   }
 
+  private getIdOnEntity(entity: TEntity, data: any): string {
+    const propIdName = this.getIdPropName(entity)
+
+    if (Array.isArray(propIdName)) {
+      const idValues: string[] = []
+
+      propIdName.forEach((propName) => {
+        idValues.push(data[propName])
+      })
+
+      return idValues.join('-')
+    }
+
+    return data[propIdName]
+  }
+
   private async loadRelationForEntity(
     where: Record<string, any>,
     entity: TEntity,
+    cache: Map<string, any>,
   ): Promise<any> {
     return this._context[toCamelCase(toCamelCase((entity as any).name))]
-      .findUnique({
+      .findFirst({
         select: this.getSelectWithRelationsId(entity),
         where,
       })
-      .then((data) => this.enrichEntityWithRelations(entity, data))
+      .then((data) => this.enrichEntityWithRelations(entity, data, cache))
   }
 
   private async enrichEntityWithRelations(
     entity: TEntity,
     data: any,
+    cache: Map<string, any> = new Map(),
   ): Promise<any> {
+    if (!data) return data
+
     const relationQueries: Promise<any>[] = []
     const relationKeys: string[] = []
 
@@ -386,7 +418,16 @@ export abstract class RepositoryBase<
         const items: Promise<any>[] = []
 
         data[propName].forEach((item) => {
-          items.push(this.loadRelationForEntity(item, entityInstance))
+          const cacheKey = `${entity.constructor.name}-${propName}-${this.getIdOnEntity(new entityInstance(), item)}`
+
+          if (cache.has(cacheKey)) {
+            items.push(Promise.resolve(cache.get(cacheKey)))
+            return
+          }
+
+          cache.set(cacheKey, item)
+
+          items.push(this.loadRelationForEntity(item, entityInstance, cache))
         })
 
         relationQueries.push(Promise.all(items))
@@ -398,11 +439,22 @@ export abstract class RepositoryBase<
       )
 
       if (relationEntity && data[propName]) {
+        const cacheKey = `${entity.constructor.name}-${propName}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
+
+        if (cache.has(cacheKey)) {
+          data[propName] = cache.get(cacheKey)
+          return
+        }
+
+        cache.set(cacheKey, data[propName])
+
         relationKeys.push(propName)
+
         relationQueries.push(
           this.loadRelationForEntity(
             this.getWhereByIdSchema(relationEntity as any, data[propName]),
             relationEntity as any,
+            cache,
           ),
         )
       }
@@ -513,7 +565,7 @@ export abstract class RepositoryBase<
 
     const enrichedEntity = await this.enrichEntityWithRelations(
       this._modelName.prototype.constructor,
-      data,
+      { ...data },
     )
     return this.createEntity(enrichedEntity)
   }
@@ -530,7 +582,7 @@ export abstract class RepositoryBase<
 
     const enrichedEntity = await this.enrichEntityWithRelations(
       this._modelName.prototype.constructor,
-      data,
+      { ...data },
     )
     return this.createEntity(enrichedEntity)
   }
@@ -547,7 +599,7 @@ export abstract class RepositoryBase<
 
     const enrichedEntity = await this.enrichEntityWithRelations(
       this._modelName.prototype.constructor,
-      data,
+      { ...data },
     )
     return this.createEntity(enrichedEntity)
   }
