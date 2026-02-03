@@ -308,11 +308,14 @@ export abstract class RepositoryBase<
     allProps.forEach((prop) => {
       const propName = prop.name
       const propDef = AutoMappingList.getPropDefinitions(
-        this._modelName.prototype,
+        this._modelName.prototype.constructor,
         propName,
       )
+      const relationEntity = AutoMappingList.getSourceByName(
+        propDef?.type ?? '',
+      )
 
-      if (propDef) {
+      if (relationEntity) {
         relationKeys.push(propName)
         relationQueries.push(
           this.loadRelationForEntity(entity[this.getIdPropName()], propName),
