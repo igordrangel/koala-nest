@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.42
+
+### Patch Changes
+
+- df61fa6: Ajustes RepositoryBase
+
 ## 3.0.41
 
 ### Patch Changes

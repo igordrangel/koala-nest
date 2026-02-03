@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.9
+
+### Patch Changes
+
+- df61fa6: Ajustes RepositoryBase
+
 ## 3.1.8
 
 ### Patch Changes
