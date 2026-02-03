@@ -50,6 +50,15 @@ export abstract class RepositoryBase<
     })
   }
 
+  private getIdPropName(entity?: TEntity) {
+    return (
+      Reflect.getMetadata(
+        'entity:id',
+        entity ? entity.constructor.prototype : this._modelName.prototype,
+      ) ?? 'id'
+    )
+  }
+
   private getConnectPrismaSchemaForRelation(
     entity: TEntity | Type<TEntity>,
     data?: any,
@@ -83,6 +92,43 @@ export abstract class RepositoryBase<
           selectSchema[key] = true
         }
       })
+
+    return selectSchema
+  }
+
+  private getSelectWithRelationsId(entity: TEntity) {
+    const selectSchema = {}
+
+    const entityProps = AutoMappingList.getAllProps(entity as any)
+
+    entityProps.forEach((prop) => {
+      let instance
+
+      try {
+        instance = new (prop.type())()
+      } catch {
+        instance = null
+      }
+
+      if (instance instanceof EntityBase) {
+        selectSchema[prop.name] = {
+          select: {
+            [this.getIdPropName(entity[prop.name] as any)]: true,
+          },
+        }
+      } else if (instance instanceof List) {
+        const list = new (entity as any)()[prop.name] as List<any>
+        const entityInstance = list.entityType! as any
+
+        selectSchema[prop.name] = {
+          select: {
+            [this.getIdPropName(entityInstance)]: true,
+          },
+        }
+      } else {
+        selectSchema[prop.name] = true
+      }
+    })
 
     return selectSchema
   }
@@ -287,30 +333,50 @@ export abstract class RepositoryBase<
     return client[toCamelCase(entity.constructor.name)].delete({ where })
   }
 
-  private getIdPropName(entity?: TEntity) {
-    return (
-      Reflect.getMetadata(
-        'entity:id',
-        entity ? entity.constructor.prototype : this._modelName.prototype,
-      ) ?? 'id'
-    )
+  private async loadRelationForEntity(
+    where: Record<string, any>,
+    entity: TEntity,
+  ): Promise<any> {
+    return this._context[toCamelCase(toCamelCase((entity as any).name))]
+      .findUnique({
+        select: this.getSelectWithRelationsId(entity),
+        where,
+      })
+      .then((data) => this.enrichEntityWithRelations(entity, data))
   }
 
-  private async enrichEntityWithRelations(entity: any): Promise<any> {
+  private async enrichEntityWithRelations(
+    entity: TEntity,
+    data: any,
+  ): Promise<any> {
     const relationQueries: Promise<any>[] = []
     const relationKeys: string[] = []
 
-    // Iterar todas as propriedades mapeadas na classe via AutoMappingList
-    // Isso garante que todas as propriedades com @AutoMap() sejam detectadas,
-    // mesmo que não estejam no resultado da query do Prisma (que retorna apenas IDs de FK)
-    const allProps = AutoMappingList.getAllProps(this._modelName)
+    const allProps = AutoMappingList.getAllProps(entity as any)
 
     allProps.forEach((prop) => {
       const propName = prop.name
       const propDef = AutoMappingList.getPropDefinitions(
-        this._modelName.prototype.constructor,
+        entity as any,
         propName,
       )
+
+      if (propDef?.type === List.name) {
+        const list = new (entity as any)()[prop.name] as List<any>
+        const entityInstance = list.entityType! as any
+
+        relationKeys.push(propName)
+
+        const items: Promise<any>[] = []
+
+        data[propName].forEach((item) => {
+          items.push(this.loadRelationForEntity(item, entityInstance))
+        })
+
+        relationQueries.push(Promise.all(items))
+        return
+      }
+
       const relationEntity = AutoMappingList.getSourceByName(
         propDef?.type ?? '',
       )
@@ -318,7 +384,13 @@ export abstract class RepositoryBase<
       if (relationEntity) {
         relationKeys.push(propName)
         relationQueries.push(
-          this.loadRelationForEntity(entity[this.getIdPropName()], propName),
+          this.loadRelationForEntity(
+            {
+              [this.getIdPropName(relationEntity as any)]:
+                data[propName][this.getIdPropName(relationEntity as any)],
+            },
+            relationEntity as any,
+          ),
         )
       }
     })
@@ -327,37 +399,11 @@ export abstract class RepositoryBase<
       const results = await Promise.all(relationQueries)
 
       relationKeys.forEach((key, index) => {
-        entity[key] = results[index]
+        data[key] = results[index]
       })
     }
 
-    return entity
-  }
-
-  private async loadRelationForEntity(
-    entityId: any,
-    relationName: string,
-  ): Promise<any> {
-    const result = await (this.context() as any).findUnique({
-      where: { [this.getIdPropName()]: entityId },
-      include: {
-        [relationName]: true,
-      },
-    })
-
-    const relationData = result?.[relationName]
-
-    if (relationData) {
-      if (Array.isArray(relationData)) {
-        return Promise.all(
-          relationData.map((item) => this.enrichEntityWithRelations(item)),
-        )
-      } else {
-        return this.enrichEntityWithRelations(relationData)
-      }
-    }
-
-    return relationData
+    return data
   }
 
   private persistRelations(
@@ -429,35 +475,53 @@ export abstract class RepositoryBase<
   }
 
   protected async findById(id: IComparableId): Promise<TEntity | null> {
-    const entity = await (this.context() as any).findFirst({
+    const data = await (this.context() as any).findFirst({
+      select: this.getSelectWithRelationsId(
+        this._modelName.prototype.constructor,
+      ),
       where: { [this.getIdPropName()]: id },
     })
 
-    if (!entity) return null
+    if (!data) return null
 
-    const enrichedEntity = await this.enrichEntityWithRelations(entity)
+    const enrichedEntity = await this.enrichEntityWithRelations(
+      this._modelName.prototype.constructor,
+      data,
+    )
     return this.createEntity(enrichedEntity)
   }
 
   protected async findFirst<T>(where: T): Promise<TEntity | null> {
-    const entity = await (this.context() as any).findFirst({
+    const data = await (this.context() as any).findFirst({
+      select: this.getSelectWithRelationsId(
+        this._modelName.prototype.constructor,
+      ),
       where,
     })
 
-    if (!entity) return null
+    if (!data) return null
 
-    const enrichedEntity = await this.enrichEntityWithRelations(entity)
+    const enrichedEntity = await this.enrichEntityWithRelations(
+      this._modelName.prototype.constructor,
+      data,
+    )
     return this.createEntity(enrichedEntity)
   }
 
   protected async findUnique<T>(where: T): Promise<TEntity | null> {
-    const entity = await (this.context() as any).findUnique({
+    const data = await (this.context() as any).findUnique({
+      select: this.getSelectWithRelationsId(
+        this._modelName.prototype.constructor,
+      ),
       where,
     })
 
-    if (!entity) return null
+    if (!data) return null
 
-    const enrichedEntity = await this.enrichEntityWithRelations(entity)
+    const enrichedEntity = await this.enrichEntityWithRelations(
+      this._modelName.prototype.constructor,
+      data,
+    )
     return this.createEntity(enrichedEntity)
   }
 
