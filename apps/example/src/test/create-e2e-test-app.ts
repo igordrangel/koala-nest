@@ -5,13 +5,10 @@ import { KoalaAppTest } from '@koalarx/nest/test/koala-app-test'
 import { Test } from '@nestjs/testing'
 import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
-import { Pool } from 'pg'
+import { pgClient } from './setup-e2e'
 
 export async function createE2ETestApp() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  })
-  const adapter = new PrismaPg(pool)
+  const adapter = new PrismaPg(pgClient.pool)
   setPrismaClientOptions({ adapter })
 
   return Test.createTestingModule({ imports: [AppModule] })

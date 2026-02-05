@@ -46,7 +46,7 @@ export abstract class RepositoryBase<
 
     this._includeFindMany = generateIncludeSchema({
       forList: true,
-      deepLimit: 1,
+      deepLimit: 2,
       entity: this._modelName,
     })
   }
@@ -264,6 +264,22 @@ export abstract class RepositoryBase<
               },
               relations: this.listRelationEntities(item, true),
             })
+          })
+        }
+      } else if (entity[key] instanceof EntityBase) {
+        const entityInstance = entity[key] as any
+        const modelName = (entity[key] as any).constructor.name
+
+        if (entity[key]._action === EntityActionType.update) {
+          relationUpdates.push({
+            modelName: toCamelCase(modelName),
+            entityInstance,
+            schema: {
+              where: { id: entityInstance._id },
+              data: this.entityToPrisma(entityInstance),
+              select: this.getSelectRootPrismaSchema(entityInstance),
+            },
+            relations: this.listRelationEntities(entityInstance),
           })
         }
       }

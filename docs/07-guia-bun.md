@@ -62,11 +62,11 @@ bun run test
 # Executar testes com watch
 bun run test:watch
 
-# Executar todos os testes (unit + e2e)
-bun run test:all
+# Executar testes com cobertura
+bun run test:cov
 
-# Executar testes e2e
-bun run test:e2e
+# Executar testes em modo debug
+bun run test:debug
 ```
 
 ### Prisma com Bun
@@ -149,11 +149,15 @@ A configuração principal está em `bunfig.toml`:
 minify = true
 
 [test]
-root = "."
+root = "apps"
+timeoutMs = 60000
+preload = ["apps/example/src/test/setup-e2e.ts"]
 
 [bun]
 autoinstall = true
 ```
+
+A configuração `preload` carrega o arquivo `setup-e2e.ts` antes de rodar todos os testes, o que permite compartilhar o banco de dados E2E entre os testes.
 
 ## Recursos Adicionais
 

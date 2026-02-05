@@ -1,7 +1,7 @@
 import { Type } from '@nestjs/common'
 import { EntityBase } from '../database/entity.base'
-import { List } from './list'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
+import { List } from './list'
 
 export interface GeneratePrismaIncludeSchemaOptions {
   entity: Type<EntityBase<any>>
@@ -21,52 +21,59 @@ export function generateIncludeSchema({
   }
 
   const includeSchema = {}
+  const props = AutoMappingList.getAllProps(entity)
   const entityInstance = new entity()
 
-  Object.keys(entityInstance)
-    .filter((key) => !['_id', '_action'].includes(key))
-    .forEach((key) => {
-      let includes
+  props.forEach((prop) => {
+    let instance
 
-      if (entityInstance[key] instanceof List) {
-        if (forList) {
-          includeSchema[key] = true
-        } else {
+    try {
+      instance = new (prop.type())()
+    } catch {
+      instance = null
+    }
+
+    let includes
+
+    if (instance instanceof List) {
+      if (forList) {
+        includeSchema[prop.name] = true
+      } else {
+        includes = generateIncludeSchema({
+          forList,
+          entity: instance.entityType! as any,
+          deepLimit,
+          deepIncludeCount: deepIncludeCount > 0 ? deepIncludeCount + 1 : 1,
+        })
+      }
+    } else {
+      const propDefinitions = AutoMappingList.getPropDefinitions(
+        entityInstance.constructor as any,
+        prop.name,
+      )
+
+      if (propDefinitions) {
+        const source = AutoMappingList.getSourceByName(propDefinitions.type)
+
+        if (source?.prototype instanceof EntityBase) {
           includes = generateIncludeSchema({
             forList,
-            entity: entityInstance[key].entityType! as any,
+            entity: source,
             deepLimit,
             deepIncludeCount: deepIncludeCount > 0 ? deepIncludeCount + 1 : 1,
           })
         }
+      }
+    }
+
+    if (includes) {
+      if (includes === true || Object.keys(includes).length > 0) {
+        includeSchema[prop.name] = includes
       } else {
-        const propDefinitions = AutoMappingList.getPropDefinitions(
-          entityInstance.constructor as any,
-          key,
-        )
-
-        if (propDefinitions) {
-          const source = AutoMappingList.getSourceByName(propDefinitions.type)
-
-          if (source?.prototype instanceof EntityBase) {
-            includes = generateIncludeSchema({
-              forList,
-              entity: source,
-              deepLimit,
-              deepIncludeCount: deepIncludeCount > 0 ? deepIncludeCount + 1 : 1,
-            })
-          }
-        }
+        includeSchema[prop.name] = true
       }
-
-      if (includes) {
-        if (includes === true || Object.keys(includes).length > 0) {
-          includeSchema[key] = includes
-        } else {
-          includeSchema[key] = true
-        }
-      }
-    })
+    }
+  })
 
   return includeSchema
 }

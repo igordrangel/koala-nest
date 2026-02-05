@@ -19,7 +19,7 @@ describe(`CRUD OF PERSON`, () => {
         name: 'John Doe',
         phones: [],
         address: {
-          address: 'Streat 1',
+          address: 'Street 1',
         },
       })
 
@@ -46,7 +46,7 @@ describe(`CRUD OF PERSON`, () => {
       phones: [],
       address: {
         id: expect.any(Number),
-        address: 'Streat 1',
+        address: 'Street 1',
       },
       active: true,
     })
@@ -66,7 +66,7 @@ describe(`CRUD OF PERSON`, () => {
           phones: [],
           address: {
             id: addressId,
-            address: 'Streat 1',
+            address: 'Street 1',
           },
           active: true,
         },
@@ -101,7 +101,7 @@ describe(`CRUD OF PERSON`, () => {
           phones: [],
           address: {
             id: addressId,
-            address: 'Streat 1',
+            address: 'Street 1',
           },
           active: true,
         },
@@ -118,7 +118,7 @@ describe(`CRUD OF PERSON`, () => {
         phones: [],
         address: {
           id: addressId,
-          address: 'Streat 2',
+          address: 'Street 2',
         },
         active: true,
       })
@@ -135,7 +135,7 @@ describe(`CRUD OF PERSON`, () => {
       phones: [],
       address: {
         id: addressId,
-        address: 'Streat 2',
+        address: 'Street 2',
       },
       active: true,
     })

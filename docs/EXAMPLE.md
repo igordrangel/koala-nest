@@ -1262,6 +1262,79 @@ describe('ReadPersonHandler', () => {
 
 #### Setup do App E2E
 
+> 💡 **Nota Importante**: Este exemplo usa **PostgreSQL**. Você pode usar qualquer banco de dados que o Prisma suporta (MySQL, SQLite, SQL Server, etc.). Basta estender a classe `E2EDatabaseClient` com a implementação específica do seu banco.
+
+[setup-e2e.ts](./test/setup-e2e.ts):
+
+Configura o banco de dados E2E e fornece um cliente compartilhado entre os testes. **Este exemplo é específico para PostgreSQL**:
+
+```typescript
+import { createE2EDatabase } from '@koalarx/nest/test/utils/create-e2e-database'
+import { E2EDatabaseClient } from '@koalarx/nest/test/utils/e2e-database-client'
+import { delay } from '@koalarx/utils'
+import { Pool } from 'pg'
+
+export let pgClient: E2EPostgresClient
+
+class E2EPostgresClient extends E2EDatabaseClient {
+  private baseUrl: URL
+  public pool: Pool
+
+  constructor(url: string, schemaName: string) {
+    super(url, schemaName)
+    this.baseUrl = new URL(this.url)
+    this.baseUrl.pathname = `/${this.schemaName}`
+    this.pool = this.createSession()
+  }
+
+  private createSession(idleTimeout?: number) {
+    return new Pool({
+      connectionString: this.baseUrl.toString(),
+      ...(idleTimeout ? { idleTimeoutMillis: idleTimeout } : {}),
+    })
+  }
+
+  async createDatabase(schemaName: string): Promise<void> {
+    this.baseUrl.pathname = `/postgres`
+    const pool = this.createSession()
+    await pool.query(`CREATE DATABASE "${schemaName}"`)
+    await pool.end()
+    this.baseUrl.pathname = `/${schemaName}`
+  }
+
+  async dropDatabase(): Promise<void> {
+    await this.pool.end()
+    await delay(1000)
+    this.baseUrl.pathname = '/postgres'
+    const pool = this.createSession(100)
+    await pool.query(`
+      SELECT pg_terminate_backend(pg_stat_activity.pid)
+      FROM pg_stat_activity
+      WHERE pg_stat_activity.datname = '${this.schemaName}'
+      AND pid <> pg_backend_pid()
+    `)
+    await delay(500)
+    await pool.query(`DROP DATABASE IF EXISTS "${this.schemaName}"`)
+    await pool.end()
+  }
+}
+
+beforeAll(async () => {
+  const { client } = await createE2EDatabase('bun', E2EPostgresClient)
+  pgClient = client
+}, 60000)
+
+afterAll(async () => {
+  await pgClient.dropDatabase()
+})
+```
+
+**Para outros bancos de dados**, você implementaria métodos similares adaptados ao seu banco:
+
+- **MySQL**: Usar `mysql2/promise` em vez de `pg`, comandos SQL como `CREATE DATABASE` são similares
+- **SQLite**: Usar `better-sqlite3` ou `sqlite3`, criar arquivos de banco em vez de schemas
+- **SQL Server**: Usar `tedious`, adaptar sintaxe SQL específica do SQL Server
+
 [create-e2e-test-app.ts](./test/create-e2e-test-app.ts):
 
 ```typescript
@@ -1272,13 +1345,10 @@ import { KoalaAppTest } from '@koalarx/nest/test/koala-app-test'
 import { Test } from '@nestjs/testing'
 import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
-import { Pool } from 'pg'
+import { pgClient } from './setup-e2e'
 
 export async function createE2ETestApp() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  })
-  const adapter = new PrismaPg(pool)
+  const adapter = new PrismaPg(pgClient.pool)
   setPrismaClientOptions({ adapter })
 
   return Test.createTestingModule({ imports: [AppModule] })
@@ -1294,9 +1364,14 @@ export async function createE2ETestApp() {
 }
 ```
 
+> **Adaptando para Outro Banco de Dados**: Se usar MySQL, SQLite ou outro banco, você apenas ajustaria:
+> - `PrismaPg` → `PrismaMySql`, `PrismaSqlite`, etc.
+> - `pgClient.pool` → seu cliente específico (ex: `mysqlClient.connection`)
+> - Os métodos de `E2EDatabaseClient` seriam adaptados para sua sintaxe SQL
+
 #### Exemplo de Teste E2E
 
-[person.controller.e2e-spec.ts](./host/controllers/person/person.controller.e2e-spec.ts):
+[person.controller.spec.ts](./host/controllers/person/person.controller.spec.ts):
 
 ```typescript
 import { createE2ETestApp } from '@/test/create-e2e-test-app'

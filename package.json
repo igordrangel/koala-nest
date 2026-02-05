@@ -30,8 +30,6 @@
     "test:watch": "bun test --watch",
     "test:cov": "bun test --coverage",
     "test:debug": "bun test --inspect-brk",
-    "test:e2e": "bun test --preload apps/example/src/test/setup-e2e.ts --testNamePattern=e2e",
-    "test:all": "bun run test && bun run test:e2e",
     "prepublishOnly": "bun run test",
     "postversion": "git push && git push --tags",
     "deploy:hotfix": "bun pm version patch",

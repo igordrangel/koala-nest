@@ -5,11 +5,8 @@ outdir = "dist"
 
 [test]
 root = "apps"
-testPatterns = [
-  "apps/**/*.spec.ts",
-  "apps/**/*.e2e-spec.ts"
-]
 timeoutMs = 60000
+preload = ["apps/example/src/test/setup-e2e.ts"]
 
 [loader]
 ".ts" = "tsx"
