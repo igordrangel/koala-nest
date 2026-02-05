@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.48
+
+### Patch Changes
+
+- 2ddbff5: Ajustes no setup de testes e update de relacionamentos em RepositoryBase
+
 ## 3.0.47
 
 ### Patch Changes

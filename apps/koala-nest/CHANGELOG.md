@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.15
+
+### Patch Changes
+
+- 2ddbff5: Ajustes no setup de testes e update de relacionamentos em RepositoryBase
+
 ## 3.1.14
 
 ### Patch Changes

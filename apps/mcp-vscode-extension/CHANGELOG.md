@@ -1,5 +1,11 @@
 # koala-nest-mcp-docs
 
+## 1.0.16
+
+### Patch Changes
+
+- 2ddbff5: Ajustes no setup de testes e update de relacionamentos em RepositoryBase
+
 ## 1.0.15
 
 ### Patch Changes

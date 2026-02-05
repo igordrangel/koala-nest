@@ -1,5 +1,11 @@
 # @koalarx/mcp-server
 
+## 1.0.19
+
+### Patch Changes
+
+- 2ddbff5: Ajustes no setup de testes e update de relacionamentos em RepositoryBase
+
 ## 1.0.18
 
 ### Patch Changes
