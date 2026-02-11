@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.51
+
+### Patch Changes
+
+- 3384588: Corrigido um erro na persistência dos dados devido as alterações anteriores de relacionamentos
+
 ## 3.0.50
 
 ### Patch Changes
