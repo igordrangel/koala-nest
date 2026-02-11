@@ -249,7 +249,7 @@ export abstract class RepositoryBase<
                   [parentPropName]:
                     this.getConnectPrismaSchemaForRelation(entity),
                 },
-                select: this.getSelectRootPrismaSchema(item),
+                select: this.getSelectRootPrismaSchema(item.constructor as any),
               },
               relations: this.listRelationEntities(item, true),
             })
@@ -262,7 +262,7 @@ export abstract class RepositoryBase<
               schema: {
                 where: { id: item._id },
                 data: this.entityToPrisma(item),
-                select: this.getSelectRootPrismaSchema(item),
+                select: this.getSelectRootPrismaSchema(item.constructor as any),
               },
               relations: this.listRelationEntities(item, true),
             })
@@ -279,7 +279,9 @@ export abstract class RepositoryBase<
             schema: {
               where: { id: entityInstance._id },
               data: this.entityToPrisma(entityInstance),
-              select: this.getSelectRootPrismaSchema(entityInstance),
+              select: this.getSelectRootPrismaSchema(
+                entityInstance.constructor as any,
+              ),
             },
             relations: this.listRelationEntities(entityInstance),
           })
@@ -526,7 +528,9 @@ export abstract class RepositoryBase<
                 return transaction[toCamelCase(relation.constructor.name)]
                   .create({
                     data: this.entityToPrisma(relation),
-                    select: this.getSelectRootPrismaSchema(relation),
+                    select: this.getSelectRootPrismaSchema(
+                      relation.constructor as any,
+                    ),
                   })
                   .then((response: TEntity) => {
                     const idPropName = this.getIdPropName(relation)
