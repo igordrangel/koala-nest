@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.17
+
+### Patch Changes
+
+- c9583a4: Ajuste de performance no carregamento de relacionamento em RepositoryBase
+
 ## 3.1.16
 
 ### Patch Changes

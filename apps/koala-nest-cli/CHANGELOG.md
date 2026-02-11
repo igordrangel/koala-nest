@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.50
+
+### Patch Changes
+
+- c9583a4: Ajuste de performance no carregamento de relacionamento em RepositoryBase
+
 ## 3.0.49
 
 ### Patch Changes
