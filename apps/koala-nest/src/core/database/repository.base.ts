@@ -107,23 +107,25 @@ export abstract class RepositoryBase<
   private getSelectRootPrismaSchema(entity: TEntity) {
     const selectSchema = {}
 
-    Object.keys(entity)
-      .filter((key) => !['_id', '_action'].includes(key))
-      .filter(
-        (key) =>
-          !(entity[key] instanceof Function || entity[key] instanceof List),
-      )
-      .forEach((key) => {
-        if (entity[key] instanceof EntityBase) {
-          selectSchema[key] = {
-            select: this.getSelectRootPrismaSchema(
-              entity[key] as unknown as TEntity,
-            ),
-          }
-        } else {
-          selectSchema[key] = true
+    const entityProps = AutoMappingList.getAllProps(entity as any)
+
+    entityProps.forEach((prop) => {
+      let instance
+
+      try {
+        instance = new (prop.type())()
+      } catch {
+        instance = null
+      }
+
+      if (instance instanceof EntityBase) {
+        selectSchema[prop.name] = {
+          select: this.getSelectRootPrismaSchema(instance.constructor as any),
         }
-      })
+      } else {
+        selectSchema[prop.name] = true
+      }
+    })
 
     return selectSchema
   }
@@ -400,7 +402,7 @@ export abstract class RepositoryBase<
   ): Promise<any> {
     return this._context[toCamelCase(toCamelCase((entity as any).name))]
       .findFirst({
-        select: this.getSelectWithRelationsId(entity),
+        select: this.getSelectRootPrismaSchema(entity),
         where,
       })
       .then((data) => this.enrichEntityWithRelations(entity, data, cache))
