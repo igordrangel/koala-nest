@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.16
+
+### Patch Changes
+
+- c9b35f6: Ajuste no carregamento de relacionamento pelo RepositoryBase
+
 ## 3.1.15
 
 ### Patch Changes
