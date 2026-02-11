@@ -122,7 +122,7 @@ export abstract class RepositoryBase<
         selectSchema[prop.name] = {
           select: this.getSelectRootPrismaSchema(instance.constructor as any),
         }
-      } else {
+      } else if (!(instance instanceof List)) {
         selectSchema[prop.name] = true
       }
     })
@@ -435,7 +435,7 @@ export abstract class RepositoryBase<
 
         const items: Promise<any>[] = []
 
-        data[propName].forEach((item) => {
+        data[propName]?.forEach((item) => {
           const cacheKey = `${entity.constructor.name}-${propName}-${this.getIdOnEntity(new entityInstance(), item)}`
 
           if (cache.has(cacheKey)) {
