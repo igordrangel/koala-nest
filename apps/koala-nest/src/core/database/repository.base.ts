@@ -164,23 +164,28 @@ export abstract class RepositoryBase<
   }
 
   private getPropNameFromEntitySource(source: TEntity, entity: Type<TEntity>) {
-    return Object.keys(source).find((key) => {
-      const propDefinitions = AutoMappingList.getPropDefinitions(
-        source.constructor as any,
-        key,
-      )
+    const entityProps = AutoMappingList.getAllProps(source as any)
 
-      if (propDefinitions) {
-        if (propDefinitions.type === entity.name) {
+    return entityProps.find((prop) => {
+      let instance
+
+      try {
+        instance = new (prop.type())()
+      } catch {
+        instance = null
+      }
+
+      if (instance) {
+        if (instance.constructor.name === entity.name) {
           return true
-        } else if (source[key] instanceof List) {
-          const list = source[key] as List<any>
+        } else if (source[prop.name] instanceof List) {
+          const list = source[prop.name] as List<any>
           return list.entityType?.name === entity.name
         }
       }
 
       return false
-    })
+    })?.name
   }
 
   private listRelationEntities(entity: TEntity, fromList = false) {
@@ -225,7 +230,7 @@ export abstract class RepositoryBase<
         const parentModelName = entity.constructor.name
         const parentPropName =
           this.getPropNameFromEntitySource(
-            new entityInstance(),
+            entityInstance,
             entity.constructor as any,
           ) ?? toCamelCase(parentModelName)
 
