@@ -82,9 +82,13 @@ export abstract class InMemoryBaseRepository<TClass extends EntityBase<any>> {
   }
 
   private getNewId(): IComparableId {
-    return this.typeId === 'number'
-      ? (new KlArray(this.items).orderBy('_id', 'desc')[0]?._id as number) ??
-          0 + 1
-      : randomUUID()
+    if (this.typeId === 'number') {
+      const lastId = new KlArray(this.items).orderBy('_id', 'desc')[0]
+        ?._id as number
+
+      return lastId ? lastId + 1 : 1
+    }
+
+    return randomUUID()
   }
 }
