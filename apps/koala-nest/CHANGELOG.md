@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.19
+
+### Patch Changes
+
+- 9970384: Ajuste repository in memory
+
 ## 3.1.18
 
 ### Patch Changes

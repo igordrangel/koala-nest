@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.52
+
+### Patch Changes
+
+- 9970384: Ajuste repository in memory
+
 ## 3.0.51
 
 ### Patch Changes
