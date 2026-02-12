@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.53
+
+### Patch Changes
+
+- dc3ed4c: refactor: melhorar a lógica para obter o nome da propriedade da fonte da entidade
+
 ## 3.0.52
 
 ### Patch Changes
