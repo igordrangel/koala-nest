@@ -239,7 +239,7 @@ export abstract class RepositoryBase<
             relationDeletes.push({
               modelName: toCamelCase(modelName),
               entityInstance,
-              schema: { id: item._id },
+              schema: this.getWhereByIdSchema(item, item),
               relations: [],
             })
           })
@@ -265,7 +265,7 @@ export abstract class RepositoryBase<
               modelName: toCamelCase(modelName),
               entityInstance,
               schema: {
-                where: { id: item._id },
+                where: this.getWhereByIdSchema(item, item),
                 data: this.entityToPrisma(item),
                 select: this.getSelectRootPrismaSchema(item.constructor as any),
               },
@@ -504,61 +504,64 @@ export abstract class RepositoryBase<
       this.listToRelationActionList(entity)
 
     return Promise.all([
-      ...relationCreates.map((relationCreate) =>
-        transaction[relationCreate.modelName]
-          .create(relationCreate.schema)
-          .then((response) => {
-            if (relationCreate.relations.length === 0) {
-              return Promise.all([])
-            }
+      ...relationCreates.map(
+        (relationCreate) =>
+          transaction[relationCreate.modelName]
+            .create(relationCreate.schema)
+            .then((response) => {
+              if (relationCreate.relations.length === 0) {
+                return Promise.all([])
+              }
 
-            return Promise.all(
-              relationCreate.relations.map((relation) => {
-                const relationPropName = this.getPropNameFromEntitySource(
-                  relation,
-                  relationCreate.entityInstance,
-                )
+              return Promise.all(
+                relationCreate.relations.map((relation) => {
+                  const relationPropName = this.getPropNameFromEntitySource(
+                    relation,
+                    relationCreate.entityInstance,
+                  )
 
-                if (
-                  relationPropName &&
-                  !(relation[relationPropName] instanceof List)
-                ) {
-                  relation[relationPropName] =
-                    this.getConnectPrismaSchemaForRelation(
-                      relationCreate.entityInstance as any,
-                      response,
-                    )
-                }
+                  if (
+                    relationPropName &&
+                    !(relation[relationPropName] instanceof List)
+                  ) {
+                    relation[relationPropName] =
+                      this.getConnectPrismaSchemaForRelation(
+                        relationCreate.entityInstance as any,
+                        response,
+                      )
+                  }
 
-                return transaction[toCamelCase(relation.constructor.name)]
-                  .create({
-                    data: this.entityToPrisma(relation),
-                    select: this.getSelectRootPrismaSchema(
-                      relation.constructor as any,
-                    ),
-                  })
-                  .then((response: TEntity) => {
-                    const idPropName = this.getIdPropName(relation)
+                  return transaction[toCamelCase(relation.constructor.name)]
+                    .create({
+                      data: this.entityToPrisma(relation),
+                      select: this.getSelectRootPrismaSchema(
+                        relation.constructor as any,
+                      ),
+                    })
+                    .then((response: TEntity) => {
+                      const idPropName = this.getIdPropName(relation)
 
-                    if (!Array.isArray(idPropName)) {
-                      relation[idPropName] = response[idPropName]
-                    } else {
-                      idPropName.forEach((propName) => {
-                        relation[propName] = response[propName]
-                      })
-                    }
+                      if (!Array.isArray(idPropName)) {
+                        relation[idPropName] = response[idPropName]
+                      } else {
+                        idPropName.forEach((propName) => {
+                          relation[propName] = response[propName]
+                        })
+                      }
 
-                    return this.persistRelations(transaction, relation)
-                  })
-              }),
-            )
+                      return this.persistRelations(transaction, relation)
+                    })
+                }),
+              )
+            }),
+        ...relationUpdates.map((relation) =>
+          transaction[relation.modelName].update(relation.schema),
+        ),
+        ...relationDeletes.map((relation) =>
+          transaction[relation.modelName].deleteMany({
+            where: relation.schema,
           }),
-      ),
-      ...relationUpdates.map((relation) =>
-        transaction[relation.modelName].update(relation.schema),
-      ),
-      ...relationDeletes.map((relation) =>
-        transaction[relation.modelName].deleteMany({ where: relation.schema }),
+        ),
       ),
     ])
   }
