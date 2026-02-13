@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.55
+
+### Patch Changes
+
+- be99c7c: refactor: atualizar lógica de criação e deleção de relações no repositório
+
 ## 3.0.54
 
 ### Patch Changes

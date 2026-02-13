@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.21
+
+### Patch Changes
+
+- be99c7c: refactor: atualizar lógica de criação e deleção de relações no repositório
+
 ## 3.1.20
 
 ### Patch Changes
