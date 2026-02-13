@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.54
+
+### Patch Changes
+
+- 14cb367: feat: criar módulo de teste para a aplicação E2E
+
 ## 3.0.53
 
 ### Patch Changes
