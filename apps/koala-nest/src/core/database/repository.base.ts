@@ -122,7 +122,7 @@ export abstract class RepositoryBase<
         selectSchema[prop.name] = {
           select: this.getSelectRootPrismaSchema(instance.constructor as any),
         }
-      } else if (!(instance instanceof List)) {
+      } else {
         selectSchema[prop.name] = true
       }
     })
@@ -452,7 +452,13 @@ export abstract class RepositoryBase<
 
           cache.set(cacheKey, item)
 
-          items.push(this.loadRelationForEntity(item, entityInstance, cache))
+          items.push(
+            this.loadRelationForEntity(
+              this.getWhereByIdSchema(new entityInstance(), item),
+              entityInstance,
+              cache,
+            ),
+          )
         })
 
         relationQueries.push(Promise.all(items))
