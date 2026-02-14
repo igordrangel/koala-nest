@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.22
+
+### Patch Changes
+
+- e45e6df: refactor: simplificar lógica de seleção e carregamento de relações no repositório
+
 ## 3.1.21
 
 ### Patch Changes
