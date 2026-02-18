@@ -1,5 +1,12 @@
 # @koalarx/nest-cli
 
+## 3.0.57
+
+### Patch Changes
+
+- 377efa0: fix: corrigir a construção da chave de cache para incluir o nome da entidade
+- 2da69ed: fix: atualizar a versão do pacote @scalar/nestjs-api-reference para 1.0.24
+
 ## 3.0.56
 
 ### Patch Changes
