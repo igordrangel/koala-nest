@@ -443,7 +443,7 @@ export abstract class RepositoryBase<
         const items: Promise<any>[] = []
 
         data[propName]?.forEach((item) => {
-          const cacheKey = `${entity.constructor.name}-${propName}-${this.getIdOnEntity(new entityInstance(), item)}`
+          const cacheKey = `${(entity as any).name}-${propName}-${this.getIdOnEntity(new entityInstance(), item)}`
 
           if (cache.has(cacheKey)) {
             items.push(Promise.resolve(cache.get(cacheKey)))
@@ -470,7 +470,7 @@ export abstract class RepositoryBase<
       )
 
       if (relationEntity && data[propName]) {
-        const cacheKey = `${entity.constructor.name}-${propName}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
+        const cacheKey = `${(entity as any).name}-${propName}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
 
         if (cache.has(cacheKey)) {
           data[propName] = cache.get(cacheKey)
