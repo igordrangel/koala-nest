@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.59
+
+### Patch Changes
+
+- 4c57b0f: fix: tornar o método persistRelations assíncrono para melhorar a execução das operações de relação
+
 ## 3.0.58
 
 ### Patch Changes

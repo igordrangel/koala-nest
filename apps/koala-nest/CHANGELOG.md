@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.25
+
+### Patch Changes
+
+- 4c57b0f: fix: tornar o método persistRelations assíncrono para melhorar a execução das operações de relação
+
 ## 3.1.24
 
 ### Patch Changes
