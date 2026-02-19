@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.58
+
+### Patch Changes
+
+- 2ca0a1b: fix: corrigir a ordem de execução das operações de relação no método de persistência
+
 ## 3.0.57
 
 ### Patch Changes

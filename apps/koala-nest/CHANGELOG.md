@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.24
+
+### Patch Changes
+
+- 2ca0a1b: fix: corrigir a ordem de execução das operações de relação no método de persistência
+
 ## 3.1.23
 
 ### Patch Changes
