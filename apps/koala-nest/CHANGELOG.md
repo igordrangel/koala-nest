@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.26
+
+### Patch Changes
+
+- 2f869f1: fix: otimizar operações de relação no método de persistência para evitar chamadas desnecessárias
+
 ## 3.1.25
 
 ### Patch Changes

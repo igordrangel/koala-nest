@@ -1,6 +1,6 @@
 {
   "name": "@koalarx/nest-cli",
-  "version": "3.0.59",
+  "version": "3.0.60",
   "description": "CLI para criação de projetos utilizando Koala Nest",
   "main": "index.js",
   "bin": {
