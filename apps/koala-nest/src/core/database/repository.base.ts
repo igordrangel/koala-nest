@@ -509,17 +509,27 @@ export abstract class RepositoryBase<
     const { relationCreates, relationUpdates, relationDeletes } =
       this.listToRelationActionList(entity)
 
-    await Promise.all(
-      relationDeletes.map((relation) =>
-        transaction[relation.modelName].deleteMany({
-          where: relation.schema,
-        }),
-      ),
-    )
+    if (relationDeletes.length > 0) {
+      await Promise.all(
+        relationDeletes.map((relation) =>
+          transaction[relation.modelName].deleteMany({
+            where: relation.schema,
+          }),
+        ),
+      )
+    }
 
-    return Promise.all([
-      ...relationCreates.map(
-        (relationCreate) =>
+    if (relationUpdates.length > 0) {
+      await Promise.all([
+        ...relationUpdates.map((relation) =>
+          transaction[relation.modelName].update(relation.schema),
+        ),
+      ])
+    }
+
+    if (relationCreates.length > 0) {
+      await Promise.all([
+        ...relationCreates.map((relationCreate) =>
           transaction[relationCreate.modelName]
             .create(relationCreate.schema)
             .then((response) => {
@@ -568,11 +578,9 @@ export abstract class RepositoryBase<
                 }),
               )
             }),
-        ...relationUpdates.map((relation) =>
-          transaction[relation.modelName].update(relation.schema),
         ),
-      ),
-    ])
+      ])
+    }
   }
 
   protected context(transactionalClient?: TContext): TContext[TModelKey] {
