@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.61
+
+### Patch Changes
+
+- ed3c460: fix: otimizar carregamento de relações no método loadRelationForEntity para melhorar a eficiência
+
 ## 3.0.60
 
 ### Patch Changes
