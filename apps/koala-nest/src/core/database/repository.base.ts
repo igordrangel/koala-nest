@@ -8,8 +8,8 @@ import { generateIncludeSchema } from '../utils/generate-prisma-include-schema'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 import { EntityActionType, EntityBase } from './entity.base'
-import { PrismaTransactionalClient } from './prisma-transactional-client'
 import { IdConfig } from './entity.decorator'
+import { PrismaTransactionalClient } from './prisma-transactional-client'
 
 type RepositoryInclude<TEntity> = Omit<
   {
@@ -121,6 +121,13 @@ export abstract class RepositoryBase<
       if (instance instanceof EntityBase) {
         selectSchema[prop.name] = {
           select: this.getSelectRootPrismaSchema(instance.constructor as any),
+        }
+      } else if (instance instanceof List) {
+        const list = new (entity as any)()[prop.name] as List<any>
+        const entityInstance = list.entityType! as any
+
+        selectSchema[prop.name] = {
+          select: this.getSelectRootPrismaSchema(entityInstance),
         }
       } else {
         selectSchema[prop.name] = true
@@ -422,12 +429,9 @@ export abstract class RepositoryBase<
   ): Promise<any> {
     if (!data) return data
 
-    const relationQueries: Promise<any>[] = []
-    const relationKeys: string[] = []
-
     const allProps = AutoMappingList.getAllProps(entity as any)
 
-    allProps.forEach((prop) => {
+    for (const prop of allProps) {
       const propName = prop.name
       const propDef = AutoMappingList.getPropDefinitions(
         entity as any,
@@ -438,31 +442,31 @@ export abstract class RepositoryBase<
         const list = new (entity as any)()[prop.name] as List<any>
         const entityInstance = list.entityType! as any
 
-        relationKeys.push(propName)
+        const items: any[] = []
 
-        const items: Promise<any>[] = []
-
-        data[propName]?.forEach((item) => {
+        for (const item of data[propName] || []) {
           const cacheKey = `${(entity as any).name}-${propName}-${this.getIdOnEntity(new entityInstance(), item)}`
 
           if (cache.has(cacheKey)) {
-            items.push(Promise.resolve(cache.get(cacheKey)))
-            return
+            items.push(cache.get(cacheKey))
+            continue
           }
 
           cache.set(cacheKey, item)
 
-          items.push(
-            this.loadRelationForEntity(
-              this.getWhereByIdSchema(new entityInstance(), item),
-              entityInstance,
-              cache,
-            ),
+          const enrichedItem = await this.loadRelationForEntity(
+            this.getWhereByIdSchema(new entityInstance(), item),
+            entityInstance,
+            cache,
           )
-        })
 
-        relationQueries.push(Promise.all(items))
-        return
+          cache.set(cacheKey, enrichedItem)
+
+          items.push(enrichedItem)
+        }
+
+        data[propName] = items
+        continue
       }
 
       const relationEntity = AutoMappingList.getSourceByName(
@@ -479,24 +483,14 @@ export abstract class RepositoryBase<
 
         cache.set(cacheKey, data[propName])
 
-        relationKeys.push(propName)
-
-        relationQueries.push(
-          this.loadRelationForEntity(
-            this.getWhereByIdSchema(relationEntity as any, data[propName]),
-            relationEntity as any,
-            cache,
-          ),
+        data[propName] = await this.loadRelationForEntity(
+          this.getWhereByIdSchema(relationEntity as any, data[propName]),
+          relationEntity as any,
+          cache,
         )
+
+        cache.set(cacheKey, data[propName])
       }
-    })
-
-    if (relationQueries.length > 0) {
-      const results = await Promise.all(relationQueries)
-
-      relationKeys.forEach((key, index) => {
-        data[key] = results[index]
-      })
     }
 
     return data
