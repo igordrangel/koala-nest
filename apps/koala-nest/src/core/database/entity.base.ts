@@ -32,8 +32,50 @@ export abstract class EntityBase<
     }
   }
 
-  automap(props?: EntityProps<T>) {
+  private createAutomapContext() {
+    return {
+      references: new WeakMap<object, any>(),
+    }
+  }
+
+  private mapEntityReference(
+    value: any,
+    EntityOnPropKey: Type<any>,
+    context: ReturnType<typeof this.createAutomapContext>,
+  ) {
+    if (!value || typeof value !== 'object') {
+      return value
+    }
+
+    const cachedEntity = context.references.get(value)
+
+    if (cachedEntity) {
+      return cachedEntity
+    }
+
+    const entity = new EntityOnPropKey()
+
+    if (entity instanceof EntityBase) {
+      entity._action = this._action
+      context.references.set(value, entity)
+      entity.automap(value as any, context as any)
+    }
+
+    return entity
+  }
+
+  automap(props?: EntityProps<T>, context = this.createAutomapContext()) {
     if (props) {
+      if (typeof props === 'object' && props !== null) {
+        const cachedInstance = context.references.get(props as object)
+
+        if (cachedInstance && cachedInstance !== this) {
+          return
+        }
+
+        context.references.set(props as object, this)
+      }
+
       for (const key of Object.keys(props)) {
         if (props[key] === undefined) {
           continue
@@ -52,11 +94,11 @@ export abstract class EntityBase<
 
           if (this[key].entityType) {
             value = value.map((item) => {
-              const entity = new (this[key].entityType as Type<any>)()
-              entity._action = this._action
-              entity.automap(item)
-
-              return entity
+              return this.mapEntityReference(
+                item,
+                this[key].entityType as Type<any>,
+                context,
+              )
             })
           }
 
@@ -83,11 +125,11 @@ export abstract class EntityBase<
           )
         } else if (EntityOnPropKey) {
           if (props[key]) {
-            const entity = new EntityOnPropKey()
-            entity._action = this._action
-            entity.automap(props[key])
-
-            this[key] = entity
+            this[key] = this.mapEntityReference(
+              props[key],
+              EntityOnPropKey,
+              context,
+            )
           }
         } else if (propDefinitions) {
           if (key === 'id') {

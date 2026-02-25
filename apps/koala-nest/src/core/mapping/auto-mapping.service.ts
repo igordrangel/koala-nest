@@ -4,9 +4,21 @@ import { List } from '../utils/list'
 import { AutoMappingList } from './auto-mapping-list'
 import { AutoMappingProfile } from './auto-mapping-profile'
 
+type CircularCutAction = 'id-only' | 'null' | 'omit'
+
 @Injectable()
 export class AutoMappingService {
   private readonly _contextList = AutoMappingList
+  private readonly _circularCutPolicy = {
+    onCut: 'id-only' as CircularCutAction,
+  }
+
+  private createMapContext() {
+    return {
+      references: new WeakMap<object, Map<Type<any>, any>>(),
+      targetPath: [] as Type<any>[],
+    }
+  }
 
   constructor(automappingProfile: AutoMappingProfile) {
     automappingProfile.profile()
@@ -23,6 +35,65 @@ export class AutoMappingService {
   }
 
   map<S, T>(data: any, source: Type<S>, target: Type<T>): T {
+    return this.mapWithContext(data, source, target, this.createMapContext())
+  }
+
+  private getIdOnlyValue(data: any) {
+    if (!data || typeof data !== 'object') {
+      return data
+    }
+
+    const id = data.id ?? data._id
+
+    if (id !== undefined) {
+      return { id }
+    }
+
+    return null
+  }
+
+  private shouldCutCircularMapping(
+    target: Type<any>,
+    context: ReturnType<typeof this.createMapContext>,
+  ) {
+    return context.targetPath.some((targetOnPath) => targetOnPath === target)
+  }
+
+  private getCutValue(data: any) {
+    const onCut = this._circularCutPolicy.onCut
+
+    if (onCut === 'null') {
+      return null
+    }
+
+    if (onCut === 'omit') {
+      return undefined
+    }
+
+    return this.getIdOnlyValue(data)
+  }
+
+  private mapWithContext<S, T>(
+    data: any,
+    source: Type<S>,
+    target: Type<T>,
+    context: ReturnType<typeof this.createMapContext>,
+  ): T {
+    if (!data || this.isPrimitiveType(data)) {
+      return data
+    }
+
+    if (this.shouldCutCircularMapping(target, context)) {
+      return this.getCutValue(data)
+    }
+
+    const cachedByTarget = context.references.get(data)
+    const cachedTarget = cachedByTarget?.get(target)
+
+    if (cachedTarget) {
+      return cachedTarget
+    }
+
     const { mapContext, propSourceContext, propTargetContext } =
       this._contextList.get(source, target)
 
@@ -34,74 +105,92 @@ export class AutoMappingService {
 
     const mappedTarget = new target.prototype.constructor()
 
-    propSourceContext?.props.forEach((propSource) => {
-      const value = data[propSource.name]
-      const compositionType = propSource.compositionType
-      const compositionAction = propSource.compositionAction
+    if (typeof data === 'object') {
+      const cachedTargets = context.references.get(data) ?? new Map()
+      cachedTargets.set(target, mappedTarget)
+      context.references.set(data, cachedTargets)
+    }
 
-      if (value !== undefined) {
-        const targetProp = propTargetContext?.props.find(
-          (tp) => tp.name === propSource.name,
-        )
+    context.targetPath.push(target)
 
-        if (targetProp) {
-          const typeSource = getTypeByProp(propSource)
-          const typeTarget = getTypeByProp(targetProp)
+    try {
+      propSourceContext?.props.forEach((propSource) => {
+        const value = data[propSource.name]
+        const compositionType = propSource.compositionType
+        const compositionAction = propSource.compositionAction
 
-          const listToArray =
-            typeSource === List.name &&
-            typeTarget === Array.name &&
-            value instanceof List
+        if (value !== undefined) {
+          const targetProp = propTargetContext?.props.find(
+            (tp) => tp.name === propSource.name,
+          )
 
-          const arrayToList =
-            typeSource === Array.name &&
-            typeTarget === List.name &&
-            value instanceof Array &&
-            !!compositionType
+          if (targetProp) {
+            const typeSource = getTypeByProp(propSource)
+            const typeTarget = getTypeByProp(targetProp)
 
-          const arrayToArray =
-            typeSource === Array.name &&
-            typeTarget === Array.name &&
-            value instanceof Array &&
-            !!compositionType
+            const listToArray =
+              typeSource === List.name &&
+              typeTarget === Array.name &&
+              value instanceof List
 
-          let mappedValue = value
+            const arrayToList =
+              typeSource === Array.name &&
+              typeTarget === List.name &&
+              value instanceof Array &&
+              !!compositionType
 
-          if (listToArray) {
-            mappedValue = this.mapListToArray(value)
-          } else if (arrayToList) {
-            mappedValue = this.mapArrayToList(
-              value,
-              this.getInstanceType(compositionType),
-              compositionAction === 'onlySet',
-            )
-          } else if (arrayToArray) {
-            mappedValue = this.mapArrayToArray(
-              value,
-              this.getInstanceType(compositionType),
-            )
-          } else {
-            const propSourceInstance =
-              this._contextList.getSourceByName(typeSource)
-            if (propSourceInstance) {
-              mappedValue = this.mapNestedProp(value, propSourceInstance)
+            const arrayToArray =
+              typeSource === Array.name &&
+              typeTarget === Array.name &&
+              value instanceof Array &&
+              !!compositionType
+
+            let mappedValue = value
+
+            if (listToArray) {
+              mappedValue = this.mapListToArray(value, context)
+            } else if (arrayToList) {
+              mappedValue = this.mapArrayToList(
+                value,
+                this.getInstanceType(compositionType),
+                context,
+                compositionAction === 'onlySet',
+              )
+            } else if (arrayToArray) {
+              mappedValue = this.mapArrayToArray(
+                value,
+                this.getInstanceType(compositionType),
+                context,
+              )
+            } else {
+              const propSourceInstance =
+                this._contextList.getSourceByName(typeSource)
+              if (propSourceInstance) {
+                mappedValue = this.mapNestedProp(
+                  value,
+                  propSourceInstance,
+                  context,
+                )
+              }
             }
+
+            mappedTarget[targetProp.name] = mappedValue
           }
-
-          mappedTarget[targetProp.name] = mappedValue
         }
-      }
-    })
+      })
 
-    propTargetContext?.props.forEach((prop) => {
-      const formMemberDefinition = mapContext.forMemberDifinitions?.find(
-        (def) => def[prop.name],
-      )?.[prop.name]
+      propTargetContext?.props.forEach((prop) => {
+        const formMemberDefinition = mapContext.forMemberDifinitions?.find(
+          (def) => def[prop.name],
+        )?.[prop.name]
 
-      if (formMemberDefinition) {
-        mappedTarget[prop.name] = formMemberDefinition(data)
-      }
-    })
+        if (formMemberDefinition) {
+          mappedTarget[prop.name] = formMemberDefinition(data)
+        }
+      })
+    } finally {
+      context.targetPath.pop()
+    }
 
     return mappedTarget
   }
@@ -120,20 +209,28 @@ export class AutoMappingService {
     return targets[0]
   }
 
-  private mapNestedProp(data: any, source: Type<any>) {
-    return this.map(
+  private mapNestedProp(
+    data: any,
+    source: Type<any>,
+    context: ReturnType<typeof this.createMapContext>,
+  ) {
+    return this.mapWithContext(
       data,
       source.prototype.constructor,
       this.getTarget(data, source),
+      context,
     )
   }
 
-  private mapListToArray(value: List<any>) {
+  private mapListToArray(
+    value: List<any>,
+    context: ReturnType<typeof this.createMapContext>,
+  ) {
     return value.toArray().map((item) => {
       const entityOnList = value.entityType?.prototype.constructor
 
       if (entityOnList) {
-        return this.mapNestedProp(item, entityOnList) ?? {}
+        return this.mapNestedProp(item, entityOnList, context) ?? {}
       }
 
       return {}
@@ -143,6 +240,7 @@ export class AutoMappingService {
   private mapArrayToList(
     value: Array<any>,
     compositionType: Type<any>,
+    context: ReturnType<typeof this.createMapContext>,
     onlySet = true,
   ) {
     const list = new List(
@@ -151,7 +249,11 @@ export class AutoMappingService {
 
     const mappedValue = value.map(
       (item) =>
-        this.mapNestedProp(item, compositionType.prototype.constructor) ?? {},
+        this.mapNestedProp(
+          item,
+          compositionType.prototype.constructor,
+          context,
+        ) ?? {},
     )
 
     if (onlySet) {
@@ -163,10 +265,18 @@ export class AutoMappingService {
     return list
   }
 
-  private mapArrayToArray(value: Array<any>, compositionType: Type<any>) {
+  private mapArrayToArray(
+    value: Array<any>,
+    compositionType: Type<any>,
+    context: ReturnType<typeof this.createMapContext>,
+  ) {
     return value.map(
       (item) =>
-        this.mapNestedProp(item, compositionType.prototype.constructor) ?? {},
+        this.mapNestedProp(
+          item,
+          compositionType.prototype.constructor,
+          context,
+        ) ?? {},
     )
   }
 
