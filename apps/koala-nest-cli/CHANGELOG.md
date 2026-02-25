@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.63
+
+### Patch Changes
+
+- 91c096f: feat: implementar função hydrateEntityFromCache para gerenciamento de entidades em cache
+
 ## 3.0.62
 
 ### Patch Changes
