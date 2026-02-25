@@ -1,5 +1,12 @@
 # @koalarx/nest
 
+## 3.1.30
+
+### Patch Changes
+
+- 7ea8eeb: feat: adicionar suporte a mapeamento de entidades cíclicas e otimizar automap
+- 8315831: feat: adicionar suporte a mapeamento de referências de entidades cíclicas
+
 ## 3.1.29
 
 ### Patch Changes
