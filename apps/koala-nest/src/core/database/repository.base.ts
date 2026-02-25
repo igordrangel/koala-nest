@@ -10,6 +10,7 @@ import { List } from '../utils/list'
 import { EntityActionType, EntityBase } from './entity.base'
 import { IdConfig } from './entity.decorator'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
+import { createProxy } from '../utils/proxy'
 
 type RepositoryInclude<TEntity> = Omit<
   {
@@ -127,7 +128,7 @@ export abstract class RepositoryBase<
         const entityInstance = list.entityType! as any
 
         selectSchema[prop.name] = {
-          select: this.getSelectRootPrismaSchema(entityInstance),
+          select: this.getWhereByIdSchema(new entityInstance(), true),
         }
       } else {
         selectSchema[prop.name] = true
@@ -419,7 +420,9 @@ export abstract class RepositoryBase<
         select: this.getSelectRootPrismaSchema(entity),
         where,
       })
-      .then((data) => this.enrichEntityWithRelations(entity, data, cache))
+      .then((data) =>
+        this.enrichEntityWithRelations(entity, createProxy(data), cache),
+      )
   }
 
   private async enrichEntityWithRelations(
@@ -427,7 +430,9 @@ export abstract class RepositoryBase<
     data: any,
     cache: Map<string, any> = new Map(),
   ): Promise<any> {
-    if (!data) return data
+    if (!data) {
+      return null
+    }
 
     const allProps = AutoMappingList.getAllProps(entity as any)
 
@@ -445,7 +450,7 @@ export abstract class RepositoryBase<
         const items: any[] = []
 
         for (const item of data[propName] || []) {
-          const cacheKey = `${(entity as any).name}-${propName}-${this.getIdOnEntity(new entityInstance(), item)}`
+          const cacheKey = `${(entity as any).name}-${this.getIdOnEntity(new entityInstance(), item)}`
 
           if (cache.has(cacheKey)) {
             items.push(cache.get(cacheKey))
@@ -474,17 +479,17 @@ export abstract class RepositoryBase<
       )
 
       if (relationEntity && data[propName]) {
-        const cacheKey = `${(entity as any).name}-${propName}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
+        const cacheKey = `${(entity as any).name}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
 
         if (cache.has(cacheKey)) {
           data[propName] = cache.get(cacheKey)
-          return
+          continue
         }
 
         cache.set(cacheKey, data[propName])
 
         data[propName] = await this.loadRelationForEntity(
-          this.getWhereByIdSchema(relationEntity as any, data[propName]),
+          this.getWhereByIdSchema(new relationEntity(), data[propName]),
           relationEntity as any,
           cache,
         )
@@ -606,7 +611,7 @@ export abstract class RepositoryBase<
 
     const enrichedEntity = await this.enrichEntityWithRelations(
       this._modelName.prototype.constructor,
-      { ...data },
+      createProxy(data),
     )
     return this.createEntity(enrichedEntity)
   }
@@ -623,7 +628,7 @@ export abstract class RepositoryBase<
 
     const enrichedEntity = await this.enrichEntityWithRelations(
       this._modelName.prototype.constructor,
-      { ...data },
+      createProxy(data),
     )
     return this.createEntity(enrichedEntity)
   }
@@ -640,7 +645,7 @@ export abstract class RepositoryBase<
 
     const enrichedEntity = await this.enrichEntityWithRelations(
       this._modelName.prototype.constructor,
-      { ...data },
+      createProxy(data),
     )
     return this.createEntity(enrichedEntity)
   }
