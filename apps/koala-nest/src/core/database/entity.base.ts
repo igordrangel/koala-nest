@@ -2,6 +2,11 @@ import { KlArray, KlDate, KlTime } from '@koalarx/utils'
 import { Type } from '@nestjs/common'
 import { Overwrite } from '..'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
+import {
+  AutomapContext,
+  createAutomapContext,
+  mapEntityReference,
+} from '../utils/automap-cycle-context'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
 
@@ -32,39 +37,10 @@ export abstract class EntityBase<
     }
   }
 
-  private createAutomapContext() {
-    return {
-      references: new WeakMap<object, any>(),
-    }
-  }
-
-  private mapEntityReference(
-    value: any,
-    EntityOnPropKey: Type<any>,
-    context: ReturnType<typeof this.createAutomapContext>,
+  automap(
+    props?: EntityProps<T>,
+    context: AutomapContext = createAutomapContext(),
   ) {
-    if (!value || typeof value !== 'object') {
-      return value
-    }
-
-    const cachedEntity = context.references.get(value)
-
-    if (cachedEntity) {
-      return cachedEntity
-    }
-
-    const entity = new EntityOnPropKey()
-
-    if (entity instanceof EntityBase) {
-      entity._action = this._action
-      context.references.set(value, entity)
-      entity.automap(value as any, context as any)
-    }
-
-    return entity
-  }
-
-  automap(props?: EntityProps<T>, context = this.createAutomapContext()) {
     if (props) {
       if (typeof props === 'object' && props !== null) {
         const cachedInstance = context.references.get(props as object)
@@ -94,10 +70,11 @@ export abstract class EntityBase<
 
           if (this[key].entityType) {
             value = value.map((item) => {
-              return this.mapEntityReference(
+              return mapEntityReference(
                 item,
                 this[key].entityType as Type<any>,
                 context,
+                this._action,
               )
             })
           }
@@ -125,10 +102,11 @@ export abstract class EntityBase<
           )
         } else if (EntityOnPropKey) {
           if (props[key]) {
-            this[key] = this.mapEntityReference(
+            this[key] = mapEntityReference(
               props[key],
               EntityOnPropKey,
               context,
+              this._action,
             )
           }
         } else if (propDefinitions) {
