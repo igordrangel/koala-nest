@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.28
+
+### Patch Changes
+
+- 8c8fa1a: feat: adicionar funções isPlainObject e createProxy para manipulação de objetos
+
 ## 3.1.27
 
 ### Patch Changes
