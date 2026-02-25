@@ -5,12 +5,13 @@ import { PaginationDto } from '../dtos/pagination.dto'
 import { KoalaGlobalVars } from '../koala-global-vars'
 import { AutoMappingList } from '../mapping/auto-mapping-list'
 import { generateIncludeSchema } from '../utils/generate-prisma-include-schema'
+import { hydrateEntityFromCache } from '../utils/hydrate-entity-from-cache'
 import { IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
+import { createProxy } from '../utils/proxy'
 import { EntityActionType, EntityBase } from './entity.base'
 import { IdConfig } from './entity.decorator'
 import { PrismaTransactionalClient } from './prisma-transactional-client'
-import { createProxy } from '../utils/proxy'
 
 type RepositoryInclude<TEntity> = Omit<
   {
@@ -50,6 +51,10 @@ export abstract class RepositoryBase<
       deepLimit: 2,
       entity: this._modelName,
     })
+  }
+
+  private get entityInstance() {
+    return this._modelName.prototype.constructor as any
   }
 
   private getIdPropName(entity?: TEntity): string | string[] {
@@ -425,6 +430,34 @@ export abstract class RepositoryBase<
       )
   }
 
+  private loadEntityFromCache(
+    entity: TEntity,
+    data: any,
+    cache: Map<string, any>,
+  ) {
+    return hydrateEntityFromCache({
+      entity: entity as any,
+      data,
+      cache,
+      dependencies: {
+        getAllProps: (sourceEntity) =>
+          AutoMappingList.getAllProps(sourceEntity),
+        getPropDefinitions: (sourceEntity, propName) =>
+          AutoMappingList.getPropDefinitions(sourceEntity, propName),
+        getSourceByName: (sourceName) =>
+          AutoMappingList.getSourceByName(sourceName),
+        getListEntityType: (sourceEntity, propName) => {
+          const list = new sourceEntity()[propName] as List<any>
+
+          return list.entityType as any
+        },
+        getIdOnEntity: (currentEntity, value) =>
+          this.getIdOnEntity(currentEntity, value),
+        createEntity: (sourceEntity) => new sourceEntity(),
+      },
+    })
+  }
+
   private async enrichEntityWithRelations(
     entity: TEntity,
     data: any,
@@ -447,30 +480,21 @@ export abstract class RepositoryBase<
         const list = new (entity as any)()[prop.name] as List<any>
         const entityInstance = list.entityType! as any
 
-        const items: any[] = []
-
         for (const item of data[propName] || []) {
-          const cacheKey = `${(entity as any).name}-${this.getIdOnEntity(new entityInstance(), item)}`
+          const cacheKey = `${entityInstance.name}-${this.getIdOnEntity(new entityInstance(), item)}`
 
           if (cache.has(cacheKey)) {
-            items.push(cache.get(cacheKey))
             continue
           }
 
           cache.set(cacheKey, item)
 
-          const enrichedItem = await this.loadRelationForEntity(
+          await this.loadRelationForEntity(
             this.getWhereByIdSchema(new entityInstance(), item),
             entityInstance,
             cache,
-          )
-
-          cache.set(cacheKey, enrichedItem)
-
-          items.push(enrichedItem)
+          ).then((response) => cache.set(cacheKey, response))
         }
-
-        data[propName] = items
         continue
       }
 
@@ -479,22 +503,19 @@ export abstract class RepositoryBase<
       )
 
       if (relationEntity && data[propName]) {
-        const cacheKey = `${(entity as any).name}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
+        const cacheKey = `${relationEntity.name}-${this.getIdOnEntity(new relationEntity(), data[propName])}`
 
         if (cache.has(cacheKey)) {
-          data[propName] = cache.get(cacheKey)
           continue
         }
 
         cache.set(cacheKey, data[propName])
 
-        data[propName] = await this.loadRelationForEntity(
+        await this.loadRelationForEntity(
           this.getWhereByIdSchema(new relationEntity(), data[propName]),
           relationEntity as any,
           cache,
-        )
-
-        cache.set(cacheKey, data[propName])
+        ).then((response) => cache.set(cacheKey, response))
       }
     }
 
@@ -599,55 +620,64 @@ export abstract class RepositoryBase<
 
   protected async findById(id: IComparableId): Promise<TEntity | null> {
     const data = await (this.context() as any).findFirst({
-      select: this.getSelectWithRelationsId(
-        this._modelName.prototype.constructor,
-      ),
-      where: this.getWhereByIdSchema(this._modelName.prototype.constructor, {
+      select: this.getSelectWithRelationsId(this.entityInstance),
+      where: this.getWhereByIdSchema(this.entityInstance, {
         id,
       }),
     })
 
     if (!data) return null
 
-    const enrichedEntity = await this.enrichEntityWithRelations(
-      this._modelName.prototype.constructor,
+    const cache = new Map()
+    return this.enrichEntityWithRelations(
+      this.entityInstance,
       createProxy(data),
+      cache,
     )
-    return this.createEntity(enrichedEntity)
+      .then((response) =>
+        this.loadEntityFromCache(this.entityInstance, response, cache),
+      )
+      .then((response) => this.createEntity(response))
   }
 
   protected async findFirst<T>(where: T): Promise<TEntity | null> {
     const data = await (this.context() as any).findFirst({
-      select: this.getSelectWithRelationsId(
-        this._modelName.prototype.constructor,
-      ),
+      select: this.getSelectWithRelationsId(this.entityInstance),
       where,
     })
 
     if (!data) return null
 
-    const enrichedEntity = await this.enrichEntityWithRelations(
-      this._modelName.prototype.constructor,
+    const cache = new Map()
+    return this.enrichEntityWithRelations(
+      this.entityInstance,
       createProxy(data),
+      cache,
     )
-    return this.createEntity(enrichedEntity)
+      .then((response) =>
+        this.loadEntityFromCache(this.entityInstance, response, cache),
+      )
+      .then((response) => this.createEntity(response))
   }
 
   protected async findUnique<T>(where: T): Promise<TEntity | null> {
     const data = await (this.context() as any).findUnique({
-      select: this.getSelectWithRelationsId(
-        this._modelName.prototype.constructor,
-      ),
+      select: this.getSelectWithRelationsId(this.entityInstance),
       where,
     })
 
     if (!data) return null
 
-    const enrichedEntity = await this.enrichEntityWithRelations(
-      this._modelName.prototype.constructor,
+    const cache = new Map()
+    return this.enrichEntityWithRelations(
+      this.entityInstance,
       createProxy(data),
+      cache,
     )
-    return this.createEntity(enrichedEntity)
+      .then((response) =>
+        this.loadEntityFromCache(this.entityInstance, response, cache),
+      )
+      .then((response) => this.createEntity(response))
   }
 
   protected async findMany<T>(
