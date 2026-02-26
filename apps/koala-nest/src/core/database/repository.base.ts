@@ -560,7 +560,7 @@ export abstract class RepositoryBase<
               return Promise.all(
                 relationCreate.relations.map((relation) => {
                   const relationPropName = this.getPropNameFromEntitySource(
-                    relation,
+                    relation.constructor as any,
                     relationCreate.entityInstance,
                   )
 
