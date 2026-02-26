@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.32
+
+### Patch Changes
+
+- 9813d6b: fix: corrigir passagem de parâmetro para getPropNameFromEntitySource
+
 ## 3.1.31
 
 ### Patch Changes

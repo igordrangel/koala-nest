@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.66
+
+### Patch Changes
+
+- 9813d6b: fix: corrigir passagem de parâmetro para getPropNameFromEntitySource
+
 ## 3.0.65
 
 ### Patch Changes
