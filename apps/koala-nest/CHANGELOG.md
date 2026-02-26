@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.31
+
+### Patch Changes
+
+- 6161ae1: feat: atualizar lógica de seleção no RepositoryBase para usar getWhereByIdSchema
+
 ## 3.1.30
 
 ### Patch Changes

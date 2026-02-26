@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.65
+
+### Patch Changes
+
+- 6161ae1: feat: atualizar lógica de seleção no RepositoryBase para usar getWhereByIdSchema
+
 ## 3.0.64
 
 ### Patch Changes
