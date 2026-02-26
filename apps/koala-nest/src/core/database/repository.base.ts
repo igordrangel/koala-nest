@@ -126,7 +126,7 @@ export abstract class RepositoryBase<
 
       if (instance instanceof EntityBase) {
         selectSchema[prop.name] = {
-          select: this.getSelectRootPrismaSchema(instance.constructor as any),
+          select: this.getWhereByIdSchema(instance as any, true),
         }
       } else if (instance instanceof List) {
         const list = new (entity as any)()[prop.name] as List<any>
