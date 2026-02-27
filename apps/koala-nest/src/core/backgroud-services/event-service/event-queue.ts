@@ -56,6 +56,16 @@ export class EventQueue {
     this.markedAggregates = []
   }
 
+  public static findMarkedAggregateByID(
+    id: IComparableId,
+  ): EventJob<any> | undefined {
+    return this.markedAggregates.find((aggregate) => aggregate._id === id)
+  }
+
+  public static getMarkedAggregates() {
+    return this.markedAggregates
+  }
+
   private static dispatchAggregateEvents(aggregate: EventJob<any>) {
     aggregate.eventQueue.forEach((event: EventClass<any>) =>
       this.dispatch(event),
@@ -70,12 +80,6 @@ export class EventQueue {
     )
 
     this.markedAggregates.splice(index, 1)
-  }
-
-  private static findMarkedAggregateByID(
-    id: IComparableId,
-  ): EventJob<any> | undefined {
-    return this.markedAggregates.find((aggregate) => aggregate._id === id)
   }
 
   private static dispatch(event: EventClass<any>) {
