@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.67
+
+### Patch Changes
+
+- 28ba8dd: feat: adicionar métodos para encontrar e obter agregados marcados na fila de eventos
+
 ## 3.0.66
 
 ### Patch Changes
