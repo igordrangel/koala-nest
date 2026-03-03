@@ -447,9 +447,13 @@ export abstract class RepositoryBase<
         getSourceByName: (sourceName) =>
           AutoMappingList.getSourceByName(sourceName),
         getListEntityType: (sourceEntity, propName) => {
-          const list = new sourceEntity()[propName] as List<any>
+          const list = new sourceEntity()[propName] as List<any> | Array<any>
 
-          return list.entityType as any
+          if (list instanceof List) {
+            return list.entityType as any
+          }
+
+          return null
         },
         getIdOnEntity: (currentEntity, value) =>
           this.getIdOnEntity(currentEntity, value),
