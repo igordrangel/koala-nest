@@ -342,7 +342,7 @@ export abstract class RepositoryBase<
               entity[key] as any,
             )
           }
-        } else if (!Array.isArray(entity[key])) {
+        } else if (!(entity[key] instanceof List)) {
           prismaSchema[key] = entity[key]
         }
       })
