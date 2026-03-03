@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.34
+
+### Patch Changes
+
+- ee418ef: fix: ajustar tipo de retorno em getListEntityType para suportar List e Array
+
 ## 3.1.33
 
 ### Patch Changes

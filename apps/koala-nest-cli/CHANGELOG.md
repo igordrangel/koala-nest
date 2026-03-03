@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.68
+
+### Patch Changes
+
+- ee418ef: fix: ajustar tipo de retorno em getListEntityType para suportar List e Array
+
 ## 3.0.67
 
 ### Patch Changes
