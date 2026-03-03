@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.69
+
+### Patch Changes
+
+- aef6146: fix: corrigir verificação de tipo para List na construção do prismaSchema
+
 ## 3.0.68
 
 ### Patch Changes
