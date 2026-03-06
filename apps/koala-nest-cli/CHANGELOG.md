@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.72
+
+### Patch Changes
+
+- 8217b36: feat: adicionar lógica para criação de relações no repositório
+
 ## 3.0.71
 
 ### Patch Changes

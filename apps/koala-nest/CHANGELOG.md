@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.38
+
+### Patch Changes
+
+- 8217b36: feat: adicionar lógica para criação de relações no repositório
+
 ## 3.1.37
 
 ### Patch Changes
