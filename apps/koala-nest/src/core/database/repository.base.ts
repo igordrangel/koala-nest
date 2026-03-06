@@ -306,6 +306,18 @@ export abstract class RepositoryBase<
             },
             relations: this.listRelationEntities(entityInstance),
           })
+        } else if (entity[key]._action === EntityActionType.create) {
+          relationCreates.push({
+            modelName: toCamelCase(modelName),
+            entityInstance,
+            schema: {
+              data: this.entityToPrisma(entityInstance),
+              select: this.getSelectRootPrismaSchema(
+                entityInstance.constructor as any,
+              ),
+            },
+            relations: this.listRelationEntities(entityInstance),
+          })
         }
       }
     })
@@ -604,26 +616,7 @@ export abstract class RepositoryBase<
                       )
                   }
 
-                  return transaction[toCamelCase(relation.constructor.name)]
-                    .create({
-                      data: this.entityToPrisma(relation),
-                      select: this.getSelectRootPrismaSchema(
-                        relation.constructor as any,
-                      ),
-                    })
-                    .then((response: TEntity) => {
-                      const idPropName = this.getIdPropName(relation)
-
-                      if (!Array.isArray(idPropName)) {
-                        relation[idPropName] = response[idPropName]
-                      } else {
-                        idPropName.forEach((propName) => {
-                          relation[propName] = response[propName]
-                        })
-                      }
-
-                      return this.persistRelations(transaction, relation)
-                    })
+                  return this.persistRelations(transaction, relation)
                 }),
               )
             }),
