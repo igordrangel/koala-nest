@@ -1,5 +1,12 @@
 # @koalarx/nest-cli
 
+## 3.0.70
+
+### Patch Changes
+
+- 93ea702: fix: adicionar tipo de retorno ao decorator Entity para garantir a consistência
+- b464203: feat: adicionar rastreamento de alterações em entidades e atualizar lógica de persistência
+
 ## 3.0.69
 
 ### Patch Changes

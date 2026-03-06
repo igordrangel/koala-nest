@@ -1,5 +1,12 @@
 # @koalarx/nest
 
+## 3.1.36
+
+### Patch Changes
+
+- 93ea702: fix: adicionar tipo de retorno ao decorator Entity para garantir a consistência
+- b464203: feat: adicionar rastreamento de alterações em entidades e atualizar lógica de persistência
+
 ## 3.1.35
 
 ### Patch Changes
