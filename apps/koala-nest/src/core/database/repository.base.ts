@@ -598,7 +598,8 @@ export abstract class RepositoryBase<
                       relation[relationPropName] =
                         this.getConnectPrismaSchemaForRelation(
                           relationUpdate.entityInstance as any,
-                          entity,
+                          relation[relationPropName] ??
+                            relationUpdate.schema.where,
                         )
                     }
 
