@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.71
+
+### Patch Changes
+
+- 2ad7424: feat: adicionar rastreamento de alterações em entidades e atualizar lógica de mapeamento
+
 ## 3.0.70
 
 ### Patch Changes
