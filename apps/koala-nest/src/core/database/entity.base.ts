@@ -28,13 +28,51 @@ export type EntityProps<T extends IComparable<T>> = Overwrite<
 export abstract class EntityBase<
   T extends IComparable<T>,
 > implements IComparable<T> {
+  private _trackHasUpdateOnSet: boolean = false
+  private _setTrackingProxy?: this
+
   _id: IComparableId
   _action: EntityActionType = EntityActionType.create
+  _hasUpdate: boolean = false
 
   constructor(props?: EntityProps<T>) {
     if (props) {
       this.automap(props)
     }
+  }
+
+  protected startHasUpdateTracking() {
+    this._trackHasUpdateOnSet = true
+  }
+
+  protected stopHasUpdateTracking() {
+    this._trackHasUpdateOnSet = false
+  }
+
+  protected createSetTrackingProxy(): this {
+    if (this._setTrackingProxy) {
+      return this._setTrackingProxy
+    }
+
+    this._setTrackingProxy = new Proxy(this, {
+      set: (target, property, value, receiver) => {
+        const success = Reflect.set(target, property, value, receiver)
+
+        if (
+          success &&
+          target._trackHasUpdateOnSet &&
+          property !== '_hasUpdate' &&
+          property !== '_trackHasUpdateOnSet' &&
+          property !== '_setTrackingProxy'
+        ) {
+          target._hasUpdate = true
+        }
+
+        return success
+      },
+    }) as this
+
+    return this._setTrackingProxy
   }
 
   automap(

@@ -290,7 +290,10 @@ export abstract class RepositoryBase<
         const entityInstance = entity[key] as any
         const modelName = (entity[key] as any).constructor.name
 
-        if (entity[key]._action === EntityActionType.update) {
+        if (
+          entity[key]._action === EntityActionType.update &&
+          entity[key]._hasUpdate
+        ) {
           relationUpdates.push({
             modelName: toCamelCase(modelName),
             entityInstance,
@@ -545,8 +548,20 @@ export abstract class RepositoryBase<
 
     if (relationUpdates.length > 0) {
       await Promise.all([
-        ...relationUpdates.map((relation) =>
-          transaction[relation.modelName].update(relation.schema),
+        ...relationUpdates.map((relationUpdate) =>
+          transaction[relationUpdate.modelName]
+            .update(relationUpdate.schema)
+            .then(() => {
+              if (relationUpdate.relations.length === 0) {
+                return Promise.all([])
+              }
+
+              return Promise.all(
+                relationUpdate.relations.map((relation) => {
+                  return this.persistRelations(transaction, relation)
+                }),
+              )
+            }),
         ),
       ])
     }

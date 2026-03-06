@@ -68,4 +68,17 @@ describe('Entity decorator', () => {
     expect(person.name).toBeDefined()
     expect(person.active).toBe(true)
   })
+
+  it('should set _hasUpdate as true after any set post construction', () => {
+    const person = new Person({
+      name: faker.person.fullName(),
+      active: true,
+    } as any)
+
+    expect(person._hasUpdate).toBe(false)
+
+    person.name = faker.person.fullName()
+
+    expect(person._hasUpdate).toBe(true)
+  })
 })

@@ -38,10 +38,16 @@ export function Entity<T extends new (...args: any[]) => EntityBase<any>>(
       constructor(...args: any[]) {
         super(...args) // Chama o construtor original
 
+        this.stopHasUpdateTracking()
+
         // Chama o método `automap` se ele existir
         if (typeof this.automap === 'function') {
           this.automap(args[0])
         }
+
+        this.startHasUpdateTracking()
+
+        return this.createSetTrackingProxy()
       }
     }
 
