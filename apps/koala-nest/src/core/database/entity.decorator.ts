@@ -28,12 +28,12 @@ function normalizeIdConfig<T extends EntityProps<any>>(
   return id as IdConfig<T>
 }
 
-export function Entity<T extends new (...args: any[]) => EntityBase<any>>(
-  id?:
-    | keyof EntityProps<InstanceType<T>>
-    | IdConfig<EntityProps<InstanceType<T>>>,
+export function Entity(
+  id?: keyof EntityProps<any> | IdConfig<EntityProps<any>>,
 ) {
-  return function (target: T): T {
+  return function <T extends new (...args: any[]) => EntityBase<any>>(
+    target: T,
+  ): T {
     class NewConstructor extends target {
       constructor(...args: any[]) {
         super(...args) // Chama o construtor original
@@ -63,6 +63,16 @@ export function Entity<T extends new (...args: any[]) => EntityBase<any>>(
 
     const idConfig = normalizeIdConfig(id)
     Reflect.defineMetadata('entity:id', idConfig, NewConstructor.prototype)
+    Reflect.defineMetadata(
+      'entity:decorated-constructor',
+      NewConstructor,
+      target.prototype,
+    )
+    Reflect.defineMetadata(
+      'entity:decorated-constructor',
+      NewConstructor,
+      NewConstructor.prototype,
+    )
 
     return NewConstructor as T
   }

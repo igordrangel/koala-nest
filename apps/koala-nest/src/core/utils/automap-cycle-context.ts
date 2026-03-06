@@ -26,12 +26,27 @@ export function mapEntityReference(
     return cachedEntity
   }
 
-  const entity = new EntityOnPropKey()
+  const DecoratedEntityConstructor =
+    Reflect.getMetadata(
+      'entity:decorated-constructor',
+      EntityOnPropKey.prototype,
+    ) ?? EntityOnPropKey
+
+  const entity = new DecoratedEntityConstructor()
+  const trackedEntity = entity as any
 
   if (entity && typeof (entity as any).automap === 'function') {
-    ;(entity as any)._action = action
+    if (typeof trackedEntity.stopHasUpdateTracking === 'function') {
+      trackedEntity.stopHasUpdateTracking()
+    }
+
+    trackedEntity._action = action
     context.references.set(value, entity)
-    ;(entity as any).automap(value, context)
+    trackedEntity.automap(value, context)
+
+    if (typeof trackedEntity.startHasUpdateTracking === 'function') {
+      trackedEntity.startHasUpdateTracking()
+    }
   }
 
   return entity

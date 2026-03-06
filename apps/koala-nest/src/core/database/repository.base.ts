@@ -383,8 +383,18 @@ export abstract class RepositoryBase<
 
   private createEntity(data: any, entityClass?: Type<TEntity>) {
     const entity = new (entityClass || this._modelName)()
+    const trackedEntity = entity as any
+
+    if (typeof trackedEntity.stopHasUpdateTracking === 'function') {
+      trackedEntity.stopHasUpdateTracking()
+    }
+
     entity._action = EntityActionType.update
     entity.automap(data)
+
+    if (typeof trackedEntity.startHasUpdateTracking === 'function') {
+      trackedEntity.startHasUpdateTracking()
+    }
 
     return entity
   }

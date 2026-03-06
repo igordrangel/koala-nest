@@ -36,6 +36,39 @@ export abstract class EntityBase<
   _hasUpdate: boolean = false
 
   constructor(props?: EntityProps<T>) {
+    Object.defineProperties(this, {
+      _trackHasUpdateOnSet: {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: false,
+      },
+      _setTrackingProxy: {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: undefined,
+      },
+      _id: {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: this._id,
+      },
+      _action: {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: this._action,
+      },
+      _hasUpdate: {
+        enumerable: false,
+        configurable: true,
+        writable: true,
+        value: this._hasUpdate,
+      },
+    })
+
     if (props) {
       this.automap(props)
     }
@@ -62,6 +95,8 @@ export abstract class EntityBase<
           success &&
           target._trackHasUpdateOnSet &&
           property !== '_hasUpdate' &&
+          property !== '_action' &&
+          property !== '_id' &&
           property !== '_trackHasUpdateOnSet' &&
           property !== '_setTrackingProxy'
         ) {
