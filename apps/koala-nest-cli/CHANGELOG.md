@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.73
+
+### Patch Changes
+
+- 06796b9: feat: aprimorar lógica de persistência de relações no repositório
+
 ## 3.0.72
 
 ### Patch Changes
