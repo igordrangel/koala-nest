@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.40
+
+### Patch Changes
+
+- 501c01c: fix: corrigir lógica de atualização de relações no repositório
+
 ## 3.1.39
 
 ### Patch Changes

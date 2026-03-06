@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.74
+
+### Patch Changes
+
+- 501c01c: fix: corrigir lógica de atualização de relações no repositório
+
 ## 3.0.73
 
 ### Patch Changes
