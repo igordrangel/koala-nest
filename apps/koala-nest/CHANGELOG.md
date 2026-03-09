@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.41
+
+### Patch Changes
+
+- 22f9341: feat: adicionar suporte para desconectar entidades relacionadas ao salvar
+
 ## 3.1.40
 
 ### Patch Changes

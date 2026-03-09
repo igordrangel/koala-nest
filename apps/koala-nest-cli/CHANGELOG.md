@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.75
+
+### Patch Changes
+
+- 22f9341: feat: adicionar suporte para desconectar entidades relacionadas ao salvar
+
 ## 3.0.74
 
 ### Patch Changes
