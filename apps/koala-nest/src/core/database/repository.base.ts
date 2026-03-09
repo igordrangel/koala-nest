@@ -357,6 +357,20 @@ export abstract class RepositoryBase<
               entity[key] as any,
             )
           }
+        } else if (entity[key] === null) {
+          const propDefinitions = AutoMappingList.getPropDefinitions(
+            entity.constructor as any,
+            key,
+          )
+          const relationEntity = AutoMappingList.getSourceByName(
+            propDefinitions?.type ?? '',
+          )
+
+          if (relationEntity) {
+            prismaSchema[key] = {
+              disconnect: true,
+            }
+          }
         } else if (!(entity[key] instanceof List)) {
           prismaSchema[key] = entity[key]
         }
