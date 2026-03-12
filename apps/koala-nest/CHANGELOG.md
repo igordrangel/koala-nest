@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.43
+
+### Patch Changes
+
+- 5985dad: feat: adicionar método para definir ID em entidades e preencher automaticamente após criação
+
 ## 3.1.42
 
 ### Patch Changes
