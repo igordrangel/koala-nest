@@ -657,42 +657,49 @@ export abstract class RepositoryBase<
 
               return Promise.all(
                 relationCreate.relations.map((relation) => {
-                  const relationPropName = this.getPropNameFromEntitySource(
-                    relation.constructor as any,
-                    relationCreate.entityInstance,
-                  )
-
                   if (
-                    relationPropName &&
-                    !(relation[relationPropName] instanceof List)
+                    relation._action === EntityActionType.update &&
+                    relation._hasUpdate
                   ) {
-                    relation[relationPropName] =
-                      this.getConnectPrismaSchemaForRelation(
-                        relationCreate.entityInstance as any,
-                        response,
-                      )
+                    return this.persistRelations(transaction, relation)
+                  } else if (relation._action === EntityActionType.create) {
+                    const relationPropName = this.getPropNameFromEntitySource(
+                      relation.constructor as any,
+                      relationCreate.entityInstance,
+                    )
+
+                    if (
+                      relationPropName &&
+                      !(relation[relationPropName] instanceof List)
+                    ) {
+                      relation[relationPropName] =
+                        this.getConnectPrismaSchemaForRelation(
+                          relationCreate.entityInstance as any,
+                          response,
+                        )
+                    }
+
+                    return transaction[toCamelCase(relation.constructor.name)]
+                      .create({
+                        data: this.entityToPrisma(relation),
+                        select: this.getSelectRootPrismaSchema(
+                          relation.constructor as any,
+                        ),
+                      })
+                      .then((response: TEntity) => {
+                        const idPropName = this.getIdPropName(relation)
+
+                        if (!Array.isArray(idPropName)) {
+                          relation[idPropName] = response[idPropName]
+                        } else {
+                          idPropName.forEach((propName) => {
+                            relation[propName] = response[propName]
+                          })
+                        }
+
+                        return this.persistRelations(transaction, relation)
+                      })
                   }
-
-                  return transaction[toCamelCase(relation.constructor.name)]
-                    .create({
-                      data: this.entityToPrisma(relation),
-                      select: this.getSelectRootPrismaSchema(
-                        relation.constructor as any,
-                      ),
-                    })
-                    .then((response: TEntity) => {
-                      const idPropName = this.getIdPropName(relation)
-
-                      if (!Array.isArray(idPropName)) {
-                        relation[idPropName] = response[idPropName]
-                      } else {
-                        idPropName.forEach((propName) => {
-                          relation[propName] = response[propName]
-                        })
-                      }
-
-                      return this.persistRelations(transaction, relation)
-                    })
                 }),
               )
             }),
