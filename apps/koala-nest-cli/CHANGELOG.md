@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.76
+
+### Patch Changes
+
+- e405bf3: fix: corrigir lógica de persistência de relações no repositório
+
 ## 3.0.75
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.42
+
+### Patch Changes
+
+- e405bf3: fix: corrigir lógica de persistência de relações no repositório
+
 ## 3.1.41
 
 ### Patch Changes
