@@ -726,21 +726,11 @@ export abstract class RepositoryBase<
   }
 
   private autofillCreatedId(entity: TEntity, response: any) {
-    const entityProps = AutoMappingList.getAllProps(entity.constructor as any)
-
     this.setIdOnEntity(entity, response)
 
-    entityProps.forEach((prop) => {
-      let instance
-
-      try {
-        instance = new (prop.type())()
-      } catch {
-        instance = null
-      }
-
-      if (instance instanceof EntityBase) {
-        this.setIdOnEntity(entity[prop.name], response[prop.name])
+    Object.keys(entity).forEach((key) => {
+      if (entity[key] instanceof EntityBase && response[key]) {
+        this.setIdOnEntity(entity[key] as any, response[key])
       }
     })
   }
@@ -878,8 +868,12 @@ export abstract class RepositoryBase<
           .update({
             where,
             data: prismaEntity,
+            select: this.getSelectRootPrismaSchema(entity.constructor as any),
           })
-          .then(() => this.persistRelations(client, entity)),
+          .then((response: TEntity) => {
+            this.autofillCreatedId(entity, response)
+            return this.persistRelations(client, entity)
+          }),
       ).then(() => this.findUnique(where) as Promise<TEntity>)
     }
   }
