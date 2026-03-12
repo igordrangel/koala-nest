@@ -708,6 +708,43 @@ export abstract class RepositoryBase<
     }
   }
 
+  private setIdOnEntity(entityInstance: TEntity, data: any) {
+    const idPropName = this.getIdPropName(entityInstance)
+
+    if (!Array.isArray(idPropName)) {
+      entityInstance[idPropName] = data[idPropName]
+      entityInstance._id = data[idPropName]
+    } else {
+      idPropName.forEach((propName) => {
+        entityInstance[propName] = data[propName]
+      })
+      entityInstance._id = idPropName.map((name) => data[name]).join('-')
+    }
+
+    entityInstance._action = EntityActionType.update
+    entityInstance._hasUpdate = false
+  }
+
+  private autofillCreatedId(entity: TEntity, response: any) {
+    const entityProps = AutoMappingList.getAllProps(entity.constructor as any)
+
+    this.setIdOnEntity(entity, response)
+
+    entityProps.forEach((prop) => {
+      let instance
+
+      try {
+        instance = new (prop.type())()
+      } catch {
+        instance = null
+      }
+
+      if (instance instanceof EntityBase) {
+        this.setIdOnEntity(entity[prop.name], response[prop.name])
+      }
+    })
+  }
+
   protected context(transactionalClient?: TContext): TContext[TModelKey] {
     const modelName = this._modelName.name
 
@@ -825,18 +862,10 @@ export abstract class RepositoryBase<
         (this.context(client) as any)
           .create({
             data: prismaEntity,
-            include: this.getInclude(),
+            select: this.getSelectRootPrismaSchema(entity.constructor as any),
           })
           .then((response: TEntity) => {
-            const idPropName = this.getIdPropName(entity)
-
-            if (!Array.isArray(idPropName)) {
-              entity[idPropName] = response[idPropName]
-            } else {
-              idPropName.forEach((propName) => {
-                entity[propName] = response[propName]
-              })
-            }
+            this.autofillCreatedId(entity, response)
 
             return this.persistRelations(client, entity).then(() => entity)
           }),
