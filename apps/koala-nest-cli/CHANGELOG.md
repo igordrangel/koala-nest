@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.78
+
+### Patch Changes
+
+- 9fc11c0: fix: otimizar preenchimento automático de IDs em entidades após criação
+
 ## 3.0.77
 
 ### Patch Changes
