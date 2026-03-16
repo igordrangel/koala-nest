@@ -20,7 +20,11 @@ export type EntityProps<T extends IComparable<T>> = Overwrite<
     {
       [K in keyof T as T[K] extends Function ? never : K]: T[K]
     },
-    '_id' | '_action'
+    | '_id'
+    | '_action'
+    | '_hasUpdate'
+    | '_trackHasUpdateOnSet'
+    | '_setTrackingProxy'
   >,
   { id?: T extends { id: infer U } ? U : never }
 >
