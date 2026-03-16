@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.45
+
+### Patch Changes
+
+- 75d98ac: fix: adicionar propriedades faltantes ao tipo EntityProps
+
 ## 3.1.44
 
 ### Patch Changes

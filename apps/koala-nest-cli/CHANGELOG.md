@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.79
+
+### Patch Changes
+
+- 75d98ac: fix: adicionar propriedades faltantes ao tipo EntityProps
+
 ## 3.0.78
 
 ### Patch Changes
