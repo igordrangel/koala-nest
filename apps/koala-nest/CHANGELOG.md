@@ -1,5 +1,11 @@
 # @koalarx/nest
 
+## 3.1.46
+
+### Patch Changes
+
+- 75d0ed9: fix: atualizar lógica de conexão no esquema Prisma para suportar atualizações
+
 ## 3.1.45
 
 ### Patch Changes

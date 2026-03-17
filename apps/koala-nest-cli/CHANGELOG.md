@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.80
+
+### Patch Changes
+
+- 75d0ed9: fix: atualizar lógica de conexão no esquema Prisma para suportar atualizações
+
 ## 3.0.79
 
 ### Patch Changes
