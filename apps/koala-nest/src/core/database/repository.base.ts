@@ -353,9 +353,9 @@ export abstract class RepositoryBase<
               }
             }
           } else {
-            prismaSchema[key] = this.getConnectPrismaSchemaForRelation(
-              entity[key] as any,
-            )
+            prismaSchema[key] = entity[key]._hasUpdate
+              ? { update: this.entityToPrisma(entity[key] as any) }
+              : this.getConnectPrismaSchemaForRelation(entity[key] as any)
           }
         } else if (entity[key] === null) {
           const propDefinitions = AutoMappingList.getPropDefinitions(
