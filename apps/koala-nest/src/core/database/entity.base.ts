@@ -9,6 +9,7 @@ import {
 } from '../utils/automap-cycle-context'
 import { IComparable, IComparableId } from '../utils/interfaces/icomparable'
 import { List } from '../utils/list'
+import { IdConfig } from './entity.decorator'
 
 export enum EntityActionType {
   create = 1,
@@ -192,6 +193,19 @@ export abstract class EntityBase<
           }
 
           this[key] = props[key]
+        }
+      }
+
+      if (!this._id) {
+        const idConfig = Reflect.getMetadata(
+          'entity:id',
+          this.constructor.prototype,
+        ) as IdConfig<any>
+
+        if (idConfig && idConfig.composite) {
+          this._id = idConfig.composite
+            .map((idPart) => this[idPart])
+            .join('-') as IComparableId
         }
       }
     }
