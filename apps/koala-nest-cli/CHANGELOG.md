@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.82
+
+### Patch Changes
+
+- 6937618: fix: simplificar lógica de busca por \_id na classe List
+
 ## 3.0.81
 
 ### Patch Changes
