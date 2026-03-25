@@ -23,11 +23,7 @@ export class List<T> {
       return list
         .filter((i) => i instanceof EntityBase)
         .filter((i) => !!i._id)
-        .findIndex(
-          (i) =>
-            (item as any)._id === (i as any)._id ||
-            (item as any).id === (i as any).id,
-        )
+        .findIndex((i) => item._id === i._id)
     }
 
     return list
