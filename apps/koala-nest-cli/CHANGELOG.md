@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.81
+
+### Patch Changes
+
+- 99f82c2: fix: adicionar lógica para definir \_id com base na configuração de entidade
+
 ## 3.0.80
 
 ### Patch Changes
