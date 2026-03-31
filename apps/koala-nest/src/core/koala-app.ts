@@ -10,7 +10,6 @@ import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-s
 import { apiReference } from '@scalar/nestjs-api-reference'
 import * as consola from 'consola'
 import * as expressBasicAuth from 'express-basic-auth'
-import * as ngrok from 'ngrok'
 import { EnvService } from '../env/env.service'
 import { DomainErrorsFilter } from '../filters/domain-errors.filter'
 import { GlobalExceptionsFilter } from '../filters/global-exception.filter'
@@ -347,6 +346,15 @@ export class KoalaApp {
     }
 
     if (this._ngrokKey) {
+      let ngrok: any
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        ngrok = require('ngrok')
+      } catch {
+        throw new InternalServerErrorException(
+          'Para usar o suporte ao ngrok, instale a dependência opcional "ngrok" (ex: bun add ngrok ou npm install ngrok)',
+        )
+      }
       const envService = this.app.get(EnvService)
       const port = envService.get('PORT') ?? 3000
 
@@ -355,7 +363,7 @@ export class KoalaApp {
           authtoken: this._ngrokKey,
           addr: port,
         })
-        .then((url) => {
+        .then((url: string) => {
           this._ngrokUrl = url
         })
     }
