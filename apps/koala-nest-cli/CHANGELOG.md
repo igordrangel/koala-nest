@@ -1,5 +1,13 @@
 # @koalarx/nest-cli
 
+## 3.0.83
+
+### Patch Changes
+
+- f24748b: Implement feature X to enhance user experience and fix bug Y in module Z
+- 324e172: Remove ngrok dependency from package.json
+- 5863c53: refactor: alterar modificadores de acesso de membros da classe RepositoryBase para protected
+
 ## 3.0.82
 
 ### Patch Changes
