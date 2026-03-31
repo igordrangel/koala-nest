@@ -39,8 +39,8 @@ export abstract class RepositoryBase<
   TModelKey extends keyof TContext = keyof TContext,
 > {
   protected _context: TContext
-  private readonly _modelName: Type<TEntity>
-  private readonly _includeFindMany?: RepositoryInclude<TEntity>
+  protected readonly _modelName: Type<TEntity>
+  protected readonly _includeFindMany?: RepositoryInclude<TEntity>
 
   constructor({ context, modelName }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
@@ -53,11 +53,11 @@ export abstract class RepositoryBase<
     })
   }
 
-  private get entityInstance() {
+  protected get entityInstance() {
     return this._modelName.prototype.constructor as any
   }
 
-  private getIdPropName(entity?: TEntity): string | string[] {
+  protected getIdPropName(entity?: TEntity): string | string[] {
     const idConfig = Reflect.getMetadata(
       'entity:id',
       entity ? entity.constructor.prototype : this._modelName.prototype,
@@ -74,7 +74,7 @@ export abstract class RepositoryBase<
     return 'id'
   }
 
-  private getWhereByIdSchema(entity: TEntity, value: any) {
+  protected getWhereByIdSchema(entity: TEntity, value: any) {
     const propIdName = this.getIdPropName(entity)
 
     if (Array.isArray(propIdName)) {
@@ -93,7 +93,7 @@ export abstract class RepositoryBase<
     }
   }
 
-  private getConnectPrismaSchemaForRelation(
+  protected getConnectPrismaSchemaForRelation(
     entity: TEntity | Type<TEntity>,
     data?: any,
   ) {
@@ -102,7 +102,7 @@ export abstract class RepositoryBase<
     }
   }
 
-  private checkIdHasValue(entity: TEntity, value: any) {
+  protected checkIdHasValue(entity: TEntity, value: any) {
     const result = this.getWhereByIdSchema(entity, value)
 
     return Object.values(result).every(
@@ -110,7 +110,7 @@ export abstract class RepositoryBase<
     )
   }
 
-  private getSelectRootPrismaSchema(entity: TEntity) {
+  protected getSelectRootPrismaSchema(entity: TEntity) {
     const selectSchema = {}
 
     const entityProps = AutoMappingList.getAllProps(entity as any)
@@ -143,7 +143,7 @@ export abstract class RepositoryBase<
     return selectSchema
   }
 
-  private getSelectWithRelationsId(entity: TEntity) {
+  protected getSelectWithRelationsId(entity: TEntity) {
     const selectSchema = {}
 
     const entityProps = AutoMappingList.getAllProps(entity as any)
@@ -176,7 +176,10 @@ export abstract class RepositoryBase<
     return selectSchema
   }
 
-  private getPropNameFromEntitySource(source: TEntity, entity: Type<TEntity>) {
+  protected getPropNameFromEntitySource(
+    source: TEntity,
+    entity: Type<TEntity>,
+  ) {
     const entityProps = AutoMappingList.getAllProps(source as any)
 
     return entityProps.find((prop) => {
@@ -201,7 +204,7 @@ export abstract class RepositoryBase<
     })?.name
   }
 
-  private listRelationEntities(entity: TEntity, fromList = false) {
+  protected listRelationEntities(entity: TEntity, fromList = false) {
     const relationEntities: TEntity[] = []
 
     Object.keys(entity).forEach((key) => {
@@ -223,7 +226,7 @@ export abstract class RepositoryBase<
     return relationEntities
   }
 
-  private listToRelationActionList(entity: TEntity) {
+  protected listToRelationActionList(entity: TEntity) {
     type RelationActionList = Array<{
       modelName: string
       entityInstance: Type<TEntity>
@@ -325,7 +328,7 @@ export abstract class RepositoryBase<
     return { relationCreates, relationUpdates, relationDeletes }
   }
 
-  private entityToPrisma(entity: TEntity) {
+  protected entityToPrisma(entity: TEntity) {
     const prismaSchema = {}
 
     Object.keys(entity)
@@ -379,7 +382,7 @@ export abstract class RepositoryBase<
     return prismaSchema
   }
 
-  private getInclude(include?: RepositoryInclude<TEntity>) {
+  protected getInclude(include?: RepositoryInclude<TEntity>) {
     include = include ?? {}
 
     const result = {}
@@ -397,7 +400,7 @@ export abstract class RepositoryBase<
     return result
   }
 
-  private findManySchema<T>(where: T, pagination?: PaginationDto) {
+  protected findManySchema<T>(where: T, pagination?: PaginationDto) {
     return {
       include: this.getInclude(this._includeFindMany),
       where,
@@ -407,7 +410,7 @@ export abstract class RepositoryBase<
     }
   }
 
-  private createEntity(data: any, entityClass?: Type<TEntity>) {
+  protected createEntity(data: any, entityClass?: Type<TEntity>) {
     const entity = new (entityClass || this._modelName)()
     const trackedEntity = entity as any
 
@@ -425,7 +428,7 @@ export abstract class RepositoryBase<
     return entity
   }
 
-  private orphanRemoval(
+  protected orphanRemoval(
     client: PrismaTransactionalClient,
     entity: EntityBase<TEntity>,
   ) {
@@ -438,7 +441,7 @@ export abstract class RepositoryBase<
     return client[toCamelCase(entity.constructor.name)].delete({ where })
   }
 
-  private getIdOnEntity(entity: TEntity, data: any): string {
+  protected getIdOnEntity(entity: TEntity, data: any): string {
     const propIdName = this.getIdPropName(entity)
 
     if (Array.isArray(propIdName)) {
@@ -454,7 +457,7 @@ export abstract class RepositoryBase<
     return data[propIdName]
   }
 
-  private async loadRelationForEntity(
+  protected async loadRelationForEntity(
     where: Record<string, any>,
     entity: TEntity,
     cache: Map<string, any>,
@@ -469,7 +472,7 @@ export abstract class RepositoryBase<
       )
   }
 
-  private loadEntityFromCache(
+  protected loadEntityFromCache(
     entity: TEntity,
     data: any,
     cache: Map<string, any>,
@@ -501,7 +504,7 @@ export abstract class RepositoryBase<
     })
   }
 
-  private async enrichEntityWithRelations(
+  protected async enrichEntityWithRelations(
     entity: TEntity,
     data: any,
     cache: Map<string, any> = new Map(),
@@ -565,7 +568,7 @@ export abstract class RepositoryBase<
     return data
   }
 
-  private async persistRelations(
+  protected async persistRelations(
     transaction: PrismaTransactionalClient,
     entity: TEntity,
   ) {
@@ -708,7 +711,7 @@ export abstract class RepositoryBase<
     }
   }
 
-  private setIdOnEntity(entityInstance: TEntity, data: any) {
+  protected setIdOnEntity(entityInstance: TEntity, data: any) {
     const idPropName = this.getIdPropName(entityInstance)
 
     if (!Array.isArray(idPropName)) {
@@ -725,7 +728,7 @@ export abstract class RepositoryBase<
     entityInstance._hasUpdate = false
   }
 
-  private autofillCreatedId(entity: TEntity, response: any) {
+  protected autofillCreatedId(entity: TEntity, response: any) {
     this.setIdOnEntity(entity, response)
 
     Object.keys(entity).forEach((key) => {
@@ -986,7 +989,7 @@ export abstract class RepositoryBase<
     )
   }
 
-  withTransaction(fn: (prisma: TContext) => Promise<any>) {
+  protected withTransaction(fn: (prisma: TContext) => Promise<any>) {
     return this._context.withTransaction(async (client) => {
       return fn(new (KoalaGlobalVars.dbTransactionContext as any)(client))
     })

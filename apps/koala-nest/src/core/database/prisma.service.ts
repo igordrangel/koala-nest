@@ -25,7 +25,6 @@ async function loadPrismaClient() {
 }
 
 @Injectable()
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 export class PrismaService
   implements OnModuleInit, OnModuleDestroy, PrismaClientWithCustomTransaction
@@ -63,7 +62,7 @@ export class PrismaService
 
   async initialize() {
     const PrismaClientType = await loadPrismaClient()
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     this.prismaInstance = new PrismaClientType({
       log: [{ emit: 'event', level: 'query' }],
