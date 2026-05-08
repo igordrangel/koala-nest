@@ -1,5 +1,11 @@
 # @koalarx/nest-cli
 
+## 3.0.84
+
+### Patch Changes
+
+- 5a0d805: feat: adicionar suporte para deepLimit no construtor da classe RepositoryBase
+
 ## 3.0.83
 
 ### Patch Changes
