@@ -31,6 +31,7 @@ interface RepositoryInitProps<
   context: TContext
   modelName: Type<TEntity>
   transactionContext?: Type<TContext>
+  deepLimit?: number
 }
 
 export abstract class RepositoryBase<
@@ -42,13 +43,17 @@ export abstract class RepositoryBase<
   protected readonly _modelName: Type<TEntity>
   protected readonly _includeFindMany?: RepositoryInclude<TEntity>
 
-  constructor({ context, modelName }: RepositoryInitProps<TEntity, TContext>) {
+  constructor({
+    context,
+    modelName,
+    deepLimit,
+  }: RepositoryInitProps<TEntity, TContext>) {
     this._context = context
     this._modelName = modelName
 
     this._includeFindMany = generateIncludeSchema({
       forList: true,
-      deepLimit: 2,
+      deepLimit: deepLimit ?? 2,
       entity: this._modelName,
     })
   }
