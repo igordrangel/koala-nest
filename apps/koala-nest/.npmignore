@@ -1,4 +1,0 @@
-src/
-tsconfig.lib.json
-*.ts
-!*.d.ts
