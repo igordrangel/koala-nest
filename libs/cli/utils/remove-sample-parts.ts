@@ -19,9 +19,10 @@ export async function removeSampleParts(projectName: string) {
     )
     .replace("import { PersonRepository } from './person.repository';", "")
     .replace(
-      "providers: [{ provide: IPersonRepository, useClass: PersonRepository }],",
+      "providers: [{ provide: IPersonRepository, useClass: PersonRepository }],\n",
       "",
-    );
+    )
+    .replace(", IPersonRepository", "");
 
   writeFileSync(
     path.join(
@@ -29,6 +30,28 @@ export async function removeSampleParts(projectName: string) {
       "src/infra/repositories/repository.module.ts",
     ),
     repositoryModuleContent,
+    "utf8",
+  );
+
+  const dataSourceFactoryContent = readFileSync(
+    path.join(getSourceCodePath(), "src/infra/database/data-source-factory.ts"),
+    "utf8",
+  )
+    .replace(
+      "import { Person } from '@/domain/entities/person/person';\nimport { PersonAddress } from '@/domain/entities/person/person-address';\nimport { PersonContact } from '@/domain/entities/person/person-contact';\n",
+      "",
+    )
+    .replace(
+      "entities: [Person, PersonAddress, PersonContact],",
+      "entities: [],",
+    );
+
+  writeFileSync(
+    path.join(
+      resolveProjectPath(projectName),
+      "src/infra/database/data-source-factory.ts",
+    ),
+    dataSourceFactoryContent,
     "utf8",
   );
 

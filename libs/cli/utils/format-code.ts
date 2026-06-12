@@ -2,9 +2,13 @@ import { getPackageManager } from "./get-package-manager";
 import { resolveProjectPath } from "./resolve-project-pach";
 import { runCommand } from "./run-command";
 
-export function formatCode(projectName: string) {
-  console.log(resolveProjectPath(projectName));
-  return runCommand(
+export async function formatCode(projectName: string) {
+  await runCommand(
+    [getPackageManager(projectName), "run", "lint"],
+    resolveProjectPath(projectName),
+  );
+
+  await runCommand(
     [getPackageManager(projectName), "run", "format"],
     resolveProjectPath(projectName),
   );

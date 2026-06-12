@@ -3,6 +3,8 @@ import path from "node:path";
 import { getSourceCodePath } from "./get-source-code-path";
 import { removeSampleParts } from "./remove-sample-parts";
 import { resolveProjectPath } from "./resolve-project-pach";
+import { runCommand } from "./run-command";
+import { getPackageManager } from "./get-package-manager";
 
 export type Template = "default" | "crudSample";
 
@@ -28,7 +30,7 @@ export async function installModule(
   projectName = "",
 ): Promise<void> {
   switch (module) {
-    case Modules.CORE:
+    case Modules.CORE: {
       install("src/application/common", projectName);
       install("src/core", projectName);
       install("src/domain/dtos/pagination.dto.ts", projectName);
@@ -38,6 +40,7 @@ export async function installModule(
       install("src/host/open-api", projectName);
       install("src/host/app.module.ts", projectName);
       install("src/host/main.ts", projectName);
+      install("src/infra/common/env.service.ts", projectName);
       install("src/infra/database/data-source-factory.ts", projectName);
       install("src/infra/database/database.module.ts", projectName);
       install("src/infra/repositories/repository.base.ts", projectName);
@@ -45,10 +48,16 @@ export async function installModule(
       install("src/infra/infra.module.ts", projectName);
       install("src/test", projectName);
 
+      await runCommand(
+        [getPackageManager(projectName), "add", "@nestjs/config"],
+        resolveProjectPath(projectName),
+      );
+
       if (template === "default") {
         await removeSampleParts(projectName);
       }
       break;
+    }
     case Modules.AUTH:
       break;
     case Modules.CACHE:

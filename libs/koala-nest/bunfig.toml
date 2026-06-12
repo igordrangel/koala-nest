@@ -1,0 +1,11 @@
+[test]
+root = "src"
+preload = ["./src/test/setup.ts"]
+testPatterns = [
+  "test/**/*.spec.ts",
+  "test/**/*.e2e-spec.ts"
+]
+timeoutMs = 60000
+
+[loader]
+".ts" = "tsx"
