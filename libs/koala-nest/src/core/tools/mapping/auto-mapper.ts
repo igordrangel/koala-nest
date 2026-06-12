@@ -40,26 +40,25 @@ export class AutoMapper {
       throw new Error(`Target properties not found for ${target.name}`);
     }
 
-    for (const sourceProp of sourceProps) {
-      let targetPropName: string | undefined;
+    const customTargetProps = new Set<string>();
 
-      if (sourceProp.name in mapping.formMember) {
-        const memberTargetProp = mapping.formMember.find(
-          (m) => m[sourceProp.name],
-        );
-        if (memberTargetProp) {
-          targetPropName = Object.keys(memberTargetProp)[0];
+    for (const member of mapping.formMember) {
+      for (const [targetProp, mapFn] of Object.entries(member)) {
+        if (typeof mapFn === 'function') {
+          targetInstance[targetProp] = mapFn(data);
+          customTargetProps.add(targetProp);
         }
       }
+    }
 
-      if (targetProps.find((p) => p.name === sourceProp.name)) {
-        targetPropName = sourceProp.name;
-      }
+    for (const sourceProp of sourceProps) {
+      const targetProp = targetProps.find((p) => p.name === sourceProp.name);
 
-      if (!targetPropName) {
+      if (!targetProp || customTargetProps.has(targetProp.name)) {
         continue;
       }
 
+      const targetPropName = targetProp.name;
       const sourcePropTypeClass = this.toClass(sourceProp.type);
 
       if (!sourceProp.isArray && this.isEntity(sourcePropTypeClass)) {
@@ -82,7 +81,7 @@ export class AutoMapper {
 
         const targetClass: Type<any> = this.toClass(targetPropType);
 
-        targetInstance[sourceProp.name] = this.map(
+        targetInstance[targetPropName] = this.map(
           data[sourceProp.name],
           sourcePropTypeClass,
           targetClass,
@@ -91,15 +90,17 @@ export class AutoMapper {
       }
 
       if (sourceProp.isArray) {
-        targetInstance[sourceProp.name] = data[sourceProp.name].map((item) => {
-          const targetItemType = targetProps.find(
-            (p) => p.name === targetPropName,
-          )!.type;
+        targetInstance[targetPropName] = data[sourceProp.name].map(
+          (item: unknown) => {
+            const targetItemType = targetProps.find(
+              (p) => p.name === targetPropName,
+            )!.type;
 
-          const targetClassType = this.toClass(targetItemType);
+            const targetClassType = this.toClass(targetItemType);
 
-          return this.map(item, sourcePropTypeClass, targetClassType);
-        });
+            return this.map(item, sourcePropTypeClass, targetClassType);
+          },
+        );
         continue;
       }
 

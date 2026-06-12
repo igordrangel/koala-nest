@@ -1,4 +1,4 @@
-import { AutoMapper, createMap } from '@/core/tools/mapping';
+import { AutoMap, AutoMapper, createMap, forMember } from '@/core/tools/mapping';
 import { MappingStore } from '@/core/tools/mapping/mapping-store';
 import {
   Person,
@@ -97,5 +97,35 @@ describe('AutoMapper', () => {
     expect(person.contacts.length).toBe(personRequest.contacts.length);
     expect(person.contacts[0]).toBeInstanceOf(PersonContact);
     expect(person.contacts[0].contact).toBe(personRequest.contacts[0].contact);
+  });
+
+  it('should apply forMember custom mappings', () => {
+    class SourceRequest {
+      @AutoMap()
+      firstName: string;
+
+      @AutoMap()
+      lastName: string;
+    }
+
+    class TargetEntity {
+      @AutoMap()
+      fullName: string;
+    }
+
+    createMap(
+      SourceRequest,
+      TargetEntity,
+      forMember('fullName', (source) => `${source.firstName} ${source.lastName}`),
+    );
+
+    const source = Object.assign(new SourceRequest(), {
+      firstName: 'John',
+      lastName: 'Doe',
+    });
+
+    const target = AutoMapper.map(source, SourceRequest, TargetEntity);
+
+    expect(target.fullName).toBe('John Doe');
   });
 });

@@ -1,8 +1,7 @@
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
-import { AutoMapper } from '@/core/tools/mapping';
-import { Person } from '@/domain/entities/person/person';
+import { PersonContact } from '@/domain/entities/person/person-contact';
 import { IPersonRepository } from '@/domain/repositories/iperson.repository';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdatePersonRequest } from './update-person.request';
 import { UpdatePersonValidator } from './update-person.validator';
 
@@ -14,11 +13,33 @@ export class UpdatePersonHandler implements RequestHandlerBase<
   constructor(private readonly repository: IPersonRepository) {}
 
   async handle(request: UpdatePersonRequest): Promise<void> {
-    const person = AutoMapper.map(
-      new UpdatePersonValidator(request).validate(),
-      UpdatePersonRequest,
-      Person,
-    );
+    const validated = new UpdatePersonValidator(request).validate();
+    const person = await this.repository.findById(validated.id);
+
+    if (!person) {
+      throw new NotFoundException('Pessoa não encontrada');
+    }
+
+    person.name = validated.name;
+    person.address.address = validated.address.address;
+
+    person.contacts = validated.contacts.map((contactRequest) => {
+      if (contactRequest.id) {
+        const existing = person.contacts.find(
+          (contact) => contact.id === contactRequest.id,
+        );
+
+        if (existing) {
+          existing.contact = contactRequest.contact;
+          return existing;
+        }
+      }
+
+      const contact = new PersonContact();
+      contact.contact = contactRequest.contact;
+      contact.person = person;
+      return contact;
+    });
 
     await this.repository.save(person);
   }
