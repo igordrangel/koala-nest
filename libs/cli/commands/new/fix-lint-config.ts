@@ -8,7 +8,7 @@ export function fixLintConfig(projectName: string) {
     readFileSync(path.join(getSourceCodePath(), "tsconfig.json"), "utf8"),
   );
 
-  tsconfigProjectContent.paths = {
+  tsconfigProjectContent.compilerOptions.paths = {
     "@/*": ["./src/*"],
   };
 

@@ -21,7 +21,7 @@ function install(modulePath: string, projectName: string) {
   const koalaNestPath = path.join(getSourceCodePath(), modulePath);
   const projectPath = path.join(resolveProjectPath(projectName), modulePath);
 
-  cpSync(koalaNestPath, projectPath, { recursive: true });
+  cpSync(koalaNestPath, projectPath, { recursive: true, force: true });
 }
 
 export async function installModule(
@@ -32,6 +32,7 @@ export async function installModule(
   switch (module) {
     case Modules.CORE: {
       install("src/application/common", projectName);
+      install("src/application/mapping/mapping.provider.ts", projectName);
       install("src/core", projectName);
       install("src/domain/dtos/pagination.dto.ts", projectName);
       install("src/host/controllers/common", projectName);
@@ -41,6 +42,14 @@ export async function installModule(
       install("src/host/app.module.ts", projectName);
       install("src/host/main.ts", projectName);
       install("src/infra/common/env.service.ts", projectName);
+      install(
+        "src/infra/database/migrations/generate-migration.ts",
+        projectName,
+      );
+      install(
+        "src/infra/database/migrations/migration-datasource.ts",
+        projectName,
+      );
       install("src/infra/database/data-source-factory.ts", projectName);
       install("src/infra/database/database.module.ts", projectName);
       install("src/infra/repositories/repository.base.ts", projectName);
@@ -49,12 +58,30 @@ export async function installModule(
       install("src/test", projectName);
 
       await runCommand(
-        [getPackageManager(projectName), "add", "@nestjs/config"],
+        [
+          getPackageManager(projectName),
+          "add",
+          "@nestjs/config",
+          "@nestjs/swagger",
+          "typeorm",
+          "pg",
+          "zod",
+          "@scalar/nestjs-api-reference",
+        ],
         resolveProjectPath(projectName),
       );
 
       if (template === "default") {
         await removeSampleParts(projectName);
+      } else {
+        install("src/application/mapping", projectName);
+        install("src/application/person", projectName);
+        install("src/domain/entities", projectName);
+        install("src/domain/repositories", projectName);
+        install("src/domain/dtos", projectName);
+        install("src/host/controllers/person", projectName);
+        install("src/infra/repositories/person.repository.ts", projectName);
+        install("src/infra/database/migrations", projectName);
       }
       break;
     }

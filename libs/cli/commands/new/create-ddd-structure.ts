@@ -34,6 +34,12 @@ export async function createDDDStructure(
   );
 
   packageJson.packageManager = packageManager;
+  packageJson.scripts["migration:generate"] =
+    "bun ./src/infra/database/migrations/generate-migration.ts";
+  packageJson.scripts["migration:run"] =
+    "bun ./node_modules/typeorm/cli.js migration:run -d ./src/infra/database/migrations/migration-datasource.ts";
+  packageJson.scripts["migration:revert"] =
+    "bun ./node_modules/typeorm/cli.js migration:revert -d ./src/infra/database/migrations/migration-datasource.ts";
 
   delete packageJson.scripts.test;
   delete packageJson.scripts["test:watch"];

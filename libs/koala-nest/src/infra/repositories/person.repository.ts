@@ -16,7 +16,7 @@ export class PersonRepository
     super(dataSource, Person);
   }
 
-  async findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
+  findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
     return this.repository
       .findAndCount({
         where: { name: query.name ? Like(`%${query.name}%`) : undefined },

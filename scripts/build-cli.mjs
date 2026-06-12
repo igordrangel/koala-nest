@@ -15,19 +15,39 @@ const transpiler = new Bun.Transpiler({
 });
 
 function rewriteRelativeImports(code, source) {
+  function normalizeImportPath(importPath) {
+    if (importPath.endsWith(".json")) {
+      return importPath;
+    }
+
+    if (importPath.endsWith(".ts")) {
+      return `${importPath.slice(0, -3)}.js`;
+    }
+
+    if (importPath.endsWith(".js")) {
+      return importPath;
+    }
+
+    return `${importPath}.js`;
+  }
+
+  function rewriteStatement(match, quote, importPath) {
+    const normalized = normalizeImportPath(importPath);
+
+    return match.replace(
+      `${quote}${importPath}${quote}`,
+      `${quote}${normalized}${quote}`,
+    );
+  }
+
   let output = code.replace(
-    /(from\s+["'])(\.[^"']+)(["'])/g,
-    (_, prefix, importPath, suffix) => {
-      if (importPath.endsWith(".json")) {
-        return `${prefix}${importPath}${suffix}`;
-      }
+    /^import\s+(?:type\s+)?(?:[\s\S]*?\s+)from\s+(['"])(\.\.?\/[^'"]+)\1;?\s*$/gm,
+    rewriteStatement,
+  );
 
-      const normalized = importPath.endsWith(".ts")
-        ? `${importPath.slice(0, -3)}.js`
-        : `${importPath}.js`;
-
-      return `${prefix}${normalized}${suffix}`;
-    },
+  output = output.replace(
+    /^export\s+(?:type\s+)?(?:[\s\S]*?\s+)from\s+(['"])(\.\.?\/[^'"]+)\1;?\s*$/gm,
+    rewriteStatement,
   );
 
   if (/with\s+\{\s*type:\s*["']json["']\s*\}/.test(source)) {

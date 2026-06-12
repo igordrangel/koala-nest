@@ -1,16 +1,16 @@
 {
-  "name": "koala-nest",
-  "version": "0.0.1",
+  "name": "@koalarx/nest",
+  "version": "2.0.0",
   "type": "module",
   "private": true,
   "bin": {
-    "kl-nest": "./libs/cli/index.ts"
+    "kl-nest": "./dist/cli/index.js"
   },
   "scripts": {
-    "kl-nest": "bun libs/cli/index.ts",
+    "kl-nest": "bun run build && bun dist/cli/index.js",
     "build:koala-nest": "bun scripts/build-koala-nest.mjs",
     "build:cli": "bun scripts/build-cli.mjs",
-    "build": "bun build:cli",
+    "build": "bun scripts/build.mjs",
     "test": "cd libs/koala-nest && bun test",
     "test:watch": "cd libs/koala-nest && bun test --watch"
   },
