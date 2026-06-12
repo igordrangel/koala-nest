@@ -57,6 +57,11 @@ export async function installModule(
       install("src/infra/infra.module.ts", projectName);
       install("src/test", projectName);
 
+      cpSync(
+        path.join(getSourceCodePath(), "bunfig.toml"),
+        path.join(resolveProjectPath(projectName), "bunfig.toml"),
+      );
+
       await runCommand(
         [
           getPackageManager(projectName),

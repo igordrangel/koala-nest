@@ -48,8 +48,10 @@ export async function createDDDStructure(
   packageJson.scripts["migration:revert"] =
     `${typeormCli}:revert ${migrationDatasource}`;
 
-  packageJson.scripts.test = "bun test";
-  packageJson.scripts["test:watch"] = "bun test --watch";
+  const testRunner =
+    packageManager === "bun" ? "bun" : "npx --yes bun";
+  packageJson.scripts.test = `${testRunner} test`;
+  packageJson.scripts["test:watch"] = `${testRunner} test --watch`;
   delete packageJson.scripts["test:cov"];
   delete packageJson.scripts["test:debug"];
   delete packageJson.scripts["test:e2e"];
