@@ -3,40 +3,26 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "start",
+      "type": "shell",
+      "command": "bun run start:dev",
+      "options": {
+        "cwd": "${workspaceFolder}/libs/koala-nest"
+      },
+      "group": "build",
       "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "Changes detected"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation (complete|failed)"
-          }
-        }
-      }
+      "problemMatcher": [],
+      "label": "Start API (dev)",
+      "detail": "libs/koala-nest — nest start --watch"
     },
     {
-      "type": "npm",
-      "script": "test",
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "typescript",
-        "pattern": "$tsc",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "Changes detected"
-          },
-          "endsPattern": {
-            "regexp": "bundle generation (complete|failed)"
-          }
-        }
-      }
+      "type": "shell",
+      "command": "bun run test",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "label": "Run tests",
+      "detail": "Unit tests da lib koala-nest"
     }
   ]
 }

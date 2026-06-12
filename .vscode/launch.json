@@ -6,15 +6,12 @@
       "type": "node",
       "request": "launch",
       "name": "NestJS Debug",
-      "program": "${workspaceFolder}/libs/koala-nest/node_modules/@nestjs/cli/bin/nest.js",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "start:debug"],
       "cwd": "${workspaceFolder}/libs/koala-nest",
-      "args": [
-        "start",
-        "--watch"
-      ],
       "autoAttachChildProcesses": true,
       "restart": true,
       "console": "integratedTerminal"
-    },
+    }
   ]
 }

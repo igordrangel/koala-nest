@@ -34,15 +34,22 @@ export async function createDDDStructure(
   );
 
   packageJson.packageManager = packageManager;
-  packageJson.scripts["migration:generate"] =
-    "bun ./src/infra/database/migrations/generate-migration.ts";
-  packageJson.scripts["migration:run"] =
-    "bun ./node_modules/typeorm/cli.js migration:run -d ./src/infra/database/migrations/migration-datasource.ts";
-  packageJson.scripts["migration:revert"] =
-    "bun ./node_modules/typeorm/cli.js migration:revert -d ./src/infra/database/migrations/migration-datasource.ts";
 
-  delete packageJson.scripts.test;
-  delete packageJson.scripts["test:watch"];
+  const typeormCli =
+    "node ./node_modules/typeorm/cli.js migration";
+  const migrationDatasource =
+    "-d ./src/infra/database/migrations/migration-datasource.ts";
+
+  packageJson.scripts["migration:generate"] =
+    packageManager === "bun"
+      ? "bun ./src/infra/database/migrations/generate-migration.ts"
+      : "node --import ts-node/register/transpile-only ./src/infra/database/migrations/generate-migration.ts";
+  packageJson.scripts["migration:run"] = `${typeormCli}:run ${migrationDatasource}`;
+  packageJson.scripts["migration:revert"] =
+    `${typeormCli}:revert ${migrationDatasource}`;
+
+  packageJson.scripts.test = "bun test";
+  packageJson.scripts["test:watch"] = "bun test --watch";
   delete packageJson.scripts["test:cov"];
   delete packageJson.scripts["test:debug"];
   delete packageJson.scripts["test:e2e"];

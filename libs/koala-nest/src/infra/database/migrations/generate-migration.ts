@@ -18,7 +18,7 @@ if (isAutoName) {
   command.push('-t', timestamp);
 }
 
-const result = spawnSync('bun', command, {
+const result = spawnSync(process.execPath, command, {
   stdio: 'inherit',
   cwd: process.cwd(),
 });
