@@ -1,8 +1,17 @@
 {
   "name": "@koalarx/nest",
   "version": "2.0.0",
+  "description": "CLI para criar APIs NestJS com arquitetura DDD — copia módulos prontos para o seu repositório.",
+  "license": "MIT",
   "type": "module",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/igordrangel/koala-nest.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "kl-nest": "./dist/cli/index.js"
   },
@@ -11,8 +20,14 @@
     "build:koala-nest": "bun scripts/build-koala-nest.mjs",
     "build:cli": "bun scripts/build-cli.mjs",
     "build": "bun scripts/build.mjs",
+    "version": "git add -A libs",
+    "postversion": "git push && git push --tags",
+    "prepare:hotfix": "npm version patch",
+    "prepare:feature": "npm version minor",
+    "prepare:release": "npm version major",
     "test": "cd libs/koala-nest && bun test",
-    "test:watch": "cd libs/koala-nest && bun test --watch"
+    "test:watch": "cd libs/koala-nest && bun test --watch",
+    "doc:txt": "bun scripts/build-doc-txt.mjs"
   },
   "devDependencies": {
     "@types/bun": "latest"

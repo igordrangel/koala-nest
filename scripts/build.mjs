@@ -26,20 +26,28 @@ function runBuildScript(scriptName) {
 function copyPackageMetadata() {
   cpSync(path.join(rootDir, "README.md"), path.join(distDir, "README.md"));
 
-  const packageJson = JSON.parse(
+  const rootPackage = JSON.parse(
     readFileSync(path.join(rootDir, "package.json"), "utf8"),
   );
 
-  if (packageJson.bin?.["kl-nest"]) {
-    packageJson.bin["kl-nest"] = packageJson.bin["kl-nest"].replace(
-      /^\.\/dist\//,
-      "./",
-    );
-  }
+  const publishPackage = {
+    name: rootPackage.name,
+    version: rootPackage.version,
+    description: rootPackage.description,
+    license: rootPackage.license,
+    type: rootPackage.type,
+    bin: {
+      "kl-nest": "./cli/index.js",
+    },
+    repository: rootPackage.repository,
+    publishConfig: rootPackage.publishConfig,
+    files: ["cli", "koala-nest", "README.md"],
+    dependencies: rootPackage.dependencies,
+  };
 
   writeFileSync(
     path.join(distDir, "package.json"),
-    `${JSON.stringify(packageJson, null, 2)}\n`,
+    `${JSON.stringify(publishPackage, null, 2)}\n`,
   );
 }
 

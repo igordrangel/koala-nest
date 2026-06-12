@@ -5,7 +5,10 @@ export function runCommand(
   cwd = process.cwd(),
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const childProcess = spawn(command[0]!, command.slice(1), { cwd });
+    const childProcess = spawn(command[0]!, command.slice(1), {
+      cwd,
+      stdio: "inherit",
+    });
 
     childProcess.on("close", (code) => {
       if (code !== 0) {

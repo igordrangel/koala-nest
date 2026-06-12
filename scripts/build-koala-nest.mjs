@@ -8,7 +8,8 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const sourceDir = path.join(rootDir, "libs/koala-nest");
 const outputDir = path.join(rootDir, "dist/koala-nest");
 
-const EXCLUDED_DIRS = new Set(["node_modules", "dist"]);
+const EXCLUDED_DIRS = new Set(["node_modules", "dist", ".git"]);
+const EXCLUDED_FILES = new Set(["bun.lock"]);
 
 function buildKoalaNest() {
   rmSync(outputDir, { recursive: true, force: true });
@@ -19,6 +20,10 @@ function buildKoalaNest() {
     filter: (src) => {
       const relative = path.relative(sourceDir, src);
       if (!relative) return true;
+
+      if (EXCLUDED_FILES.has(path.basename(src))) {
+        return false;
+      }
 
       return !relative.split(path.sep).some((part) => EXCLUDED_DIRS.has(part));
     },
