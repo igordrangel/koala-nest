@@ -3,6 +3,13 @@ import color from "picocolors";
 import type { PackageManager } from "../../types/index.ts";
 import { assertNotCancel } from "../../utils/cancel.ts";
 import { createEmptyNestProject } from "./create-empty-nest-project.ts";
+import { createDDDStructure } from "./create-ddd-structure.ts";
+import {
+  installModule,
+  Modules,
+  type Template,
+} from "../../utils/install-module.ts";
+import { fixLintConfig } from "./fix-lint-config.ts";
 
 export async function runNew(): Promise<void> {
   p.intro(
@@ -24,6 +31,14 @@ export async function runNew(): Promise<void> {
             { value: "bun", label: "Bun", hint: "recomendado" },
             { value: "npm", label: "npm" },
             { value: "pnpm", label: "pnpm" },
+          ],
+        }),
+      template: () =>
+        p.select<Template>({
+          message: "Template",
+          options: [
+            { value: "default", label: "Padrão" },
+            { value: "crudSample", label: "Exemplo de CRUD" },
           ],
         }),
     },
@@ -73,12 +88,6 @@ export async function runNew(): Promise<void> {
           disabled: true,
         },
         {
-          value: "tests",
-          label: "Estrutura de testes unitários e E2E",
-          hint: "em breve",
-          disabled: true,
-        },
-        {
           value: "health-check",
           label: "Health check (GET /health)",
           hint: "em breve",
@@ -101,27 +110,23 @@ export async function runNew(): Promise<void> {
     }),
   );
 
-  const documentation = assertNotCancel(
-    await p.select({
-      message: "Builder de documentação",
-      options: [
-        { value: "scalar", label: "Scalar", hint: "em breve", disabled: true },
-        {
-          value: "swagger",
-          label: "Swagger",
-          hint: "em breve",
-          disabled: true,
-        },
-        { value: "none", label: "Nenhuma" },
-      ],
-    }),
-  );
-
   const spinner = p.spinner();
 
   spinner.start("Criando projeto...");
 
   await createEmptyNestProject(project.name, project.packageManager);
+
+  spinner.message("Definindo estrutura de pastas...");
+
+  await createDDDStructure(project.name, project.packageManager);
+
+  spinner.message("Aplicando configuração de lint...");
+
+  fixLintConfig(project.name);
+
+  spinner.message("Instalando módulo core...");
+
+  await installModule(Modules.CORE, project.template, project.name);
 
   if (auth !== "none") {
     spinner.message("Configurando autenticação...");
@@ -133,11 +138,6 @@ export async function runNew(): Promise<void> {
     await Bun.sleep(300);
   }
 
-  if (documentation !== "none") {
-    spinner.message("Configurando documentação...");
-    await Bun.sleep(300);
-  }
-
   spinner.stop("Projeto criado com sucesso!");
 
   p.note(
@@ -146,7 +146,6 @@ export async function runNew(): Promise<void> {
       `${color.bold("Gerenciador:")} ${project.packageManager}`,
       `${color.bold("Autenticação:")} ${auth}`,
       `${color.bold("Extras:")} ${features.length ? features.join(", ") : color.dim("nenhum")}`,
-      `${color.bold("Documentação:")} ${documentation}`,
     ].join("\n"),
     "Resumo",
   );

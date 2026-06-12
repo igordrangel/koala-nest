@@ -3,18 +3,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "ng serve",
-      "type": "chrome",
+      "type": "node",
       "request": "launch",
-      "preLaunchTask": "npm: start",
-      "url": "http://localhost:4200/"
+      "name": "NestJS Debug",
+      "program": "${workspaceFolder}/libs/koala-nest/node_modules/@nestjs/cli/bin/nest.js",
+      "cwd": "${workspaceFolder}/libs/koala-nest",
+      "args": [
+        "start",
+        "--watch"
+      ],
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "console": "integratedTerminal"
     },
-    {
-      "name": "ng test",
-      "type": "chrome",
-      "request": "launch",
-      "preLaunchTask": "npm: test",
-      "url": "http://localhost:9876/debug.html"
-    }
   ]
 }

@@ -1,0 +1,57 @@
+import { cpSync } from "node:fs";
+import path from "node:path";
+import { getSourceCodePath } from "./get-source-code-path";
+import { removeSampleParts } from "./remove-sample-parts";
+import { resolveProjectPath } from "./resolve-project-pach";
+
+export type Template = "default" | "crudSample";
+
+export enum Modules {
+  CORE = "core",
+  AUTH = "auth",
+  CACHE = "cache",
+  HEALTH = "health",
+  INTERNAL_CRON_JOBS = "internal-cron-jobs",
+  INTERNAL_EVENT_JOBS = "internal-event-jobs",
+}
+
+function install(modulePath: string, projectName: string) {
+  const koalaNestPath = path.join(getSourceCodePath(), modulePath);
+  const projectPath = path.join(resolveProjectPath(projectName), modulePath);
+
+  cpSync(koalaNestPath, projectPath, { recursive: true });
+}
+
+export async function installModule(
+  module: Modules,
+  template: Template,
+  projectName = "",
+): Promise<void> {
+  switch (module) {
+    case Modules.CORE:
+      install("src/application/common", projectName);
+      install("src/core", projectName);
+      install("src/domain/dtos/pagination.dto.ts", projectName);
+      install("src/host/controllers/common", projectName);
+      install("src/host/decorators", projectName);
+      install("src/host/filters", projectName);
+      install("src/host/open-api", projectName);
+      install("src/host/app.module.ts", projectName);
+      install("src/host/main.ts", projectName);
+      install("src/infra/database/data-source-factory.ts", projectName);
+      install("src/infra/database/database.module.ts", projectName);
+      install("src/infra/repositories/repository.base.ts", projectName);
+      install("src/infra/repositories/repository.module.ts", projectName);
+      install("src/infra/infra.module.ts", projectName);
+      install("src/test", projectName);
+
+      if (template === "default") {
+        await removeSampleParts(projectName);
+      }
+      break;
+    case Modules.AUTH:
+      break;
+    case Modules.CACHE:
+      break;
+  }
+}
