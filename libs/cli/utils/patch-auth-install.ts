@@ -41,7 +41,7 @@ export async function patchAuthInstall(
       to: "import { HttpAdapterHost } from '@nestjs/core';\nimport { AuthGuard } from './security/guards/auth.guard';\nimport { ProfilesGuard } from './security/guards/profiles.guard';",
     },
     {
-      from: '  await bootstrapKoalaApp(app);',
+      from: '  const koalaApp = bootstrapKoalaApp(app);\n  await koalaApp.build();',
       to: '  const koalaApp = bootstrapKoalaApp(app);\n  await koalaApp\n    .addGlobalGuard(AuthGuard)\n    .addGlobalGuard(ProfilesGuard)\n    .build();',
     },
   ]);

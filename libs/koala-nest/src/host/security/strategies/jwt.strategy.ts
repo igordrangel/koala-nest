@@ -1,6 +1,6 @@
 import { AuthenticatedUser, jwtClaimsSchema } from '@/core/auth/jwt-claims';
 import { EnvService } from '@/infra/common/env.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -25,6 +25,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   validate(req: Request, payload: AuthenticatedUser) {
+    if (payload.tokenType === 'refresh') {
+      throw new UnauthorizedException('Refresh token não pode ser usado como access token');
+    }
+
     const token = req.get('Authorization')?.replace('Bearer', '').trim();
     return jwtClaimsSchema.parse({ ...payload, refreshToken: token });
   }

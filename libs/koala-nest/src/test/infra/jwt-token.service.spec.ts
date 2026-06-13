@@ -6,8 +6,10 @@ import { JwtService } from '@nestjs/jwt';
 describe('JwtTokenService', () => {
   it('gera access e refresh token com as claims informadas', () => {
     const jwtService = {
-      sign: (claims: { sub: string }, options: { expiresIn: string }) =>
-        `${options.expiresIn}:${claims.sub}`,
+      sign: (
+        claims: { sub: string; tokenType: string },
+        options: { expiresIn: string },
+      ) => `${options.expiresIn}:${claims.sub}:${claims.tokenType}`,
     } as unknown as JwtService;
 
     const envService = {
@@ -18,8 +20,8 @@ describe('JwtTokenService', () => {
     const service = new JwtTokenService(jwtService, envService);
 
     expect(service.signTokenPair({ sub: 'user-1', profile: 'admin' })).toEqual({
-      accessToken: '15m:user-1',
-      refreshToken: '7d:user-1',
+      accessToken: '15m:user-1:access',
+      refreshToken: '7d:user-1:refresh',
     });
   });
 });

@@ -8,6 +8,9 @@ export class OAuthExchangeCodeRequest extends ObjectClass<OAuthExchangeCodeReque
   @ApiProperty()
   code: string;
 
+  @ApiProperty()
+  state: string;
+
   @ApiProperty({ required: false })
   redirectUri?: string;
 }

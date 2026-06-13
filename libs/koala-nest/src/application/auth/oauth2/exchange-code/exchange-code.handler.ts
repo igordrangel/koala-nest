@@ -21,6 +21,7 @@ export class OAuthExchangeCodeHandler extends RequestHandlerBase<
     const userInfo = await this.oauth2Service.exchangeCode(
       data.provider,
       data.code,
+      data.state,
       data.redirectUri,
     );
 

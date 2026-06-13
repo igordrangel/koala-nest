@@ -9,6 +9,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class OAuth2AuthService implements IOAuth2Service {
+  private readonly pendingStates = new Map<
+    string,
+    { provider: string; expiresAt: number }
+  >();
+
   constructor(
     private readonly env: EnvService,
     private readonly providerRegistry: OAuthProviderRegistry,
@@ -18,12 +23,32 @@ export class OAuth2AuthService implements IOAuth2Service {
     return randomBytes(24).toString('hex');
   }
 
+  private rememberState(provider: string, state: string) {
+    this.pendingStates.set(state, {
+      provider,
+      expiresAt: Date.now() + 10 * 60 * 1000,
+    });
+  }
+
+  private validateState(provider: string, state: string) {
+    const entry = this.pendingStates.get(state);
+
+    if (!entry || entry.provider !== provider || entry.expiresAt < Date.now()) {
+      throw new UnauthorizedException('State OAuth2 inválido ou expirado');
+    }
+
+    this.pendingStates.delete(state);
+  }
+
   private getApiHost() {
-    const host = this.env.get('API_HOST') ?? `http://localhost:${this.env.get('PORT')}`;
+    const host =
+      this.env.get('API_HOST') ?? `http://localhost:${this.env.get('PORT')}`;
     return host.replace(/\/$/, '');
   }
 
-  async providerConfig(provider: string): Promise<AuthProviderConfigDto> {
+  private async resolveProviderConfig(
+    provider: string,
+  ): Promise<AuthProviderConfigDto> {
     const providerConfig = this.providerRegistry.getProvider(provider);
 
     const discovery = await fetch(
@@ -38,9 +63,21 @@ export class OAuth2AuthService implements IOAuth2Service {
       userInfoUrl: discovery.userinfo_endpoint,
       clientId: providerConfig.clientId,
       clientSecret: providerConfig.clientSecret,
-      state: this.generateState(),
+      state: '',
       redirectUri: `${this.getApiHost()}${providerConfig.redirectPath}`,
       scope: providerConfig.scope,
+    });
+  }
+
+  async providerConfig(provider: string): Promise<AuthProviderConfigDto> {
+    const providerConfig = this.providerRegistry.getProvider(provider);
+    const config = await this.resolveProviderConfig(provider);
+    const state = this.generateState();
+    this.rememberState(providerConfig.key, state);
+
+    return AuthProviderConfigDto.from({
+      ...config,
+      state,
     });
   }
 
@@ -54,9 +91,11 @@ export class OAuth2AuthService implements IOAuth2Service {
   async exchangeCode(
     provider: string,
     code: string,
+    state: string,
     redirectUri?: string,
   ): Promise<OAuthUserInfoDto> {
-    const config = await this.providerConfig(provider);
+    this.validateState(provider, state);
+    const config = await this.resolveProviderConfig(provider);
 
     const formData = new URLSearchParams();
     formData.append('code', code);
@@ -75,15 +114,13 @@ export class OAuth2AuthService implements IOAuth2Service {
       throw new UnauthorizedException('Falha ao trocar código OAuth2 por token');
     }
 
-    return this.userInfo(provider, tokenResponse.access_token);
+    return this.userInfo(config, tokenResponse.access_token);
   }
 
   private async userInfo(
-    provider: string,
+    config: AuthProviderConfigDto,
     accessToken: string,
   ): Promise<OAuthUserInfoDto> {
-    const config = await this.providerConfig(provider);
-
     const data = await fetch(config.userInfoUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
     }).then((response) => response.json() as Promise<Record<string, string>>);
@@ -92,7 +129,7 @@ export class OAuth2AuthService implements IOAuth2Service {
     const login =
       data.samaccountname ??
       data.preferred_username ??
-      (email ? email.split('@')[0] : data.sub ?? '');
+      (email ? email.split('@')[0] : (data.sub ?? ''));
 
     return OAuthUserInfoDto.from({
       login,

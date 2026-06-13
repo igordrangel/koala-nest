@@ -11,7 +11,10 @@ export class RedLockService implements IRedLockService {
   ) {}
 
   async acquiredLock(key: string, ttlSecondsLock: number): Promise<boolean> {
-    if (this.env.get('NODE_ENV') === 'test') {
+    if (
+      this.env.get('NODE_ENV') === 'test' ||
+      !this.env.get('REDIS_CONNECTION_STRING')
+    ) {
       return true;
     }
 
@@ -28,9 +31,14 @@ export class RedLockService implements IRedLockService {
   }
 
   async releaseLock(key: string): Promise<void> {
-    if (this.env.get('NODE_ENV') !== 'test') {
-      await this.cache.invalidate(this.getLockKey(key));
+    if (
+      this.env.get('NODE_ENV') === 'test' ||
+      !this.env.get('REDIS_CONNECTION_STRING')
+    ) {
+      return;
     }
+
+    await this.cache.invalidate(this.getLockKey(key));
   }
 
   private getLockKey(key: string) {

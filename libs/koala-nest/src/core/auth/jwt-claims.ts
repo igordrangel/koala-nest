@@ -5,6 +5,7 @@ export const jwtClaimsSchema = z.object({
   profile: z.string().optional(),
   login: z.string().optional(),
   email: z.string().email().optional(),
+  tokenType: z.enum(['access', 'refresh']).optional(),
 });
 
 export type JwtClaims = z.infer<typeof jwtClaimsSchema>;

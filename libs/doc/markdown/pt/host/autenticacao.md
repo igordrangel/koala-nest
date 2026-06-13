@@ -83,7 +83,7 @@ OAUTH2_GOOGLE_SCOPE=openid profile email
 Endpoints:
 
 - `GET /oauth2/:provider/auth-link` — URL de autorização
-- `POST /oauth2/:provider/exchange-code` — troca `code` por dados do usuário (`OAuthUserInfoDto`)
+- `POST /oauth2/:provider/exchange-code` — troca `code` + `state` por dados do usuário (`OAuthUserInfoDto`)
 
 O retorno **não persiste usuário**. Fluxo sugerido: `exchange-code` → mapear claims → `POST /auth/token`.
 

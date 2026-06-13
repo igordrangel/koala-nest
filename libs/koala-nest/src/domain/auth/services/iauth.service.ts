@@ -8,6 +8,7 @@ export abstract class IOAuth2Service {
   abstract exchangeCode(
     provider: string,
     code: string,
+    state: string,
     redirectUri?: string,
   ): Promise<OAuthUserInfoDto>;
 }

@@ -12,13 +12,13 @@ export class JwtTokenService implements IJwtTokenService {
   ) {}
 
   signAccessToken(claims: JwtClaims): string {
-    return this.jwtService.sign(claims, {
+    return this.jwtService.sign({ ...claims, tokenType: 'access' }, {
       expiresIn: this.env.get('JWT_ACCESS_TOKEN_EXPIRES_IN'),
     });
   }
 
   signRefreshToken(claims: JwtClaims): string {
-    return this.jwtService.sign(claims, {
+    return this.jwtService.sign({ ...claims, tokenType: 'refresh' }, {
       expiresIn: this.env.get('JWT_REFRESH_TOKEN_EXPIRES_IN'),
     });
   }

@@ -7,6 +7,7 @@ export class OAuthExchangeCodeValidator extends RequestValidatorBase<OAuthExchan
     return z.object({
       provider: z.string().min(1),
       code: z.string().min(1),
+      state: z.string().min(1),
       redirectUri: z.string().url().optional(),
     });
   }
