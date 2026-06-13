@@ -2,9 +2,9 @@ name: NPM Publish
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    branches: [main]
+    paths:
+      - 'package.json'
 
 jobs:
   publish:
@@ -21,17 +21,6 @@ jobs:
         run: |
           bun install --frozen-lockfile
           cd libs/koala-nest && bun install --frozen-lockfile
-
-      - name: Validate release tag
-        if: github.event_name == 'push'
-        run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          VERSION=$(node -p "require('./package.json').version")
-
-          if [ "$TAG" != "$VERSION" ]; then
-            echo "Tag v${TAG} não corresponde à versão do package.json (${VERSION})." >&2
-            exit 1
-          fi
 
       - name: Check if version is already published
         id: check_version
