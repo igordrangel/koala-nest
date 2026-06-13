@@ -15,7 +15,7 @@ export class IssueTokenHandler extends RequestHandlerBase<
     super();
   }
 
-  handle(request: IssueTokenRequest): IssueTokenResponse {
+  async handle(request: IssueTokenRequest): Promise<IssueTokenResponse> {
     const claims = jwtClaimsSchema.parse(
       new IssueTokenValidator(request).validate(),
     );
