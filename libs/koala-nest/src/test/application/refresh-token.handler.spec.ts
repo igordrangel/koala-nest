@@ -22,10 +22,7 @@ describe('RefreshTokenHandler', () => {
       }),
     });
 
-    const handler = new RefreshTokenHandler(
-      jwtTokenService,
-      loggedUserInfo,
-    );
+    const handler = new RefreshTokenHandler(jwtTokenService, loggedUserInfo);
 
     const result = await handler.handle();
 

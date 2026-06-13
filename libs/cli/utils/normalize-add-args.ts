@@ -1,23 +1,21 @@
-import type { AddArg } from "./detect-project-state";
-import type { ExtraFeature } from "./install-module";
-
-const FEATURE_INSTALL_ORDER: ExtraFeature[] = [
-  "cache",
-  "health-check",
-  "internal-cron-jobs",
-  "internal-event-jobs",
-];
+import type { AddArg } from './detect-project-state';
+import {
+  AddArgKind,
+  ExtraFeature,
+  FEATURE_INSTALL_ORDER,
+} from '@cli/constants/domain';
 
 /** Garante mesma ordem de instalação do `kl-nest new` ao usar `kl-nest add`. */
 export function normalizeAddArgs(args: AddArg[]): AddArg[] {
   const auth = args.find(
-    (item): item is Extract<AddArg, { kind: "auth" }> => item.kind === "auth",
+    (item): item is Extract<AddArg, { kind: typeof AddArgKind.AUTH }> =>
+      item.kind === AddArgKind.AUTH,
   );
   const selectedFeatures = new Set(
     args
       .filter(
-        (item): item is Extract<AddArg, { kind: "feature" }> =>
-          item.kind === "feature",
+        (item): item is Extract<AddArg, { kind: typeof AddArgKind.FEATURE }> =>
+          item.kind === AddArgKind.FEATURE,
       )
       .map((item) => item.feature),
   );
@@ -26,13 +24,14 @@ export function normalizeAddArgs(args: AddArg[]): AddArg[] {
 
   for (const feature of FEATURE_INSTALL_ORDER) {
     if (selectedFeatures.has(feature)) {
-      ordered.push({ kind: "feature", feature });
+      ordered.push({ kind: AddArgKind.FEATURE, feature });
     }
   }
 
   if (auth) {
     const cacheIndex = ordered.findIndex(
-      (item) => item.kind === "feature" && item.feature === "cache",
+      (item) =>
+        item.kind === AddArgKind.FEATURE && item.feature === ExtraFeature.CACHE,
     );
     const authArg: AddArg = auth;
 

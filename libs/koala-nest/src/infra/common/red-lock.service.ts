@@ -1,3 +1,4 @@
+import { CacheKeyPrefix } from '@/core/constants/cache.constants';
 import { ICacheService } from '@/domain/common/icache.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
 import { EnvService } from '@/infra/common/env.service';
@@ -38,6 +39,6 @@ export class RedLockService implements IRedLockService {
   }
 
   private getLockKey(key: string) {
-    return `redLock:${key}`;
+    return `${CacheKeyPrefix.RED_LOCK}${key}`;
   }
 }

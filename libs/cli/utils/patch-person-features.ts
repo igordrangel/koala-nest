@@ -1,14 +1,14 @@
-import { readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
-import path from "node:path";
-import { removeImportLines } from "./project-files";
-import { resolveProjectPath } from "./resolve-project-path";
+import { readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
+import { removeImportLines } from './project-files';
+import { resolveProjectPath } from './resolve-project-path';
 
 function projectFile(projectName: string, relativePath: string) {
   return path.join(resolveProjectPath(projectName), relativePath);
 }
 
 function readProjectFile(projectName: string, relativePath: string) {
-  return readFileSync(projectFile(projectName, relativePath), "utf8");
+  return readFileSync(projectFile(projectName, relativePath), 'utf8');
 }
 
 function writeProjectFile(
@@ -62,38 +62,38 @@ export class ReadManyPersonHandler extends RequestHandlerBase<
 
 export function stripPersonModuleCacheUsage(projectName: string) {
   const handlers = [
-    "src/application/person/create/create-person.handler.ts",
-    "src/application/person/update/update-person.handler.ts",
-    "src/application/person/delete/delete-person.handler.ts",
-    "src/application/person/events/inactive-person.handler.ts",
+    'src/application/person/create/create-person.handler.ts',
+    'src/application/person/update/update-person.handler.ts',
+    'src/application/person/delete/delete-person.handler.ts',
+    'src/application/person/events/inactive-person.handler.ts',
   ];
 
   for (const handlerPath of handlers) {
     let content = readProjectFile(projectName, handlerPath);
     content = removeImportLines(content, [
-      "@/domain/common/icache.service",
-      "@/core/utils/person-list-cache",
+      '@/domain/common/icache.service',
+      '@/core/utils/person-list-cache',
     ]);
     content = content.replace(
-      /,\n    private readonly cache: ICacheService/,
-      "",
+      /,\n {4}private readonly cache: ICacheService/,
+      '',
     );
     content = content.replace(
-      /\n    await invalidatePersonListCache\(this\.cache\);\n/,
-      "\n",
+      /\n {4}await invalidatePersonListCache\(this\.cache\);\n/,
+      '\n',
     );
     writeProjectFile(projectName, handlerPath, content);
   }
 
   writeProjectFile(
     projectName,
-    "src/application/person/read-many/read-many-person.handler.ts",
+    'src/application/person/read-many/read-many-person.handler.ts',
     READ_MANY_WITHOUT_CACHE,
   );
 
   for (const cacheUtil of [
-    "src/core/utils/person-list-cache.ts",
-    "src/core/utils/build-list-cache-key.ts",
+    'src/core/utils/person-list-cache.ts',
+    'src/core/utils/build-list-cache-key.ts',
   ]) {
     rmSync(projectFile(projectName, cacheUtil), { force: true });
   }
@@ -102,23 +102,23 @@ export function stripPersonModuleCacheUsage(projectName: string) {
 export function stripPersonModuleCronJobs(projectName: string) {
   let content = readProjectFile(
     projectName,
-    "src/host/controllers/person/person.module.ts",
+    'src/host/controllers/person/person.module.ts',
   );
 
   content = removeImportLines(content, [
-    "@/application/person/jobs/create-person.job",
-    "@/application/person/jobs/delete-inactive.job",
+    '@/application/person/jobs/create-person.job',
+    '@/application/person/jobs/delete-inactive.job',
   ]);
-  content = content.replace(/\n    CreatePersonJob,\n/g, "\n");
-  content = content.replace(/\n    DeleteInactiveJob,\n/g, "\n");
+  content = content.replace(/\n {4}CreatePersonJob,\n/g, '\n');
+  content = content.replace(/\n {4}DeleteInactiveJob,\n/g, '\n');
 
   writeProjectFile(
     projectName,
-    "src/host/controllers/person/person.module.ts",
+    'src/host/controllers/person/person.module.ts',
     content,
   );
 
-  rmSync(projectFile(projectName, "src/application/person/jobs"), {
+  rmSync(projectFile(projectName, 'src/application/person/jobs'), {
     recursive: true,
     force: true,
   });
@@ -127,22 +127,22 @@ export function stripPersonModuleCronJobs(projectName: string) {
 export function stripPersonModuleEventJobs(projectName: string) {
   let content = readProjectFile(
     projectName,
-    "src/host/controllers/person/person.module.ts",
+    'src/host/controllers/person/person.module.ts',
   );
 
   content = removeImportLines(content, [
-    "@/application/person/events/inactive-person.handler",
+    '@/application/person/events/inactive-person.handler',
   ]);
-  content = content.replace(/\n    InactivePersonHandler,\n/g, "\n");
-  content = content.replace(/\n    InactivePersonHandler,\n  \],/g, "\n  ],");
+  content = content.replace(/\n {4}InactivePersonHandler,\n/g, '\n');
+  content = content.replace(/\n {4}InactivePersonHandler,\n {2}\],/g, '\n  ],');
 
   writeProjectFile(
     projectName,
-    "src/host/controllers/person/person.module.ts",
+    'src/host/controllers/person/person.module.ts',
     content,
   );
 
-  rmSync(projectFile(projectName, "src/application/person/events"), {
+  rmSync(projectFile(projectName, 'src/application/person/events'), {
     recursive: true,
     force: true,
   });
@@ -176,7 +176,7 @@ export function adjustCrudPersonModule(
 
 export function stripPersonAuthExample(projectName: string) {
   const controllerPath =
-    "src/host/controllers/person/delete-person.controller.ts";
+    'src/host/controllers/person/delete-person.controller.ts';
 
   if (!existsSync(projectFile(projectName, controllerPath))) {
     return;
@@ -184,14 +184,14 @@ export function stripPersonAuthExample(projectName: string) {
 
   let content = readProjectFile(projectName, controllerPath);
   content = removeImportLines(content, [
-    "@/core/auth/auth-profile.enum",
-    "@/host/decorators/restriction-by-profile.decorator",
-    "@/host/decorators/api-exclude-endpoint-diff-develop.decorator",
+    '@/core/auth/auth-profile.enum',
+    '@/host/decorators/restriction-by-profile.decorator',
+    '@/host/decorators/api-exclude-endpoint-diff-develop.decorator',
   ]);
   content = content.replace(
-    /\n  @RestrictionByProfile\(\[AuthProfile\.admin\]\)\n/,
-    "\n",
+    /\n {2}@RestrictionByProfile\(\[AuthProfile\.admin\]\)\n/,
+    '\n',
   );
-  content = content.replace(/\n  @ApiExcludeEndpointDiffDevelop\(\)\n/, "\n");
+  content = content.replace(/\n {2}@ApiExcludeEndpointDiffDevelop\(\)\n/, '\n');
   writeProjectFile(projectName, controllerPath, content);
 }

@@ -3,7 +3,15 @@ import { OAuthAuthLinkRequest } from '@/application/auth/oauth2/auth-link/auth-l
 import { OAuthAuthLinkResponse } from '@/application/auth/oauth2/auth-link/auth-link.response';
 import { Controller } from '@/host/decorators/controller.decorator';
 import { IsPublic } from '@/host/decorators/is-public.decorator';
-import { Body, Get, HttpCode, HttpStatus, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { IController } from '../common/controller.base';

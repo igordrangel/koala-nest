@@ -25,9 +25,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@cli/*": [
+        "../cli/*"
       ]
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "src/test/e2e"]
+  "exclude": ["node_modules", "dist", "src/test/e2e"]
 }

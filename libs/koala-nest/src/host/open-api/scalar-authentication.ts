@@ -1,3 +1,4 @@
+import { OpenApiDoc } from './open-api.constants';
 import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { EnvConfig } from '@/core/utils/env.config';
 import { OAuthProviderRegistry } from '@/core/auth/oauth-provider.registry';
@@ -46,7 +47,7 @@ export async function buildScalarAuthentication(
   > = {};
   const preferredSecurityScheme: string[] = [];
 
-  const jwtSchemeName = 'JWT';
+  const jwtSchemeName = OpenApiDoc.JWT_SCHEME;
   const jwtTokenUrl = `${hostAddress}/auth/scalar-token`;
   const defaultSub = 'scalar-dev-user';
   const defaultProfile = AuthProfile.admin;
@@ -57,7 +58,7 @@ export async function buildScalarAuthentication(
       password: {
         tokenUrl: jwtTokenUrl,
         scopes: {},
-        'x-tokenName': 'accessToken',
+        'x-tokenName': OpenApiDoc.ACCESS_TOKEN_FIELD,
       },
     },
   } as OpenApiSecurityScheme;
@@ -68,7 +69,7 @@ export async function buildScalarAuthentication(
         tokenUrl: jwtTokenUrl,
         username: isDevelop ? defaultSub : '',
         password: isDevelop ? defaultProfile : '',
-        'x-tokenName': 'accessToken',
+        'x-tokenName': OpenApiDoc.ACCESS_TOKEN_FIELD,
       },
     },
   };
@@ -96,7 +97,7 @@ export async function buildScalarAuthentication(
             authorizationUrl,
             tokenUrl,
             scopes: {},
-            'x-tokenName': 'accessToken',
+            'x-tokenName': OpenApiDoc.ACCESS_TOKEN_FIELD,
             'x-scalar-redirect-uri': config.redirectUri,
             'x-scalar-security-body': {
               provider: providerKey,
@@ -121,7 +122,7 @@ export async function buildScalarAuthentication(
             'x-scalar-security-body': {
               provider: providerKey,
             },
-            'x-tokenName': 'accessToken',
+            'x-tokenName': OpenApiDoc.ACCESS_TOKEN_FIELD,
           },
         },
       };

@@ -73,7 +73,7 @@ export class ErrorsFilter extends BaseExceptionFilter {
     }
   }
 
-  async catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     if (exception instanceof ZodError) {
       return this.sendErrorResponse(host, this.handleZodError(exception));
     }
@@ -89,7 +89,7 @@ export class ErrorsFilter extends BaseExceptionFilter {
     const error =
       exception instanceof Error ? exception : new Error(String(exception));
 
-    await this.reportError(error, host);
+    void this.reportError(error, host);
 
     return this.sendErrorResponse(host, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

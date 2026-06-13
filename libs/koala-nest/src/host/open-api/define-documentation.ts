@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import packageJson from '../../../package.json';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { OpenApiDoc, OpenApiMetadata } from './open-api.constants';
 import { buildScalarAuthentication } from './scalar-authentication';
 import { scalarThemeOptions } from './scalar-theme';
 import {
@@ -13,16 +14,18 @@ export async function defineDocumentation(app: INestApplication) {
   const scalarAuth = await buildScalarAuthentication(app);
 
   const documentBuilder = new DocumentBuilder()
-    .setTitle('KoalaNest')
-    .setDescription('KoalaNest API')
+    .setTitle(OpenApiMetadata.TITLE)
+    .setDescription(OpenApiMetadata.DESCRIPTION)
     .setVersion(packageJson.version);
 
   if (scalarAuth) {
-    documentBuilder.addBearerAuth().addSecurityRequirements('bearer');
+    documentBuilder
+      .addBearerAuth()
+      .addSecurityRequirements(OpenApiDoc.BEARER_SCHEME);
   }
 
   const document = SwaggerModule.createDocument(app, documentBuilder.build());
-  const docEndpoint = '/doc';
+  const docEndpoint = OpenApiDoc.ENDPOINT;
 
   if (scalarAuth) {
     applyOpenApiBearerSecurity(document);
@@ -43,8 +46,8 @@ export async function defineDocumentation(app: INestApplication) {
       ...scalarThemeOptions,
       spec: { content: document },
       metaData: {
-        title: 'KoalaNest',
-        description: 'KoalaNest API',
+        title: OpenApiMetadata.TITLE,
+        description: OpenApiMetadata.DESCRIPTION,
         version: packageJson.version,
       },
       persistAuth: scalarAuth?.persistAuth ?? false,

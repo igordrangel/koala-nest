@@ -1,6 +1,11 @@
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
 import { cronExpressionToBoolean } from '@/core/utils/cron-expression-to-boolean';
+import {
+  DEMO_CRON_POLL_MINUTES,
+  MINUTES_TO_MS,
+  MS_TO_SECONDS,
+} from '@/core/constants/cron.constants';
 import { delay } from '@koalarx/utils/KlDelay';
 import { reportErrorToLogging } from '@/core/utils/report-error';
 
@@ -11,7 +16,7 @@ export interface CronJobSettings {
 
 export function demoCronSettings(
   cronExpression: string,
-  timeInMinutes = 0.01,
+  timeInMinutes = DEMO_CRON_POLL_MINUTES,
 ): CronJobSettings {
   return {
     isActive: cronExpressionToBoolean(cronExpression),
@@ -34,10 +39,10 @@ export abstract class CronJobHandlerBase {
 
     while (true) {
       const settings = await this.settings();
-      const timeout = settings.timeInMinutes * 60 * 1000;
+      const timeout = settings.timeInMinutes * MINUTES_TO_MS;
 
       if (settings.isActive) {
-        const ttlSecondsLock = timeout / 1000;
+        const ttlSecondsLock = timeout / MS_TO_SECONDS;
         const acquiredLock = await this.redlockService.acquiredLock(
           name,
           ttlSecondsLock,

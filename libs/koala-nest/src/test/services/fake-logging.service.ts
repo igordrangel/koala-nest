@@ -6,7 +6,8 @@ import {
 export class FakeLoggingService implements ILoggingService {
   reports: LoggingReportProps[] = [];
 
-  async report(data: LoggingReportProps): Promise<void> {
+  report(data: LoggingReportProps): Promise<void> {
     this.reports.push(data);
+    return Promise.resolve();
   }
 }

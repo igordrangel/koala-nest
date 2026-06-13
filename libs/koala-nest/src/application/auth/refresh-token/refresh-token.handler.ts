@@ -17,7 +17,7 @@ export class RefreshTokenHandler extends RequestHandlerBase<
     super();
   }
 
-  async handle(): Promise<IssueTokenResponse> {
+  handle(): IssueTokenResponse {
     const user = this.loggedUserInfo.getUser();
     const claims = jwtClaimsSchema.parse({
       sub: user.sub,

@@ -1,5 +1,5 @@
 export function patchInfraModuleForCache(content: string) {
-  if (content.includes("CacheServiceProvider")) {
+  if (content.includes('CacheServiceProvider')) {
     return content;
   }
 
@@ -13,12 +13,12 @@ export function patchInfraModuleForCache(content: string) {
       "import { CacheServiceProvider } from '@/infra/common/cache-service.provider';\nimport { LoggingService } from '@/infra/common/logging.service';\nimport { RedLockService } from '@/infra/common/red-lock.service';",
     )
     .replace(
-      "  providers: [\n    { provide: ILoggingService, useClass: LoggingService },",
-      "  providers: [\n    CacheServiceProvider,\n    { provide: ICacheService, useExisting: CacheServiceProvider },\n    { provide: ILoggingService, useClass: LoggingService },\n    { provide: IRedLockService, useClass: RedLockService },",
+      '  providers: [\n    { provide: ILoggingService, useClass: LoggingService },',
+      '  providers: [\n    CacheServiceProvider,\n    { provide: ICacheService, useExisting: CacheServiceProvider },\n    { provide: ILoggingService, useClass: LoggingService },\n    { provide: IRedLockService, useClass: RedLockService },',
     )
     .replace(
-      "  exports: [RepositoryModule, ILoggingService, ILoggedUserInfoService],",
-      "  exports: [\n    RepositoryModule,\n    ICacheService,\n    ILoggingService,\n    IRedLockService,\n    ILoggedUserInfoService,\n  ],",
+      '  exports: [RepositoryModule, ILoggingService, ILoggedUserInfoService],',
+      '  exports: [\n    RepositoryModule,\n    ICacheService,\n    ILoggingService,\n    IRedLockService,\n    ILoggedUserInfoService,\n  ],',
     );
 }
 

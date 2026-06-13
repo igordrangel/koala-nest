@@ -4,8 +4,6 @@ import { createE2EDatabase } from '@/test/utils/create-e2e-database';
 import { E2EDatabaseClient } from '@/test/utils/e2e-database-client';
 import { Pool } from 'pg';
 
-export let pgClient: E2EPostgresClient;
-
 class E2EPostgresClient extends E2EDatabaseClient {
   private baseUrl: URL;
 
@@ -61,10 +59,8 @@ class E2EPostgresClient extends E2EDatabaseClient {
 }
 
 const { client } = await createE2EDatabase(E2EPostgresClient);
-pgClient = client;
+export const pgClient = client;
 
 afterAll(async () => {
-  if (pgClient) {
-    await pgClient.dropDatabase();
-  }
+  await pgClient.dropDatabase();
 });

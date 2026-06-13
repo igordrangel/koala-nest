@@ -1,6 +1,3 @@
-import { CreatePersonJob } from '@/application/person/jobs/create-person.job';
-import { DeleteInactiveJob } from '@/application/person/jobs/delete-inactive.job';
-import { InactivePersonHandler } from '@/application/person/events/inactive-person.handler';
 import { delay } from '@koalarx/utils/KlDelay';
 import { INestApplication } from '@nestjs/common';
 
@@ -9,11 +6,18 @@ type BootstrapOptions = {
   bootstrapDelayMs: number;
 };
 
+function optionalModulePath(modulePath: string) {
+  return modulePath;
+}
+
 export async function bootstrapKoalaJobs(
   app: INestApplication,
   options: BootstrapOptions,
 ) {
   try {
+    const { InactivePersonHandler } = await import(
+      optionalModulePath('@/application/person/events/inactive-person.handler')
+    );
     const inactivePersonHandler = await app.resolve(InactivePersonHandler);
     inactivePersonHandler.setupSubscriptions();
   } catch {
@@ -28,9 +32,20 @@ export async function bootstrapKoalaJobs(
     await delay(options.bootstrapDelayMs);
   }
 
-  const createPersonJob = await app.resolve(CreatePersonJob);
-  const deleteInactiveJob = await app.resolve(DeleteInactiveJob);
+  try {
+    const { CreatePersonJob } = await import(
+      optionalModulePath('@/application/person/jobs/create-person.job')
+    );
+    const { DeleteInactiveJob } = await import(
+      optionalModulePath('@/application/person/jobs/delete-inactive.job')
+    );
 
-  createPersonJob.start();
-  deleteInactiveJob.start();
+    const createPersonJob = await app.resolve(CreatePersonJob);
+    const deleteInactiveJob = await app.resolve(DeleteInactiveJob);
+
+    createPersonJob.start();
+    deleteInactiveJob.start();
+  } catch {
+    // Cron jobs de exemplo não instalados no projeto.
+  }
 }

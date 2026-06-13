@@ -1,9 +1,6 @@
 import { EnvService } from '@/infra/common/env.service';
 import { Injectable } from '@nestjs/common';
-import {
-  HealthCheckError,
-  HealthIndicatorResult,
-} from '@nestjs/terminus';
+import { HealthCheckError, HealthIndicatorResult } from '@nestjs/terminus';
 
 @Injectable()
 export class RedisIndicator {
@@ -38,7 +35,8 @@ export class RedisIndicator {
         return {
           redis: {
             status: 'up',
-            message: 'REDIS_CONNECTION_STRING definido, mas ioredis não está instalado',
+            message:
+              'REDIS_CONNECTION_STRING definido, mas ioredis não está instalado',
           },
         };
       }

@@ -1,4 +1,5 @@
 import { AuthenticatedUser, jwtClaimsSchema } from '@/core/auth/jwt-claims';
+import { AuthHttp, JwtTokenType } from '@/core/auth/auth.constants';
 import { isAuthRefreshRoute } from '@/core/auth/auth-routes';
 import { EnvService } from '@/infra/common/env.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
@@ -20,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: Buffer.from(publicKey, 'base64'),
-      algorithms: ['RS256'],
+      algorithms: [AuthHttp.JWT_ALGORITHM],
       passReqToCallback: true,
     });
   }
@@ -28,17 +29,20 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   validate(req: Request, payload: AuthenticatedUser) {
     const isRefreshRoute = isAuthRefreshRoute(req.url);
 
-    if (payload.tokenType === 'refresh' && !isRefreshRoute) {
+    if (payload.tokenType === JwtTokenType.REFRESH && !isRefreshRoute) {
       throw new UnauthorizedException(
         'Refresh token não pode ser usado como access token',
       );
     }
 
-    if (payload.tokenType === 'refresh') {
+    if (payload.tokenType === JwtTokenType.REFRESH) {
       return jwtClaimsSchema.parse(payload);
     }
 
-    const token = req.get('Authorization')?.replace('Bearer', '').trim();
+    const token = req
+      .get('Authorization')
+      ?.replace(AuthHttp.BEARER_PREFIX, '')
+      .trim();
     return jwtClaimsSchema.parse({ ...payload, refreshToken: token });
   }
 }

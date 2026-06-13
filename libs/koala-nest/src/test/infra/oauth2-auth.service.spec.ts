@@ -21,11 +21,15 @@ class RegistryStub {
 function createService(cache = new CacheStub()) {
   const env = {
     get: (key: string) =>
-      key === 'API_HOST' ? 'http://localhost:3000' : key === 'PORT' ? 3000 : undefined,
+      key === 'API_HOST'
+        ? 'http://localhost:3000'
+        : key === 'PORT'
+          ? 3000
+          : undefined,
     getDynamic: () => undefined,
   } as unknown as EnvService;
 
-  return new OAuth2AuthService(env, new RegistryStub() as never, cache as never);
+  return new OAuth2AuthService(env, new RegistryStub() as never, cache);
 }
 
 function stubOAuthFetch() {
@@ -77,11 +81,7 @@ describe('OAuth2AuthService — state', () => {
 
     expect(cache.store.get(stateKey)).toContain('auth0');
 
-    const user = await service.exchangeCode(
-      'auth0',
-      'code-1',
-      config.state,
-    );
+    const user = await service.exchangeCode('auth0', 'code-1', config.state);
 
     expect(user.email).toBe('user@example.com');
     expect(cache.store.has(stateKey)).toBe(false);

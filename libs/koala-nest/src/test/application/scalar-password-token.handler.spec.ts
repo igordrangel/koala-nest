@@ -49,8 +49,8 @@ describe('ScalarPasswordTokenHandler', () => {
   });
 
   it('lança BadRequestException quando sub/username está ausente', async () => {
-    await expect(handler.handle({ password: AuthProfile.admin })).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(
+      handler.handle({ password: AuthProfile.admin }),
+    ).rejects.toThrow(BadRequestException);
   });
 });

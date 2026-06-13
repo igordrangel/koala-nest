@@ -5,7 +5,7 @@
   },
   "include": [
     "src/test/bun-test-globals.d.ts",
-    "src/test/**/*.ts",
-    "src/**/*.spec.ts"
-  "exclude": ["src/test/setup-e2e.ts"]
+    "src/test/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
 }

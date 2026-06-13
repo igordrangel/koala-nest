@@ -1,3 +1,8 @@
+import { AuthHttp } from '@/core/auth/auth.constants';
+import {
+  CacheKeyPrefix,
+  CacheTtlSeconds,
+} from '@/core/constants/cache.constants';
 import { randomBytes } from 'node:crypto';
 import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { OAuthProviderRegistry } from '@/core/auth/oauth-provider.registry';
@@ -11,7 +16,7 @@ import { ICacheService } from '@/domain/common/icache.service';
 import { resolveApiHost } from '@/core/utils/resolve-api-host';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
-const OAUTH_STATE_TTL_SECONDS = 10 * 60;
+const OAUTH_STATE_TTL_SECONDS = CacheTtlSeconds.OAUTH2_STATE;
 
 @Injectable()
 export class OAuth2AuthService implements IOAuth2Service {
@@ -51,7 +56,7 @@ export class OAuth2AuthService implements IOAuth2Service {
   }
 
   private stateCacheKey(state: string) {
-    return `oauth2:state:${state}`;
+    return `${CacheKeyPrefix.OAUTH2_STATE}${state}`;
   }
 
   private getApiHost() {
@@ -155,7 +160,7 @@ export class OAuth2AuthService implements IOAuth2Service {
     accessToken: string,
   ): Promise<OAuthUserInfoDto> {
     const data = await fetch(config.userInfoUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `${AuthHttp.BEARER_PREFIX}${accessToken}` },
     }).then((response) => response.json() as Promise<Record<string, string>>);
 
     const email = data.email ?? data.unique_name ?? data.upn ?? '';

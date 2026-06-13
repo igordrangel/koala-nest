@@ -1,4 +1,5 @@
 import { AuthenticatedUser } from '@/core/auth/jwt-claims';
+import { AuthHttp } from '@/core/auth/auth.constants';
 import { isAuthRefreshRoute } from '@/core/auth/auth-routes';
 import { IS_PUBLIC_KEY } from '@/host/decorators/is-public.decorator';
 import {
@@ -18,10 +19,10 @@ type AuthRequest = {
 export function applyRefreshTokenFromCookie(request: AuthRequest): void {
   if (
     isAuthRefreshRoute(request.url) &&
-    request.cookies?.refreshToken &&
+    request.cookies?.[AuthHttp.REFRESH_TOKEN_COOKIE] &&
     !request.headers.authorization
   ) {
-    request.headers.authorization = `Bearer ${request.cookies.refreshToken}`;
+    request.headers.authorization = `${AuthHttp.BEARER_PREFIX}${request.cookies[AuthHttp.REFRESH_TOKEN_COOKIE]}`;
   }
 }
 

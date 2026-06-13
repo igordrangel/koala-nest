@@ -6,9 +6,7 @@ import { RedisCacheService } from '@/infra/common/redis-cache.service';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 
 @Injectable()
-export class CacheServiceProvider
-  implements ICacheService, OnModuleDestroy
-{
+export class CacheServiceProvider implements ICacheService, OnModuleDestroy {
   private readonly delegate: ICacheService & Partial<OnModuleDestroy>;
 
   constructor(env: EnvService) {

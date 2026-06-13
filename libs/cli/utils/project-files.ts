@@ -4,14 +4,14 @@ export function removeImportLines(content: string, moduleSpecifiers: string[]) {
   for (const specifier of moduleSpecifiers) {
     const pattern = new RegExp(
       `^import\\s+(?:type\\s+)?(?:[^'";\\n]+|\\{[^}]*\\})\\s+from\\s+['"][^'"]*${escapeRegExp(specifier)}['"];?\\r?\\n`,
-      "gm",
+      'gm',
     );
-    result = result.replace(pattern, "");
+    result = result.replace(pattern, '');
   }
 
   return result;
 }
 
 function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

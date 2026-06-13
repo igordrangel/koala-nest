@@ -64,9 +64,7 @@ export class MappingStore {
   }
 
   static getPropType(entity: Type<any>, propName: string) {
-    const prop = this._entities
-      .get(entity)
-      ?.find((p) => p.name === propName);
+    const prop = this._entities.get(entity)?.find((p) => p.name === propName);
 
     if (!prop) {
       throw new Error(

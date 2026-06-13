@@ -1,9 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { patchAppModuleForAuth } from './patch-main';
+import { AuthStrategy } from '@cli/constants/domain';
+import { patchMainForAuth } from './patch-main';
 import { resolveProjectPath } from './resolve-project-path';
 
-export type AuthStrategy = 'jwt' | 'oauth2';
+export type { AuthStrategy } from '@cli/constants/domain';
 
 function patchFile(
   projectName: string,
@@ -23,11 +24,11 @@ function patchFile(
 }
 
 export function patchAppModuleForAuth(content: string) {
-  if (content.includes("import { SecurityModule }")) {
+  if (content.includes('import { SecurityModule }')) {
     return content;
   }
 
-  let patched = content.replace(
+  const patched = content.replace(
     "import { Module } from '@nestjs/common';",
     "import { Module } from '@nestjs/common';\nimport { AuthModule } from './controllers/auth/auth.module';\nimport { SecurityModule } from './security/security.module';",
   );
@@ -59,7 +60,10 @@ export async function patchAuthInstall(
     patchAppModuleForAuth(readFileSync(appModulePath, 'utf8')),
   );
 
-  const mainPath = path.join(resolveProjectPath(projectName), 'src/host/main.ts');
+  const mainPath = path.join(
+    resolveProjectPath(projectName),
+    'src/host/main.ts',
+  );
   writeFileSync(mainPath, patchMainForAuth(readFileSync(mainPath, 'utf8')));
 
   patchFile(projectName, 'src/host/main.ts', [
@@ -73,7 +77,7 @@ export async function patchAuthInstall(
     },
   ]);
 
-  if (strategy === 'jwt') {
+  if (strategy === AuthStrategy.JWT) {
     patchFile(projectName, 'src/host/controllers/auth/auth.module.ts', [
       {
         from: "import { OAuthAuthLinkHandler } from '@/application/auth/oauth2/auth-link/auth-link.handler';\nimport { OAuthExchangeCodeHandler } from '@/application/auth/oauth2/exchange-code/exchange-code.handler';\nimport { ScalarOAuthTokenHandler } from '@/application/auth/oauth2/scalar-token/scalar-oauth-token.handler';",

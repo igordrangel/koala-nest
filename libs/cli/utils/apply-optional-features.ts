@@ -1,37 +1,36 @@
+import { AuthChoice, ExtraFeature, Template } from '@cli/constants/domain';
 import {
   installModule,
   mapExtraFeatureToModule,
   Modules,
   resolveProjectFeatures,
-  type ExtraFeature,
-  type Template,
-} from "./install-module.ts";
-import { adjustCrudPersonModule } from "./patch-person-features.ts";
-import { cleanDefaultTemplateWithoutAuth } from "./remove-sample-parts.ts";
-import { formatCode } from "./format-code.ts";
+} from './install-module.ts';
+import { adjustCrudPersonModule } from './patch-person-features.ts';
+import { cleanDefaultTemplateWithoutAuth } from './remove-sample-parts.ts';
+import { formatCode } from './format-code.ts';
 
 export type ApplyOptionalFeaturesOptions = {
   projectName?: string;
   template: Template;
-  auth: "none" | "jwt" | "oauth2";
+  auth: AuthChoice;
   features: ExtraFeature[];
 };
 
 export async function applyOptionalFeatures(
   options: ApplyOptionalFeaturesOptions,
 ): Promise<void> {
-  const projectName = options.projectName ?? "";
+  const projectName = options.projectName ?? '';
   const projectFeatures = resolveProjectFeatures(
     options.features,
     options.auth,
   );
 
-  if (options.template === "crudSample") {
+  if (options.template === Template.CRUD_SAMPLE) {
     adjustCrudPersonModule(projectName, {
       cache: projectFeatures.cacheForCrud,
       cronJobs: projectFeatures.cronJobs,
       eventJobs: projectFeatures.eventJobs,
-      auth: options.auth !== "none",
+      auth: options.auth !== AuthChoice.NONE,
     });
   }
 
@@ -41,14 +40,14 @@ export async function applyOptionalFeatures(
     });
   }
 
-  if (options.auth !== "none") {
+  if (options.auth !== AuthChoice.NONE) {
     await installModule(Modules.AUTH, options.template, projectName, {
       authStrategy: options.auth,
     });
   }
 
   for (const feature of options.features) {
-    if (feature === "cache") {
+    if (feature === ExtraFeature.CACHE) {
       continue;
     }
 
@@ -56,14 +55,20 @@ export async function applyOptionalFeatures(
       mapExtraFeatureToModule(feature),
       options.template,
       projectName,
+      feature === ExtraFeature.HEALTH_CHECK
+        ? { withRedisIndicator: projectFeatures.cache }
+        : {},
     );
   }
 
-  if (options.template === "default" && options.auth === "none") {
+  if (
+    options.template === Template.DEFAULT &&
+    options.auth === AuthChoice.NONE
+  ) {
     await cleanDefaultTemplateWithoutAuth(projectName);
   }
 
   await formatCode(projectName);
 }
 
-export { addProjectFeatures } from "./add-project-features.ts";
+export { addProjectFeatures } from './add-project-features.ts';

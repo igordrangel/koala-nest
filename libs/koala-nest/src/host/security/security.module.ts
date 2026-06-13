@@ -1,3 +1,4 @@
+import { AuthHttp } from '@/core/auth/auth.constants';
 import { Env } from '@/core/env';
 import { OAuthProviderRegistry } from '@/core/auth/oauth-provider.registry';
 import {
@@ -34,7 +35,7 @@ import { ProfilesGuard } from './guards/profiles.guard';
         }
 
         return {
-          signOptions: { algorithm: 'RS256' },
+          signOptions: { algorithm: AuthHttp.JWT_ALGORITHM },
           privateKey: Buffer.from(privateKey, 'base64'),
           publicKey: Buffer.from(publicKey, 'base64'),
         };

@@ -1,3 +1,4 @@
+import { CacheTtlSeconds } from '@/core/constants/cache.constants';
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
 import { AutoMapper } from '@/core/tools/mapping';
 import { buildListCacheKey } from '@/core/utils/build-list-cache-key';
@@ -14,7 +15,7 @@ import {
 import { ReadManyPersonValidator } from './read-many-person.validator';
 import { Person } from '@/domain/entities/person/person';
 
-const PERSON_LIST_CACHE_TTL_SECONDS = 120;
+const PERSON_LIST_CACHE_TTL_SECONDS = CacheTtlSeconds.PERSON_LIST;
 
 @Injectable()
 export class ReadManyPersonHandler extends RequestHandlerBase<

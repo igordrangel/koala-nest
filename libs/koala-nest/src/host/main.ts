@@ -1,3 +1,4 @@
+import { OpenApiDoc } from './open-api/open-api.constants';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
@@ -41,7 +42,7 @@ async function bootstrap() {
 
   console.log(`Server is running on port ${process.env.PORT || 3000}`);
   console.log(
-    `Documentation is available at http://localhost:${process.env.PORT || 3000}/doc`,
+    `Documentation is available at http://localhost:${process.env.PORT || 3000}${OpenApiDoc.ENDPOINT}`,
   );
 }
 

@@ -14,7 +14,7 @@ export class ScalarPasswordTokenHandler extends RequestHandlerBase<
     super();
   }
 
-  async handle(body: ScalarTokenBody): Promise<IssueTokenResponse> {
+  handle(body: ScalarTokenBody): IssueTokenResponse {
     const sub = body.sub ?? body.username;
 
     if (!sub?.trim()) {

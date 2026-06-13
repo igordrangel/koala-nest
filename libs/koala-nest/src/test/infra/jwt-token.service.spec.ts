@@ -14,13 +14,16 @@ describe('JwtTokenService', () => {
     } as unknown as JwtService;
 
     const envService = {
-      get: (key: 'JWT_ACCESS_TOKEN_EXPIRES_IN' | 'JWT_REFRESH_TOKEN_EXPIRES_IN') =>
-        key === 'JWT_ACCESS_TOKEN_EXPIRES_IN' ? '15m' : '7d',
+      get: (
+        key: 'JWT_ACCESS_TOKEN_EXPIRES_IN' | 'JWT_REFRESH_TOKEN_EXPIRES_IN',
+      ) => (key === 'JWT_ACCESS_TOKEN_EXPIRES_IN' ? '15m' : '7d'),
     } as unknown as EnvService;
 
     const service = new JwtTokenService(jwtService, envService);
 
-    expect(service.signTokenPair({ sub: 'user-1', profile: AuthProfile.admin })).toEqual({
+    expect(
+      service.signTokenPair({ sub: 'user-1', profile: AuthProfile.admin }),
+    ).toEqual({
       accessToken: '15m:user-1:access',
       refreshToken: '7d:user-1:refresh',
     });

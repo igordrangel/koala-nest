@@ -51,8 +51,7 @@ export class OAuthProviderRegistry {
     const tokenUrl = this.env.getDynamic(`${prefix}_TOKEN_URL`);
     const userInfoUrl = this.env.getDynamic(`${prefix}_USERINFO_URL`);
 
-    const hasManualEndpoints =
-      authorizationUrl && tokenUrl && userInfoUrl;
+    const hasManualEndpoints = authorizationUrl && tokenUrl && userInfoUrl;
     const hasDiscoveryDomain = Boolean(domain);
 
     if (!clientId || !clientSecret || !scope) {

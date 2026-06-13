@@ -26,7 +26,9 @@ describe('buildScalarAuthentication', () => {
       providers: [
         {
           provide: IJwtTokenService,
-          useValue: { signTokenPair: () => ({ accessToken: 'a', refreshToken: 'r' }) },
+          useValue: {
+            signTokenPair: () => ({ accessToken: 'a', refreshToken: 'r' }),
+          },
         },
         { provide: EnvService, useValue: envServiceMock },
       ],
@@ -63,7 +65,9 @@ describe('buildScalarAuthentication', () => {
       providers: [
         {
           provide: IJwtTokenService,
-          useValue: { signTokenPair: () => ({ accessToken: 'a', refreshToken: 'r' }) },
+          useValue: {
+            signTokenPair: () => ({ accessToken: 'a', refreshToken: 'r' }),
+          },
         },
         { provide: IOAuth2Service, useValue: oauth2Service },
         {

@@ -39,7 +39,9 @@ export function ApiPropertyEnum(options: ApiPropertyEnumOptions) {
 
     const apiPropertyOptions = {
       ...options,
-      description: description ? ['```', description, '```'].join('\n') : undefined,
+      description: description
+        ? ['```', description, '```'].join('\n')
+        : undefined,
     } as ApiPropertyOptions;
 
     ApiProperty(apiPropertyOptions)(target, propertyKey);

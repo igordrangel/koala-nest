@@ -127,5 +127,21 @@
   "npm.scriptExplorerAction": "run",
   "npm.packageManager": "bun",
   "editor.wordWrap": "on",
-  "editor.wrappingIndent": "indent"
+  "editor.wrappingIndent": "indent",
+  "eslint.workingDirectories": [
+    {
+      "directory": "libs/koala-nest",
+      "changeProcessCWD": true
+    },
+    {
+      "directory": "libs/cli",
+      "changeProcessCWD": true
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
 }

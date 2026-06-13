@@ -90,7 +90,10 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       }
 
       const repository = moduleRef.get(IPersonRepository);
-      const query = Object.assign(new PersonQueryDto(), { limit: 100, page: 0 });
+      const query = Object.assign(new PersonQueryDto(), {
+        limit: 100,
+        page: 0,
+      });
       const { items } = await repository.findMany(query);
 
       expect(items.length).toBeGreaterThan(0);
@@ -155,7 +158,10 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       const personFromFindById = await readHandler.handle(created.id);
 
       const repository = moduleRef.get(IPersonRepository);
-      const query = Object.assign(new PersonQueryDto(), { limit: 100, page: 0 });
+      const query = Object.assign(new PersonQueryDto(), {
+        limit: 100,
+        page: 0,
+      });
       const { items } = await repository.findMany(query);
       const personFromFindMany = items.find((p) => p.id === created.id);
 

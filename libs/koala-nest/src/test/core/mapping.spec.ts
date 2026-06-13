@@ -1,4 +1,9 @@
-import { AutoMap, AutoMapper, createMap, forMember } from '@/core/tools/mapping';
+import {
+  AutoMap,
+  AutoMapper,
+  createMap,
+  forMember,
+} from '@/core/tools/mapping';
 import { MappingStore } from '@/core/tools/mapping/mapping-store';
 import {
   Person,
@@ -116,7 +121,10 @@ describe('AutoMapper', () => {
     createMap(
       SourceRequest,
       TargetEntity,
-      forMember('fullName', (source) => `${source.firstName} ${source.lastName}`),
+      forMember(
+        'fullName',
+        (source) => `${source.firstName} ${source.lastName}`,
+      ),
     );
 
     const source = Object.assign(new SourceRequest(), {

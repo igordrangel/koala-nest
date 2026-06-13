@@ -1,1 +1,1 @@
-export type PackageManager = "bun" | "npm" | "pnpm";
+export type PackageManager = 'bun' | 'npm' | 'pnpm';

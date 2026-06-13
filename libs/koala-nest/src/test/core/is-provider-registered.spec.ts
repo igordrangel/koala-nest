@@ -9,7 +9,9 @@ describe('isProviderRegistered', () => {
       providers: [
         {
           provide: IJwtTokenService,
-          useValue: { signTokenPair: () => ({ accessToken: 'a', refreshToken: 'r' }) },
+          useValue: {
+            signTokenPair: () => ({ accessToken: 'a', refreshToken: 'r' }),
+          },
         },
       ],
     }).compile();

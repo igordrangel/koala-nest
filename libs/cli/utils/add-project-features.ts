@@ -1,29 +1,35 @@
 import {
+  AddArgKind,
+  ExtraFeature,
+  FEATURE_LABELS,
+  Template,
+} from '@cli/constants/domain';
+import {
   installModule,
   Modules,
-  type Template,
-} from "./install-module";
-import type { AuthStrategy } from "./patch-auth-install";
+  type Template as TemplateType,
+} from './install-module';
 import {
   detectProjectState,
   type AddArg,
   type ProjectState,
-} from "./detect-project-state";
-import { formatCode } from "./format-code";
-import { runCommand } from "./run-command";
-import { getPackageManager } from "./get-package-manager";
-import { resolveProjectPath } from "./resolve-project-path";
-import { CACHE_PACKAGES } from "../constants/core-packages";
+} from './detect-project-state';
+import { formatCode } from './format-code';
+import { runCommand } from './run-command';
+import { getPackageManager } from './get-package-manager';
+import { resolveProjectPath } from './resolve-project-path';
+import { CACHE_PACKAGES } from '@cli/constants/core-packages';
 import {
   restorePersonAuthExample,
   restorePersonCacheFeatures,
   restorePersonCronJobs,
   restorePersonEventJobs,
   upgradeCacheToRedis,
-} from "./restore-person-features";
-import { normalizeAddArgs } from "./normalize-add-args";
+} from './restore-person-features';
+import { normalizeAddArgs } from './normalize-add-args';
+import { restoreRedisHealthCheck } from './patch-health-module';
 
-async function ensureMemoryCache(projectName: string, template: Template) {
+async function ensureMemoryCache(projectName: string, template: TemplateType) {
   const state = detectProjectState(projectName);
 
   if (state.cache) {
@@ -37,18 +43,18 @@ async function ensureMemoryCache(projectName: string, template: Template) {
 
 async function installRedisCache(
   projectName: string,
-  template: Template,
+  template: TemplateType,
   state: ProjectState,
 ) {
-  if (state.cache === "redis") {
-    return { installed: false, reason: "Cache Redis já está instalado." };
+  if (state.cache === 'redis') {
+    return { installed: false, reason: 'Cache Redis já está instalado.' };
   }
 
-  if (state.cache === "memory") {
+  if (state.cache === 'memory') {
     await upgradeCacheToRedis(projectName);
     const packageManager = getPackageManager(projectName);
     await runCommand(
-      [packageManager, "add", ...CACHE_PACKAGES],
+      [packageManager, 'add', ...CACHE_PACKAGES],
       resolveProjectPath(projectName),
     );
   } else {
@@ -57,8 +63,12 @@ async function installRedisCache(
     });
   }
 
-  if (template === "crudSample") {
+  if (template === Template.CRUD_SAMPLE) {
     await restorePersonCacheFeatures(projectName);
+  }
+
+  if (state.health) {
+    restoreRedisHealthCheck(projectName);
   }
 
   return { installed: true };
@@ -71,7 +81,7 @@ export type AddFeatureResult = {
 };
 
 export async function addProjectFeatures(
-  projectName = "",
+  projectName = '',
   args: AddArg[],
 ): Promise<AddFeatureResult[]> {
   const results: AddFeatureResult[] = [];
@@ -80,7 +90,7 @@ export async function addProjectFeatures(
   const orderedArgs = normalizeAddArgs(args);
 
   for (const arg of orderedArgs) {
-    if (arg.kind === "auth") {
+    if (arg.kind === AddArgKind.AUTH) {
       if (state.auth) {
         results.push({
           label: `auth (${arg.strategy})`,
@@ -90,15 +100,13 @@ export async function addProjectFeatures(
         continue;
       }
 
-      if (arg.strategy === "oauth2") {
-        await ensureMemoryCache(projectName, template);
-      }
+      await ensureMemoryCache(projectName, template);
 
       await installModule(Modules.AUTH, template, projectName, {
         authStrategy: arg.strategy,
       });
 
-      if (template === "crudSample") {
+      if (template === Template.CRUD_SAMPLE) {
         await restorePersonAuthExample(projectName);
       }
 
@@ -108,35 +116,44 @@ export async function addProjectFeatures(
     }
 
     switch (arg.feature) {
-      case "cache": {
-        const cacheResult = await installRedisCache(projectName, template, state);
+      case ExtraFeature.CACHE: {
+        const cacheResult = await installRedisCache(
+          projectName,
+          template,
+          state,
+        );
         results.push({
-          label: "cache (Redis)",
+          label: FEATURE_LABELS[ExtraFeature.CACHE],
           installed: cacheResult.installed,
           reason: cacheResult.reason,
         });
         break;
       }
-      case "health-check": {
+      case ExtraFeature.HEALTH_CHECK: {
         if (state.health) {
           results.push({
-            label: "health-check",
+            label: FEATURE_LABELS[ExtraFeature.HEALTH_CHECK],
             installed: false,
-            reason: "Health check já está instalado.",
+            reason: 'Health check já está instalado.',
           });
           break;
         }
 
-        await installModule(Modules.HEALTH, template, projectName);
-        results.push({ label: "health-check", installed: true });
+        await installModule(Modules.HEALTH, template, projectName, {
+          withRedisIndicator: Boolean(state.cache),
+        });
+        results.push({
+          label: FEATURE_LABELS[ExtraFeature.HEALTH_CHECK],
+          installed: true,
+        });
         break;
       }
-      case "internal-cron-jobs": {
+      case ExtraFeature.INTERNAL_CRON_JOBS: {
         if (state.cronJobs) {
           results.push({
-            label: "cron jobs",
+            label: FEATURE_LABELS[ExtraFeature.INTERNAL_CRON_JOBS],
             installed: false,
-            reason: "Cron jobs já estão instalados.",
+            reason: 'Cron jobs já estão instalados.',
           });
           break;
         }
@@ -144,30 +161,36 @@ export async function addProjectFeatures(
         await ensureMemoryCache(projectName, template);
         await installModule(Modules.INTERNAL_CRON_JOBS, template, projectName);
 
-        if (template === "crudSample") {
+        if (template === Template.CRUD_SAMPLE) {
           await restorePersonCronJobs(projectName);
         }
 
-        results.push({ label: "cron jobs", installed: true });
+        results.push({
+          label: FEATURE_LABELS[ExtraFeature.INTERNAL_CRON_JOBS],
+          installed: true,
+        });
         break;
       }
-      case "internal-event-jobs": {
+      case ExtraFeature.INTERNAL_EVENT_JOBS: {
         if (state.eventJobs) {
           results.push({
-            label: "event jobs",
+            label: FEATURE_LABELS[ExtraFeature.INTERNAL_EVENT_JOBS],
             installed: false,
-            reason: "Event jobs já estão instalados.",
+            reason: 'Event jobs já estão instalados.',
           });
           break;
         }
 
         await installModule(Modules.INTERNAL_EVENT_JOBS, template, projectName);
 
-        if (template === "crudSample") {
+        if (template === Template.CRUD_SAMPLE) {
           await restorePersonEventJobs(projectName);
         }
 
-        results.push({ label: "event jobs", installed: true });
+        results.push({
+          label: FEATURE_LABELS[ExtraFeature.INTERNAL_EVENT_JOBS],
+          installed: true,
+        });
         break;
       }
     }

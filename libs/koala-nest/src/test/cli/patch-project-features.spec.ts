@@ -1,14 +1,14 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from 'bun:test';
 import {
   patchInfraModuleForCache,
   SLIM_INFRA_MODULE,
   stripInfraModuleCache,
-} from "../../../../cli/utils/patch-infra-module.ts";
+} from '@cli/utils/patch-infra-module.ts';
 import {
   patchMainForAuth,
   patchMainForCronJobs,
   stripMainOptionalFeatures,
-} from "../../../../cli/utils/patch-main.ts";
+} from '@cli/utils/patch-main.ts';
 
 const fullMain = `import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
@@ -55,41 +55,41 @@ async function bootstrap() {
 bootstrap();
 `;
 
-describe("patch-main", () => {
-  it("remove cookie parser e bootstrap do template completo", () => {
+describe('patch-main', () => {
+  it('remove cookie parser e bootstrap do template completo', () => {
     const stripped = stripMainOptionalFeatures(fullMain);
 
-    expect(stripped).not.toContain("cookieParser");
-    expect(stripped).not.toContain("bootstrapKoalaJobs");
-    expect(stripped).not.toContain("ConfigService");
+    expect(stripped).not.toContain('cookieParser');
+    expect(stripped).not.toContain('bootstrapKoalaJobs');
+    expect(stripped).not.toContain('ConfigService');
   });
 
-  it("adiciona cookie parser para autenticação", () => {
+  it('adiciona cookie parser para autenticação', () => {
     const slim = stripMainOptionalFeatures(fullMain);
     const patched = patchMainForAuth(slim);
 
-    expect(patched).toContain("cookieParser()");
-    expect(patched).not.toContain("bootstrapKoalaJobs");
+    expect(patched).toContain('cookieParser()');
+    expect(patched).not.toContain('bootstrapKoalaJobs');
   });
 
-  it("adiciona bootstrap de cron jobs", () => {
+  it('adiciona bootstrap de cron jobs', () => {
     const slim = stripMainOptionalFeatures(fullMain);
     const patched = patchMainForCronJobs(slim);
 
-    expect(patched).toContain("bootstrapKoalaJobs");
-    expect(patched).toContain("CRON_JOBS_ENABLED");
+    expect(patched).toContain('bootstrapKoalaJobs');
+    expect(patched).toContain('CRON_JOBS_ENABLED');
   });
 });
 
-describe("patch-infra-module", () => {
-  it("gera infra module enxuto sem cache", () => {
-    expect(stripInfraModuleCache("anything")).toBe(SLIM_INFRA_MODULE);
+describe('patch-infra-module', () => {
+  it('gera infra module enxuto sem cache', () => {
+    expect(stripInfraModuleCache('anything')).toBe(SLIM_INFRA_MODULE);
   });
 
-  it("adiciona providers de cache ao infra slim", () => {
+  it('adiciona providers de cache ao infra slim', () => {
     const patched = patchInfraModuleForCache(SLIM_INFRA_MODULE);
 
-    expect(patched).toContain("CacheServiceProvider");
-    expect(patched).toContain("IRedLockService");
+    expect(patched).toContain('CacheServiceProvider');
+    expect(patched).toContain('IRedLockService');
   });
 });

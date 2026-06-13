@@ -1,3 +1,4 @@
+import { DemoCronExpression } from '@/core/constants/cron.constants';
 import { DeletePersonHandler } from '@/application/person/delete/delete-person.handler';
 import { ReadManyPersonHandler } from '@/application/person/read-many/read-many-person.handler';
 import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-person.request';
@@ -23,8 +24,8 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
     super(redlockService, loggingService);
   }
 
-  protected async settings(): Promise<CronJobSettings> {
-    return demoCronSettings('0 */1 * * * *');
+  protected settings(): Promise<CronJobSettings> {
+    return Promise.resolve(demoCronSettings(DemoCronExpression.HOURLY));
   }
 
   protected async run(): Promise<void> {

@@ -1,3 +1,4 @@
+import { OpenApiDoc } from './open-api.constants';
 import { IS_PUBLIC_KEY } from '@/host/decorators/is-public.decorator';
 import { INestApplication, RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
@@ -15,7 +16,7 @@ const HTTP_METHOD_BY_REQUEST: Partial<Record<RequestMethod, string>> = {
 };
 
 export function applyOpenApiBearerSecurity(document: OpenAPIObject) {
-  document.security = [{ bearer: [] }];
+  document.security = [{ [OpenApiDoc.BEARER_SCHEME]: [] }];
 }
 
 export function markPublicRoutesInOpenApiDocument(

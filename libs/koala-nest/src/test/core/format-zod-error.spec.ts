@@ -32,9 +32,7 @@ describe('formatZodError', () => {
 
     const formatted = formatZodError(result.error);
 
-    expect(formatted.message).toBe(
-      'Foram encontrados 2 erros de validação.',
-    );
+    expect(formatted.message).toBe('Foram encontrados 2 erros de validação.');
     expect(formatted.errors).toHaveLength(2);
   });
 });

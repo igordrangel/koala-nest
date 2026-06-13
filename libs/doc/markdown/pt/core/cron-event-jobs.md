@@ -95,14 +95,17 @@ Use `timeInMinutes` baixo (ex.: `0.01`) com expressão cron para o loop não per
 Para jobs que rodam em **intervalo fixo** sem cron, mantenha `isActive: true` e um `timeInMinutes` maior (ex.: `120` para 2 horas).
 
 ```typescript
-// src/core/utils/cron-expression-to-boolean.ts
-import { cronExpressionToBoolean } from '@/core/utils/cron-expression-to-boolean';
+import {
+  DemoCronExpression,
+  DEMO_CRON_POLL_MINUTES,
+} from '@/core/constants/cron.constants';
+import { demoCronSettings } from '@/core/background-services/cron-service/cron-job.handler.base';
 
 protected async settings(): Promise<CronJobSettings> {
-  return {
-    isActive: cronExpressionToBoolean('0 */1 * * * *'),
-    timeInMinutes: 0.01,
-  };
+  return demoCronSettings(
+    DemoCronExpression.HOURLY,
+    DEMO_CRON_POLL_MINUTES,
+  );
 }
 ```
 
@@ -125,36 +128,16 @@ export abstract class CronJobHandlerBase {
 Remove pessoas inativas a cada minuto (exemplo didático):
 
 ```typescript
-import { cronExpressionToBoolean } from '@/core/utils/cron-expression-to-boolean';
+import { DemoCronExpression } from '@/core/constants/cron.constants';
+import { demoCronSettings } from '@/core/background-services/cron-service/cron-job.handler.base';
 
 @Injectable()
 export class DeleteInactiveJob extends CronJobHandlerBase {
-  constructor(
-    redlockService: IRedLockService,
-    loggingService: ILoggingService,
-    private readonly readManyPerson: ReadManyPersonHandler,
-    private readonly deletePerson: DeletePersonHandler,
-  ) {
-    super(redlockService, loggingService);
-  }
+  // ...
 
   protected async settings(): Promise<CronJobSettings> {
-    return {
-      isActive: cronExpressionToBoolean('0 */1 * * * *'),
-      timeInMinutes: 0.01,
-    };
+    return demoCronSettings(DemoCronExpression.HOURLY);
   }
-
-  protected async run(): Promise<void> {
-    const result = await this.readManyPerson.handle(
-      Object.assign(new ReadManyPersonRequest(), { active: false }),
-    );
-
-    for (const person of result.items) {
-      await this.deletePerson.handle(person.id);
-    }
-  }
-}
 ```
 
 ### Registrar no bootstrap
@@ -228,7 +211,7 @@ inactivePersonHandler.setupSubscriptions();
 
 ## Lock distribuído (cron em múltiplas instâncias)
 
-Quando a API roda em **várias máquinas** (Kubernetes, load balancer, etc.), cada instância inicia o mesmo loop de CronJob. O `IRedLockService` garante que **apenas uma instância execute `run()` por ciclo**, usando uma chave compartilhada no Redis (`redLock:<NomeDoJob>`).
+Quando a API roda em **várias máquinas** (Kubernetes, load balancer, etc.), cada instância inicia o mesmo loop de CronJob. O `IRedLockService` garante que **apenas uma instância execute `run()` por ciclo**, usando uma chave compartilhada no Redis (`CacheKeyPrefix.RED_LOCK` + nome do job).
 
 Fluxo por ciclo:
 

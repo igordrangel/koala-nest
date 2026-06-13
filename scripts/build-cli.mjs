@@ -14,7 +14,7 @@ const transpiler = new Bun.Transpiler({
   target: "node",
 });
 
-function rewriteRelativeImports(code, source) {
+function rewriteRelativeImports(code, sourceFile) {
   function normalizeImportPath(importPath) {
     if (importPath.endsWith(".json")) {
       return importPath;
@@ -31,8 +31,25 @@ function rewriteRelativeImports(code, source) {
     return `${importPath}.js`;
   }
 
+  function resolveImportPath(importPath) {
+    if (!importPath.startsWith("@cli/")) {
+      return importPath;
+    }
+
+    const targetPath = path.join(sourceDir, importPath.slice("@cli/".length));
+    const fromDir = path.dirname(path.join(sourceDir, sourceFile));
+    let relative = path.relative(fromDir, targetPath).replace(/\\/g, "/");
+
+    if (!relative.startsWith(".")) {
+      relative = `./${relative}`;
+    }
+
+    return relative;
+  }
+
   function rewriteStatement(match, quote, importPath) {
-    const normalized = normalizeImportPath(importPath);
+    const resolved = resolveImportPath(importPath);
+    const normalized = normalizeImportPath(resolved);
 
     return match.replace(
       `${quote}${importPath}${quote}`,
@@ -41,16 +58,16 @@ function rewriteRelativeImports(code, source) {
   }
 
   let output = code.replace(
-    /^import\s+(?:type\s+)?(?:[\s\S]*?\s+)from\s+(['"])(\.\.?\/[^'"]+)\1;?\s*$/gm,
+    /^import\s+(?:type\s+)?(?:[\s\S]*?\s+)from\s+(['"])((?:@cli\/|\.\.?\/)[^'"]+)\1;?\s*$/gm,
     rewriteStatement,
   );
 
   output = output.replace(
-    /^export\s+(?:type\s+)?(?:[\s\S]*?\s+)from\s+(['"])(\.\.?\/[^'"]+)\1;?\s*$/gm,
+    /^export\s+(?:type\s+)?(?:[\s\S]*?\s+)from\s+(['"])((?:@cli\/|\.\.?\/)[^'"]+)\1;?\s*$/gm,
     rewriteStatement,
   );
 
-  if (/with\s+\{\s*type:\s*["']json["']\s*\}/.test(source)) {
+  if (/with\s+\{\s*type:\s*["']json["']\s*\}/.test(sourceFile)) {
     output = output.replace(
       /import\s+(\w+)\s+from\s+["']([^"']+\.json)["']/g,
       'import $1 from "$2" with { type: "json" }',
@@ -71,7 +88,7 @@ function buildCli() {
 
     const source = readFileSync(sourcePath, "utf8");
     let output = transpiler.transformSync(source);
-    output = rewriteRelativeImports(output, source);
+    output = rewriteRelativeImports(output, file);
 
     if (file === "index.ts") {
       output = `#!/usr/bin/env node\n\n${output}`;

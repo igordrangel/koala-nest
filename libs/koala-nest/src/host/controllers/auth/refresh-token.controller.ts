@@ -7,7 +7,10 @@ import { IController } from '../common/controller.base';
 import { AUTH_ROUTER_CONFIG } from './router.config';
 
 @Controller(AUTH_ROUTER_CONFIG)
-export class RefreshTokenController implements IController<void, IssueTokenResponse> {
+export class RefreshTokenController implements IController<
+  void,
+  IssueTokenResponse
+> {
   constructor(private readonly handler: RefreshTokenHandler) {}
 
   @Post('refresh')

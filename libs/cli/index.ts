@@ -1,44 +1,62 @@
 #!/usr/bin/env bun
 
-import { printHelp } from "./commands/help.ts";
-import { runAdd } from "./commands/add/index.ts";
-import { runNew } from "./commands/new/index.ts";
-import { runVersion } from "./commands/version.ts";
+import { CliCommand, CliFlag } from './constants/cli-commands.ts';
+import { printHelp } from './commands/help.ts';
+import { runAdd } from './commands/add/index.ts';
+import { runNew } from './commands/new/index.ts';
+import { runVersion } from './commands/version.ts';
+import { parseCliArgs } from './utils/cli-options.ts';
 
-const [, , command] = process.argv;
+const HELP_COMMANDS = new Set<string>([
+  CliCommand.HELP,
+  CliFlag.HELP,
+  CliFlag.HELP_SHORT,
+]);
+
+const VERSION_COMMANDS = new Set<string>([
+  CliCommand.VERSION,
+  CliFlag.VERSION,
+  CliFlag.VERSION_SHORT,
+]);
+
+const NEW_COMMANDS = new Set<string>([
+  CliCommand.NEW,
+  CliFlag.NEW,
+  CliFlag.NEW_SHORT,
+]);
+
+const ADD_COMMANDS = new Set<string>([
+  CliCommand.ADD,
+  CliFlag.ADD,
+  CliFlag.ADD_SHORT,
+]);
 
 async function main(): Promise<void> {
-  switch (command) {
-    case undefined:
-    case "help":
-    case "--help":
-    case "-h":
-      printHelp();
-      break;
+  const { command, commandArgs } = parseCliArgs(process.argv.slice(2));
 
-    case "version":
-    case "--version":
-    case "-v":
-      runVersion();
-      break;
-
-    case "new":
-    case "--new":
-    case "-n":
-      await runNew();
-      break;
-
-    case "add":
-    case "--add":
-    case "-a":
-      await runAdd();
-      break;
-
-    default:
-      console.error(`Comando desconhecido: ${command}\n`);
-      printHelp();
-      process.exit(1);
+  if (command === undefined || HELP_COMMANDS.has(command)) {
+    printHelp();
+    return;
   }
+
+  if (VERSION_COMMANDS.has(command)) {
+    runVersion();
+    return;
+  }
+
+  if (NEW_COMMANDS.has(command)) {
+    await runNew(commandArgs);
+    return;
+  }
+
+  if (ADD_COMMANDS.has(command)) {
+    await runAdd(commandArgs);
+    return;
+  }
+
+  console.error(`Comando desconhecido: ${command}\n`);
+  printHelp();
+  process.exit(1);
 }
 
 main().catch((error: unknown) => {
