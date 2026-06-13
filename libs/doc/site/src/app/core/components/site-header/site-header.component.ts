@@ -7,6 +7,7 @@ import { UI_COPY } from '../../i18n/ui-copy';
 import { CopyFeedbackButtonComponent } from '../copy-feedback-button/copy-feedback-button.component';
 import { DocsSidebarComponent } from '../docs-sidebar/docs-sidebar.component';
 import { GithubStarsComponent } from '../github-stars/github-stars.component';
+import { absoluteSiteUrl } from '../../config/site-seo';
 import { LocaleService } from '../../services/locale.service';
 import { SearchService } from '../../services/search.service';
 
@@ -37,7 +38,7 @@ export class SiteHeaderComponent {
 
   readonly homeLink = computed(() => this.localeService.homeRoute());
   readonly docsNavLink = computed(() => this.localeService.docsRootRoute());
-  readonly llmsUrl = () => `${location.origin}${this.localeService.llmsFile()}`;
+  readonly llmsUrl = () => absoluteSiteUrl(this.localeService.llmsFile());
 
   switchLocale(target: 'pt' | 'en') {
     if (target === this.localeService.locale()) return;

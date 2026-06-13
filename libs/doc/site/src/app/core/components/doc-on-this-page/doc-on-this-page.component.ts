@@ -63,6 +63,10 @@ export class DocOnThisPageComponent implements OnDestroy {
   private setupObserver(root: HTMLElement, nextItems: TocItem[]) {
     this.observer?.disconnect();
 
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
     this.observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {

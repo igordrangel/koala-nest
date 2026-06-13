@@ -194,10 +194,11 @@ Com autenticação instalada, `define-documentation.ts` aplica `.addBearerAuth()
 
 ### Endpoint da documentação
 
-Altere `docEndpoint` para mudar a URL:
+O template usa `/doc` por padrão (`DOC_ENDPOINT` em `define-documentation.ts`). Para mudar a URL:
 
 ```typescript
-const docEndpoint = '/api-docs';
+const docEndpoint = '/doc'; // padrão do template
+// const docEndpoint = '/api-docs'; // exemplo de URL alternativa
 ```
 
 Registre o mesmo valor em `SwaggerModule.setup` e em `app.use`.

@@ -1,14 +1,15 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   Component,
   computed,
   effect,
   ElementRef,
   inject,
+  PLATFORM_ID,
   signal,
   viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { CopyFeedbackButtonComponent } from '../../core/components/copy-feedback-button/copy-feedback-button.component';
@@ -16,7 +17,9 @@ import { DocOnThisPageComponent } from '../../core/components/doc-on-this-page/d
 import { MarkdownContentComponent } from '../../core/components/markdown-content/markdown-content.component';
 import { UI_COPY } from '../../core/i18n/ui-copy';
 import { DocsService } from '../../core/services/docs.service';
+import { absoluteSiteUrl } from '../../core/config/site-seo';
 import { LocaleService } from '../../core/services/locale.service';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-doc-page',
@@ -27,7 +30,8 @@ export class DocPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly docsService = inject(DocsService);
   private readonly localeService = inject(LocaleService);
-  private readonly title = inject(Title);
+  private readonly seo = inject(SeoService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private readonly articleRef = viewChild<ElementRef<HTMLElement>>('articleRef');
   private previousDocKey = '';
@@ -59,13 +63,23 @@ export class DocPageComponent {
   readonly docAiUrl = () => {
     const current = this.doc();
     if (!current?.mdRel) return '';
-    return `${location.origin}/markdown/${current.mdRel}`;
+    return absoluteSiteUrl(`/markdown/${current.mdRel}`);
   };
 
   constructor() {
     effect(() => {
       const page = this.doc();
-      this.title.setTitle(page ? `${page.title} — Koala Nest` : 'Koala Nest');
+      if (!page) {
+        return;
+      }
+
+      this.seo.update({
+        title: page.title,
+        description: page.description || UI_COPY[this.localeService.locale()].metaDescription,
+        path: page.route,
+        locale: this.localeService.locale(),
+        alternatePath: page.alternateRoute,
+      });
     });
 
     effect(() => {
@@ -78,7 +92,7 @@ export class DocPageComponent {
 
       this.markdownReady.set(0);
 
-      if (isDocChange) {
+      if (isDocChange && this.isBrowser) {
         queueMicrotask(() => window.scrollTo({ top: 0, left: 0 }));
       }
     });

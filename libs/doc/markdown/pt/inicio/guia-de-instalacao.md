@@ -151,7 +151,7 @@ pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Os testes usam o runner nativo do Bun (`bun test` / `bun run test:e2e`).
+> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Testes: **Bun** usa `bun test`; **npm/pnpm** usam **Vitest** (`npm run test`). Projetos gerados não incluem script `test:e2e` por padrão.
 
 ## Desenvolvimento local da CLI
 

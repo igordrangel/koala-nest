@@ -17,6 +17,10 @@ export function ensurePrismLoaded() {
 }
 
 export function highlightCodeBlocks(root: ParentNode) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
   const prism = (window as Window & { Prism?: { highlightElement: (element: HTMLElement) => void } })
     .Prism;
   if (!prism) return;

@@ -70,7 +70,7 @@ export class Button {
     effect(() => {
       const button = this.elementRef.nativeElement;
 
-      for (const key of button.classList) {
+      for (const key of Array.from(button.classList)) {
         if (key.startsWith('btn')) {
           button.classList.remove(key);
         }
