@@ -38,6 +38,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 - [Controllers](markdown/pt/host/controllers.md): Controllers HTTP finos que delegam para handlers.
 - [Rotas e tags](markdown/pt/host/rotas.md): Configuração centralizada de rotas com RouterConfigBase.
 - [Tratamento de erros](markdown/pt/host/tratamento-de-erros.md): Filtro global ErrorsFilter para Zod, TypeORM e erros internos.
+- [Autenticação](markdown/pt/host/autenticacao.md): JWT, guards globais, rotas públicas e OAuth2 genérico.
 - [Documentação OpenAPI com Scalar](markdown/pt/host/openapi-scalar.md): Como configurar e personalizar a documentação interativa em /doc com Scalar (OpenAPI via @nestjs/swagger).
 
 ## Infra

@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { z } from 'zod';
 
 export const envSchema = z.object({
@@ -6,6 +5,12 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string().optional(),
+  JWT_PRIVATE_KEY: z.string().optional(),
+  JWT_PUBLIC_KEY: z.string().optional(),
+  JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),
+  JWT_REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
+  API_HOST: z.string().optional(),
+  OAUTH2_PROVIDERS: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

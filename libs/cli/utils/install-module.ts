@@ -1,12 +1,17 @@
 import { cpSync, rmSync } from "node:fs";
 import path from "node:path";
 import { getSourceCodePath } from "./get-source-code-path";
+import { patchAuthInstall, type AuthStrategy } from "./patch-auth-install";
 import { removeSampleParts } from "./remove-sample-parts";
 import { resolveProjectPath } from "./resolve-project-pach";
 import { runCommand } from "./run-command";
 import { getPackageManager } from "./get-package-manager";
 
 export type Template = "default" | "crudSample";
+
+export type InstallModuleOptions = {
+  authStrategy?: AuthStrategy;
+};
 
 export enum Modules {
   CORE = "core",
@@ -28,6 +33,7 @@ export async function installModule(
   module: Modules,
   template: Template,
   projectName = "",
+  options: InstallModuleOptions = {},
 ): Promise<void> {
   switch (module) {
     case Modules.CORE: {
@@ -110,8 +116,33 @@ export async function installModule(
       }
       break;
     }
-    case Modules.AUTH:
+    case Modules.AUTH: {
+      install("src/application/auth", projectName);
+      install("src/domain/auth", projectName);
+      install("src/infra/auth", projectName);
+      install("src/host/security", projectName);
+      install("src/host/controllers/auth", projectName);
+      install("src/host/controllers/oauth2", projectName);
+      install("src/core/auth", projectName);
+      install("src/core/types/auth-provider-config-response.type.ts", projectName);
+
+      const authPackages = [
+        "@nestjs/jwt",
+        "@nestjs/passport",
+        "passport",
+        "passport-jwt",
+      ];
+
+      await runCommand(
+        [getPackageManager(projectName), "add", ...authPackages],
+        resolveProjectPath(projectName),
+      );
+
+      if (options.authStrategy) {
+        await patchAuthInstall(projectName, options.authStrategy);
+      }
       break;
+    }
     case Modules.CACHE:
       break;
   }

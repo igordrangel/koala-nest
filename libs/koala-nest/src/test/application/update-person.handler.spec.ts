@@ -16,6 +16,7 @@ describe('UpdatePersonHandler', () => {
     const person = Person.from({
       id: 1,
       name: 'Jane',
+      active: true,
       address: PersonAddress.from({ id: 5, address: 'Old street' }),
       contacts: [existingContact],
     });

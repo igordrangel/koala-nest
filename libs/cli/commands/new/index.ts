@@ -57,14 +57,12 @@ export async function runNew(): Promise<void> {
         {
           value: "jwt",
           label: "JWT",
-          hint: "em breve",
-          disabled: true,
+          hint: "RS256 + guards globais",
         },
         {
           value: "oauth2",
           label: "OAuth2",
-          hint: "em breve",
-          disabled: true,
+          hint: "JWT + OAuth2 genérico",
         },
         {
           value: "api-key",
@@ -130,7 +128,9 @@ export async function runNew(): Promise<void> {
 
   if (auth !== "none") {
     spinner.message("Configurando autenticação...");
-    await Bun.sleep(300);
+    await installModule(Modules.AUTH, project.template, project.name, {
+      authStrategy: auth as "jwt" | "oauth2",
+    });
   }
 
   if (features.length > 0) {

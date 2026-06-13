@@ -11,7 +11,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { BaseExceptionFilter } from '@nestjs/core';
+import { BaseExceptionFilter, AbstractHttpAdapter } from '@nestjs/core';
 import { ZodError } from 'zod';
 
 interface ErrorResponse {
@@ -23,6 +23,10 @@ interface ErrorResponse {
 @Catch()
 export class ErrorsFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(ErrorsFilter.name);
+
+  constructor(httpAdapter?: AbstractHttpAdapter) {
+    super(httpAdapter);
+  }
 
   private handleZodError(exception: ZodError): ErrorResponse {
     const formatted = formatZodError(exception);

@@ -21,10 +21,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "types": ["bun-types"],
     "paths": {
       "@/*": [
         "./src/*"
       ]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "src/test/e2e"]
 }

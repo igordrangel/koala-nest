@@ -47,7 +47,8 @@ O comando `new` pergunta:
 - nome do projeto;
 - gerenciador de pacotes (`bun`, `npm` ou `pnpm` — Bun recomendado);
 - template (**Padrão** ou **Exemplo de CRUD**);
-- estratégia de autenticação e funcionalidades extras (opções futuras aparecem desabilitadas).
+- estratégia de autenticação (**JWT**, **OAuth2** ou nenhuma);
+- funcionalidades extras (opções futuras aparecem desabilitadas).
 
 ## Comandos disponíveis
 

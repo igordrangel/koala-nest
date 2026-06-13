@@ -38,6 +38,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 - [Controllers](markdown/en/host/controllers.md): Thin HTTP controllers that delegate to handlers.
 - [Routes and tags](markdown/en/host/routes.md): Centralized route configuration with RouterConfigBase.
 - [Error handling](markdown/en/host/error-handling.md): Global ErrorsFilter for Zod, TypeORM, and internal errors.
+- [Authentication](markdown/en/host/authentication.md): JWT, global guards, public routes, and generic OAuth2.
 - [OpenAPI documentation with Scalar](markdown/en/host/openapi-scalar.md): How to configure and customize interactive documentation at /doc with Scalar (OpenAPI via @nestjs/swagger).
 
 ## Infra

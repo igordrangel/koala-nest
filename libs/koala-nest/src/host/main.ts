@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule, bootstrapKoalaApp } from './app.module';
 import { defineDocumentation } from './open-api/define-documentation';
 import { ErrorsFilter } from './filters/errors.filter';
+import { HttpAdapterHost } from '@nestjs/core';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +15,11 @@ async function bootstrap() {
 
   defineDocumentation(app);
 
-  app.useGlobalFilters(new ErrorsFilter());
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new ErrorsFilter(httpAdapter));
+
+  const koalaApp = bootstrapKoalaApp(app);
+  await koalaApp.build();
 
   await app.listen(process.env.PORT || 3000);
 

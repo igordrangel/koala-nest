@@ -17,6 +17,7 @@
 /pt/docs/host/controllers
 /pt/docs/host/rotas
 /pt/docs/host/tratamento-de-erros
+/pt/docs/host/autenticacao
 /pt/docs/host/openapi-scalar
 /pt/docs/infra/banco-de-dados
 /pt/docs/infra/repositorios
@@ -40,6 +41,7 @@
 /en/docs/host/controllers
 /en/docs/host/routes
 /en/docs/host/error-handling
+/en/docs/host/authentication
 /en/docs/host/openapi-scalar
 /en/docs/infra/database
 /en/docs/infra/repositories

@@ -21,6 +21,10 @@ export class Person extends EntityBase<Person> {
   @AutoMap()
   name: string;
 
+  @Column({ default: true })
+  @AutoMap()
+  active: boolean;
+
   @OneToOne(() => PersonAddress, {
     cascade: true,
     eager: true,

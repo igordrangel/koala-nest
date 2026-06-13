@@ -47,7 +47,8 @@ The `new` command prompts for:
 - project name;
 - package manager (`bun`, `npm`, or `pnpm` — Bun recommended);
 - template (**Default** or **CRUD Example**);
-- authentication strategy and extra features (future options appear disabled).
+- authentication strategy (**JWT**, **OAuth2**, or none);
+- extra features (future options appear disabled).
 
 ## Available commands
 

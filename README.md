@@ -12,8 +12,9 @@ Em vez de depender de uma biblioteca opaca, a CLI **copia módulos prontos para 
 | Módulo **core** (DDD, TypeORM, Swagger, validação) | Disponível |
 | Template **Padrão** (estrutura limpa) | Disponível |
 | Template **Exemplo de CRUD** (Person) | Disponível |
-| Autenticação (JWT, OAuth2, API Key) | Em breve |
-| Cache, health check, jobs internos | Em breve |
+| Autenticação (JWT, OAuth2) | Disponível na CLI |
+| API Key | Em breve |
+| Cache, health check, jobs internos | Disponível no template (exemplos Person) |
 | Comando `add` (módulos avulsos) | Em breve |
 
 ## Instalação e uso
@@ -74,7 +75,7 @@ O comando `new` pergunta:
 - nome do projeto;
 - gerenciador de pacotes (`bun`, `npm` ou `pnpm` — Bun recomendado);
 - template (**Padrão** ou **Exemplo de CRUD**);
-- estratégia de autenticação e funcionalidades extras (opções futuras aparecem desabilitadas).
+- estratégia de autenticação (**JWT**, **OAuth2** ou nenhuma) e funcionalidades extras (opções futuras aparecem desabilitadas).
 
 ### Templates
 

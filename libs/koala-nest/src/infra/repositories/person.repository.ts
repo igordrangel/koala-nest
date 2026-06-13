@@ -17,9 +17,22 @@ export class PersonRepository
   }
 
   findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
+    const where: {
+      name?: ReturnType<typeof Like>;
+      active?: boolean;
+    } = {};
+
+    if (query.name) {
+      where.name = Like(`%${query.name}%`);
+    }
+
+    if (query.active !== undefined) {
+      where.active = query.active;
+    }
+
     return this.repository
       .findAndCount({
-        where: { name: query.name ? Like(`%${query.name}%`) : undefined },
+        where,
         order: query.generateOrderBy(),
         skip: query.skip(),
         take: query.limit,
@@ -33,7 +46,7 @@ export class PersonRepository
   findById(id: number): Promise<Person | null> {
     return this.repository.findOne({
       where: { id },
-      relations: ['address', 'contacts'],
+      relations: { address: true, contacts: true },
     });
   }
 }

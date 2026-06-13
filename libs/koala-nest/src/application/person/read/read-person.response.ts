@@ -30,6 +30,10 @@ export class ReadPersonResponse {
   @AutoMap()
   name: string;
 
+  @ApiProperty({ example: true })
+  @AutoMap()
+  active: boolean;
+
   @ApiProperty({ type: () => ReadPersonAddressResponse })
   @AutoMap()
   address: ReadPersonAddressResponse;

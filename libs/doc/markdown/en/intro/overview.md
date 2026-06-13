@@ -20,7 +20,9 @@ When you run `kl-nest new`, the CLI automatically installs the **core** module w
 - OpenAPI documentation at `/doc` via **Scalar**;
 - global error filter (Zod, TypeORM, and HTTP exceptions);
 - reusable bases for controllers, handlers, validators, and repositories;
-- mapping system between entities, requests, and responses.
+- mapping system between entities, requests, and responses;
+- **optional authentication** (JWT + generic OAuth2) via CLI;
+- **CronJob** and **EventJob** examples in the Person module (CRUD template).
 
 ## Folder structure
 

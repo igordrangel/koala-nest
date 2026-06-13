@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun-types"]
+  },
+  "include": [
+    "src/test/bun-test-globals.d.ts",
+    "src/test/**/*.ts",
+    "src/**/*.spec.ts"
+  "exclude": ["src/test/setup-e2e.ts"]
+}

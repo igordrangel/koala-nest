@@ -3,7 +3,11 @@ import { AutoMap } from '@/core/tools/mapping';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ReadManyPersonRequest extends PaginationRequest {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @AutoMap()
   name?: string;
+
+  @ApiProperty({ required: false })
+  @AutoMap()
+  active?: boolean;
 }

@@ -11,6 +11,10 @@ export class ReadManyPersonResponseItem {
   @ApiProperty()
   @AutoMap()
   name: string;
+
+  @ApiProperty()
+  @AutoMap()
+  active: boolean;
 }
 
 export class ReadManyPersonResponse extends ObjectClass<

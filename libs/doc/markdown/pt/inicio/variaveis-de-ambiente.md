@@ -16,7 +16,6 @@ O Koala Nest valida variáveis de ambiente na inicialização usando **Zod**. Va
 O schema fica em `src/core/env.ts`:
 
 ```typescript
-import 'dotenv/config';
 import { z } from 'zod';
 
 export const envSchema = z.object({
@@ -24,9 +23,13 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string().optional(),
+  JWT_PRIVATE_KEY: z.string().optional(),
+  JWT_PUBLIC_KEY: z.string().optional(),
+  JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),
+  JWT_REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
+  API_HOST: z.string().optional(),
+  OAUTH2_PROVIDERS: z.string().optional(),
 });
-
-export type Env = z.infer<typeof envSchema>;
 ```
 
 ## Arquivo `.env`
@@ -39,52 +42,48 @@ NODE_ENV=develop
 DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 ```
 
-A variável `REDIS_CONNECTION_STRING` é opcional e reservada para funcionalidades futuras de cache.
+### Autenticação (quando instalada)
+
+```env
+JWT_PRIVATE_KEY=<chave privada RS256 em base64>
+JWT_PUBLIC_KEY=<chave pública RS256 em base64>
+JWT_ACCESS_TOKEN_EXPIRES_IN=15m
+JWT_REFRESH_TOKEN_EXPIRES_IN=7d
+API_HOST=http://localhost:3000
+```
+
+### OAuth2 genérico (opcional)
+
+Variáveis dinâmicas por provider (`OAUTH2_{KEY}_*`) são lidas via `EnvService.getDynamic()`:
+
+```env
+OAUTH2_PROVIDERS=google,microsoft
+OAUTH2_GOOGLE_DOMAIN=https://accounts.google.com
+OAUTH2_GOOGLE_CLIENT_ID=...
+OAUTH2_GOOGLE_CLIENT_SECRET=...
+OAUTH2_GOOGLE_SCOPE=openid profile email
+```
 
 ## Integração com ConfigModule
 
-O `AppModule` registra o schema como validador global do NestJS. O exemplo abaixo reflete o template **Exemplo de CRUD** (com `PersonModule`):
+O `AppModule` registra o schema como validador global do NestJS:
 
 ```typescript
-import { envSchema } from '@/core/env';
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { PersonModule } from './controllers/person/person.module';
-
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validate: (config) => envSchema.parse(config),
-    }),
-    PersonModule,
-  ],
-})
-export class AppModule {}
+ConfigModule.forRoot({
+  isGlobal: true,
+  validate: (config) => envSchema.parse(config),
+}),
 ```
 
-## EnvService na infraestrutura
+## EnvService
 
-A camada de infraestrutura acessa variáveis tipadas via `EnvService`, injetado no factory do DataSource. No template **Exemplo de CRUD**, as entidades Person já estão registradas:
+A infraestrutura acessa variáveis tipadas via `EnvService`:
 
 ```typescript
-// src/infra/database/data-source-factory.ts
-export async function dataSourceFactory(env: EnvService) {
-  const dataSource = new DataSource({
-    type: 'postgres',
-    url: env.get('DATABASE_URL'),
-    entities: [Person, PersonAddress, PersonContact],
-    invalidWhereValuesBehavior: {
-      undefined: 'ignore',
-    },
-  });
-
-  await dataSource.initialize();
-
-  return dataSource;
-}
+env.get('DATABASE_URL');
+env.getDynamic('OAUTH2_GOOGLE_CLIENT_ID'); // fora do schema Zod
 ```
 
 ## Estender o schema
 
-Para adicionar novas variáveis, inclua-as em `envSchema` e atualize o `.env.example` do projeto. O tipo `Env` é inferido automaticamente.
+Para adicionar novas variáveis fixas, inclua-as em `envSchema` e atualize o `.env.example`. Providers OAuth2 extras só precisam das variáveis `OAUTH2_{PROVIDER}_*` no `.env`.
