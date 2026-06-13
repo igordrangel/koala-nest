@@ -22,7 +22,7 @@
       },
       "group": "test",
       "label": "Run tests",
-      "detail": "Unit tests da lib koala-nest"
+      "detail": "Todos os testes (CLI + koala-nest + docs, unit + e2e)"
     }
   ]
 }

@@ -57,8 +57,9 @@ const partsToRemove: PartsToRemove[] = [
 const defaultTemplatePathsToRemove = [
   'src/test/application',
   'src/test/mockup/person',
-  'src/test/e2e/person.controller.e2e.spec.ts',
-  'src/test/e2e/auth.controller.e2e.spec.ts',
+  'src/test/host/controllers/person/person.controller.e2e.spec.ts',
+  'src/test/host/controllers/person/lazy-loading.e2e.spec.ts',
+  'src/test/host/controllers/auth/auth.controller.e2e.spec.ts',
   'src/test/app-auth-test.module.ts',
   'src/test/create-auth-e2e-test-app.ts',
 ];

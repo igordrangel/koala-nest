@@ -24,9 +24,11 @@ Documentação OpenAPI/Scalar: `http://localhost:3000/doc`
 ## Testes
 
 ```bash
-bun run test        # unitários (Bun)
-bun run test:e2e    # E2E (requer DATABASE_URL)
+bun run test              # unitários da lib (Bun)
+bun run test:e2e          # E2E da lib (requer DATABASE_URL)
 ```
+
+Testes da CLI e da documentação ficam em `libs/cli` e `libs/doc/site` — na raiz do monorepo use `bun run test:cli` e `bun run test:docs`.
 
 ## Autenticação
 

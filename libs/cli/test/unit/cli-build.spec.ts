@@ -6,7 +6,7 @@ import {
   cliEntry,
   ensureCliBuilt,
   repoRoot,
-} from '../cli-e2e/helpers.ts';
+} from '../e2e/helpers.ts';
 
 describe('CLI build', () => {
   beforeAll(() => {

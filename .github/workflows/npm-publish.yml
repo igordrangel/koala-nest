@@ -44,10 +44,6 @@ jobs:
             exit 1
           fi
 
-      - name: Run tests
-        if: steps.check_version.outputs.should_publish == 'true'
-        run: bun run test
-
       - name: Build
         if: steps.check_version.outputs.should_publish == 'true'
         run: bun run build

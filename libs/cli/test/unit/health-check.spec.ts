@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { patchAppModuleForHealth } from '@cli/utils/patch-health-module.ts';
+import { getSourceCodePath } from '@cli/utils/get-source-code-path.ts';
 
 const appModule = `import { envSchema } from '@/core/env';
 import { Module } from '@nestjs/common';
@@ -27,7 +28,10 @@ describe('health-check', () => {
   });
 
   it('segue padrão Globo Seguros com Terminus e indicadores', () => {
-    const root = path.join(process.cwd(), 'src/host/controllers/health-check');
+    const root = path.join(
+      getSourceCodePath(),
+      'src/host/controllers/health-check',
+    );
     const controller = readFileSync(
       path.join(root, 'health-check.controller.ts'),
       'utf8',

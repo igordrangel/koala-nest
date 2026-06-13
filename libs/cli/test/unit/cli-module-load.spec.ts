@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
-import { repoRoot } from '../cli-e2e/helpers.ts';
+import { repoRoot } from '../e2e/helpers.ts';
 
 const cliRoot = path.join(repoRoot, 'libs/cli');
 
@@ -13,13 +13,17 @@ function listCliSourceFiles(dir: string, relativeDir = ''): string[] {
     const relativePath = path.join(relativeDir, entry.name);
 
     if (entry.isDirectory()) {
+      if (entry.name === 'test') {
+        continue;
+      }
+
       files.push(
         ...listCliSourceFiles(path.join(dir, entry.name), relativePath),
       );
       continue;
     }
 
-    if (!entry.name.endsWith('.ts')) {
+    if (!entry.name.endsWith('.ts') || entry.name.endsWith('.d.ts')) {
       continue;
     }
 

@@ -15,7 +15,7 @@ import {
   type ProjectState,
 } from '@cli/utils/detect-project-state.ts';
 
-export const repoRoot = path.resolve(import.meta.dir, '../../../../..');
+export const repoRoot = path.resolve(import.meta.dir, '../../../..');
 export const cliEntry = path.join(repoRoot, 'dist/cli/index.js');
 export const cliBuildScript = path.join(repoRoot, 'scripts/build-cli.mjs');
 export const koalaNestBuildScript = path.join(
