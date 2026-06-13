@@ -1,6 +1,6 @@
 {
   "name": "@koalarx/nest",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "CLI para criar APIs NestJS com arquitetura DDD — copia módulos prontos para o seu repositório.",
   "license": "MIT",
   "type": "module",

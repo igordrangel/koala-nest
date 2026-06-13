@@ -14,11 +14,9 @@ import {
 const docRoot = path.resolve('libs/doc');
 const markdownRoot = path.join(docRoot, 'markdown');
 const manifestPath = path.join(docRoot, 'site/src/generated/docs-manifest.json');
-const prerenderRoutesPath = path.join(docRoot, 'site/prerender-routes.txt');
 const txtRoot = path.join(docRoot, 'txt');
 const publicRoot = path.join(docRoot, 'site/public');
 const publicMarkdownRoot = path.join(publicRoot, 'markdown');
-const SITE_URL = 'https://nest.koalarx.com';
 
 function extractHeadings(body) {
   const headings = [];
@@ -130,24 +128,6 @@ function copyMarkdownDir(src, dest) {
   }
 }
 
-function buildSitemap(routes) {
-  const uniqueRoutes = [...new Set(routes.filter(Boolean))];
-  const urls = uniqueRoutes
-    .map((route) => {
-      const loc = route === '/' ? SITE_URL : `${SITE_URL}${route}`;
-      return `  <url>\n    <loc>${loc}</loc>\n  </url>`;
-    })
-    .join('\n');
-
-  return [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    urls,
-    '</urlset>',
-    '',
-  ].join('\n');
-}
-
 function syncMarkdownToPublic() {
   if (fs.existsSync(publicMarkdownRoot)) {
     fs.rmSync(publicMarkdownRoot, { recursive: true, force: true });
@@ -221,16 +201,6 @@ const manifest = {
 fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
-const prerenderRoutes = [
-  '/',
-  ...supportedLocales.flatMap((locale) => [
-    `/${locale}`,
-    ...locales[locale].docs.map((d) => d.route),
-  ]),
-];
-fs.writeFileSync(prerenderRoutesPath, `${prerenderRoutes.join('\n')}\n`);
-fs.writeFileSync(path.join(publicRoot, 'sitemap.xml'), buildSitemap(prerenderRoutes));
-
 fs.mkdirSync(txtRoot, { recursive: true });
 fs.mkdirSync(publicRoot, { recursive: true });
 
@@ -248,4 +218,3 @@ for (const locale of supportedLocales) {
 const totalDocs = Object.values(locales).reduce((sum, l) => sum + l.docs.length, 0);
 console.log(`Manifest gerado: ${totalDocs} tópicos (${supportedLocales.join(', ')}) → ${manifestPath}`);
 console.log(`Markdown publicado: ${markdownFiles} arquivos → ${publicMarkdownRoot}`);
-console.log(`Sitemap gerado → ${path.join(publicRoot, 'sitemap.xml')}`);
