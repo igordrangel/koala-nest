@@ -49,7 +49,7 @@ const result = spawnSync(process.execPath, command, {
 process.exit(result.status ?? 1);
 ```
 
-> O script usa `process.execPath` (Node/Bun do ambiente). Com npm ou pnpm, o `package.json` do projeto gerado invoca este arquivo via `node --import ts-node/register/...`.
+> O script usa `process.execPath` (Node/Bun do ambiente). Com npm ou pnpm, `migration:generate`, `migration:run` e `migration:revert` usam `node --import ts-node/register/transpile-only` para carregar os arquivos TypeScript.
 
 ### Uso
 
