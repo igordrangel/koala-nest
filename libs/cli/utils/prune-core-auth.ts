@@ -2,7 +2,11 @@ import { existsSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { resolveProjectPath } from './resolve-project-path';
 
-const CORE_AUTH_KEEP = new Set(['jwt-claims.ts', 'auth-profile.enum.ts']);
+const CORE_AUTH_KEEP = new Set([
+  'jwt-claims.ts',
+  'auth-profile.enum.ts',
+  'parse-oauth2-provider-env.ts',
+]);
 
 export function pruneCoreAuthForSlimTemplate(projectName: string) {
   const projectRoot = resolveProjectPath(projectName);

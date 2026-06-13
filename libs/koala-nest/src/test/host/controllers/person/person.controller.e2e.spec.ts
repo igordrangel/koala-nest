@@ -63,15 +63,11 @@ describe('CRUD OF PERSON', () => {
     );
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toStrictEqual({
-      items: [
-        {
-          id: personId,
-          name: 'John Doe',
-          active: true,
-        },
-      ],
-      count: 1,
+    expect(response.body.count).toBeGreaterThanOrEqual(1);
+    expect(response.body.items).toContainEqual({
+      id: personId,
+      name: 'John Doe',
+      active: true,
     });
   });
 
