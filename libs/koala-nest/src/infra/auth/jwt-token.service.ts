@@ -2,6 +2,7 @@ import { JwtClaims } from '@/core/auth/jwt-claims';
 import { IJwtTokenService } from '@/domain/auth/services/iauth.service';
 import { Injectable } from '@nestjs/common';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
+import { randomUUID } from 'node:crypto';
 import { EnvService } from '@/infra/common/env.service';
 
 @Injectable()
@@ -13,14 +14,14 @@ export class JwtTokenService implements IJwtTokenService {
 
   signAccessToken(claims: JwtClaims): string {
     return this.jwtService.sign(
-      { ...claims, tokenType: 'access' },
+      { ...claims, tokenType: 'access', jti: randomUUID() },
       this.signOptions('JWT_ACCESS_TOKEN_EXPIRES_IN'),
     );
   }
 
   signRefreshToken(claims: JwtClaims): string {
     return this.jwtService.sign(
-      { ...claims, tokenType: 'refresh' },
+      { ...claims, tokenType: 'refresh', jti: randomUUID() },
       this.signOptions('JWT_REFRESH_TOKEN_EXPIRES_IN'),
     );
   }
