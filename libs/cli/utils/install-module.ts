@@ -1,4 +1,4 @@
-import { cpSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { getSourceCodePath } from "./get-source-code-path";
 import { patchAuthInstall, type AuthStrategy } from "./patch-auth-install";
@@ -26,6 +26,7 @@ function install(modulePath: string, projectName: string) {
   const koalaNestPath = path.join(getSourceCodePath(), modulePath);
   const projectPath = path.join(resolveProjectPath(projectName), modulePath);
 
+  mkdirSync(path.dirname(projectPath), { recursive: true });
   cpSync(koalaNestPath, projectPath, { recursive: true, force: true });
 }
 
