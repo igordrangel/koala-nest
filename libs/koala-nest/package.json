@@ -17,7 +17,7 @@
     "start:prod": "node dist/host/main",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "lint:all": "eslint \"src/**/*.ts\" --fix && cd ../cli && ../koala-nest/node_modules/.bin/eslint \"**/*.ts\" --fix",
-    "test": "bun test src/test/cli/ src/test/core/ src/test/application/ src/test/infra/ src/test/host/",
+    "test": "bun test --max-concurrency=1 src/test/cli/ && bun test src/test/core/ src/test/application/ src/test/infra/ src/test/host/",
     "test:cli": "bun test src/test/cli/",
     "test:cli:e2e": "bun test --max-concurrency=1 src/test/cli-e2e/cli-e2e.spec.ts",
     "test:e2e": "bun test --preload ./src/test/setup-e2e.ts test/e2e/person.controller.e2e.spec.ts && bun test --preload ./src/test/setup-e2e.ts test/e2e/lazy-loading.e2e.spec.ts && bun test --preload ./src/test/setup-e2e.ts test/e2e/auth.controller.e2e.spec.ts",

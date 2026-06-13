@@ -29,7 +29,7 @@ beforeAll(async () => {
 
 afterAll(() => {
   resetE2eFixtures();
-});
+}, 120_000);
 
 describe('CLI e2e — new', () => {
   const workspaces: string[] = [];
@@ -38,7 +38,7 @@ describe('CLI e2e — new', () => {
     for (const workspace of workspaces) {
       cleanupWorkspace(workspace);
     }
-  });
+  }, 120_000);
 
   it('default sem auth com health-check aplica estrutura mínima e compila', () => {
     const workspace = mkdtempSync(path.join(os.tmpdir(), 'koala-cli-e2e-'));
@@ -103,7 +103,7 @@ describe('CLI e2e — add', () => {
     for (const workspace of workspaces) {
       cleanupWorkspace(workspace);
     }
-  });
+  }, 120_000);
 
   function trackClone(projectName: string) {
     const cloned = cloneDefaultProject(projectName);
