@@ -82,8 +82,8 @@ DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 ```bash
 bun run start:dev
 bun run start:prod
-bun run test
-bun run test:watch
+bun test
+bun test --watch
 bun run migration:generate
 bun run migration:run
 bun run migration:revert
@@ -113,7 +113,7 @@ pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Important:** with the **CRUD Example** template, run `migration:run` before starting the API. The **Default** template has no initial migrations. With npm or pnpm, `kl-nest new` adds `bun` to `devDependencies` so `npm test` works after `npm install`.
+> **Important:** with the **CRUD Example** template, run `migration:run` before starting the API. The **Default** template has no initial migrations. **Bun** projects use the native test runner (`bun test`); with **npm** or **pnpm**, tests run with **Vitest** (`vitest.config.ts` at the project root).
 
 ## Local CLI development
 

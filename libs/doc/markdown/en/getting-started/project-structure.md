@@ -102,11 +102,11 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 ```bash
 bun run start:dev
 bun run start:prod
-bun run test
-bun run test:watch
+bun test
+bun test --watch
 bun run migration:generate
 bun run migration:run
 bun run migration:revert
 ```
 
-**npm / pnpm** — use `npm run` or `pnpm run` with the same script names. `kl-nest new` adds `bun` to `devDependencies` for local tests. `migration:generate` uses `node --import ts-node/register/transpile-only`.
+**npm / pnpm** — use `npm run` or `pnpm run` with the same script names. Tests use **Vitest**; `migration:generate`, `migration:run`, and `migration:revert` use `node --import ts-node/register/transpile-only`.

@@ -1,4 +1,3 @@
-import { describe, expect, it, mock } from 'bun:test';
 import { NotFoundException } from '@nestjs/common';
 import { UpdatePersonHandler } from '@/application/person/update/update-person.handler';
 import { Person } from '@/domain/entities/person/person';
@@ -22,9 +21,20 @@ describe('UpdatePersonHandler', () => {
     });
     existingContact.person = person;
 
+    const calls = {
+      findById: [] as number[],
+      save: [] as Person[],
+    };
+
     const repository = {
-      findById: mock(async (id: number) => (id === 1 ? person : null)),
-      save: mock(async (entity: Person) => entity),
+      findById: async (id: number) => {
+        calls.findById.push(id);
+        return id === 1 ? person : null;
+      },
+      save: async (entity: Person) => {
+        calls.save.push(entity);
+        return entity;
+      },
     } as unknown as IPersonRepository;
 
     const handler = new UpdatePersonHandler(repository);
@@ -36,17 +46,17 @@ describe('UpdatePersonHandler', () => {
       contacts: [{ id: 10, contact: 'new@example.com' }],
     });
 
-    expect(repository.findById).toHaveBeenCalledWith(1);
+    expect(calls.findById).toEqual([1]);
     expect(person.name).toBe('Jane Updated');
     expect(person.address.address).toBe('New street');
     expect(person.contacts[0].contact).toBe('new@example.com');
-    expect(repository.save).toHaveBeenCalledWith(person);
+    expect(calls.save).toEqual([person]);
   });
 
   it('lança NotFoundException quando a pessoa não existe', async () => {
     const repository = {
-      findById: mock(async () => null),
-      save: mock(async () => undefined),
+      findById: async () => null,
+      save: async () => undefined,
     } as unknown as IPersonRepository;
 
     const handler = new UpdatePersonHandler(repository);

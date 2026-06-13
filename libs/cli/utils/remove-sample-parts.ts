@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { formatCode } from "./format-code";
 import { resolveProjectPath } from "./resolve-project-pach";
@@ -88,6 +88,11 @@ export async function removeSampleParts(projectName: string) {
 
     writeFileSync(partPath, content, "utf8");
   }
+
+  rmSync(path.join(resolveProjectPath(projectName), "src/test/application"), {
+    recursive: true,
+    force: true,
+  });
 
   await formatCode(projectName);
 }

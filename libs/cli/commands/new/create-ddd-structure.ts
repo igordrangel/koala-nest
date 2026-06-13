@@ -3,6 +3,7 @@ import path from "node:path";
 import { patchGeneratedProjectConfig } from "../../utils/patch-generated-project.ts";
 import { runCommand } from "../../utils/run-command";
 import type { PackageManager } from "../../types";
+import { configureTestRunner } from "./configure-test-runner.ts";
 
 export async function createDDDStructure(
   projectName: string,
@@ -56,12 +57,8 @@ export async function createDDDStructure(
 
   packageJson.devDependencies ??= {};
 
-  if (packageManager !== "bun") {
-    packageJson.devDependencies["bun"] = "^1.3.6";
-  }
+  configureTestRunner(packageJson, packageManager);
 
-  packageJson.scripts.test = "bun test";
-  packageJson.scripts["test:watch"] = "bun test --watch";
   delete packageJson.scripts["test:cov"];
   delete packageJson.scripts["test:debug"];
   delete packageJson.scripts["test:e2e"];

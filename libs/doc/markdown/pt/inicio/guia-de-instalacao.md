@@ -82,8 +82,8 @@ O `kl-nest new` configura os scripts conforme o gerenciador escolhido. Exemplos 
 ```bash
 bun run start:dev
 bun run start:prod
-bun run test
-bun run test:watch
+bun test
+bun test --watch
 bun run migration:generate
 bun run migration:run
 bun run migration:revert
@@ -113,7 +113,7 @@ pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Com npm ou pnpm, o `kl-nest new` adiciona `bun` em `devDependencies` para que `npm test` funcione após `npm install`.
+> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Projetos **Bun** usam o test runner nativo (`bun test`); com **npm** ou **pnpm**, os testes rodam com **Vitest** (`vitest.config.ts` na raiz).
 
 ## Desenvolvimento local da CLI
 

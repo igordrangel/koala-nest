@@ -1,4 +1,4 @@
-import { cpSync } from "node:fs";
+import { cpSync, rmSync } from "node:fs";
 import path from "node:path";
 import { getSourceCodePath } from "./get-source-code-path";
 import { removeSampleParts } from "./remove-sample-parts";
@@ -57,14 +57,29 @@ export async function installModule(
       install("src/infra/infra.module.ts", projectName);
       install("src/test", projectName);
 
-      cpSync(
-        path.join(getSourceCodePath(), "bunfig.toml"),
-        path.join(resolveProjectPath(projectName), "bunfig.toml"),
-      );
+      const projectPath = resolveProjectPath(projectName);
+      const packageManager = getPackageManager(projectName);
+
+      rmSync(path.join(projectPath, "src/test/cli"), {
+        recursive: true,
+        force: true,
+      });
+
+      if (packageManager === "bun") {
+        cpSync(
+          path.join(getSourceCodePath(), "bunfig.toml"),
+          path.join(projectPath, "bunfig.toml"),
+        );
+      } else {
+        cpSync(
+          path.join(getSourceCodePath(), "vitest.config.ts"),
+          path.join(projectPath, "vitest.config.ts"),
+        );
+      }
 
       cpSync(
         path.join(getSourceCodePath(), ".env.example"),
-        path.join(resolveProjectPath(projectName), ".env.example"),
+        path.join(projectPath, ".env.example"),
       );
 
       await runCommand(
