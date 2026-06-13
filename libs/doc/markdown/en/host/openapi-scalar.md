@@ -194,10 +194,11 @@ When authentication is installed, `define-documentation.ts` applies global `.add
 
 ### Documentation endpoint
 
-Change `docEndpoint` to modify the URL:
+The template uses `/doc` by default (`DOC_ENDPOINT` in `define-documentation.ts`). To change the URL:
 
 ```typescript
-const docEndpoint = '/api-docs';
+const docEndpoint = '/doc'; // template default
+// const docEndpoint = '/api-docs'; // example alternate URL
 ```
 
 Register the same value in `SwaggerModule.setup` and in `app.use`.

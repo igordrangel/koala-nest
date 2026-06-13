@@ -17,6 +17,9 @@ export const UI_COPY = {
     onThisPage: 'Nesta página',
     metaDescription:
       'Facilitador para APIs NestJS com DDD e TypeORM. A CLI copia módulos prontos para o seu repositório.',
+    seo: {
+      landingTitle: 'Koala Nest — APIs NestJS com DDD e TypeORM',
+    },
     footer: {
       description:
         'Facilitador para criar APIs NestJS com arquitetura DDD. Código copiado para o seu repositório — legível, adaptável e sob seu controle.',
@@ -28,6 +31,7 @@ export const UI_COPY = {
       quickCommandsList: [
         'bun install -g @koalarx/nest',
         'kl-nest new',
+        'kl-nest add cache',
         'bun run migration:run  # template CRUD',
         'kl-nest --help',
       ],
@@ -84,7 +88,7 @@ export const UI_COPY = {
       {
         title: 'Scaffolding inteligente',
         description:
-          'Fluxo interativo para nome, gerenciador de pacotes (Bun recomendado), template e opções futuras de autenticação.',
+          'Fluxo interativo para nome, gerenciador de pacotes (Bun recomendado), template, autenticação (JWT/OAuth2) e extras (cache, health, cron, eventos). API Key em breve.',
       },
       {
         title: 'Templates úteis',
@@ -126,6 +130,9 @@ export const UI_COPY = {
     onThisPage: 'On this page',
     metaDescription:
       'A facilitator for building NestJS APIs with DDD and TypeORM. The CLI copies modules into your repository.',
+    seo: {
+      landingTitle: 'Koala Nest — NestJS APIs with DDD and TypeORM',
+    },
     footer: {
       description:
         'A facilitator for building NestJS APIs with DDD architecture. Code copied into your repository — readable, adaptable, and under your control.',
@@ -137,6 +144,7 @@ export const UI_COPY = {
       quickCommandsList: [
         'bun install -g @koalarx/nest',
         'kl-nest new',
+        'kl-nest add cache',
         'bun run migration:run  # CRUD template',
         'kl-nest --help',
       ],
@@ -193,7 +201,7 @@ export const UI_COPY = {
       {
         title: 'Smart Scaffolding',
         description:
-          'Interactive flow for project name, package manager (Bun recommended), template, and future auth options.',
+          'Interactive flow for project name, package manager (Bun recommended), template, auth (JWT/OAuth2), and extras (cache, health, cron, events). API Key coming soon.',
       },
       {
         title: 'Useful Templates',

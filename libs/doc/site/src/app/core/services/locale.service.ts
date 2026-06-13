@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { filter, map, startWith } from 'rxjs';
 import manifest from '../../../generated/docs-manifest.json';
 import { DEFAULT_LOCALE, type Locale, SUPPORTED_LOCALES } from '../models/locale.types';
 import type { DocsManifest } from '../models/docs.types';
@@ -26,6 +26,7 @@ export class LocaleService {
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       map(() => this.parseLocale(this.router.url)),
+      startWith(this.parseLocale(this.router.url)),
     ),
     { initialValue: this.parseLocale(this.router.url) },
   );

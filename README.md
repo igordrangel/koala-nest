@@ -4,6 +4,8 @@ Facilitador para criar APIs NestJS com arquitetura DDD, focado em manutenção, 
 
 Em vez de depender de uma biblioteca opaca, a CLI **copia módulos prontos para dentro do projeto** — abordagem semelhante ao [shadcn/ui](https://ui.shadcn.com). Você recebe código que pode ler, adaptar e manter sem amarras futuras.
 
+**Documentação:** [nest.koalarx.com](https://nest.koalarx.com/) (PT e EN)
+
 ## O que está disponível hoje
 
 | Recurso | Status |
@@ -14,8 +16,8 @@ Em vez de depender de uma biblioteca opaca, a CLI **copia módulos prontos para 
 | Template **Exemplo de CRUD** (Person) | Disponível |
 | Autenticação (JWT, OAuth2) | Disponível na CLI |
 | API Key | Em breve |
-| Cache, health check, jobs internos | Disponível no template (exemplos Person) |
-| Comando `add` (módulos avulsos) | Em breve |
+| Cache, health check, jobs internos | Disponível via `new` e `add` |
+| Comando `add` (funcionalidades avulsas) | Disponível |
 
 ## Instalação e uso
 
@@ -57,11 +59,14 @@ npx @koalarx/nest@latest new
 | Comando | Descrição |
 | --- | --- |
 | `kl-nest new` | Cria um novo projeto (fluxo interativo) |
+| `kl-nest add` | Adiciona funcionalidades a um projeto existente |
 | `kl-nest version` | Exibe a versão da CLI |
 | `kl-nest help` | Lista comandos disponíveis |
 
 ```bash
 kl-nest new
+kl-nest add cache
+kl-nest add auth jwt health
 kl-nest version
 kl-nest --help
 
@@ -75,7 +80,22 @@ O comando `new` pergunta:
 - nome do projeto;
 - gerenciador de pacotes (`bun`, `npm` ou `pnpm` — Bun recomendado);
 - template (**Padrão** ou **Exemplo de CRUD**);
-- estratégia de autenticação (**JWT**, **OAuth2** ou nenhuma) e funcionalidades extras (opções futuras aparecem desabilitadas).
+- estratégia de autenticação (**JWT**, **OAuth2** ou nenhuma) e funcionalidades extras (cache, health, cron, eventos); **API Key** ainda aparece desabilitada no prompt;
+
+O comando `add` instala funcionalidades em um projeto Koala Nest já existente (detecta o que já está presente e pula duplicatas):
+
+- `auth jwt` / `auth oauth2` — autenticação
+- `cache` — cache Redis (com exemplos no template CRUD)
+- `health` — endpoint `GET /health`
+- `cron` — jobs com expressão cron
+- `events` — jobs reativos a eventos
+
+```bash
+cd meu-projeto
+kl-nest add cache
+kl-nest add auth jwt health --verbose
+kl-nest add cron events
+```
 
 ### Templates
 
@@ -115,7 +135,7 @@ Crie um `.env` na raiz do projeto gerado:
 ```env
 PORT=3000
 NODE_ENV=develop
-DATABASE_URL=postgres://user:password@localhost:5432/my_api
+DATABASE_URL=postgresql://user:password@localhost:5432/my_api
 ```
 
 ### Scripts úteis no projeto gerado
@@ -127,11 +147,14 @@ bun run migration:run      # aplica migrations pendentes
 bun run migration:revert   # reverte a última migration
 ```
 
-## Documentação para agentes de IA
+## Documentação
 
-Índice de documentação otimizado para LLMs:
+Site completo: **[nest.koalarx.com](https://nest.koalarx.com/)** — guias de instalação, arquitetura DDD, autenticação, cache, jobs e fluxo CRUD (português e inglês).
 
-https://nest.koalarx.com/llm.txt
+### Índices para agentes de IA
+
+- PT: https://nest.koalarx.com/llms.txt (alias: `/llm.txt`)
+- EN: https://nest.koalarx.com/llms-en.txt (alias: `/llm-en.txt`)
 
 ## Repositório (desenvolvimento)
 
@@ -151,8 +174,9 @@ O script `bun kl-nest` no `package.json` compila o projeto e executa a CLI a par
 koala-nest/
 ├── libs/
 │   ├── cli/          # código-fonte da CLI (kl-nest)
+│   ├── doc/          # markdown da documentação + site Angular
 │   └── koala-nest/   # templates copiados para projetos gerados
-├── scripts/          # build da CLI e dos templates
+├── scripts/          # build da CLI, docs e templates
 └── dist/             # saída do build (cli + koala-nest + package.json)
 ```
 
@@ -162,5 +186,6 @@ koala-nest/
 bun run build              # build completo (CLI + templates + dist/package.json)
 bun run build:cli          # apenas a CLI
 bun run build:koala-nest   # apenas os templates
-bun test                   # testes em libs/koala-nest
+bun run build:docs         # site de documentação
+bun test                   # testes do monorepo (CLI, lib, docs)
 ```

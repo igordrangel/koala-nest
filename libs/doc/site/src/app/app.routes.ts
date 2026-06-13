@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { docMarkdownProviders } from './core/providers/doc-markdown.providers';
 import { localeGuard } from './core/guards/locale.guard';
+import { DocPageComponent } from './features/doc/doc-page.component';
 import { LandingPageComponent } from './features/landing/landing-page.component';
 
 export const routes: Routes = [
@@ -27,8 +28,7 @@ export const routes: Routes = [
   },
   {
     path: ':locale/docs/:category/:slug',
-    loadComponent: () =>
-      import('./features/doc/doc-page.component').then((module) => module.DocPageComponent),
+    component: DocPageComponent,
     canActivate: [localeGuard],
     providers: docMarkdownProviders,
   },

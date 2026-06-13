@@ -1,3 +1,4 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   Component,
   effect,
@@ -6,6 +7,7 @@ import {
   inject,
   input,
   output,
+  PLATFORM_ID,
   signal,
   untracked,
 } from '@angular/core';
@@ -32,6 +34,7 @@ import { ensurePrismLoaded, highlightCodeBlocks } from '../../utils/prism-loader
 })
 export class MarkdownContentComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly content = input.required<string>();
   readonly rendered = output<void>();
@@ -64,7 +67,9 @@ export class MarkdownContentComponent {
   }
 
   onReady() {
-    this.highlightCode();
+    if (this.isBrowser) {
+      this.highlightCode();
+    }
     queueMicrotask(() => this.rendered.emit());
   }
 
@@ -78,10 +83,12 @@ export class MarkdownContentComponent {
     const usesMermaid = contentHasMermaid(content);
     this.usesMermaid.set(usesMermaid);
 
-    await ensurePrismLoaded();
+    if (this.isBrowser) {
+      await ensurePrismLoaded();
 
-    if (usesMermaid) {
-      await ensureMermaidLoaded();
+      if (usesMermaid) {
+        await ensureMermaidLoaded();
+      }
     }
 
     this.renderMarkdown.set(true);

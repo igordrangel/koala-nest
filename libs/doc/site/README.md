@@ -44,7 +44,9 @@ src/app/
 
 public/
 ├── CNAME           # nest.koalarx.com
-├── llms.txt        # índice para LLMs (gerado)
+├── llms.txt        # índice para LLMs — PT (gerado)
+├── llm.txt         # alias do índice PT (gerado)
+├── llms-en.txt     # índice EN (gerado)
 └── markdown/       # .md estáticos para Copy for AI (gerado)
 ```
 
@@ -56,7 +58,7 @@ O workflow `.github/workflows/deploy-docs.yml` na raiz do repositório faz build
 
 | Recurso | URL |
 |---------|-----|
-| Índice geral | `/llms.txt` (PT), `/llms-en.txt` (EN) |
+| Índice geral | `/llms.txt` e `/llm.txt` (PT), `/llms-en.txt` e `/llm-en.txt` (EN) |
 | Página específica | `/markdown/{locale}/{categoria}/{slug}.md` |
 
 O botão **Copy AI** no header copia a URL do índice. O **Copy for AI** em cada página copia a URL do Markdown correspondente.
