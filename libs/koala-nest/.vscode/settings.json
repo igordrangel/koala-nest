@@ -1,0 +1,77 @@
+{
+  "material-icon-theme.activeIconPack": "nest",
+  "editor.fontFamily": "Fira Code",
+  "editor.fontSize": 15,
+  "editor.fontLigatures": true,
+  "workbench.startupEditor": "newUntitledFile",
+  "js/ts.suggest.autoImports": true,
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "editor.rulers": [80, 120],
+  "extensions.ignoreRecommendations": true,
+  "files.associations": {
+    ".env.*": "dotenv",
+    ".prettierrc": "json"
+  },
+  "editor.parameterHints.enabled": false,
+  "editor.renderLineHighlight": "gutter",
+  "editor.lineHeight": 26,
+  "editor.suggestSelection": "first",
+  "explorer.confirmDelete": false,
+  "workbench.editor.labelFormat": "short",
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "explorer.compactFolders": false,
+  "git.enableSmartCommit": true,
+  "explorer.confirmDragAndDrop": false,
+  "terminal.integrated.fontSize": 14,
+  "breadcrumbs.enabled": true,
+  "editor.tabSize": 2,
+  "workbench.iconTheme": "material-icon-theme",
+  "material-icon-theme.languages.associations": {
+    "dotenv": "tune"
+  },
+  "material-icon-theme.files.associations": {
+    "*.e2e-spec.ts": "test-js",
+    "*.dto.ts": "diff",
+    "*.handler.ts": "esbuild",
+    "*.request.ts": "log",
+    "*.schema.ts": "scheme",
+    "*.response.ts": "conduct",
+    "*.validator.ts": "commitlint"
+  },
+  "material-icon-theme.folders.associations": {
+    "entities": "class",
+    "migrations": "tools",
+    "schemas": "class",
+    "domain": "class",
+    "infra": "app",
+    "dtos": "typescript",
+    "repositories": "mappings"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "prettier.documentSelectors": ["**/*.ts", "**/*.tsx", "**/*.js"],
+  "npm.scriptExplorerAction": "run",
+  "npm.packageManager": "bun",
+  "editor.wordWrap": "on",
+  "editor.wrappingIndent": "indent",
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "files.eol": "\n"
+}

@@ -16,6 +16,7 @@ import {
 import { Template, resolveNewProjectOptions } from '@cli/constants/domain';
 import { applyOptionalFeatures } from '@cli/utils/apply-optional-features.ts';
 import { assertCliProjectFromSelection } from '@cli/utils/cli-project-validation.ts';
+import { finalizeNewProjectSetup } from '@cli/utils/install-workspace-config.ts';
 import { installModule, Modules } from '@cli/utils/install-module.ts';
 
 mock.module('@cli/utils/run-command.ts', () => ({
@@ -90,6 +91,8 @@ describe('CLI project profiles via installModule + applyOptionalFeatures', () =>
         features: resolved.features,
         skipPackages: true,
       });
+
+      finalizeNewProjectSetup(tempDir, 'bun');
 
       const expectation = buildProjectExpectation(
         selection.template,
