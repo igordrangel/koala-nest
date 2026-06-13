@@ -51,7 +51,7 @@
             ],
             "styles": [
               "src/styles.css",
-              "src/theme/icons/font-awesome/css/all.min.css"
+              "src/theme/icons-minimal.css"
             ]
           },
           "configurations": {
@@ -59,8 +59,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "800kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "500kB",
+                  "maximumError": "800kB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -69,7 +69,11 @@
                 }
               ],
               "outputHashing": "all",
-              "allowedCommonJsDependencies": ["prismjs"]
+              "sourceMap": false,
+              "allowedCommonJsDependencies": [
+                "prismjs",
+                "cytoscape-cose-bilkent"
+              ]
             },
             "development": {
               "optimization": false,

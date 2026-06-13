@@ -1,22 +1,32 @@
-import { Component, ElementRef, HostListener, inject, input, output } from '@angular/core';
+import {
+  Component,
+  effect,
+  ElementRef,
+  HostListener,
+  inject,
+  input,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { MarkdownComponent } from 'ngx-markdown';
 import { extractCodeText, findCopyCodeButton } from '../../utils/doc-ui';
-
-declare const Prism: {
-  highlightElement: (element: HTMLElement) => void;
-};
+import { contentHasMermaid, ensureMermaidLoaded } from '../../utils/mermaid-loader';
+import { ensurePrismLoaded, highlightCodeBlocks } from '../../utils/prism-loader';
 
 @Component({
   selector: 'app-markdown-content',
   template: `
-    <markdown
-      class="prose-docs"
-      ngPreserveWhitespaces
-      [data]="content()"
-      [disableSanitizer]="true"
-      [mermaid]="true"
-      (ready)="onReady()"
-    />
+    @if (renderMarkdown()) {
+      <markdown
+        class="prose-docs"
+        ngPreserveWhitespaces
+        [data]="content()"
+        [disableSanitizer]="true"
+        [mermaid]="usesMermaid()"
+        (ready)="onReady()"
+      />
+    }
   `,
   imports: [MarkdownComponent],
 })
@@ -25,6 +35,18 @@ export class MarkdownContentComponent {
 
   readonly content = input.required<string>();
   readonly rendered = output<void>();
+
+  readonly renderMarkdown = signal(false);
+  readonly usesMermaid = signal(false);
+
+  constructor() {
+    effect(() => {
+      const content = this.content();
+      untracked(() => {
+        void this.prepare(content);
+      });
+    });
+  }
 
   @HostListener('click', ['$event'])
   onHostClick(event: MouseEvent) {
@@ -47,12 +69,22 @@ export class MarkdownContentComponent {
   }
 
   highlightCode() {
-    if (typeof Prism === 'undefined') return;
+    highlightCodeBlocks(this.host.nativeElement);
+  }
 
-    const root = this.host.nativeElement;
-    root.querySelectorAll('pre code').forEach((block: Element) => {
-      Prism.highlightElement(block as HTMLElement);
-    });
+  private async prepare(content: string) {
+    this.renderMarkdown.set(false);
+
+    const usesMermaid = contentHasMermaid(content);
+    this.usesMermaid.set(usesMermaid);
+
+    await ensurePrismLoaded();
+
+    if (usesMermaid) {
+      await ensureMermaidLoaded();
+    }
+
+    this.renderMarkdown.set(true);
   }
 
   private showCopiedState(button: HTMLButtonElement) {

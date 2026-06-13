@@ -11,4 +11,12 @@ if (!fs.existsSync(indexFile)) {
 }
 
 fs.copyFileSync(indexFile, notFoundFile);
+
+for (const file of fs.readdirSync(outputDir)) {
+  if (file.endsWith('.map')) {
+    fs.unlinkSync(path.join(outputDir, file));
+  }
+}
+
 console.log('404.html gerado para GitHub Pages (SPA fallback)');
+console.log('Source maps removidos do artefato de deploy');

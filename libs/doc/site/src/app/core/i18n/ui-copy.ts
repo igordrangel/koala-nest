@@ -220,5 +220,3 @@ export const UI_COPY = {
     ],
   },
 } as const satisfies Record<Locale, unknown>;
-
-export const CLI_SNIPPET = '```bash\nkl-nest new\n```';

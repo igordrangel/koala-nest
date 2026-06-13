@@ -59,7 +59,15 @@
       </small>
     </div>
 
-    <app-markdown-content [content]="cliSnippet" />
+    <div class="code-block relative rounded-xl bg-neutral-900 border border-base-300 overflow-hidden my-6">
+      <div class="flex items-center justify-between px-3 py-2 border-b border-base-300/80">
+        <span class="flex min-w-0 items-center gap-2 text-sm text-neutral-500">
+          <i class="bg-neutral-400 text-neutral-950 rounded-sm fa-solid fa-terminal p-1 text-[0.5rem]"></i>
+          <span class="truncate">bash</span>
+        </span>
+      </div>
+      <pre class="language-bash !m-0 !rounded-none !border-0 !bg-transparent"><code>kl-nest new</code></pre>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-5">
       @for (benefit of copy().cliBenefits; track benefit.title) {
