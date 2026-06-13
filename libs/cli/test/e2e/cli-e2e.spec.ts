@@ -48,6 +48,7 @@ describe('CLI e2e — new', () => {
       [
         'new',
         'my-api',
+        '-y',
         '--template',
         'default',
         '--pm',
@@ -75,6 +76,7 @@ describe('CLI e2e — new', () => {
       [
         'new',
         'my-crud',
+        '-y',
         '--template',
         'example',
         '--pm',
@@ -143,7 +145,7 @@ describe('CLI e2e — add', () => {
     assertHealthCheck(projectDir, { withRedis: true });
   }, 60_000);
 
-  it('add cron instala bootstrap e dependência cron-parser', () => {
+  it('add cron instala infraestrutura de jobs e dependência cron-parser', () => {
     const projectDir = trackClone('add-cron');
 
     expectCliSuccess(runCli(['add', 'cron'], projectDir));

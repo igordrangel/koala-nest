@@ -1,6 +1,7 @@
-import { AuthenticatedUser, jwtClaimsSchema } from '@/core/auth/jwt-claims';
-import { AuthHttp, JwtTokenType } from '@/core/auth/auth.constants';
+import { AuthHttp } from '@/core/auth/auth.constants';
 import { isAuthRefreshRoute } from '@/core/auth/auth-routes';
+import { jwtPayloadSchema } from '@/core/auth/jwt-claims';
+import { parseJwtExpiresInToSeconds } from '@/core/auth/parse-jwt-expires-in';
 import { EnvService } from '@/infra/common/env.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
@@ -9,6 +10,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  private readonly accessTokenTtlSeconds: number;
+
   constructor(env: EnvService) {
     const publicKey = env.get('JWT_PUBLIC_KEY');
 
@@ -24,25 +27,35 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       algorithms: [AuthHttp.JWT_ALGORITHM],
       passReqToCallback: true,
     });
+
+    this.accessTokenTtlSeconds = parseJwtExpiresInToSeconds(
+      env.get('JWT_ACCESS_TOKEN_EXPIRES_IN'),
+    );
   }
 
-  validate(req: Request, payload: AuthenticatedUser) {
-    const isRefreshRoute = isAuthRefreshRoute(req.url);
+  private isLongLivedToken(payload: { exp?: number; iat?: number }): boolean {
+    if (!payload.exp || !payload.iat) {
+      return false;
+    }
 
-    if (payload.tokenType === JwtTokenType.REFRESH && !isRefreshRoute) {
+    return payload.exp - payload.iat > this.accessTokenTtlSeconds;
+  }
+
+  validate(req: Request, payload: { sub: string; exp?: number; iat?: number }) {
+    const isRefreshRoute = isAuthRefreshRoute(req.url);
+    const parsed = jwtPayloadSchema.parse(payload);
+
+    if (this.isLongLivedToken(payload) && !isRefreshRoute) {
       throw new UnauthorizedException(
         'Refresh token não pode ser usado como access token',
       );
-    }
-
-    if (payload.tokenType === JwtTokenType.REFRESH) {
-      return jwtClaimsSchema.parse(payload);
     }
 
     const token = req
       .get('Authorization')
       ?.replace(AuthHttp.BEARER_PREFIX, '')
       .trim();
-    return jwtClaimsSchema.parse({ ...payload, refreshToken: token });
+
+    return { sub: parsed.sub, refreshToken: token };
   }
 }

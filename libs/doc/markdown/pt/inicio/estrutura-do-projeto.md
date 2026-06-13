@@ -41,7 +41,7 @@ bootstrap();
 
 **Com autenticação** (`kl-nest add auth` ou seleção no `new`): `cookie-parser`, guards globais (`AuthGuard`, `ProfilesGuard`).
 
-**Com cron jobs** (`kl-nest add cron`): import de `bootstrap/koala-bootstrap` e chamada a `bootstrapKoalaJobs()` antes de `listen` (controlado por `CRON_JOBS_ENABLED`).
+**Com cron/event jobs** (`kl-nest add cron` / `add events`): infraestrutura em `src/core/background-services/` e `JobsModule.register()` no `AppModule` (arrays vazios no template Padrão; handlers de exemplo no CRUD).
 
 ## Módulo raiz
 
@@ -54,7 +54,11 @@ O `AppModule` importa a validação de ambiente e os módulos de feature. No tem
       isGlobal: true,
       validate: (config) => envSchema.parse(config),
     }),
-    PersonModule,
+    JobsModule.register({
+      eventHandlers: [], // ou handlers de exemplo no template CRUD
+      cronJobs: [],
+    }),
+    PersonModule, // template CRUD
   ],
 })
 export class AppModule {}
@@ -64,19 +68,32 @@ export class AppModule {}
 
 ## Jobs em background
 
-Somente quando cron jobs foram instalados (`kl-nest add cron`), `main.ts` chama `bootstrapKoalaJobs()` antes de `listen`:
+Todo projeto inclui `src/host/jobs/` com `JobsModule.register()`. Passe as classes de handler em `eventHandlers` e `cronJobs`; o `JobsBootstrapService` inscreve eventos e inicia cron jobs no `OnModuleInit` (controlado por `CRON_JOBS_ENABLED`).
 
 ```typescript
-KoalaGlobalVars.appName = 'koala-nest';
-KoalaGlobalVars.internalUserName = 'integration.bot';
-
-await bootstrapKoalaJobs(app, {
-  cronJobsEnabled: config.get('CRON_JOBS_ENABLED'),
-  bootstrapDelayMs: config.get('BOOTSTRAP_DELAY_MS'),
-});
+JobsModule.register({
+  eventHandlers: [InactivePersonHandler],
+  cronJobs: [CreatePersonJob, DeleteInactiveJob],
+})
 ```
 
-Por padrão, `CRON_JOBS_ENABLED=false` no `.env.example`. Ajuste `BOOTSTRAP_DELAY_MS` se precisar aguardar dependências antes dos jobs. Detalhes em [Cron e Event Jobs](../core/cron-event-jobs.md).
+No template de exemplo, `CRON_JOBS_ENABLED=true` no `.env.example`. Ajuste `BOOTSTRAP_DELAY_MS` se precisar aguardar dependências antes dos jobs. Detalhes em [Cron e Event Jobs](../core/cron-event-jobs.md).
+
+No módulo de aplicação, organize jobs por tipo e especialidade:
+
+```
+src/application/<recurso>/jobs/
+├── cron/                          # CronJobHandlerBase
+│   └── meu-job.ts
+└── events/
+    └── <recurso>/                 # agregado EventJob
+        ├── <recurso>-event.job.ts
+        └── <especialidade>/       # evento + handler
+            ├── meu-evento.event.ts
+            └── meu-evento.handler.ts
+```
+
+Exemplo no Person: `jobs/cron/create-person.job.ts` e `jobs/events/person/inactive-person/`.
 
 ## Hierarquia de módulos
 

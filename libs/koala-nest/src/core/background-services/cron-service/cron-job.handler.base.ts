@@ -1,11 +1,8 @@
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
 import { cronExpressionToBoolean } from '@/core/utils/cron-expression-to-boolean';
-import {
-  DEMO_CRON_POLL_MINUTES,
-  MINUTES_TO_MS,
-  MS_TO_SECONDS,
-} from '@/core/constants/cron.constants';
+import { DEFAULT_CRON_POLL_MINUTES } from '@/core/constants/cron.constants';
+import { MINUTES_TO_MS, MS_TO_SECONDS } from '@/core/utils/time.constants';
 import { delay } from '@koalarx/utils/KlDelay';
 import { reportErrorToLogging } from '@/core/utils/report-error';
 
@@ -14,9 +11,9 @@ export interface CronJobSettings {
   timeInMinutes: number;
 }
 
-export function demoCronSettings(
+export function cronJobSettings(
   cronExpression: string,
-  timeInMinutes = DEMO_CRON_POLL_MINUTES,
+  timeInMinutes = DEFAULT_CRON_POLL_MINUTES,
 ): CronJobSettings {
   return {
     isActive: cronExpressionToBoolean(cronExpression),

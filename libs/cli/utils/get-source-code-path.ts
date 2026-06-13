@@ -4,6 +4,12 @@ import { getPackageRoot } from './get-package-root';
 
 export function getSourceCodePath(): string {
   const root = getPackageRoot(import.meta.url);
+  const distTemplate = path.join(root, 'dist', 'koala-nest');
+
+  if (existsSync(distTemplate)) {
+    return distTemplate;
+  }
+
   const publishedTemplate = path.join(root, 'koala-nest');
 
   if (existsSync(publishedTemplate)) {

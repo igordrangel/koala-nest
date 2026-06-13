@@ -32,7 +32,7 @@ Escolha no `kl-nest new` ou adicione depois com `kl-nest add`:
 | Autenticação JWT/OAuth2 | `kl-nest add auth jwt` / `oauth2` | Guards globais, Scalar OAuth |
 | Cache Redis | `kl-nest add cache` | `ICacheService` + `ioredis` |
 | Health check | `kl-nest add health` | `GET /health` com Terminus |
-| Cron jobs | `kl-nest add cron` | `CronJobHandlerBase` + bootstrap |
+| Cron jobs | `kl-nest add cron` | `CronJobHandlerBase` + `JobsModule` |
 | Event jobs | `kl-nest add events` | `EventJob` + handlers em memória |
 
 OAuth2 e cron jobs instalam **cache em memória** automaticamente quando Redis não foi selecionado (sem `ioredis`).

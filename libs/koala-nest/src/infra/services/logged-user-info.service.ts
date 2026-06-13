@@ -1,5 +1,3 @@
-import { AuthHttp } from '@/core/auth/auth.constants';
-import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { AuthenticatedUser } from '@/core/auth/jwt-claims';
 import { LoggedUserInfoDto } from '@/domain/dtos/logged-user-info.dto';
 import { ILoggedUserInfoService } from '@/domain/services/ilogged-user-info.service';
@@ -30,16 +28,5 @@ export class LoggedUserInfoService implements ILoggedUserInfoService {
     }
 
     return LoggedUserInfoDto.fromAuthenticatedUser(this.request.user);
-  }
-
-  getToken(): string | undefined {
-    return this.request.headers.authorization?.replace(
-      AuthHttp.BEARER_PREFIX,
-      '',
-    );
-  }
-
-  isAdmin(): boolean {
-    return this.getUser().profile === AuthProfile.admin;
   }
 }

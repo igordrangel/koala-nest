@@ -95,13 +95,9 @@ import { defineDocumentation } from './open-api/define-documentation';
 import { ErrorsFilter } from './filters/errors.filter';
 import { HttpAdapterHost } from '@nestjs/core';
 import { ILoggingService } from '@/domain/common/ilogging.service';
-import { KoalaGlobalVars } from '@/core/koala-global-vars';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  KoalaGlobalVars.appName = 'koala-nest';
-  KoalaGlobalVars.internalUserName = 'integration.bot';
 
   app.enableCors({ credentials: true, origin: true, optionsSuccessStatus: 200 });
 
@@ -139,11 +135,43 @@ import { ScalarOAuthTokenController } from '../oauth2/scalar-token.controller';
 export class AuthModule {}
 `;
 
+  const repositoryModule = `import { Module } from '@nestjs/common';
+import { DatabaseModule } from '@/infra/database/database.module';
+
+@Module({
+  imports: [DatabaseModule],
+  exports: [DatabaseModule],
+})
+export class RepositoryModule {}
+`;
+
+  const dataSourceFactory = `import { DataSource } from 'typeorm';
+import { EnvService } from '@/infra/common/env.service';
+
+export const DATA_SOURCE_PROVIDER_TOKEN = 'DATA_SOURCE';
+
+export async function dataSourceFactory(env: EnvService) {
+  const dataSource = new DataSource({
+    type: 'postgres',
+    url: env.get('DATABASE_URL'),
+    entities: [],
+  });
+
+  await dataSource.initialize();
+
+  return dataSource;
+}
+`;
+
   beforeEach(() => {
     tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-patch-auth-'));
     mkdirSync(path.join(tempDir, 'src/host/controllers/auth'), {
       recursive: true,
     });
+    mkdirSync(path.join(tempDir, 'src/infra/repositories'), {
+      recursive: true,
+    });
+    mkdirSync(path.join(tempDir, 'src/infra/database'), { recursive: true });
 
     writeFileSync(
       path.join(tempDir, 'package.json'),
@@ -157,6 +185,14 @@ export class AuthModule {}
     writeFileSync(
       path.join(tempDir, 'src/host/controllers/auth/auth.module.ts'),
       oauthAuthModule,
+    );
+    writeFileSync(
+      path.join(tempDir, 'src/infra/repositories/repository.module.ts'),
+      repositoryModule,
+    );
+    writeFileSync(
+      path.join(tempDir, 'src/infra/database/data-source-factory.ts'),
+      dataSourceFactory,
     );
 
     previousCwd = process.cwd();
@@ -186,5 +222,11 @@ export class AuthModule {}
     expect(main).toContain('AuthGuard');
     expect(main).toContain('ProfilesGuard');
     expect(authModule).not.toContain('OAuthAuthLinkHandler');
+
+    const repositoryModuleContent = readFileSync(
+      path.join(tempDir, 'src/infra/repositories/repository.module.ts'),
+      'utf8',
+    );
+    expect(repositoryModuleContent).toContain('IUserRepository');
   });
 });

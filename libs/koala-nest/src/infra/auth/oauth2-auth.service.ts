@@ -30,6 +30,14 @@ export class OAuth2AuthService implements IOAuth2Service {
     return randomBytes(24).toString('hex');
   }
 
+  private stateCacheKey(state: string) {
+    return `${CacheKeyPrefix.OAUTH2_STATE}${state}`;
+  }
+
+  private getApiHost() {
+    return resolveApiHost(this.env.get('API_HOST'), this.env.get('PORT'));
+  }
+
   /** Grava o state temporariamente para validar autenticidade no POST /oauth2/token (anti-CSRF). */
   private async rememberState(provider: string, state: string) {
     await this.cache.set(
@@ -53,14 +61,6 @@ export class OAuth2AuthService implements IOAuth2Service {
     }
 
     await this.cache.invalidate(this.stateCacheKey(state));
-  }
-
-  private stateCacheKey(state: string) {
-    return `${CacheKeyPrefix.OAUTH2_STATE}${state}`;
-  }
-
-  private getApiHost() {
-    return resolveApiHost(this.env.get('API_HOST'), this.env.get('PORT'));
   }
 
   private async resolveProviderConfig(
@@ -105,56 +105,6 @@ export class OAuth2AuthService implements IOAuth2Service {
     };
   }
 
-  async providerConfig(provider: string): Promise<AuthProviderConfigDto> {
-    const providerConfig = this.providerRegistry.getProvider(provider);
-    const config = await this.resolveProviderConfig(provider);
-    const state = this.generateState();
-    await this.rememberState(providerConfig.key, state);
-
-    return AuthProviderConfigDto.from({
-      ...config,
-      state,
-    });
-  }
-
-  async authLink(provider: string, redirectUri?: string): Promise<string> {
-    const config = await this.providerConfig(provider);
-    const targetRedirect = redirectUri ?? config.redirectUri;
-
-    return `${config.authorizationUrl}?response_type=code&client_id=${config.clientId}&state=${config.state}&redirect_uri=${encodeURIComponent(targetRedirect)}&scope=${encodeURIComponent(config.scope)}`;
-  }
-
-  async exchangeCode(
-    provider: string,
-    code: string,
-    state: string,
-    redirectUri?: string,
-  ): Promise<OAuthUserInfoDto> {
-    await this.validateState(provider, state);
-    const config = await this.resolveProviderConfig(provider);
-
-    const formData = new URLSearchParams();
-    formData.append('code', code);
-    formData.append('redirect_uri', redirectUri ?? config.redirectUri);
-    formData.append('client_id', config.clientId);
-    formData.append('client_secret', config.clientSecret);
-    formData.append('grant_type', 'authorization_code');
-
-    const tokenResponse = await fetch(config.tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString(),
-    }).then((response) => response.json() as Promise<Record<string, string>>);
-
-    if (tokenResponse.error || !tokenResponse.access_token) {
-      throw new UnauthorizedException(
-        'Falha ao trocar código OAuth2 por token',
-      );
-    }
-
-    return this.userInfo(config, tokenResponse.access_token);
-  }
-
   private async userInfo(
     config: AuthProviderConfigDto,
     accessToken: string,
@@ -175,5 +125,84 @@ export class OAuth2AuthService implements IOAuth2Service {
       name: data.name,
       profile: AuthProfile.user,
     });
+  }
+
+  private async exchangeAuthorizationCode(
+    provider: string,
+    code: string,
+    redirectUri?: string,
+  ): Promise<OAuthUserInfoDto> {
+    const config = await this.resolveProviderConfig(provider);
+
+    const formData = new URLSearchParams();
+    formData.append('code', code);
+    formData.append('redirect_uri', redirectUri ?? config.redirectUri);
+    formData.append('client_id', config.clientId);
+    formData.append('client_secret', config.clientSecret);
+    formData.append('grant_type', 'authorization_code');
+
+    const tokenResponse = await fetch(config.tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+    }).then((response) => response.json() as Promise<Record<string, string>>);
+
+    if (tokenResponse.error || !tokenResponse.access_token) {
+      throw new UnauthorizedException(
+        tokenResponse.error_description ??
+          tokenResponse.error ??
+          'Falha ao trocar código OAuth2 por token',
+      );
+    }
+
+    return this.userInfo(config, tokenResponse.access_token);
+  }
+
+  async providerConfig(provider: string): Promise<AuthProviderConfigDto> {
+    const providerConfig = this.providerRegistry.getProvider(provider);
+    const config = await this.resolveProviderConfig(provider);
+    const state = this.generateState();
+    await this.rememberState(providerConfig.key, state);
+
+    return AuthProviderConfigDto.from({
+      ...config,
+      state,
+    });
+  }
+
+  async resolveScalarOAuthFlow(provider: string) {
+    const config = await this.resolveProviderConfig(provider);
+
+    return {
+      authorizationUrl: `${config.authorizationUrl}?scope=${encodeURIComponent(config.scope)}`,
+      redirectUri: config.redirectUri,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    };
+  }
+
+  async authLink(provider: string, redirectUri?: string): Promise<string> {
+    const config = await this.providerConfig(provider);
+    const targetRedirect = redirectUri ?? config.redirectUri;
+
+    return `${config.authorizationUrl}?response_type=code&client_id=${config.clientId}&state=${config.state}&redirect_uri=${encodeURIComponent(targetRedirect)}&scope=${encodeURIComponent(config.scope)}`;
+  }
+
+  async exchangeScalarCode(
+    provider: string,
+    code: string,
+    redirectUri?: string,
+  ): Promise<OAuthUserInfoDto> {
+    return this.exchangeAuthorizationCode(provider, code, redirectUri);
+  }
+
+  async exchangeCode(
+    provider: string,
+    code: string,
+    state: string,
+    redirectUri?: string,
+  ): Promise<OAuthUserInfoDto> {
+    await this.validateState(provider, state);
+    return this.exchangeAuthorizationCode(provider, code, redirectUri);
   }
 }

@@ -19,17 +19,27 @@ describe('Auth (E2E)', () => {
     await app.close();
   });
 
-  it('emite par de tokens em rota pública', async () => {
+  it('autentica com email e senha demo', async () => {
     const response = await request(app.getHttpServer())
-      .post(`${AUTH_ROUTER_CONFIG.group}/token`)
-      .send({ sub: 'user-e2e', profile: 'admin' });
+      .post(`${AUTH_ROUTER_CONFIG.group}/login`)
+      .send({ username: 'admin@example.com', password: 'admin123' });
 
-    expect(response.statusCode).toBe(201);
+    expect(response.statusCode).toBe(200);
     expect(response.body.accessToken).toEqual(expect.any(String));
     expect(response.body.refreshToken).toEqual(expect.any(String));
 
     accessToken = response.body.accessToken;
     refreshToken = response.body.refreshToken;
+  });
+
+  it('retorna dados do usuário autenticado', async () => {
+    const response = await request(app.getHttpServer())
+      .get(`${AUTH_ROUTER_CONFIG.group}/user-info`)
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.email).toBe('admin@example.com');
+    expect(response.body.profile).toBe('admin');
   });
 
   it('renova tokens via refresh token no header Authorization', async () => {

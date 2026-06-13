@@ -33,11 +33,9 @@ import {
   stripInfraModuleCache,
 } from './patch-infra-module';
 import { patchAuthInstall } from './patch-auth-install';
-import {
-  patchMainForAuth,
-  patchMainForCronJobs,
-  stripMainOptionalFeatures,
-} from './patch-main';
+import { patchMainForAuth, stripMainOptionalFeatures } from './patch-main';
+import { restoreDefineDocumentationWithAuth } from './patch-define-documentation';
+import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
 import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
 import { runCommand } from './run-command';
@@ -65,6 +63,7 @@ export type InstallModuleOptions = {
   authStrategy?: AuthStrategy;
   withRedis?: boolean;
   withRedisIndicator?: boolean;
+  skipPackages?: boolean;
 };
 
 export type ProjectFeatures = {
@@ -211,6 +210,7 @@ export async function installModule(
       install('src/host/decorators', projectName);
       install('src/host/filters', projectName);
       install('src/host/open-api', projectName);
+      install('src/host/jobs', projectName);
       install('src/host/app.module.ts', projectName);
       install('src/host/main.ts', projectName);
       install('src/infra/common/env.service.ts', projectName);
@@ -285,6 +285,8 @@ export async function installModule(
         { force: true },
       );
 
+      pruneCoreAuthForSlimTemplate(projectName);
+
       const projectPath = resolveProjectPath(projectName);
       const packageManager = getPackageManager(projectName);
 
@@ -297,11 +299,6 @@ export async function installModule(
         cpSync(
           path.join(getSourceCodePath(), 'bunfig.toml'),
           path.join(projectPath, 'bunfig.toml'),
-        );
-      } else {
-        cpSync(
-          path.join(getSourceCodePath(), 'vitest.config.ts'),
-          path.join(projectPath, 'vitest.config.ts'),
         );
       }
 
@@ -334,7 +331,21 @@ export async function installModule(
     case Modules.AUTH: {
       install('src/application/auth', projectName);
       install('src/domain/auth', projectName);
+      install('src/domain/entities/user', projectName);
+      install('src/domain/repositories/iuser.repository.ts', projectName);
       install('src/infra/auth', projectName);
+      install('src/infra/repositories/user.repository.ts', projectName);
+      install('src/core/utils/hash-password.ts', projectName);
+      install('src/core/utils/name-to-login.ts', projectName);
+
+      const initMigration =
+        'src/infra/database/migrations/1781281330533-Init.ts';
+      if (
+        !existsSync(path.join(resolveProjectPath(projectName), initMigration))
+      ) {
+        install(initMigration, projectName);
+      }
+
       install('src/host/security', projectName);
       install('src/host/controllers/auth', projectName);
       install('src/host/controllers/oauth2', projectName);
@@ -347,12 +358,12 @@ export async function installModule(
         'src/host/decorators/scalar-token-endpoint.decorator.ts',
         projectName,
       );
-      install('src/host/decorators/logged-user.decorator.ts', projectName);
       install(
         'src/host/decorators/restriction-by-profile.decorator.ts',
         projectName,
       );
-      install('src/host/open-api/scalar-authentication.ts', projectName);
+
+      restoreDefineDocumentationWithAuth(projectName);
 
       await installPackages(projectName, AUTH_PACKAGES, AUTH_DEV_PACKAGES);
       patchMainFile(projectName, patchMainForAuth);
@@ -386,29 +397,19 @@ export async function installModule(
       }
 
       patchAppModuleFile(projectName, patchAppModuleForHealth);
-      await installPackages(projectName, HEALTH_PACKAGES);
+      if (!options.skipPackages) {
+        await installPackages(projectName, HEALTH_PACKAGES);
+      }
       break;
     }
     case Modules.INTERNAL_CRON_JOBS: {
       install('src/core/background-services/cron-service', projectName);
       install('src/core/utils/cron-expression-to-boolean.ts', projectName);
-      install('src/host/bootstrap/koala-bootstrap.ts', projectName);
-      patchMainFile(projectName, patchMainForCronJobs);
       await installPackages(projectName, CRON_PACKAGES);
       break;
     }
     case Modules.INTERNAL_EVENT_JOBS: {
       install('src/core/background-services/event-service', projectName);
-
-      const bootstrapPath = path.join(
-        resolveProjectPath(projectName),
-        'src/host/bootstrap/koala-bootstrap.ts',
-      );
-
-      if (!existsSync(bootstrapPath)) {
-        install('src/host/bootstrap/koala-bootstrap.ts', projectName);
-        patchMainFile(projectName, patchMainForCronJobs);
-      }
       break;
     }
   }

@@ -1,16 +1,13 @@
-import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { describe, expect, it } from 'bun:test';
 import { JwtTokenService } from '@/infra/auth/jwt-token.service';
 import { EnvService } from '@/infra/common/env.service';
 import { JwtService } from '@nestjs/jwt';
 
 describe('JwtTokenService', () => {
-  it('gera access e refresh token com as claims informadas', () => {
+  it('gera access e refresh token apenas com sub', () => {
     const jwtService = {
-      sign: (
-        claims: { sub: string; tokenType: string },
-        options: { expiresIn: string },
-      ) => `${options.expiresIn}:${claims.sub}:${claims.tokenType}`,
+      sign: (claims: { sub: string }, options: { expiresIn: string }) =>
+        `${options.expiresIn}:${claims.sub}`,
     } as unknown as JwtService;
 
     const envService = {
@@ -21,11 +18,11 @@ describe('JwtTokenService', () => {
 
     const service = new JwtTokenService(jwtService, envService);
 
-    expect(
-      service.signTokenPair({ sub: 'user-1', profile: AuthProfile.admin }),
-    ).toEqual({
-      accessToken: '15m:user-1:access',
-      refreshToken: '7d:user-1:refresh',
+    expect(service.signTokenPair({ sub: 'user-1' })).toEqual({
+      accessToken: '15m:user-1',
+      access_token: '15m:user-1',
+      refreshToken: '7d:user-1',
+      refresh_token: '7d:user-1',
     });
   });
 });

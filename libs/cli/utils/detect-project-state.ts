@@ -66,7 +66,10 @@ export function detectProjectState(projectName = ''): ProjectState {
 
   let auth: ProjectState['auth'] = false;
 
-  if (appModule.includes(ProjectMarker.SECURITY_MODULE)) {
+  if (
+    existsSync(authModulePath) &&
+    appModule.includes(ProjectMarker.SECURITY_MODULE)
+  ) {
     auth = resolveAuthStrategyFromModule(authModule);
   }
 

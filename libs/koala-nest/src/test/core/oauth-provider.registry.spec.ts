@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'bun:test';
 import { OAuthProviderRegistry } from '@/core/auth/oauth-provider.registry';
+import { validateEnvConfig } from '@/core/env';
 import { EnvService } from '@/infra/common/env.service';
 
-function createRegistry(env: Record<string, string | undefined>) {
+function createRegistry(flat: Record<string, string | undefined>) {
+  const env = validateEnvConfig({
+    NODE_ENV: 'test',
+    DATABASE_URL: 'postgres://localhost/test',
+    ...flat,
+  });
   const envService = {
-    get: (key: 'OAUTH2_PROVIDERS') => env[key],
-    getDynamic: (key: string) => env[key],
+    get: <T extends keyof typeof env>(key: T) => env[key],
   } as unknown as EnvService;
 
   return new OAuthProviderRegistry(envService);
@@ -41,7 +46,7 @@ describe('OAuthProviderRegistry', () => {
       clientId: 'client-id',
       clientSecret: 'client-secret',
       scope: 'openid profile email',
-      redirectPath: '/oauth2/callback',
+      redirectPath: '/sso/callback',
       authorizationUrl: undefined,
       tokenUrl: undefined,
       userInfoUrl: undefined,
@@ -65,7 +70,7 @@ describe('OAuthProviderRegistry', () => {
       clientId: 'client-id',
       clientSecret: 'client-secret',
       scope: 'openid profile email',
-      redirectPath: '/oauth2/callback',
+      redirectPath: '/sso/callback',
       authorizationUrl: 'https://auth.myapp.com/oauth/authorize',
       tokenUrl: 'https://auth.myapp.com/oauth/token',
       userInfoUrl: 'https://auth.myapp.com/oauth/userinfo',

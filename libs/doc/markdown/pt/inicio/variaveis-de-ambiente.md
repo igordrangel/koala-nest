@@ -111,13 +111,13 @@ Veja [Cache (Redis)](../core/cache.md) e [Cron e Event Jobs](../core/cron-event-
 ### Jobs em background
 
 ```env
-CRON_JOBS_ENABLED=false
+CRON_JOBS_ENABLED=true
 BOOTSTRAP_DELAY_MS=0
 ```
 
 | Variável | Descrição |
 | --- | --- |
-| `CRON_JOBS_ENABLED` | Habilita CronJobs no bootstrap (`false` por padrão) |
+| `CRON_JOBS_ENABLED` | Habilita CronJobs no `JobsBootstrapService` (`true` no template de exemplo; defina `false` para desligar) |
 | `BOOTSTRAP_DELAY_MS` | Aguarda N ms antes de iniciar jobs (warm-up de dependências) |
 
 ## Integração com ConfigModule
@@ -127,9 +127,11 @@ O `AppModule` registra o schema como validador global do NestJS:
 ```typescript
 ConfigModule.forRoot({
   isGlobal: true,
-  validate: (config) => envSchema.parse(config),
+  validate: (config) => validateEnvConfig(config),
 }),
 ```
+
+Na validação, variáveis `OAUTH2_{PROVIDER}_*` do `.env` são normalizadas em `OAUTH2_PROVIDER_ENV` (mapa tipado por provider).
 
 ## EnvService
 
@@ -137,9 +139,9 @@ A infraestrutura acessa variáveis tipadas via `EnvService`:
 
 ```typescript
 env.get('DATABASE_URL');
-env.getDynamic('OAUTH2_GOOGLE_CLIENT_ID'); // fora do schema Zod
+env.get('OAUTH2_PROVIDER_ENV').google?.clientId;
 ```
 
 ## Estender o schema
 
-Para adicionar novas variáveis fixas, inclua-as em `envSchema` e atualize o `.env.example`. Providers OAuth2 extras só precisam das variáveis `OAUTH2_{PROVIDER}_*` no `.env`.
+Para adicionar novas variáveis fixas, inclua-as em `envSchema` e atualize o `.env.example`. Providers OAuth2 extras continuam no `.env` como `OAUTH2_{PROVIDER}_*`; o bootstrap agrupa tudo em `OAUTH2_PROVIDER_ENV`.

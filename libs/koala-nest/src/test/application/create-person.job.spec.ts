@@ -1,8 +1,8 @@
 /// <reference types="bun-types/test-globals" />
 
-import { CreatePersonJob } from '@/application/person/jobs/create-person.job';
+import { CreatePersonJob } from '@/application/person/jobs/cron/create-person.job';
 import { CreatePersonHandler } from '@/application/person/create/create-person.handler';
-import { InactivePersonHandler } from '@/application/person/events/inactive-person.handler';
+import { InactivePersonHandler } from '@/application/person/jobs/events/person/inactive-person/inactive-person.handler';
 import { EventQueue } from '@/core/background-services/event-service/event-queue';
 import { Person } from '@/domain/entities/person/person';
 import { PersonAddress } from '@/domain/entities/person/person-address';

@@ -1,46 +1,35 @@
-import { IssueTokenHandler } from '@/application/auth/issue-token/issue-token.handler';
 import { OAuthExchangeCodeHandler } from '@/application/auth/oauth2/exchange-code/exchange-code.handler';
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
-import { IssueTokenResponse } from '@/application/auth/issue-token/issue-token.response';
-import { ScalarTokenBody } from '@/application/auth/scalar-token/scalar-token.types';
+import { AuthTokenResponse } from '@/application/auth/common/auth-token.response';
+import { ScalarTokenBody } from './scalar-token.types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ScalarOAuthTokenHandler extends RequestHandlerBase<
   ScalarTokenBody,
-  IssueTokenResponse
+  AuthTokenResponse
 > {
-  constructor(
-    private readonly exchangeCode: OAuthExchangeCodeHandler,
-    private readonly issueToken: IssueTokenHandler,
-  ) {
+  constructor(private readonly exchangeCode: OAuthExchangeCodeHandler) {
     super();
   }
 
-  async handle(body: ScalarTokenBody): Promise<IssueTokenResponse> {
-    const provider = body.provider;
-    const code = body.code ?? body.ssoCode;
-    const state = body.state;
+  async handle(body: ScalarTokenBody): Promise<AuthTokenResponse> {
+    const provider = body.provider?.trim();
+    const code = (body.code ?? body.ssoCode)?.trim();
+    const state = body.state?.trim();
     const redirectUri = body.redirect_uri ?? body.redirectUri;
 
-    if (!provider?.trim() || !code?.trim() || !state?.trim()) {
+    if (!provider || !code) {
       throw new BadRequestException(
-        'Campos provider, code e state são obrigatórios',
+        'Campos provider e code (ou ssoCode) são obrigatórios',
       );
     }
 
-    const userInfo = await this.exchangeCode.handle({
-      provider: provider.trim(),
-      code: code.trim(),
-      state: state.trim(),
+    return this.exchangeCode.handle({
+      provider,
+      code,
+      state: state || undefined,
       redirectUri,
-    });
-
-    return this.issueToken.handle({
-      sub: userInfo.email || userInfo.login,
-      profile: userInfo.profile,
-      email: userInfo.email,
-      login: userInfo.login,
     });
   }
 }

@@ -1,4 +1,4 @@
-import { KoalaGlobalVars } from '@/core/koala-global-vars';
+import packageJson from '../../../package.json';
 import { ILoggingService } from '@/domain/common/ilogging.service';
 
 export async function reportErrorToLogging(
@@ -9,8 +9,8 @@ export async function reportErrorToLogging(
   try {
     await loggingService.report({
       error,
-      packageName: KoalaGlobalVars.appName,
-      loggedUsername: loggedUsername || KoalaGlobalVars.internalUserName,
+      packageName: packageJson.name,
+      loggedUsername: loggedUsername ?? 'system',
     });
   } catch {
     console.error(error);

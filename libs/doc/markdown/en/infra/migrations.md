@@ -88,10 +88,8 @@ Entities are discovered by **glob** — just create the file in `src/domain/enti
 
 ## Existing migrations in the template
 
-The Person template includes example migrations:
+The Person template includes one consolidated initial migration:
 
-- `1781281330533-Init.ts` — initial schema
-- `1781282000000-AddPersonAddressRelation.ts` — address relationship
-- Additional incremental migrations generated during template development
+- `1781281330533-Init.ts` — full schema (`person`, `person_address`, `person_contact`, `users`) and demo user
 
-These migrations serve as a reference for naming and structure.
+Use it as a naming and structure reference. New schema changes should generate incremental migrations via `migration:generate`.

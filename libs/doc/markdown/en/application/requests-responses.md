@@ -155,5 +155,8 @@ src/application/person/
 ├── read/         # handler, response
 ├── read-many/    # request, response, handler, validator
 ├── update/       # request, handler, validator
-└── delete/       # handler
+├── delete/       # handler
+└── jobs/
+    ├── cron/     # CronJobHandlerBase
+    └── events/   # EventJob + handlers by specialty
 ```

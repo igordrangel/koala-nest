@@ -7,6 +7,9 @@ export class LoggedUserInfoDto {
   sub: string;
 
   @AutoMap()
+  name?: string;
+
+  @AutoMap()
   profile?: AuthProfile;
 
   @AutoMap()
@@ -18,6 +21,7 @@ export class LoggedUserInfoDto {
   static fromAuthenticatedUser(user: AuthenticatedUser): LoggedUserInfoDto {
     return Object.assign(new LoggedUserInfoDto(), {
       sub: user.sub,
+      name: user.name,
       profile: user.profile,
       login: user.login,
       email: user.email,

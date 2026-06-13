@@ -17,6 +17,10 @@ export class RedisCacheService implements ICacheService {
       });
   }
 
+  private buildKey(key: string) {
+    return `${this.keyPrefix}:${key}`;
+  }
+
   get(key: string): Promise<string | null> {
     return this.client.get(this.buildKey(key));
   }
@@ -64,9 +68,5 @@ export class RedisCacheService implements ICacheService {
 
   onModuleDestroy() {
     this.client.disconnect();
-  }
-
-  private buildKey(key: string) {
-    return `${this.keyPrefix}:${key}`;
   }
 }

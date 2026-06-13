@@ -1,6 +1,7 @@
 import { readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { removeImportLines } from './project-files';
+import { patchAppModuleExampleJobs } from './patch-jobs-module';
 import { resolveProjectPath } from './resolve-project-path';
 
 function projectFile(projectName: string, relativePath: string) {
@@ -65,7 +66,7 @@ export function stripPersonModuleCacheUsage(projectName: string) {
     'src/application/person/create/create-person.handler.ts',
     'src/application/person/update/update-person.handler.ts',
     'src/application/person/delete/delete-person.handler.ts',
-    'src/application/person/events/inactive-person.handler.ts',
+    'src/application/person/jobs/events/person/inactive-person/inactive-person.handler.ts',
   ];
 
   for (const handlerPath of handlers) {
@@ -100,49 +101,14 @@ export function stripPersonModuleCacheUsage(projectName: string) {
 }
 
 export function stripPersonModuleCronJobs(projectName: string) {
-  let content = readProjectFile(
-    projectName,
-    'src/host/controllers/person/person.module.ts',
-  );
-
-  content = removeImportLines(content, [
-    '@/application/person/jobs/create-person.job',
-    '@/application/person/jobs/delete-inactive.job',
-  ]);
-  content = content.replace(/\n {4}CreatePersonJob,\n/g, '\n');
-  content = content.replace(/\n {4}DeleteInactiveJob,\n/g, '\n');
-
-  writeProjectFile(
-    projectName,
-    'src/host/controllers/person/person.module.ts',
-    content,
-  );
-
-  rmSync(projectFile(projectName, 'src/application/person/jobs'), {
+  rmSync(projectFile(projectName, 'src/application/person/jobs/cron'), {
     recursive: true,
     force: true,
   });
 }
 
 export function stripPersonModuleEventJobs(projectName: string) {
-  let content = readProjectFile(
-    projectName,
-    'src/host/controllers/person/person.module.ts',
-  );
-
-  content = removeImportLines(content, [
-    '@/application/person/events/inactive-person.handler',
-  ]);
-  content = content.replace(/\n {4}InactivePersonHandler,\n/g, '\n');
-  content = content.replace(/\n {4}InactivePersonHandler,\n {2}\],/g, '\n  ],');
-
-  writeProjectFile(
-    projectName,
-    'src/host/controllers/person/person.module.ts',
-    content,
-  );
-
-  rmSync(projectFile(projectName, 'src/application/person/events'), {
+  rmSync(projectFile(projectName, 'src/application/person/jobs/events'), {
     recursive: true,
     force: true,
   });
@@ -172,6 +138,11 @@ export function adjustCrudPersonModule(
   if (!options.auth) {
     stripPersonAuthExample(projectName);
   }
+
+  patchAppModuleExampleJobs(projectName, {
+    eventJobs: options.eventJobs,
+    cronJobs: options.cronJobs,
+  });
 }
 
 export function stripPersonAuthExample(projectName: string) {

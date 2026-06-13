@@ -13,6 +13,7 @@ export type ParsedNewArgs = {
   template?: Template;
   auth?: AuthChoice;
   features: ExtraFeature[];
+  yes: boolean;
   interactive: boolean;
 };
 
@@ -78,11 +79,17 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
   let template: Template | undefined;
   let auth: ParsedNewArgs['auth'];
   let features: ExtraFeature[] = [];
+  let yes = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
 
     if (!arg) {
+      continue;
+    }
+
+    if (arg === '-y' || arg === '--yes') {
+      yes = true;
       continue;
     }
 
@@ -155,7 +162,8 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
     template,
     auth,
     features,
-    interactive: !projectName,
+    yes,
+    interactive: !yes,
   };
 }
 

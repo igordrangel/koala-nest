@@ -1,4 +1,4 @@
-import { KoalaGlobalVars } from '@/core/koala-global-vars';
+import packageJson from '../../../package.json';
 import { ICacheService } from '@/domain/common/icache.service';
 import { EnvService } from '@/infra/common/env.service';
 import { InMemoryCacheService } from '@/infra/common/in-memory-cache.service';
@@ -15,6 +15,10 @@ export class CacheServiceProvider implements ICacheService, OnModuleDestroy {
     this.delegate = redisUrl
       ? new RedisCacheService(redisUrl, this.resolveKeyPrefix(env))
       : new InMemoryCacheService();
+  }
+
+  private resolveKeyPrefix(env: EnvService) {
+    return env.get('CACHE_KEY_PREFIX') ?? packageJson.name;
   }
 
   get(key: string): Promise<string | null> {
@@ -39,9 +43,5 @@ export class CacheServiceProvider implements ICacheService, OnModuleDestroy {
 
   onModuleDestroy() {
     this.delegate.onModuleDestroy?.();
-  }
-
-  private resolveKeyPrefix(env: EnvService) {
-    return env.get('CACHE_KEY_PREFIX') ?? KoalaGlobalVars.appName;
   }
 }

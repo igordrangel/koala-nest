@@ -8,6 +8,10 @@ export function resolveProjectPath(projectName: string): string {
     return cwd;
   }
 
+  if (path.isAbsolute(projectName)) {
+    return projectName;
+  }
+
   const nestedPath = path.join(cwd, projectName);
 
   if (existsSync(path.join(nestedPath, 'package.json'))) {

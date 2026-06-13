@@ -5,7 +5,7 @@ export const PROFILES_KEY = 'profiles';
 
 /**
  * Restringe o endpoint aos perfis informados.
- * O valor de `profile` deve existir no payload JWT (configure em IssueTokenRequest).
+ * O valor de `profile` deve existir no payload JWT.
  *
  * @example RestrictionByProfile([AuthProfile.admin])
  */

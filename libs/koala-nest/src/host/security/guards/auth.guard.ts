@@ -1,6 +1,7 @@
 import { AuthenticatedUser } from '@/core/auth/jwt-claims';
-import { AuthHttp } from '@/core/auth/auth.constants';
-import { isAuthRefreshRoute } from '@/core/auth/auth-routes';
+import { assertUserIsActive } from '@/core/auth/assert-user-active';
+import { applyRefreshTokenForRefreshRoute } from '@/core/auth/resolve-refresh-token';
+import { IUserRepository } from '@/domain/repositories/iuser.repository';
 import { IS_PUBLIC_KEY } from '@/host/decorators/is-public.decorator';
 import {
   ExecutionContext,
@@ -9,30 +10,67 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard as NestAuthGuard } from '@nestjs/passport';
+import { isObservable, lastValueFrom, Observable } from 'rxjs';
 
-type AuthRequest = {
-  cookies?: Record<string, string>;
-  url?: string;
-  headers: Record<string, string | string[] | undefined>;
+type TokenUser = Pick<AuthenticatedUser, 'sub' | 'refreshToken'>;
+
+type AuthRequest = Parameters<typeof applyRefreshTokenForRefreshRoute>[0] & {
+  user?: AuthenticatedUser | TokenUser;
 };
-
-export function applyRefreshTokenFromCookie(request: AuthRequest): void {
-  if (
-    isAuthRefreshRoute(request.url) &&
-    request.cookies?.[AuthHttp.REFRESH_TOKEN_COOKIE] &&
-    !request.headers.authorization
-  ) {
-    request.headers.authorization = `${AuthHttp.BEARER_PREFIX}${request.cookies[AuthHttp.REFRESH_TOKEN_COOKIE]}`;
-  }
-}
 
 @Injectable()
 export class AuthGuard extends NestAuthGuard('jwt') {
-  constructor(private readonly reflector: Reflector) {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly userRepository: IUserRepository,
+  ) {
     super();
   }
 
-  canActivate(context: ExecutionContext) {
+  private resolveCanActivate(
+    result: boolean | Promise<boolean> | Observable<boolean>,
+  ): Promise<boolean> {
+    if (typeof result === 'boolean') {
+      return Promise.resolve(result);
+    }
+
+    if (isObservable(result)) {
+      return lastValueFrom(result);
+    }
+
+    return result;
+  }
+
+  private async loadUserFromDatabase(request: AuthRequest) {
+    const tokenUser = request.user;
+
+    if (!tokenUser?.sub) {
+      return;
+    }
+
+    if ('name' in tokenUser && tokenUser.name !== undefined) {
+      return;
+    }
+
+    const user = await this.userRepository.getById(tokenUser.sub);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    assertUserIsActive(user);
+
+    request.user = {
+      sub: user.id,
+      name: user.name,
+      profile: user.profile,
+      login: user.login,
+      email: user.email,
+      refreshToken: tokenUser.refreshToken,
+    };
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -43,9 +81,17 @@ export class AuthGuard extends NestAuthGuard('jwt') {
     }
 
     const request = context.switchToHttp().getRequest<AuthRequest>();
-    applyRefreshTokenFromCookie(request);
 
-    return super.canActivate(context);
+    applyRefreshTokenForRefreshRoute(request);
+
+    const activated = await this.resolveCanActivate(super.canActivate(context));
+
+    if (!activated) {
+      return false;
+    }
+
+    await this.loadUserFromDatabase(request);
+    return true;
   }
 
   handleRequest<TUser = AuthenticatedUser>(

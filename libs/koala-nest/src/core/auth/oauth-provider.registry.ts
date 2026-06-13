@@ -39,28 +39,41 @@ export class OAuthProviderRegistry {
       .filter(Boolean);
   }
 
+  listConfiguredProviders(): string[] {
+    return this.listProviders().filter((key) => {
+      try {
+        this.getProvider(key);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+
   getProvider(key: string): OAuthProviderEnvConfig {
     const normalizedKey = key.trim().toLowerCase();
-    const prefix = `OAUTH2_${normalizedKey.toUpperCase()}`;
-    const domain = this.env.getDynamic(`${prefix}_DOMAIN`);
-    const clientId = this.env.getDynamic(`${prefix}_CLIENT_ID`);
-    const clientSecret = this.env.getDynamic(`${prefix}_CLIENT_SECRET`);
-    const scope = this.env.getDynamic(`${prefix}_SCOPE`);
-    const redirectPath = this.env.getDynamic(`${prefix}_REDIRECT_PATH`);
-    const authorizationUrl = this.env.getDynamic(`${prefix}_AUTHORIZATION_URL`);
-    const tokenUrl = this.env.getDynamic(`${prefix}_TOKEN_URL`);
-    const userInfoUrl = this.env.getDynamic(`${prefix}_USERINFO_URL`);
+    const entry = this.env.get('OAUTH2_PROVIDER_ENV')[normalizedKey];
+    const domain = entry?.domain;
+    const clientId = entry?.clientId;
+    const clientSecret = entry?.clientSecret;
+    const scope = entry?.scope;
+    const redirectPath = entry?.redirectPath;
+    const authorizationUrl = entry?.authorizationUrl;
+    const tokenUrl = entry?.tokenUrl;
+    const userInfoUrl = entry?.userInfoUrl;
 
     const hasManualEndpoints = authorizationUrl && tokenUrl && userInfoUrl;
     const hasDiscoveryDomain = Boolean(domain);
 
     if (!clientId || !clientSecret || !scope) {
+      const prefix = `OAUTH2_${normalizedKey.toUpperCase()}`;
       throw new NotFoundException(
         `Provedor OAuth2 "${normalizedKey}" não configurado. Verifique variáveis ${prefix}_* no .env`,
       );
     }
 
     if (!hasManualEndpoints && !hasDiscoveryDomain) {
+      const prefix = `OAUTH2_${normalizedKey.toUpperCase()}`;
       throw new NotFoundException(
         `Provedor OAuth2 "${normalizedKey}" incompleto. Defina ${prefix}_DOMAIN (OIDC) ou ${prefix}_AUTHORIZATION_URL, ${prefix}_TOKEN_URL e ${prefix}_USERINFO_URL`,
       );
@@ -72,7 +85,7 @@ export class OAuthProviderRegistry {
       clientId,
       clientSecret,
       scope,
-      redirectPath: redirectPath ?? '/oauth2/callback',
+      redirectPath: redirectPath ?? '/sso/callback',
       authorizationUrl,
       tokenUrl,
       userInfoUrl,

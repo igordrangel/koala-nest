@@ -114,47 +114,46 @@ async function promptExtraFeatures(template: Template) {
   ) as ExtraFeature[];
 }
 
-async function promptProjectBasics() {
-  return p.group(
-    {
-      name: () =>
-        p.text({
-          message: 'Nome do projeto',
-          placeholder: 'my-api',
-          validate: (value) => (value ? undefined : 'Campo obrigatório'),
-        }),
-      packageManager: () =>
-        p.select<PackageManager>({
-          message: 'Gerenciador de pacotes',
-          options: [
-            { value: 'bun', label: 'Bun', hint: 'recomendado' },
-            { value: 'npm', label: 'npm' },
-            { value: 'pnpm', label: 'pnpm' },
-          ],
-        }),
-      template: () =>
-        p.select<Template>({
-          message: 'Template',
-          options: [
-            {
-              value: Template.DEFAULT,
-              label: TEMPLATE_LABELS[Template.DEFAULT],
-              hint: 'sem código de exemplo',
-            },
-            {
-              value: Template.CRUD_SAMPLE,
-              label: TEMPLATE_LABELS[Template.CRUD_SAMPLE],
-              hint: 'Person + auth, cache e jobs',
-            },
-          ],
-        }),
-    },
-    {
-      onCancel: () => {
-        p.cancel('Operação cancelada.');
-        process.exit(0);
-      },
-    },
+async function promptProjectName() {
+  return assertNotCancel(
+    await p.text({
+      message: 'Nome do projeto',
+      placeholder: 'my-api',
+      validate: (value) => (value ? undefined : 'Campo obrigatório'),
+    }),
+  );
+}
+
+async function promptPackageManager() {
+  return assertNotCancel(
+    await p.select<PackageManager>({
+      message: 'Gerenciador de pacotes',
+      options: [
+        { value: 'bun', label: 'Bun', hint: 'recomendado' },
+        { value: 'npm', label: 'npm' },
+        { value: 'pnpm', label: 'pnpm' },
+      ],
+    }),
+  );
+}
+
+async function promptTemplate() {
+  return assertNotCancel(
+    await p.select<Template>({
+      message: 'Template',
+      options: [
+        {
+          value: Template.DEFAULT,
+          label: TEMPLATE_LABELS[Template.DEFAULT],
+          hint: 'sem código de exemplo',
+        },
+        {
+          value: Template.CRUD_SAMPLE,
+          label: TEMPLATE_LABELS[Template.CRUD_SAMPLE],
+          hint: 'Person + auth, cache e jobs',
+        },
+      ],
+    }),
   );
 }
 
@@ -162,14 +161,20 @@ async function resolveProjectInput(args: string[]) {
   const parsed = parseNewArgs(args);
 
   if (parsed.interactive) {
-    const project = await promptProjectBasics();
-    const auth = await promptAuthStrategy(project.template);
-    const features = await promptExtraFeatures(project.template);
+    const name = parsed.projectName ?? (await promptProjectName());
+    const packageManager =
+      parsed.packageManager ?? (await promptPackageManager());
+    const template = parsed.template ?? (await promptTemplate());
+    const auth = parsed.auth ?? (await promptAuthStrategy(template));
+    const features =
+      parsed.features.length > 0
+        ? parsed.features
+        : await promptExtraFeatures(template);
 
     return buildNewProjectConfig(parsed, {
-      name: project.name,
-      packageManager: project.packageManager,
-      template: project.template,
+      name,
+      packageManager,
+      template,
       auth,
       features,
     });
@@ -177,7 +182,7 @@ async function resolveProjectInput(args: string[]) {
 
   if (!parsed.projectName) {
     throw new Error(
-      'Informe o nome do projeto. Ex.: kl-nest new my-api --template default --pm bun --auth none',
+      'Informe o nome do projeto com -y. Ex.: kl-nest new my-api -y --template default --pm bun --auth none',
     );
   }
 

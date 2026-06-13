@@ -151,7 +151,7 @@ pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Important:** with the **CRUD Example** template, run `migration:run` before starting the API. The **Default** template has no initial migrations. **Bun** projects use the native test runner (`bun test`); with **npm** or **pnpm**, tests run with **Vitest** (`vitest.config.ts` at the project root).
+> **Important:** with the **CRUD Example** template, run `migration:run` before starting the API. The **Default** template has no initial migrations. Tests use Bun's native runner (`bun test` / `bun run test:e2e`).
 
 ## Local CLI development
 

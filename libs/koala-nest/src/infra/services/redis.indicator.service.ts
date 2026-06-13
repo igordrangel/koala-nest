@@ -1,20 +1,27 @@
 import { EnvService } from '@/infra/common/env.service';
 import { Injectable } from '@nestjs/common';
-import { HealthCheckError, HealthIndicatorResult } from '@nestjs/terminus';
+import {
+  HealthIndicatorResult,
+  HealthIndicatorService,
+} from '@nestjs/terminus';
 
 @Injectable()
 export class RedisIndicator {
-  constructor(private readonly env: EnvService) {}
+  constructor(
+    private readonly env: EnvService,
+    private readonly healthIndicatorService: HealthIndicatorService,
+  ) {}
 
   isConfigured() {
     return Boolean(this.env.get('REDIS_CONNECTION_STRING'));
   }
 
   async isHealthy(): Promise<HealthIndicatorResult> {
+    const indicator = this.healthIndicatorService.check('redis');
     const url = this.env.get('REDIS_CONNECTION_STRING');
 
     if (!url) {
-      return { redis: { status: 'up' } };
+      return indicator.up();
     }
 
     try {
@@ -29,23 +36,18 @@ export class RedisIndicator {
       await client.ping();
       await client.quit();
 
-      return { redis: { status: 'up' } };
+      return indicator.up();
     } catch (error) {
       if (isMissingIoredisModule(error)) {
-        return {
-          redis: {
-            status: 'up',
-            message:
-              'REDIS_CONNECTION_STRING definido, mas ioredis não está instalado',
-          },
-        };
+        return indicator.up({
+          message:
+            'REDIS_CONNECTION_STRING definido, mas ioredis não está instalado',
+        });
       }
 
       const message = error instanceof Error ? error.message : String(error);
 
-      throw new HealthCheckError('Redis check failed', {
-        redis: { status: 'down', message },
-      });
+      return indicator.down({ message });
     }
   }
 }

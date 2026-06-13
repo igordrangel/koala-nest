@@ -81,6 +81,10 @@ function buildCli() {
   rmSync(outputDir, { recursive: true, force: true });
 
   for (const file of new Glob("**/*.ts").scanSync(sourceDir)) {
+    if (file.startsWith("test/")) {
+      continue;
+    }
+
     const sourcePath = path.join(sourceDir, file);
     const outputPath = path.join(outputDir, file.replace(/\.ts$/, ".js"));
 

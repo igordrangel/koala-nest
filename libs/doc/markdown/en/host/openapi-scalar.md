@@ -118,8 +118,7 @@ import { apiReference } from '@scalar/nestjs-api-reference';
 
 export function defineDocumentation(app: INestApplication) {
   const documentBuilder = new DocumentBuilder()
-    .setTitle('KoalaNest')
-    .setDescription('KoalaNest API')
+    .setTitle(packageJson.name)
     .setVersion(packageJson.version)
     .build();
 
@@ -133,8 +132,7 @@ export function defineDocumentation(app: INestApplication) {
     apiReference({
       spec: { content: document },
       metaData: {
-        title: documentBuilder.info.title,
-        description: documentBuilder.info.description,
+        title: packageJson.name,
         version: packageJson.version,
       },
       hideModels: true,
@@ -176,9 +174,9 @@ Use NestJS Swagger's `DocumentBuilder` to define the spec header:
 
 | Method | Usage |
 | --- | --- |
-| `setTitle()` | Name displayed in Scalar |
-| `setDescription()` | Introductory API text |
-| `setVersion()` | Spec version (the template uses `package.json`) |
+| `setTitle()` | Name displayed in Scalar (default: `package.json` `name`) |
+| `setDescription()` | Introductory API text (optional) |
+| `setVersion()` | Spec version (default: `package.json`) |
 
 Extension examples:
 
@@ -375,29 +373,30 @@ Define `API_URL` in `envSchema` if you want to configure per environment.
 
 ## Automatic Scalar authentication
 
-When the authentication module is installed, the template configures Scalar to **obtain the JWT from the UI itself** — no manual token copy. Configuration combines OAuth2 schemes in OpenAPI with the `authentication` block in `apiReference`.
+When the authentication module is installed, the template configures Scalar to **obtain the JWT from the UI itself** — no manual token copy. OAuth2 security schemes are embedded in the OpenAPI document via `define-documentation.ts`.
 
 ### What the template already does
 
-| File | Role |
+| File / route | Role |
 | --- | --- |
-| `src/host/open-api/scalar-authentication.ts` | Builds Scalar `securitySchemes` and `authentication` |
-| `src/host/open-api/define-documentation.ts` | Applies config to `apiReference` when `IJwtTokenService` is registered |
-| `POST /auth/scalar-token` | OAuth2 **password** endpoint used by Scalar (JWT) |
-| `POST /oauth2/scalar-token` | **Authorization code** endpoint used by Scalar (OAuth2) |
+| `src/host/open-api/define-documentation.ts` | Builds OAuth2 schemes in OpenAPI and configures Scalar when `IJwtTokenService` is registered |
+| `POST /auth/login` | **Password** flow used by Scalar (JWT) |
+| `POST /oauth2/scalar-token` | **Authorization code** flow used by Scalar (OAuth2) |
+| `GET /sso/callback` | OAuth callback for Scalar (`code` + `state` in query) |
 
-`scalar-token` endpoints are hidden outside `develop` (`@ApiExcludeEndpointDiffDevelop`).
+Helper endpoints are hidden outside `develop` (`@ApiExcludeEndpointDiffDevelop`).
 
 ### JWT — Scalar password flow
 
 Scalar shows the **JWT** scheme with a `password` flow:
 
-- `username` → `sub` claim
-- `password` → `profile` claim (`user` or `admin`)
-- `tokenUrl` → `POST /auth/scalar-token`
+- `username` → user email (`User.email`)
+- `password` → user password
+- `tokenUrl` → `POST /auth/login`
+- `refreshUrl` → `POST /auth/refresh`
 - `x-tokenName` → `accessToken` (Scalar sends Bearer automatically)
 
-In `develop`, sample credentials are pre-filled (`scalar-dev-user` / `admin`). In production, fields stay empty.
+In `develop`, sample credentials are pre-filled (`admin@example.com` / `admin123`). In production, fields stay empty.
 
 **Usage at `/doc`:**
 
@@ -421,54 +420,20 @@ For each provider in `OAUTH2_PROVIDERS`, the template registers a scheme (e.g. *
 2. Complete login at the provider
 3. Scalar exchanges the code, receives the JWT, and applies it to requests
 
-### Central configuration (`scalar-authentication.ts`)
+### Central configuration (`define-documentation.ts`)
 
-Logic lives in `buildScalarAuthentication(app)`:
-
-```typescript
-export async function buildScalarAuthentication(app: INestApplication) {
-  if (!isProviderRegistered(app, IJwtTokenService)) {
-    return undefined;
-  }
-
-  // JWT scheme (password → /auth/scalar-token)
-  // OAuth2 provider schemes (authorization code → /oauth2/scalar-token)
-
-  return {
-    openApiSecuritySchemes,
-    authentication: {
-      preferredSecurityScheme: ['JWT', 'auth0', ...],
-      securitySchemes: { /* prefill in develop */ },
-    },
-    persistAuth: EnvConfig.isEnvDevelop,
-  };
-}
-```
-
-`define-documentation.ts` consumes the result:
+Logic lives in `buildDocAuthorizations(app)` inside `define-documentation.ts`:
 
 ```typescript
-const scalarAuth = await buildScalarAuthentication(app);
+// JWT scheme (password → /auth/login) when LoginController exists
+// OAuth2 provider schemes (authorization code → /oauth2/scalar-token)
 
-app.use(
-  docEndpoint,
-  apiReference({
-    spec: { content: document },
-    persistAuth: scalarAuth?.persistAuth ?? false,
-    authentication: scalarAuth?.authentication,
-    // ...
-  }),
-);
+documentBuilder.addBearerAuth(authorization.config, authorization.name);
+syncIsPublicRoutesInOpenApi(document);
+applyAuthSecurityToProtectedRoutes(document, schemeNames);
 ```
 
-### Protected and public routes in OpenAPI
-
-With global guards (`AuthGuard`), OpenAPI follows the same rule:
-
-- **Default:** Bearer required on all endpoints (`addSecurityRequirements('bearer')`)
-- **Exception:** routes with `@IsPublic()` get `security: []` in the spec automatically
-
-You do not need `@ApiBearerAuth()` on each controller.
+Routes with `@IsPublic()` get `security: []` in the spec; other operations inherit the registered schemes.
 
 ```typescript
 import { IsPublic } from '@/host/decorators/is-public.decorator';

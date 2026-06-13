@@ -18,7 +18,23 @@ O Koala Nest inclui dois mecanismos de background em `src/core/background-servic
 | **CronJob** | `CronJobHandlerBase` | Tarefas periódicas com expressão cron ou intervalo fixo |
 | **EventJob** | `EventJob` + `EventHandlerBase` | Reação a eventos de domínio enfileirados em memória |
 
-O template **Exemplo de CRUD** traz implementações no módulo Person e instala cron/event jobs automaticamente. O bootstrap em `main.ts` chama `bootstrapKoalaJobs()` quando cron jobs estão presentes.
+O template **Exemplo de CRUD** traz implementações no módulo Person e instala cron/event jobs automaticamente. Os handlers são registrados no `AppModule` via `JobsModule.register()` e iniciados de forma transparente pelo `JobsBootstrapService` (`OnModuleInit`).
+
+## Estrutura de pastas
+
+```
+src/application/<recurso>/jobs/
+├── cron/
+│   └── *.job.ts
+└── events/
+    └── <recurso>/
+        ├── *-event.job.ts
+        └── <especialidade>/
+            ├── *.event.ts
+            └── *.handler.ts
+```
+
+Utilitários de agendamento: `CronExpression`, `DEFAULT_CRON_POLL_MINUTES` (`cron.constants.ts`) e `cronJobSettings()` (`cron-job.handler.base.ts`).
 
 ## Visão geral do fluxo
 
@@ -86,6 +102,7 @@ Exemplos:
 
 | Expressão | Quando executa |
 | --- | --- |
+| `'*/15 * * * * *'` | A cada 15 segundos (template de exemplo) |
 | `'0 */1 * * * *'` | A cada minuto |
 | `'0 */10 * * * *'` | A cada 10 minutos |
 | `'0 0 0 * * *'` | Todo dia à meia-noite |
@@ -96,15 +113,15 @@ Para jobs que rodam em **intervalo fixo** sem cron, mantenha `isActive: true` e 
 
 ```typescript
 import {
-  DemoCronExpression,
-  DEMO_CRON_POLL_MINUTES,
+  CronExpression,
+  DEFAULT_CRON_POLL_MINUTES,
 } from '@/core/constants/cron.constants';
-import { demoCronSettings } from '@/core/background-services/cron-service/cron-job.handler.base';
+import { cronJobSettings } from '@/core/background-services/cron-service/cron-job.handler.base';
 
 protected async settings(): Promise<CronJobSettings> {
-  return demoCronSettings(
-    DemoCronExpression.HOURLY,
-    DEMO_CRON_POLL_MINUTES,
+  return cronJobSettings(
+    CronExpression.EVERY_15_SECONDS,
+    DEFAULT_CRON_POLL_MINUTES,
   );
 }
 ```
@@ -125,35 +142,56 @@ export abstract class CronJobHandlerBase {
 
 ### Exemplo: DeleteInactiveJob
 
-Remove pessoas inativas a cada minuto (exemplo didático):
+Remove pessoas inativas a cada 15 segundos (exemplo didático — intervalo curto para demonstração em dev):
 
 ```typescript
-import { DemoCronExpression } from '@/core/constants/cron.constants';
-import { demoCronSettings } from '@/core/background-services/cron-service/cron-job.handler.base';
+import { CronExpression } from '@/core/constants/cron.constants';
+import { cronJobSettings } from '@/core/background-services/cron-service/cron-job.handler.base';
 
 @Injectable()
 export class DeleteInactiveJob extends CronJobHandlerBase {
   // ...
 
   protected async settings(): Promise<CronJobSettings> {
-    return demoCronSettings(DemoCronExpression.HOURLY);
+    return cronJobSettings(CronExpression.EVERY_15_SECONDS);
   }
 ```
 
-### Registrar no bootstrap
+### Registrar no AppModule
 
-1. Declare o job como `provider` no módulo Nest (ex.: `PersonModule`);
-2. Registre em `main.ts` via `bootstrapKoalaJobs()`:
+Passe as classes de handler e cron job em `JobsModule.register()` no `AppModule`. Informe em `imports` os módulos que exportam as dependências dos handlers (no exemplo CRUD: `PersonModule`, que reexporta o `ControllerModule` com a infra). O Nest instancia os providers e o `JobsBootstrapService` inscreve eventos e inicia cron jobs automaticamente:
 
 ```typescript
-// src/host/main.ts
-await bootstrapKoalaJobs(app, {
-  cronJobsEnabled: config.get('CRON_JOBS_ENABLED'),
-  bootstrapDelayMs: config.get('BOOTSTRAP_DELAY_MS'),
-});
+// src/host/app.module.ts
+import { JobsModule } from './jobs/jobs.module';
+import { PersonModule } from './controllers/person/person.module';
+import { InactivePersonHandler } from '@/application/person/jobs/events/person/inactive-person/inactive-person.handler';
+import { CreatePersonJob } from '@/application/person/jobs/cron/create-person.job';
+import { DeleteInactiveJob } from '@/application/person/jobs/cron/delete-inactive.job';
+
+@Module({
+  imports: [
+    JobsModule.register({
+      imports: [PersonModule],
+      eventHandlers: [InactivePersonHandler],
+      cronJobs: [CreatePersonJob, DeleteInactiveJob],
+    }),
+    // ...demais módulos
+  ],
+})
+export class AppModule {}
 ```
 
-Por padrão, `CRON_JOBS_ENABLED=false`. Use `BOOTSTRAP_DELAY_MS` se precisar aguardar dependências antes dos jobs.
+No template **Padrão**, os arrays ficam vazios até você adicionar seus próprios handlers:
+
+```typescript
+JobsModule.register({
+  eventHandlers: [],
+  cronJobs: [],
+})
+```
+
+No template de exemplo, `CRON_JOBS_ENABLED=true` no `.env.example`. Use `BOOTSTRAP_DELAY_MS` se precisar aguardar dependências antes dos jobs.
 
 ## EventJob
 
@@ -164,7 +202,7 @@ Eventos são enfileirados em um agregado (`EventJob`) e despachados explicitamen
 1. Crie uma subclasse de `EventJob` com `defineHandlers()`;
 2. Instancie eventos (`EventClass`) e chame `addEvent()`;
 3. Chame `EventQueue.dispatchEventsForAggregate(jobs._id)`;
-4. Handlers registrados no bootstrap recebem o evento em `handleEvent()`.
+4. Handlers registrados no `JobsModule` recebem o evento em `handleEvent()`.
 
 ```typescript
 // Evento
@@ -202,12 +240,7 @@ EventQueue.dispatchEventsForAggregate(jobs._id);
 
 ### Registrar handlers
 
-```typescript
-const inactivePersonHandler = await app.resolve(InactivePersonHandler);
-inactivePersonHandler.setupSubscriptions();
-```
-
-`setupSubscriptions()` vincula `handleEvent` à fila interna (`EventQueue`).
+O `JobsBootstrapService` chama `setupSubscriptions()` em cada handler listado em `eventHandlers` durante o `OnModuleInit` do Nest — não é necessário código manual em `main.ts`.
 
 ## Lock distribuído (cron em múltiplas instâncias)
 
@@ -226,25 +259,24 @@ Fluxo por ciclo:
 | Redis ausente ou `NODE_ENV=test` | Lock ignorado — cada instância executa localmente (dev/test) |
 
 ```env
-CRON_JOBS_ENABLED=false
+CRON_JOBS_ENABLED=true
 BOOTSTRAP_DELAY_MS=0
 # REDIS_CONNECTION_STRING=redis://localhost:6379
 ```
 
 ## Criar um novo CronJob
 
-1. Crie `src/application/<recurso>/jobs/meu-job.ts` estendendo `CronJobHandlerBase`;
+1. Crie `src/application/<recurso>/jobs/cron/meu-job.ts` estendendo `CronJobHandlerBase`;
 2. Injete `IRedLockService`, `ILoggingService` e os handlers necessários;
 3. Implemente `settings()` e `run()`;
-4. Registre como `provider` no módulo Nest;
-5. Adicione `.addCronJob(MeuJob)` em `main.ts`.
+4. Adicione a classe em `cronJobs` no `JobsModule.register()` do `AppModule`.
 
 ## Criar um novo EventJob
 
-1. Crie eventos em `src/application/<recurso>/events/*.event.ts` estendendo `EventClass`;
-2. Crie handlers estendendo `EventHandlerBase` com `super(MeuEvent)`;
-3. Crie `*-event.job.ts` com `defineHandlers()` listando os handlers;
-4. Registre handlers como `provider` e chame `setupSubscriptions()` em `main.ts`;
+1. Crie eventos em `src/application/<recurso>/jobs/events/<especialidade>/*.event.ts` estendendo `EventClass`;
+2. Crie handlers em `src/application/<recurso>/jobs/events/<especialidade>/` estendendo `EventHandlerBase` com `super(MeuEvent)`;
+3. Crie `*-event.job.ts` em `src/application/<recurso>/jobs/events/<recurso>/` com `defineHandlers()` listando os handlers;
+4. Adicione os handlers em `eventHandlers` no `JobsModule.register()` do `AppModule`;
 5. Onde o evento deve ocorrer, instancie o `EventJob`, `addEvent()` e `dispatchEventsForAggregate()`.
 
 ## Testes
@@ -262,16 +294,17 @@ Use `FakeRedLockService` e `EventQueue.clearHandlers()` / `clearMarkedAggregates
 
 | Arquivo | Função |
 | --- | --- |
-| `application/person/jobs/create-person.job.ts` | CronJob que cria pessoa e dispara evento |
-| `application/person/jobs/delete-inactive.job.ts` | CronJob que remove inativos |
-| `application/person/events/person-event.job.ts` | Agregado de eventos Person |
-| `application/person/events/inactive-person.handler.ts` | Handler do evento de inativação |
-| `host/main.ts` | Inicialização de jobs no bootstrap |
-| `host/main.ts` | Registro de jobs no bootstrap |
+| `application/person/jobs/cron/create-person.job.ts` | CronJob que cria pessoa e dispara evento |
+| `application/person/jobs/cron/delete-inactive.job.ts` | CronJob que remove inativos |
+| `application/person/jobs/events/person/person-event.job.ts` | Agregado de eventos Person |
+| `application/person/jobs/events/person/inactive-person/inactive-person.event.ts` | Evento de inativação |
+| `application/person/jobs/events/person/inactive-person/inactive-person.handler.ts` | Handler do evento de inativação |
+| `host/jobs/jobs.module.ts` | Registro plug-and-play de handlers e cron jobs |
+| `host/jobs/jobs-bootstrap.service.ts` | Inicialização automática no `OnModuleInit` |
 
 ## Leituras relacionadas
 
-- [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — bootstrap em `main.ts`
+- [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — `JobsModule.register()` no `AppModule`
 - [Variáveis de ambiente](../inicio/variaveis-de-ambiente.md) — `REDIS_CONNECTION_STRING`, `CRON_JOBS_ENABLED`
 - [Cache (Redis)](../core/cache.md) — `ICacheService` e uso em handlers
 - [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo completo incluindo jobs

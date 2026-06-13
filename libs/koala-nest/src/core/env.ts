@@ -1,3 +1,8 @@
+import {
+  oauth2ProviderEnvEntrySchema,
+  parseOAuth2ProviderEnv,
+  type OAuth2ProviderEnvEntry,
+} from '@/core/auth/parse-oauth2-provider-env';
 import { envBooleanSchema } from '@/core/schemas';
 import { z } from 'zod';
 
@@ -17,4 +22,21 @@ export const envSchema = z.object({
   OAUTH2_PROVIDERS: z.string().optional(),
 });
 
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof envSchema> & {
+  OAUTH2_PROVIDER_ENV: Record<string, OAuth2ProviderEnvEntry>;
+};
+
+export function validateEnvConfig(config: Record<string, unknown>): Env {
+  const parsed = envSchema.parse(config);
+  const rawProviders = parseOAuth2ProviderEnv(config);
+  const OAUTH2_PROVIDER_ENV: Record<string, OAuth2ProviderEnvEntry> = {};
+
+  for (const [key, entry] of Object.entries(rawProviders)) {
+    OAUTH2_PROVIDER_ENV[key] = oauth2ProviderEnvEntrySchema.parse(entry);
+  }
+
+  return {
+    ...parsed,
+    OAUTH2_PROVIDER_ENV,
+  };
+}

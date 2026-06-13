@@ -124,6 +124,7 @@ export function createDefaultProjectFixture() {
     [
       'new',
       'fixture',
+      '-y',
       '--template',
       'default',
       '--pm',
@@ -271,6 +272,7 @@ export function assertDefaultProjectCore(projectDir: string) {
     'src/core/env.ts',
     'src/host/main.ts',
     'src/host/app.module.ts',
+    'src/host/jobs/jobs.module.ts',
     'src/infra/infra.module.ts',
     'src/host/open-api/define-documentation.ts',
     'bunfig.toml',
@@ -291,6 +293,9 @@ export function assertDefaultProjectCore(projectDir: string) {
 
   const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
   expect(appModule).not.toContain('PersonModule');
+  expect(appModule).toContain('JobsModule.register');
+  expect(appModule).toContain('eventHandlers: []');
+  expect(appModule).toContain('cronJobs: []');
 
   const repositoryModule = readProjectFile(
     projectDir,
@@ -314,18 +319,18 @@ export function assertDefaultProjectWithoutAuth(
 
   expectPathsMissing(projectDir, [
     'src/host/decorators/scalar-token-endpoint.decorator.ts',
-    'src/host/decorators/logged-user.decorator.ts',
     'src/host/decorators/restriction-by-profile.decorator.ts',
     'src/application/auth',
     'src/infra/auth',
   ]);
 
-  const scalarAuth = readProjectFile(
+  const defineDocumentation = readProjectFile(
     projectDir,
-    'src/host/open-api/scalar-authentication.ts',
+    'src/host/open-api/define-documentation.ts',
   );
-  expect(scalarAuth).toContain('return undefined');
-  expect(scalarAuth).not.toContain('IJwtTokenService');
+  expect(defineDocumentation).toContain('apiReference');
+  expect(defineDocumentation).not.toContain('buildDocAuthorizations');
+  expect(defineDocumentation).not.toContain('scalar-authentication');
 
   expectProjectState(projectDir, {
     template: 'default',
@@ -355,13 +360,31 @@ export function assertCrudProjectWithJwt(projectDir: string) {
     'src/core/utils/cron-expression-to-boolean.ts',
     'src/core/background-services/event-service/event-handler.base.ts',
     'src/host/decorators/scalar-token-endpoint.decorator.ts',
-    'src/application/person/jobs/create-person.job.ts',
+    'src/application/person/jobs/cron/create-person.job.ts',
+    'src/application/person/jobs/cron/delete-inactive.job.ts',
+    'src/application/person/jobs/events/person/person-event.job.ts',
+    'src/application/person/jobs/events/person/inactive-person/inactive-person.handler.ts',
+    'src/application/person/jobs/events/person/inactive-person/inactive-person.event.ts',
   ]);
 
   const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
   expect(appModule).toContain('PersonModule');
   expect(appModule).toContain('SecurityModule');
   expect(appModule).toContain('AuthModule');
+  expect(appModule).toContain('JobsModule.register');
+  expect(appModule).toContain('imports: [PersonModule]');
+  expect(appModule).not.toMatch(/^\s+PersonModule,\n/m);
+  expect(appModule).toContain('InactivePersonHandler');
+  expect(appModule).toContain('CreatePersonJob');
+  expect(appModule).toContain('DeleteInactiveJob');
+  expect(appModule).toContain(
+    '@/application/person/jobs/cron/create-person.job',
+  );
+  expect(appModule).toContain(
+    '@/application/person/jobs/events/person/inactive-person/inactive-person.handler',
+  );
+
+  expectPathsMissing(projectDir, ['src/application/person/events']);
 
   const deletePerson = readProjectFile(
     projectDir,
@@ -369,12 +392,12 @@ export function assertCrudProjectWithJwt(projectDir: string) {
   );
   expect(deletePerson).toContain('RestrictionByProfile');
 
-  const scalarAuth = readProjectFile(
+  const defineDocumentation = readProjectFile(
     projectDir,
-    'src/host/open-api/scalar-authentication.ts',
+    'src/host/open-api/define-documentation.ts',
   );
-  expect(scalarAuth).toContain('buildScalarAuthentication');
-  expect(scalarAuth).toContain('IJwtTokenService');
+  expect(defineDocumentation).toContain('buildDocAuthorizations');
+  expect(defineDocumentation).toContain('addBearerAuth');
 
   expectProjectState(projectDir, {
     template: 'crudSample',
@@ -407,21 +430,30 @@ export function assertCacheRedis(projectDir: string) {
 export function assertAuthJwt(projectDir: string) {
   expectPathsExist(projectDir, [
     'src/host/controllers/auth/auth.module.ts',
+    'src/host/controllers/auth/login.controller.ts',
     'src/host/security/security.module.ts',
-    'src/host/decorators/scalar-token-endpoint.decorator.ts',
-    'src/application/auth/issue-token/issue-token.handler.ts',
+    'src/application/auth/login/login.handler.ts',
+    'src/domain/entities/user/user.ts',
+    'src/infra/database/migrations/1781281330533-Init.ts',
   ]);
+
+  const authModule = readProjectFile(
+    projectDir,
+    'src/host/controllers/auth/auth.module.ts',
+  );
+  expect(authModule).toContain('LoginController');
+  expect(authModule).not.toContain('OAuthAuthLinkController');
 
   const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
   expect(appModule).toContain('SecurityModule');
   expect(appModule).toContain('AuthModule');
 
-  const scalarAuth = readProjectFile(
+  const defineDocumentation = readProjectFile(
     projectDir,
-    'src/host/open-api/scalar-authentication.ts',
+    'src/host/open-api/define-documentation.ts',
   );
-  expect(scalarAuth).toContain('IJwtTokenService');
-  expect(scalarAuth).toContain('isProviderRegistered');
+  expect(defineDocumentation).toContain('JWT');
+  expect(defineDocumentation).toContain('isProviderRegistered');
 
   expectProjectState(projectDir, { auth: 'jwt' });
   expectPackageDependencies(projectDir, ['@nestjs/jwt', 'passport-jwt']);
@@ -463,11 +495,13 @@ export function assertHealthCheck(
 export function assertCronJobs(projectDir: string) {
   expectPathsExist(projectDir, [
     'src/core/utils/cron-expression-to-boolean.ts',
-    'src/host/bootstrap/koala-bootstrap.ts',
+    'src/core/background-services/cron-service/cron-job.handler.base.ts',
+    'src/host/jobs/jobs.module.ts',
+    'src/host/jobs/jobs-bootstrap.service.ts',
   ]);
 
-  const main = readProjectFile(projectDir, 'src/host/main.ts');
-  expect(main).toContain('bootstrapKoalaJobs');
+  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
+  expect(appModule).toContain('JobsModule.register');
 
   expectProjectState(projectDir, { cronJobs: true });
   expectPackageDependencies(projectDir, ['cron-parser']);
@@ -476,7 +510,11 @@ export function assertCronJobs(projectDir: string) {
 export function assertEventJobs(projectDir: string) {
   expectPathsExist(projectDir, [
     'src/core/background-services/event-service/event-handler.base.ts',
+    'src/host/jobs/jobs.module.ts',
   ]);
+
+  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
+  expect(appModule).toContain('JobsModule.register');
 
   expectProjectState(projectDir, { eventJobs: true });
 }

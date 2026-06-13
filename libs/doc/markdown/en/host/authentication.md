@@ -9,7 +9,7 @@ description: JWT, global guards, public routes, and generic OAuth2.
 
 # Authentication
 
-The authentication module is optional in the CLI (`kl-nest new` → **JWT** or **OAuth2**). It covers **JWT issuance and validation** — no user persistence in the database. You decide how to obtain claims (`sub`, `profile`, etc.) and evolve the login flow.
+The authentication module is optional in the CLI (`kl-nest new` → **JWT** or **OAuth2**). With JWT, the template includes a `User` entity, email/password login, and RS256 token issuance. With OAuth2, users are created or reused after the authorization code flow.
 
 ## Main components
 
@@ -20,10 +20,10 @@ The authentication module is optional in the CLI (`kl-nest new` → **JWT** or *
 | `ProfilesGuard` | Global guard — restricts by token profile |
 | `@IsPublic()` | Marks routes that bypass `AuthGuard` |
 | `@RestrictionByProfile([AuthProfile.admin])` | Restricts endpoint to listed profiles |
-| `@LoggedUser()` | Injects `LoggedUserInfoDto` in controllers (optional) |
 | `ILoggedUserInfoService` | Request-scoped service for handlers/controllers |
 | `AuthProfile` (`src/core/auth/auth-profile.enum.ts`) | String enum with supported profiles (`user`, `admin`) |
-| `POST /auth/token` | Issues access/refresh pair from claims |
+| `POST /auth/login` | Email/password login; issues access/refresh pair |
+| `GET /auth/user-info` | Authenticated user data |
 | `POST /auth/refresh` | Renews token pair using refresh token (Bearer or cookie) |
 
 ## Public routes
@@ -33,7 +33,7 @@ Routes with `@IsPublic()` bypass `AuthGuard` **and** do not require Bearer in Op
 ```typescript
 import { IsPublic } from '@/host/decorators/is-public.decorator';
 
-@Post('token')
+@Post('login')
 @IsPublic()
 handle() { ... }
 ```
@@ -42,7 +42,7 @@ All other endpoints are protected by default — no need for `@ApiBearerAuth()` 
 
 ## Profile restriction
 
-The `profile` value comes from the JWT payload (set via `POST /auth/token`):
+The `profile` value comes from the user in the database (loaded by `AuthGuard` after JWT validation):
 
 ```typescript
 import { AuthProfile } from '@/core/auth/auth-profile.enum';
@@ -53,18 +53,17 @@ import { RestrictionByProfile } from '@/host/decorators/restriction-by-profile.d
 handle(@Param('id') id: string) { ... }
 ```
 
-## Token issuance
+## Login (JWT password)
 
-Public endpoint to generate tokens after you resolve user identity:
+Public endpoint to authenticate with email and password:
 
 ```bash
-POST /auth/token
+POST /auth/login
 Content-Type: application/json
 
 {
-  "sub": "user-uuid",
-  "profile": "admin",
-  "email": "user@example.com"
+  "username": "admin@example.com",
+  "password": "admin123"
 }
 ```
 
@@ -88,7 +87,7 @@ Authorization: Bearer <refreshToken>
 
 Or send the refresh token as an **httpOnly cookie** named `refreshToken` — `AuthGuard` promotes it to `Authorization` automatically on this route.
 
-Response format matches `POST /auth/token` (`accessToken` + `refreshToken`). Refresh tokens are rejected on all other routes by `JwtStrategy`.
+Response format matches `POST /auth/login` (`accessToken` + `refreshToken`). Refresh tokens are rejected on all other routes by `JwtStrategy`.
 
 ## Logged user in handlers
 
@@ -103,13 +102,11 @@ export class MyHandler {
 
   async handle(req: MyRequest) {
     const user = this.loggedUserInfo.getUser();
-    const token = this.loggedUserInfo.getToken();
-    const isAdmin = this.loggedUserInfo.isAdmin();
   }
 }
 ```
 
-The service is request-scoped and reads `request.user` populated by `JwtStrategy`. In controllers, you can also use `@LoggedUser()` to receive a `LoggedUserInfoDto` directly.
+The service is request-scoped and reads `request.user` populated by `AuthGuard` after JWT validation.
 
 ## OAuth2 — any provider, any quantity
 
@@ -181,7 +178,7 @@ sequenceDiagram
   IdP-->>FE: callback ?code&state
   FE->>API: POST /oauth2/token { provider, code, state }
   API-->>FE: OAuthUserInfoDto
-  FE->>API: POST /auth/token { sub, profile, email }
+  FE->>API: POST /auth/login { username, password }
   API-->>FE: accessToken + refreshToken
 ```
 
@@ -237,34 +234,27 @@ sequenceDiagram
 The template does **not** persist users or issue API JWT automatically after OAuth. You decide:
 
 1. Map `OAuthUserInfoDto` → claims (`sub`, `profile`, `email`);
-2. Call `POST /auth/token` to issue the API JWT;
+2. Call `POST /auth/login` to issue the API JWT;
 3. (Optional) create/update the user in the database before step 2.
 
 ## Bootstrap with guards
 
-When the CLI installs authentication, `main.ts` registers global guards and delegates background jobs to `bootstrapKoalaJobs`:
+When the CLI installs authentication, `main.ts` registers global guards. Background jobs are started automatically by `JobsBootstrapService` via `JobsModule.register()` in `AppModule`:
 
 ```typescript
-import { bootstrapKoalaJobs } from './bootstrap/koala-bootstrap';
-
 app.useGlobalGuards(
   await app.resolve(AuthGuard),
   await app.resolve(ProfilesGuard),
 );
-
-await bootstrapKoalaJobs(app, {
-  cronJobsEnabled: config.get('CRON_JOBS_ENABLED', { infer: true }),
-  bootstrapDelayMs: config.get('BOOTSTRAP_DELAY_MS', { infer: true }),
-});
 ```
 
-`bootstrapKoalaJobs` subscribes to domain events and starts CronJobs only when `CRON_JOBS_ENABLED=true`. The delay before starting jobs is controlled by `BOOTSTRAP_DELAY_MS`.
+Job bootstrap subscribes to domain events and starts CronJobs only when `CRON_JOBS_ENABLED=true`. The delay before starting jobs is controlled by `BOOTSTRAP_DELAY_MS`.
 
 ## Authentication in Scalar
 
 With authentication installed, Scalar obtains the JWT automatically via `authentication` in `apiReference`:
 
-- **JWT:** **JWT** scheme (password flow) → `POST /auth/scalar-token`
+- **JWT:** **JWT** scheme (password flow) → `POST /auth/login`
 - **OAuth2:** one scheme per provider (authorization code) → `POST /oauth2/scalar-token`
 
 Full guide: [OpenAPI with Scalar](./openapi-scalar.md#automatic-scalar-authentication)

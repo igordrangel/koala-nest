@@ -1,4 +1,4 @@
-import { DeleteInactiveJob } from '@/application/person/jobs/delete-inactive.job';
+import { DeleteInactiveJob } from '@/application/person/jobs/cron/delete-inactive.job';
 import { DeletePersonHandler } from '@/application/person/delete/delete-person.handler';
 import { ReadManyPersonHandler } from '@/application/person/read-many/read-many-person.handler';
 import { FakeLoggingService } from '@/test/services/fake-logging.service';

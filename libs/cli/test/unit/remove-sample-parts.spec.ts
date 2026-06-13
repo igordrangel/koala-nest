@@ -82,19 +82,19 @@ describe('removeSampleParts', () => {
     }
   });
 
-  it('substitui scalar-authentication por stub quando auth é none', async () => {
+  it('remove arquivos de auth ao limpar template default sem auth', async () => {
     tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-nest-cli-'));
     const srcDir = path.join(tempDir, 'src');
-    mkdirSync(path.join(srcDir, 'host/open-api'), { recursive: true });
     mkdirSync(path.join(srcDir, 'host/decorators'), { recursive: true });
+    mkdirSync(path.join(srcDir, 'test/host'), { recursive: true });
 
-    writeFileSync(
-      path.join(srcDir, 'host/open-api/scalar-authentication.ts'),
-      "import { IJwtTokenService } from '@/domain/auth/services/iauth.service';\n",
-    );
     writeFileSync(
       path.join(srcDir, 'host/decorators/scalar-token-endpoint.decorator.ts'),
       'export const ScalarTokenEndpoint = () => {};\n',
+    );
+    writeFileSync(
+      path.join(srcDir, 'test/host/is-public-open-api.spec.ts'),
+      "describe('auth', () => {});\n",
     );
 
     const previousCwd = process.cwd();
@@ -104,18 +104,15 @@ describe('removeSampleParts', () => {
       await cleanDefaultTemplateWithoutAuth('.');
 
       expect(
-        readFileSync(
-          path.join(srcDir, 'host/open-api/scalar-authentication.ts'),
-          'utf8',
-        ),
-      ).toContain('return undefined');
-      expect(
         existsSync(
           path.join(
             srcDir,
             'host/decorators/scalar-token-endpoint.decorator.ts',
           ),
         ),
+      ).toBe(false);
+      expect(
+        existsSync(path.join(srcDir, 'test/host/is-public-open-api.spec.ts')),
       ).toBe(false);
     } finally {
       process.chdir(previousCwd);

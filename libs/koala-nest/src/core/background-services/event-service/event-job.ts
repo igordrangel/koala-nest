@@ -5,10 +5,15 @@ import { EventHandlerBase } from './event-handler.base';
 import { EventQueue } from './event-queue';
 
 export abstract class EventJob<TEntity> {
-  _id = randomUUID();
-
   private _eventQueue: EventClass<TEntity>[] = [];
 
+  _id = randomUUID();
+
+  /**
+   * Lista os handlers que processam eventos deste agregado.
+   * Usado pelo `EventQueue.dispatch` para rotear eventos enfileirados.
+   * Registre as mesmas classes em `JobsModule.register({ eventHandlers })`.
+   */
   abstract defineHandlers(): Array<Type<EventHandlerBase>>;
 
   get eventQueue(): EventClass<TEntity>[] {

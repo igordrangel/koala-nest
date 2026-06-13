@@ -1,14 +1,11 @@
-import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { LoggedUserInfoDto } from '@/domain/dtos/logged-user-info.dto';
 import { ILoggedUserInfoService } from '@/domain/services/ilogged-user-info.service';
 
 export class LoggedUserInfoFakeService implements ILoggedUserInfoService {
   private user: LoggedUserInfoDto | null = null;
-  private token: string | undefined;
 
-  setContext(context: { user?: LoggedUserInfoDto | null; token?: string }) {
+  setContext(context: { user?: LoggedUserInfoDto | null }) {
     this.user = context.user ?? this.user;
-    this.token = context.token ?? this.token;
   }
 
   getUser(): LoggedUserInfoDto {
@@ -17,13 +14,5 @@ export class LoggedUserInfoFakeService implements ILoggedUserInfoService {
     }
 
     return this.user;
-  }
-
-  getToken(): string | undefined {
-    return this.token;
-  }
-
-  isAdmin(): boolean {
-    return this.getUser().profile === AuthProfile.admin;
   }
 }

@@ -23,7 +23,7 @@ bun add @koalarx/utils
 
 | Recurso | Pacote | Uso no Koala Nest |
 |---------|--------|-------------------|
-| `delay(ms)` | `@koalarx/utils/KlDelay` | Bootstrap (`bootstrapKoalaJobs`), loop de cron jobs, setup E2E |
+| `delay(ms)` | `@koalarx/utils/KlDelay` | `JobsBootstrapService`, loop de cron jobs, setup E2E |
 | `validateCpf` / `validateCnpj` | `@koalarx/utils/KlString` | `documentNumberSchema` em `src/core/schemas/` |
 | `maskCpf` / `maskCnpj` | `@koalarx/utils/KlString` | `setMaskDocumentNumber` em `src/core/schemas/` |
 
@@ -35,7 +35,7 @@ import { delay } from '@koalarx/utils/KlDelay';
 await delay(options.bootstrapDelayMs);
 ```
 
-Usado em `koala-bootstrap.ts` e `CronJobHandlerBase` para aguardar entre ciclos do job.
+Usado em `JobsBootstrapService` e `CronJobHandlerBase` para aguardar entre ciclos do job.
 
 ### CPF/CNPJ nos schemas Zod
 

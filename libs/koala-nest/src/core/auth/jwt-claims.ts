@@ -1,17 +1,23 @@
 import { z } from 'zod';
-import { JwtTokenType } from '@/core/auth/auth.constants';
 import { AuthProfile } from './auth-profile.enum';
 
 export const jwtClaimsSchema = z.object({
   sub: z.string().min(1),
-  profile: z.nativeEnum(AuthProfile).optional(),
-  login: z.string().optional(),
-  email: z.string().email().optional(),
-  tokenType: z.nativeEnum(JwtTokenType).optional(),
 });
 
 export type JwtClaims = z.infer<typeof jwtClaimsSchema>;
 
+export const jwtPayloadSchema = jwtClaimsSchema.extend({
+  exp: z.number().optional(),
+  iat: z.number().optional(),
+});
+
+export type JwtPayload = z.infer<typeof jwtPayloadSchema>;
+
 export type AuthenticatedUser = JwtClaims & {
+  name?: string;
+  profile?: AuthProfile;
+  login?: string;
+  email?: string;
   refreshToken?: string;
 };

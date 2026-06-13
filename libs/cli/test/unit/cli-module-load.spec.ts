@@ -13,7 +13,7 @@ function listCliSourceFiles(dir: string, relativeDir = ''): string[] {
     const relativePath = path.join(relativeDir, entry.name);
 
     if (entry.isDirectory()) {
-      if (entry.name === 'test') {
+      if (entry.name === 'test' || entry.name === 'tmp') {
         continue;
       }
 

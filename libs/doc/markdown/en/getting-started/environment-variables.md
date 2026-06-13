@@ -111,13 +111,13 @@ See [Cache (Redis)](../core/cache.md) and [Cron and Event Jobs](../core/cron-eve
 ### Background jobs
 
 ```env
-CRON_JOBS_ENABLED=false
+CRON_JOBS_ENABLED=true
 BOOTSTRAP_DELAY_MS=0
 ```
 
 | Variable | Description |
 | --- | --- |
-| `CRON_JOBS_ENABLED` | Enables CronJobs on bootstrap (`false` by default) |
+| `CRON_JOBS_ENABLED` | Enables CronJobs in `JobsBootstrapService` (`true` in the example template; set `false` to disable) |
 | `BOOTSTRAP_DELAY_MS` | Waits N ms before starting jobs (dependency warm-up) |
 
 ## ConfigModule integration
@@ -127,9 +127,11 @@ BOOTSTRAP_DELAY_MS=0
 ```typescript
 ConfigModule.forRoot({
   isGlobal: true,
-  validate: (config) => envSchema.parse(config),
+  validate: (config) => validateEnvConfig(config),
 }),
 ```
+
+During validation, `.env` keys `OAUTH2_{PROVIDER}_*` are normalized into `OAUTH2_PROVIDER_ENV` (typed map per provider).
 
 ## EnvService
 
@@ -137,9 +139,9 @@ Infrastructure accesses typed variables via `EnvService`:
 
 ```typescript
 env.get('DATABASE_URL');
-env.getDynamic('OAUTH2_GOOGLE_CLIENT_ID'); // outside Zod schema
+env.get('OAUTH2_PROVIDER_ENV').google?.clientId;
 ```
 
 ## Extending the schema
 
-To add new fixed variables, include them in `envSchema` and update `.env.example`. Extra OAuth2 providers only need `OAUTH2_{PROVIDER}_*` variables in `.env`.
+To add new fixed variables, include them in `envSchema` and update `.env.example`. Extra OAuth2 providers still use `OAUTH2_{PROVIDER}_*` in `.env`; bootstrap groups them into `OAUTH2_PROVIDER_ENV`.

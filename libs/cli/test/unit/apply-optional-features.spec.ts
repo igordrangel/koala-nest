@@ -35,6 +35,24 @@ describe('applyOptionalFeatures', () => {
       `${JSON.stringify({ name: 'apply-test', packageManager: 'bun' }, null, 2)}\n`,
     );
 
+    mkdirSync(path.join(tempDir, 'src/host'), { recursive: true });
+    writeFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      `import { Module } from '@nestjs/common';
+import { JobsModule } from './jobs/jobs.module';
+
+@Module({
+  imports: [
+    JobsModule.register({
+      eventHandlers: [],
+      cronJobs: [],
+    }),
+  ],
+})
+export class AppModule {}
+`,
+    );
+
     mkdirSync(path.join(tempDir, 'src/host/controllers/person'), {
       recursive: true,
     });

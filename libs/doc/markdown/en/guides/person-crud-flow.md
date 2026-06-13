@@ -220,28 +220,38 @@ Visit `http://localhost:3000/doc` to test endpoints interactively.
 
 ## 9. Background jobs (Cron and Event)
 
-The CRUD template includes examples in `src/application/person/jobs/` and `src/application/person/events/`:
+The CRUD template includes examples in `src/application/person/jobs/cron/` and `src/application/person/jobs/events/`:
+
+```
+src/application/person/jobs/
+├── cron/
+│   ├── create-person.job.ts
+│   └── delete-inactive.job.ts
+└── events/
+    └── person/
+        ├── person-event.job.ts
+        └── inactive-person/
+            ├── inactive-person.event.ts
+            └── inactive-person.handler.ts
+```
 
 | Job / Handler | Type | Behavior (example) |
 | --- | --- | --- |
-| `CreatePersonJob` | CronJob | Creates a person every minute and fires `InactivePersonEvent` |
+| `CreatePersonJob` | CronJob | Creates a person every 15 seconds and fires `InactivePersonEvent` |
 | `DeleteInactiveJob` | CronJob | Periodically removes inactive people |
 | `InactivePersonHandler` | EventJob | Deactivates active people when the event is dispatched |
 
-Bootstrap registration (`src/host/main.ts`):
+Registration in `AppModule` via `JobsModule.register()`:
 
 ```typescript
-const inactivePersonHandler = await app.resolve(InactivePersonHandler);
-inactivePersonHandler.setupSubscriptions();
-
-await delay(5000);
-
-const createPersonJob = await app.resolve(CreatePersonJob);
-const deleteInactiveJob = await app.resolve(DeleteInactiveJob);
-
-createPersonJob.start();
-deleteInactiveJob.start();
+JobsModule.register({
+  imports: [PersonModule],
+  eventHandlers: [InactivePersonHandler],
+  cronJobs: [CreatePersonJob, DeleteInactiveJob],
+}),
 ```
+
+`JobsBootstrapService` subscribes handlers and starts cron jobs automatically.
 
 Full guide: [Cron and Event Jobs](../core/cron-event-jobs.md).
 

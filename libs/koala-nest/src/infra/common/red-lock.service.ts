@@ -11,6 +11,17 @@ export class RedLockService implements IRedLockService {
     private readonly env: EnvService,
   ) {}
 
+  private shouldBypassDistributedLock() {
+    return (
+      this.env.get('NODE_ENV') === 'test' ||
+      !this.env.get('REDIS_CONNECTION_STRING')
+    );
+  }
+
+  private getLockKey(key: string) {
+    return `${CacheKeyPrefix.RED_LOCK}${key}`;
+  }
+
   async acquiredLock(key: string, ttlSecondsLock: number): Promise<boolean> {
     if (this.shouldBypassDistributedLock()) {
       return true;
@@ -29,16 +40,5 @@ export class RedLockService implements IRedLockService {
     }
 
     await this.cache.invalidate(this.getLockKey(key));
-  }
-
-  private shouldBypassDistributedLock() {
-    return (
-      this.env.get('NODE_ENV') === 'test' ||
-      !this.env.get('REDIS_CONNECTION_STRING')
-    );
-  }
-
-  private getLockKey(key: string) {
-    return `${CacheKeyPrefix.RED_LOCK}${key}`;
   }
 }

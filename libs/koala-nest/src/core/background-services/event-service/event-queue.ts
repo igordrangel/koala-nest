@@ -14,6 +14,46 @@ export class EventQueue {
 
   private static markedAggregates: EventJob<unknown>[] = [];
 
+  private static dispatch(event: EventClass) {
+    const eventJobHandlers = this.markedAggregates.find((aggregate) =>
+      aggregate.eventQueue.find((queuedEvent) => queuedEvent === event),
+    );
+
+    const eventHandler = Object.keys(this.handlersMap).find((handlerName) =>
+      eventJobHandlers
+        ?.defineHandlers()
+        .find(
+          (handler) =>
+            handler.name === handlerName &&
+            this.handlersMap[handler.name].some(
+              (job) => job.eventClassName === event.constructor.name,
+            ),
+        ),
+    );
+
+    if (eventHandler) {
+      const jobs = this.handlersMap[eventHandler];
+
+      for (const job of jobs) {
+        job.callback(event);
+      }
+    }
+  }
+
+  private static dispatchAggregateEvents(aggregate: EventJob<unknown>) {
+    aggregate.eventQueue.forEach((event) => this.dispatch(event));
+  }
+
+  private static removeAggregateFromMarkedDispatchList(
+    aggregate: EventJob<unknown>,
+  ) {
+    const index = this.markedAggregates.findIndex(
+      (item) => item._id === aggregate._id,
+    );
+
+    this.markedAggregates.splice(index, 1);
+  }
+
   static markAggregateForDispatch(aggregate: EventJob<unknown>) {
     const aggregateFound = !!this.findMarkedAggregateByID(aggregate._id);
 
@@ -63,45 +103,5 @@ export class EventQueue {
 
   static getMarkedAggregates() {
     return this.markedAggregates;
-  }
-
-  private static dispatchAggregateEvents(aggregate: EventJob<unknown>) {
-    aggregate.eventQueue.forEach((event) => this.dispatch(event));
-  }
-
-  private static removeAggregateFromMarkedDispatchList(
-    aggregate: EventJob<unknown>,
-  ) {
-    const index = this.markedAggregates.findIndex(
-      (item) => item._id === aggregate._id,
-    );
-
-    this.markedAggregates.splice(index, 1);
-  }
-
-  private static dispatch(event: EventClass) {
-    const eventJobHandlers = this.markedAggregates.find((aggregate) =>
-      aggregate.eventQueue.find((queuedEvent) => queuedEvent === event),
-    );
-
-    const eventHandler = Object.keys(this.handlersMap).find((handlerName) =>
-      eventJobHandlers
-        ?.defineHandlers()
-        .find(
-          (handler) =>
-            handler.name === handlerName &&
-            this.handlersMap[handler.name].some(
-              (job) => job.eventClassName === event.constructor.name,
-            ),
-        ),
-    );
-
-    if (eventHandler) {
-      const jobs = this.handlersMap[eventHandler];
-
-      for (const job of jobs) {
-        job.callback(event);
-      }
-    }
   }
 }

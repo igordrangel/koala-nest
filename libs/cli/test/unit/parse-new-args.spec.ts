@@ -9,14 +9,28 @@ describe('parseNewArgs', () => {
       template: undefined,
       auth: undefined,
       features: [],
+      yes: false,
       interactive: true,
     });
   });
 
-  it('parseia new default não interativo', () => {
+  it('permanece interativo mesmo com nome do projeto sem -y', () => {
+    expect(parseNewArgs(['my-api', '--template', 'default'])).toEqual({
+      projectName: 'my-api',
+      packageManager: undefined,
+      template: 'default',
+      auth: undefined,
+      features: [],
+      yes: false,
+      interactive: true,
+    });
+  });
+
+  it('parseia new não interativo com -y', () => {
     expect(
       parseNewArgs([
         'my-api',
+        '-y',
         '--template',
         'default',
         '--pm',
@@ -30,13 +44,19 @@ describe('parseNewArgs', () => {
       template: 'default',
       auth: 'none',
       features: [],
+      yes: true,
       interactive: false,
     });
   });
 
+  it('aceita alias --yes', () => {
+    expect(parseNewArgs(['demo', '--yes']).yes).toBe(true);
+    expect(parseNewArgs(['demo', '--yes']).interactive).toBe(false);
+  });
+
   it('aceita alias crud e example no template', () => {
     expect(
-      parseNewArgs(['demo', '-t', 'example', '--auth', 'jwt']).template,
+      parseNewArgs(['demo', '-y', '-t', 'example', '--auth', 'jwt']).template,
     ).toBe('crudSample');
   });
 
@@ -44,6 +64,7 @@ describe('parseNewArgs', () => {
     expect(
       parseNewArgs([
         'demo',
+        '-y',
         '--template',
         'default',
         '--auth',
@@ -56,7 +77,7 @@ describe('parseNewArgs', () => {
 
   it('rejeita auth none no template crud', () => {
     expect(() =>
-      parseNewArgs(['demo', '--template', 'crud', '--auth', 'none']),
+      parseNewArgs(['demo', '-y', '--template', 'crud', '--auth', 'none']),
     ).toThrow(/CRUD exige autenticação/);
   });
 

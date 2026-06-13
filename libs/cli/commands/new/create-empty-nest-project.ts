@@ -58,7 +58,7 @@ export async function createEmptyNestProject(
 
   await runCommand([
     command,
-    'nest',
+    '@nestjs/cli',
     'new',
     projectName,
     '--package-manager',

@@ -14,7 +14,6 @@ import { installModule, Modules } from '@cli/utils/install-module.ts';
 
 describe('installModule HEALTH', () => {
   let tempDir = '';
-  let previousCwd = process.cwd();
 
   beforeEach(() => {
     tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-health-install-'));
@@ -36,13 +35,9 @@ import { ConfigModule } from '@nestjs/config';
 export class AppModule {}
 `,
     );
-
-    previousCwd = process.cwd();
-    process.chdir(tempDir);
   });
 
   afterEach(() => {
-    process.chdir(previousCwd);
     rmSync(tempDir, { recursive: true, force: true });
   });
 
@@ -52,7 +47,9 @@ export class AppModule {}
   });
 
   it('copia arquivos do health-check e registra módulo no app', async () => {
-    await installModule(Modules.HEALTH, 'default', '.');
+    await installModule(Modules.HEALTH, 'default', tempDir, {
+      skipPackages: true,
+    });
 
     expect(
       existsSync(
@@ -76,8 +73,9 @@ export class AppModule {}
   });
 
   it('omite RedisIndicator quando cache não está instalado', async () => {
-    await installModule(Modules.HEALTH, 'default', '.', {
+    await installModule(Modules.HEALTH, 'default', tempDir, {
       withRedisIndicator: false,
+      skipPackages: true,
     });
 
     expect(

@@ -21,9 +21,13 @@ export const AUTH_PACKAGES = [
   'passport',
   'passport-jwt',
   'cookie-parser',
+  'bcrypt',
 ] as const;
 
-export const AUTH_DEV_PACKAGES = ['@types/cookie-parser'] as const;
+export const AUTH_DEV_PACKAGES = [
+  '@types/cookie-parser',
+  '@types/bcrypt',
+] as const;
 
 /** Jobs internos com expressão cron. */
 export const CRON_PACKAGES = ['cron-parser'] as const;

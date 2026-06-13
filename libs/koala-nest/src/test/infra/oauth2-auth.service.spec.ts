@@ -13,7 +13,7 @@ class RegistryStub {
       clientId: 'client-id',
       clientSecret: 'client-secret',
       scope: 'openid',
-      redirectPath: '/oauth2/callback',
+      redirectPath: '/sso/callback',
     };
   }
 }
@@ -26,7 +26,6 @@ function createService(cache = new CacheStub()) {
         : key === 'PORT'
           ? 3000
           : undefined,
-    getDynamic: () => undefined,
   } as unknown as EnvService;
 
   return new OAuth2AuthService(env, new RegistryStub() as never, cache);
@@ -96,5 +95,18 @@ describe('OAuth2AuthService — state', () => {
     await expect(
       service.exchangeCode('keycloak', 'code-1', config.state),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('trocar code sem state (fluxo Scalar)', async () => {
+    stubOAuthFetch();
+    const service = createService();
+
+    const user = await service.exchangeScalarCode(
+      'auth0',
+      'code-1',
+      'http://localhost:3000/sso/callback',
+    );
+
+    expect(user.email).toBe('user@example.com');
   });
 });

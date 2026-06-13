@@ -118,8 +118,7 @@ import { apiReference } from '@scalar/nestjs-api-reference';
 
 export function defineDocumentation(app: INestApplication) {
   const documentBuilder = new DocumentBuilder()
-    .setTitle('KoalaNest')
-    .setDescription('KoalaNest API')
+    .setTitle(packageJson.name)
     .setVersion(packageJson.version)
     .build();
 
@@ -133,8 +132,7 @@ export function defineDocumentation(app: INestApplication) {
     apiReference({
       spec: { content: document },
       metaData: {
-        title: documentBuilder.info.title,
-        description: documentBuilder.info.description,
+        title: packageJson.name,
         version: packageJson.version,
       },
       hideModels: true,
@@ -176,9 +174,9 @@ Use o `DocumentBuilder` do NestJS Swagger para definir o cabeçalho do spec:
 
 | Método | Uso |
 | --- | --- |
-| `setTitle()` | Nome exibido no Scalar |
-| `setDescription()` | Texto introdutório da API |
-| `setVersion()` | Versão do spec (o template usa `package.json`) |
+| `setTitle()` | Nome exibido no Scalar (padrão: `name` do `package.json`) |
+| `setDescription()` | Texto introdutório da API (opcional) |
+| `setVersion()` | Versão do spec (padrão: `package.json`) |
 
 Exemplos de extensão:
 
@@ -375,29 +373,30 @@ Defina `API_URL` no `envSchema` se quiser configurar por ambiente.
 
 ## Autenticacao automatica no Scalar
 
-Com o módulo de autenticação instalado, o template configura o Scalar para **obter o JWT pela própria UI** — sem copiar token manualmente. A configuração combina esquemas OAuth2 no OpenAPI com o bloco `authentication` do `apiReference`.
+Com o módulo de autenticação instalado, o template configura o Scalar para **obter o JWT pela própria UI** — sem copiar token manualmente. Os esquemas OAuth2 são montados no documento OpenAPI via `define-documentation.ts`.
 
 ### O que o template já faz
 
-| Arquivo | Função |
+| Arquivo / rota | Função |
 | --- | --- |
-| `src/host/open-api/scalar-authentication.ts` | Monta `securitySchemes` e `authentication` do Scalar |
-| `src/host/open-api/define-documentation.ts` | Aplica a config ao `apiReference` quando `IJwtTokenService` está registrado |
-| `POST /auth/scalar-token` | Endpoint OAuth2 **password** usado pelo Scalar (JWT) |
-| `POST /oauth2/scalar-token` | Endpoint **authorization code** usado pelo Scalar (OAuth2) |
+| `src/host/open-api/define-documentation.ts` | Monta esquemas OAuth2 no OpenAPI e configura o Scalar quando `IJwtTokenService` está registrado |
+| `POST /auth/login` | Fluxo **password** usado pelo Scalar (JWT) |
+| `POST /oauth2/scalar-token` | Fluxo **authorization code** usado pelo Scalar (OAuth2) |
+| `GET /sso/callback` | Callback OAuth para o Scalar (`code` + `state` na query) |
 
-Endpoints `scalar-token` ficam ocultos fora de `develop` (`@ApiExcludeEndpointDiffDevelop`).
+Endpoints auxiliares ficam ocultos fora de `develop` (`@ApiExcludeEndpointDiffDevelop`).
 
 ### JWT — fluxo password no Scalar
 
 O Scalar exibe o esquema **JWT** com fluxo `password`:
 
-- `username` → claim `sub`
-- `password` → claim `profile` (`user` ou `admin`)
-- `tokenUrl` → `POST /auth/scalar-token`
+- `username` → e-mail do usuário (`User.email`)
+- `password` → senha do usuário
+- `tokenUrl` → `POST /auth/login`
+- `refreshUrl` → `POST /auth/refresh`
 - `x-tokenName` → `accessToken` (Scalar envia Bearer automaticamente)
 
-Em `develop`, credenciais de exemplo são pré-preenchidas (`scalar-dev-user` / `admin`). Em produção, os campos ficam vazios.
+Em `develop`, credenciais de exemplo são pré-preenchidas (`admin@example.com` / `admin123`). Em produção, os campos ficam vazios.
 
 **Uso em `/doc`:**
 
@@ -421,54 +420,20 @@ Para cada provider em `OAUTH2_PROVIDERS`, o template registra um esquema (ex.: *
 2. Conclua o login no provedor
 3. O Scalar troca o código, recebe o JWT e aplica nos requests
 
-### Configuracao central (`scalar-authentication.ts`)
+### Configuração central (`define-documentation.ts`)
 
-A lógica fica isolada em `buildScalarAuthentication(app)`:
-
-```typescript
-export async function buildScalarAuthentication(app: INestApplication) {
-  if (!isProviderRegistered(app, IJwtTokenService)) {
-    return undefined;
-  }
-
-  // Esquema JWT (password → /auth/scalar-token)
-  // Esquemas por provider OAuth2 (authorization code → /oauth2/scalar-token)
-
-  return {
-    openApiSecuritySchemes,
-    authentication: {
-      preferredSecurityScheme: ['JWT', 'auth0', ...],
-      securitySchemes: { /* prefill em develop */ },
-    },
-    persistAuth: EnvConfig.isEnvDevelop,
-  };
-}
-```
-
-`define-documentation.ts` consome o retorno:
+A lógica fica em `buildDocAuthorizations(app)` dentro de `define-documentation.ts`:
 
 ```typescript
-const scalarAuth = await buildScalarAuthentication(app);
+// Esquema JWT (password → /auth/login) quando LoginController existe
+// Esquemas por provider OAuth2 (authorization code → /oauth2/scalar-token)
 
-app.use(
-  docEndpoint,
-  apiReference({
-    spec: { content: document },
-    persistAuth: scalarAuth?.persistAuth ?? false,
-    authentication: scalarAuth?.authentication,
-    // ...
-  }),
-);
+documentBuilder.addBearerAuth(authorization.config, authorization.name);
+syncIsPublicRoutesInOpenApi(document);
+applyAuthSecurityToProtectedRoutes(document, schemeNames);
 ```
 
-### Rotas protegidas e públicas no OpenAPI
-
-Com guards globais (`AuthGuard`), o OpenAPI segue a mesma regra:
-
-- **Padrão:** Bearer obrigatório em todos os endpoints (`addSecurityRequirements('bearer')`)
-- **Exceção:** rotas com `@IsPublic()` recebem `security: []` no spec automaticamente
-
-Não é necessário `@ApiBearerAuth()` em cada controller.
+Rotas com `@IsPublic()` recebem `security: []` no spec; demais operações herdam os esquemas registrados.
 
 ```typescript
 import { IsPublic } from '@/host/decorators/is-public.decorator';

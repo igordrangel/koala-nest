@@ -88,10 +88,8 @@ Entidades são descobertas por **glob** — basta criar o arquivo em `src/domain
 
 ## Migrations existentes no template
 
-O template Person inclui migrations de exemplo:
+O template Person inclui uma migration inicial consolidada:
 
-- `1781281330533-Init.ts` — schema inicial
-- `1781282000000-AddPersonAddressRelation.ts` — relacionamento de endereço
-- Demais migrations incrementais geradas durante o desenvolvimento do template
+- `1781281330533-Init.ts` — schema completo (`person`, `person_address`, `person_contact`, `users`) e usuário demo
 
-Essas migrations servem como referência de nomenclatura e estrutura.
+Serve como referência de nomenclatura e estrutura. Novas alterações de schema devem gerar migrations incrementais com `migration:generate`.

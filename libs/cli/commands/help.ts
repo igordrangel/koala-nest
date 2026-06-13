@@ -13,7 +13,8 @@ ${color.cyan('Opções globais:')}
   ${color.dim('--verbose')}   Exibe a saída dos comandos externos (npm, bun, nest, …)
 
 ${color.cyan('New — opções:')}
-  ${color.dim('<nome>')}              Nome do projeto (modo não interativo)
+  ${color.dim('-y, --yes')}          Pula perguntas e cria com os argumentos informados
+  ${color.dim('<nome>')}              Nome do projeto (não pergunta de novo se já informado)
   ${color.dim('--template, -t')}     ${color.dim('default')} ou ${color.dim('crud')}
   ${color.dim('--pm')}                 ${color.dim('bun')}, ${color.dim('npm')} ou ${color.dim('pnpm')}
   ${color.dim('--auth')}               ${color.dim('none')}, ${color.dim('jwt')} ou ${color.dim('oauth2')}
@@ -33,8 +34,9 @@ ${color.cyan('Add — funcionalidades:')}
   ${color.dim('events')}            Jobs reativos a eventos
 
 ${color.cyan('Exemplos:')}
-  kl-nest new my-api --template default --pm bun --auth none
-  kl-nest new my-api --template crud --pm bun --auth jwt
+  kl-nest new example
+  kl-nest new my-api -y --template default --pm bun --auth none
+  kl-nest new my-api -y --template crud --pm bun --auth jwt
   kl-nest new --verbose
   kl-nest add cache
   kl-nest add auth jwt health --verbose

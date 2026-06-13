@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { InactivePersonHandler } from '@/application/person/events/inactive-person.handler';
-import { InactivePersonEvent } from '@/application/person/events/inactive-person.event';
+import { InactivePersonHandler } from '@/application/person/jobs/events/person/inactive-person/inactive-person.handler';
+import { InactivePersonEvent } from '@/application/person/jobs/events/person/inactive-person/inactive-person.event';
 import { Person } from '@/domain/entities/person/person';
 import { PersonAddress } from '@/domain/entities/person/person-address';
 import { PERSON_LIST_CACHE_PREFIX } from '@/core/utils/person-list-cache';

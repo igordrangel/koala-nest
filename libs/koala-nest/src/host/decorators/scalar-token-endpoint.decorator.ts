@@ -1,14 +1,14 @@
-import { IssueTokenResponse } from '@/application/auth/issue-token/issue-token.response';
-import { ApiExcludeEndpointDiffDevelop } from '@/host/decorators/api-exclude-endpoint-diff-develop.decorator';
+import { AuthTokenResponse } from '@/application/auth/common/auth-token.response';
 import { IsPublic } from '@/host/decorators/is-public.decorator';
 import { applyDecorators, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiOkResponse } from '@nestjs/swagger';
 
+/** Rota interna do Scalar — não aparece na documentação OpenAPI. */
 export const ScalarTokenEndpoint = () =>
   applyDecorators(
     Post('scalar-token'),
     IsPublic(),
     HttpCode(HttpStatus.OK),
-    ApiExcludeEndpointDiffDevelop(),
-    ApiOkResponse({ type: IssueTokenResponse }),
+    ApiExcludeEndpoint(),
+    ApiOkResponse({ type: AuthTokenResponse }),
   );
