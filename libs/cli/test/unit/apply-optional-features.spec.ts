@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -140,4 +140,8 @@ export class AppModule {}
     expect(installCalls.map((call) => call[0])).toEqual([Modules.HEALTH]);
     expect(installCalls[0]?.[3]).toEqual({ withRedisIndicator: false });
   });
+});
+
+afterAll(() => {
+  mock.restore();
 });

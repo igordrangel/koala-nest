@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import {
   cpSync,
   mkdirSync,
@@ -264,4 +264,8 @@ export class AppModule {}
     expect(installCalls).toHaveLength(0);
     expect(patchAuthCalls).toHaveLength(0);
   });
+});
+
+afterAll(() => {
+  mock.restore();
 });
