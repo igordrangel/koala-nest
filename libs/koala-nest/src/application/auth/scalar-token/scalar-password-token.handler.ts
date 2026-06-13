@@ -2,20 +2,19 @@ import { IssueTokenHandler } from '@/application/auth/issue-token/issue-token.ha
 import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
 import { IssueTokenResponse } from '@/application/auth/issue-token/issue-token.response';
+import { ScalarTokenBody } from '@/application/auth/scalar-token/scalar-token.types';
 import { BadRequestException, Injectable } from '@nestjs/common';
-
-type ScalarPasswordTokenBody = Record<string, string | undefined>;
 
 @Injectable()
 export class ScalarPasswordTokenHandler extends RequestHandlerBase<
-  ScalarPasswordTokenBody,
+  ScalarTokenBody,
   IssueTokenResponse
 > {
   constructor(private readonly issueToken: IssueTokenHandler) {
     super();
   }
 
-  async handle(body: ScalarPasswordTokenBody): Promise<IssueTokenResponse> {
+  async handle(body: ScalarTokenBody): Promise<IssueTokenResponse> {
     const sub = body.sub ?? body.username;
 
     if (!sub?.trim()) {

@@ -6,7 +6,6 @@ import {
 } from '@/domain/auth/services/iauth.service';
 import { JwtTokenService } from '@/infra/auth/jwt-token.service';
 import { OAuth2AuthService } from '@/infra/auth/oauth2-auth.service';
-import { EnvService } from '@/infra/common/env.service';
 import { InfraModule } from '@/infra/infra.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -43,7 +42,6 @@ import { ProfilesGuard } from './guards/profiles.guard';
     }),
   ],
   providers: [
-    EnvService,
     OAuthProviderRegistry,
     JwtStrategy,
     AuthGuard,

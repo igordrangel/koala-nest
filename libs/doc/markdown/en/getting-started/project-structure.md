@@ -69,6 +69,8 @@ bootstrap();
 export class AppModule {}
 ```
 
+> **Authentication:** in the **CRUD example** template, `AuthModule` and `SecurityModule` are **not** registered by default. When you choose JWT or OAuth2 in `kl-nest new`, the CLI patches `app.module.ts` and `main.ts` (global guards). See [Authentication](/en/host/authentication).
+
 ## Background jobs
 
 In the **CRUD Example** template, `main.ts` calls `bootstrapKoalaJobs()` before `listen` (controlled by `CRON_JOBS_ENABLED`):

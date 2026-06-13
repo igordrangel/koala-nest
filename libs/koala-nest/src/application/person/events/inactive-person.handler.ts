@@ -1,5 +1,7 @@
 import { PersonQueryDto } from '@/domain/dtos/person-query.dto';
 import { IPersonRepository } from '@/domain/repositories/iperson.repository';
+import { ICacheService } from '@/domain/common/icache.service';
+import { invalidatePersonListCache } from '@/core/utils/person-list-cache';
 import { EventHandlerBase } from '@/core/background-services/event-service/event-handler.base';
 import { Injectable, Logger } from '@nestjs/common';
 import { InactivePersonEvent } from './inactive-person.event';
@@ -8,7 +10,10 @@ import { InactivePersonEvent } from './inactive-person.event';
 export class InactivePersonHandler extends EventHandlerBase<InactivePersonEvent> {
   private readonly logger = new Logger(InactivePersonHandler.name);
 
-  constructor(private readonly repository: IPersonRepository) {
+  constructor(
+    private readonly repository: IPersonRepository,
+    private readonly cache: ICacheService,
+  ) {
     super(InactivePersonEvent);
   }
 
@@ -35,6 +40,8 @@ export class InactivePersonHandler extends EventHandlerBase<InactivePersonEvent>
         person.active = false;
         await this.repository.save(person);
       }
+
+      await invalidatePersonListCache(this.cache);
 
       this.logger.log('Pessoas inativadas com sucesso.', items.length);
     } catch (error) {

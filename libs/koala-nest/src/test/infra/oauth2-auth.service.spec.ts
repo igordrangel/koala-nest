@@ -3,24 +3,7 @@ import { OAuth2AuthService } from '@/infra/auth/oauth2-auth.service';
 import { EnvService } from '@/infra/common/env.service';
 import type { OAuthProviderEnvConfig } from '@/core/auth/oauth-provider.registry';
 import { UnauthorizedException } from '@nestjs/common';
-
-class CacheStub {
-  readonly store = new Map<string, string>();
-
-  get(key: string) {
-    return Promise.resolve(this.store.get(key) ?? null);
-  }
-
-  set(key: string, value: string) {
-    this.store.set(key, value);
-    return Promise.resolve();
-  }
-
-  invalidate(key: string) {
-    this.store.delete(key);
-    return Promise.resolve();
-  }
-}
+import { CacheStub } from '@/test/services/cache.stub';
 
 class RegistryStub {
   getProvider(key: string): OAuthProviderEnvConfig {

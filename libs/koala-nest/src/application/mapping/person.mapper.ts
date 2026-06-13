@@ -7,20 +7,20 @@ import {
   CreatePersonAddressRequest,
   CreatePersonContactRequest,
   CreatePersonRequest,
-} from '../person/create/create-person.request';
-import { CreatePersonResponse } from '../person/create/create-person.response';
-import { ReadManyPersonRequest } from '../person/read-many/read-many-person.request';
+} from '@/application/person/create/create-person.request';
+import { CreatePersonResponse } from '@/application/person/create/create-person.response';
+import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-person.request';
 import {
   ReadPersonAddressResponse,
   ReadPersonContactResponse,
   ReadPersonResponse,
-} from '../person/read/read-person.response';
+} from '@/application/person/read/read-person.response';
 import {
   UpdatePersonAddressRequest,
   UpdatePersonContactRequest,
   UpdatePersonRequest,
-} from '../person/update/update-person.request';
-import { ReadManyPersonResponseItem } from '../person/read-many/read-many-person.response';
+} from '@/application/person/update/update-person.request';
+import { ReadManyPersonResponseItem } from '@/application/person/read-many/read-many-person.response';
 
 export class PersonMapper {
   static createMap() {

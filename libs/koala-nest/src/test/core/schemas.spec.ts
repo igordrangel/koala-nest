@@ -5,6 +5,11 @@ import { setMaskDocumentNumber } from '@/core/schemas/document-number-mask';
 import { emailSchema } from '@/core/schemas/email.schema';
 import { LIST_QUERY_SCHEMA } from '@/core/schemas/list-query.schema';
 import { nativeEnumSchema } from '@/core/schemas/native-enum.schema';
+import {
+  personAddressSchema,
+  personBodySchema,
+  personContactSchema,
+} from '@/application/person/person.schemas';
 
 enum Status {
   ACTIVE = 1,
@@ -57,5 +62,32 @@ describe('core/schemas', () => {
     expect(LIST_QUERY_SCHEMA.parse({ page: '2' }).page).toBe(1);
     expect(LIST_QUERY_SCHEMA.parse({ page: '1' }).page).toBe(0);
     expect(LIST_QUERY_SCHEMA.parse({}).page).toBeUndefined();
+  });
+
+  it('personBodySchema valida create e update de pessoa', () => {
+    expect(
+      personBodySchema().parse({
+        name: 'Jane',
+        address: { address: 'Street' },
+        contacts: [{ contact: 'jane@example.com' }],
+      }).name,
+    ).toBe('Jane');
+
+    expect(
+      personBodySchema(true).parse({
+        id: 1,
+        name: 'Jane',
+        address: { id: 2, address: 'Street' },
+        contacts: [{ id: 3, contact: 'jane@example.com' }],
+      }).id,
+    ).toBe(1);
+
+    expect(
+      personAddressSchema(true).parse({ id: 1, address: 'Street' }).id,
+    ).toBe(1);
+
+    expect(
+      personContactSchema(true).parse({ id: 1, contact: 'a@b.com' }).contact,
+    ).toBe('a@b.com');
   });
 });

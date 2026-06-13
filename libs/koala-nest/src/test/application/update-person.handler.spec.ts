@@ -3,19 +3,13 @@ import { UpdatePersonHandler } from '@/application/person/update/update-person.h
 import { Person } from '@/domain/entities/person/person';
 import { PersonAddress } from '@/domain/entities/person/person-address';
 import { PersonContact } from '@/domain/entities/person/person-contact';
+import { PERSON_LIST_CACHE_PREFIX } from '@/core/utils/person-list-cache';
 import type { IPersonRepository } from '@/domain/repositories/iperson.repository';
-import type { ICacheService } from '@/domain/common/icache.service';
-
-const cacheStub = {
-  get: () => Promise.resolve(null),
-  set: () => Promise.resolve(),
-  setIfNotExists: () => Promise.resolve(true),
-  invalidate: () => Promise.resolve(),
-  invalidateByPrefix: () => Promise.resolve(),
-} as ICacheService;
+import { CacheStub } from '@/test/services/cache.stub';
 
 describe('UpdatePersonHandler', () => {
-  it('carrega a entidade existente antes de salvar', async () => {
+  it('carrega a entidade existente antes de salvar e invalida cache', async () => {
+    const cache = new CacheStub();
     const existingContact = PersonContact.from({
       id: 10,
       contact: 'old@example.com',
@@ -47,7 +41,7 @@ describe('UpdatePersonHandler', () => {
       },
     } as unknown as IPersonRepository;
 
-    const handler = new UpdatePersonHandler(repository, cacheStub);
+    const handler = new UpdatePersonHandler(repository, cache);
 
     await handler.handle({
       id: 1,
@@ -61,6 +55,7 @@ describe('UpdatePersonHandler', () => {
     expect(person.address.address).toBe('New street');
     expect(person.contacts[0].contact).toBe('new@example.com');
     expect(calls.save).toEqual([person]);
+    expect(cache.invalidateByPrefixCalls).toEqual([PERSON_LIST_CACHE_PREFIX]);
   });
 
   it('lança NotFoundException quando a pessoa não existe', async () => {
@@ -69,7 +64,7 @@ describe('UpdatePersonHandler', () => {
       save: async () => undefined,
     } as unknown as IPersonRepository;
 
-    const handler = new UpdatePersonHandler(repository, cacheStub);
+    const handler = new UpdatePersonHandler(repository, new CacheStub());
 
     await expect(
       handler.handle({

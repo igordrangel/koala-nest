@@ -1,13 +1,10 @@
 import 'reflect-metadata';
+import { delay } from '@/core/utils/delay';
 import { createE2EDatabase } from '@/test/utils/create-e2e-database';
 import { E2EDatabaseClient } from '@/test/utils/e2e-database-client';
 import { Pool } from 'pg';
 
 export let pgClient: E2EPostgresClient;
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 class E2EPostgresClient extends E2EDatabaseClient {
   private baseUrl: URL;

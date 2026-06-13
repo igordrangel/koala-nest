@@ -3,6 +3,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import packageJson from '../../../package.json';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { buildScalarAuthentication } from './scalar-authentication';
+import { scalarThemeOptions } from './scalar-theme';
 import {
   applyOpenApiBearerSecurity,
   markPublicRoutesInOpenApiDocument,
@@ -39,6 +40,7 @@ export async function defineDocumentation(app: INestApplication) {
   app.use(
     docEndpoint,
     apiReference({
+      ...scalarThemeOptions,
       spec: { content: document },
       metaData: {
         title: 'KoalaNest',

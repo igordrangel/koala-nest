@@ -1,7 +1,8 @@
+import { ObjectClass } from '@/core/base/object-class';
 import { AutoMap } from '@/core/tools/mapping';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdatePersonAddressRequest {
+export class UpdatePersonAddressRequest extends ObjectClass<UpdatePersonAddressRequest> {
   @ApiProperty({ example: 1 })
   @AutoMap()
   id: number;
@@ -11,7 +12,7 @@ export class UpdatePersonAddressRequest {
   address: string;
 }
 
-export class UpdatePersonContactRequest {
+export class UpdatePersonContactRequest extends ObjectClass<UpdatePersonContactRequest> {
   @ApiProperty({ example: 1 })
   @AutoMap()
   id: number;
@@ -21,7 +22,7 @@ export class UpdatePersonContactRequest {
   contact: string;
 }
 
-export class UpdatePersonRequest {
+export class UpdatePersonRequest extends ObjectClass<UpdatePersonRequest> {
   @ApiProperty({ example: 1 })
   @AutoMap()
   id: number;

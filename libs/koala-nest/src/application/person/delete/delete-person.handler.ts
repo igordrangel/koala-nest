@@ -1,23 +1,21 @@
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
+import { findPersonOrThrow } from '@/application/person/find-person-or-throw';
 import { IPersonRepository } from '@/domain/repositories/iperson.repository';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ICacheService } from '@/domain/common/icache.service';
 import { invalidatePersonListCache } from '@/core/utils/person-list-cache';
 
 @Injectable()
-export class DeletePersonHandler implements RequestHandlerBase<number, void> {
+export class DeletePersonHandler extends RequestHandlerBase<number, void> {
   constructor(
     private readonly repository: IPersonRepository,
     private readonly cache: ICacheService,
-  ) {}
+  ) {
+    super();
+  }
 
   async handle(id: number): Promise<void> {
-    const person = await this.repository.findById(id);
-
-    if (!person) {
-      throw new NotFoundException('Pessoa não encontrada');
-    }
-
+    const person = await findPersonOrThrow(this.repository, id);
     await this.repository.delete(person);
     await invalidatePersonListCache(this.cache);
   }

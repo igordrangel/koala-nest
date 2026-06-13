@@ -5,44 +5,7 @@ import { PersonMapper } from '@/application/mapping/person.mapper';
 import { Person } from '@/domain/entities/person/person';
 import { PersonAddress } from '@/domain/entities/person/person-address';
 import type { IPersonRepository } from '@/domain/repositories/iperson.repository';
-import type { ICacheService } from '@/domain/common/icache.service';
-
-class CacheStub implements ICacheService {
-  readonly store = new Map<string, string>();
-
-  get(key: string) {
-    return Promise.resolve(this.store.get(key) ?? null);
-  }
-
-  set(key: string, value: string) {
-    this.store.set(key, value);
-    return Promise.resolve();
-  }
-
-  setIfNotExists(key: string, value: string) {
-    if (this.store.has(key)) {
-      return Promise.resolve(false);
-    }
-
-    this.store.set(key, value);
-    return Promise.resolve(true);
-  }
-
-  invalidate(key: string) {
-    this.store.delete(key);
-    return Promise.resolve();
-  }
-
-  invalidateByPrefix(prefix: string) {
-    for (const key of this.store.keys()) {
-      if (key.startsWith(prefix)) {
-        this.store.delete(key);
-      }
-    }
-
-    return Promise.resolve();
-  }
-}
+import { CacheStub } from '@/test/services/cache.stub';
 
 describe('ReadManyPersonHandler', () => {
   beforeAll(() => {

@@ -69,6 +69,8 @@ O `AppModule` importa a validação de ambiente e os módulos de feature. No tem
 export class AppModule {}
 ```
 
+> **Autenticação:** no template **Exemplo de CRUD**, `AuthModule` e `SecurityModule` **não** vêm registrados por padrão. Ao escolher JWT ou OAuth2 no `kl-nest new`, a CLI aplica patches em `app.module.ts` e `main.ts` (guards globais). Veja [Autenticação](/pt/host/autenticacao).
+
 ## Jobs em background
 
 No template **Exemplo de CRUD**, `main.ts` chama `bootstrapKoalaJobs()` antes de `listen` (controlado por `CRON_JOBS_ENABLED`):

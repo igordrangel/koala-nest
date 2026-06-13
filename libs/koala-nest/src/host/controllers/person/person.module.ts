@@ -35,7 +35,9 @@ import { UpdatePersonController } from './update-person.controller';
   ],
   exports: [
     CreatePersonHandler,
+    ReadPersonHandler,
     ReadManyPersonHandler,
+    UpdatePersonHandler,
     DeletePersonHandler,
     CreatePersonJob,
     DeleteInactiveJob,

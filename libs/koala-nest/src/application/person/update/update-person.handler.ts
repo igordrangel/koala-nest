@@ -1,29 +1,28 @@
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
+import { findPersonOrThrow } from '@/application/person/find-person-or-throw';
 import { PersonContact } from '@/domain/entities/person/person-contact';
 import { IPersonRepository } from '@/domain/repositories/iperson.repository';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UpdatePersonRequest } from './update-person.request';
 import { UpdatePersonValidator } from './update-person.validator';
 import { ICacheService } from '@/domain/common/icache.service';
 import { invalidatePersonListCache } from '@/core/utils/person-list-cache';
 
 @Injectable()
-export class UpdatePersonHandler implements RequestHandlerBase<
+export class UpdatePersonHandler extends RequestHandlerBase<
   UpdatePersonRequest,
   void
 > {
   constructor(
     private readonly repository: IPersonRepository,
     private readonly cache: ICacheService,
-  ) {}
+  ) {
+    super();
+  }
 
   async handle(request: UpdatePersonRequest): Promise<void> {
     const validated = new UpdatePersonValidator(request).validate();
-    const person = await this.repository.findById(validated.id);
-
-    if (!person) {
-      throw new NotFoundException('Pessoa não encontrada');
-    }
+    const person = await findPersonOrThrow(this.repository, validated.id);
 
     person.name = validated.name;
     person.address.address = validated.address.address;

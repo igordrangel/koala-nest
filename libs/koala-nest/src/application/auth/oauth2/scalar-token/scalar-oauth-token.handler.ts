@@ -2,13 +2,12 @@ import { IssueTokenHandler } from '@/application/auth/issue-token/issue-token.ha
 import { OAuthExchangeCodeHandler } from '@/application/auth/oauth2/exchange-code/exchange-code.handler';
 import { RequestHandlerBase } from '@/application/common/request-handler.base';
 import { IssueTokenResponse } from '@/application/auth/issue-token/issue-token.response';
+import { ScalarTokenBody } from '@/application/auth/scalar-token/scalar-token.types';
 import { BadRequestException, Injectable } from '@nestjs/common';
-
-type ScalarOAuthTokenBody = Record<string, string | undefined>;
 
 @Injectable()
 export class ScalarOAuthTokenHandler extends RequestHandlerBase<
-  ScalarOAuthTokenBody,
+  ScalarTokenBody,
   IssueTokenResponse
 > {
   constructor(
@@ -18,7 +17,7 @@ export class ScalarOAuthTokenHandler extends RequestHandlerBase<
     super();
   }
 
-  async handle(body: ScalarOAuthTokenBody): Promise<IssueTokenResponse> {
+  async handle(body: ScalarTokenBody): Promise<IssueTokenResponse> {
     const provider = body.provider;
     const code = body.code ?? body.ssoCode;
     const state = body.state;
