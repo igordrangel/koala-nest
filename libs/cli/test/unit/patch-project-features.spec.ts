@@ -65,23 +65,37 @@ describe('patch-infra-module', () => {
   it('adiciona providers de cache ao infra slim', () => {
     const patched = patchInfraModuleForCache(SLIM_INFRA_MODULE);
 
-    expect(patched).toContain('CacheServiceProvider');
-    expect(patched).toContain('IRedLockService');
+    expect(patched).toMatch(
+      /providers:\s*\[[\s\S]*CacheServiceProvider[\s\S]*\]/,
+    );
+    expect(patched).toContain('{ provide: ICacheService, useExisting: CacheServiceProvider }');
     expect(patched).not.toContain('ILoggedUserInfoService');
   });
 
   it('adiciona LoggedUserInfo ao infra slim', () => {
     const patched = patchInfraModuleForAuth(SLIM_INFRA_MODULE);
 
+    expect(patched).toMatch(
+      /providers:\s*\[[\s\S]*LoggedUserInfoService[\s\S]*\]/,
+    );
     expect(patched).toContain('ILoggedUserInfoService');
-    expect(patched).toContain('LoggedUserInfoService');
   });
 
   it('adiciona cache e mantém LoggedUserInfo quando auth já está instalado', () => {
     const withAuth = patchInfraModuleForAuth(SLIM_INFRA_MODULE);
     const patched = patchInfraModuleForCache(withAuth);
 
-    expect(patched).toContain('CacheServiceProvider');
-    expect(patched).toContain('ILoggedUserInfoService');
+    expect(patched).toMatch(
+      /providers:\s*\[[\s\S]*CacheServiceProvider[\s\S]*LoggedUserInfoService[\s\S]*\]/,
+    );
+  });
+
+  it('adiciona auth e mantém cache quando cache já está instalado', () => {
+    const withCache = patchInfraModuleForCache(SLIM_INFRA_MODULE);
+    const patched = patchInfraModuleForAuth(withCache);
+
+    expect(patched).toMatch(
+      /providers:\s*\[[\s\S]*CacheServiceProvider[\s\S]*LoggedUserInfoService[\s\S]*\]/,
+    );
   });
 });
