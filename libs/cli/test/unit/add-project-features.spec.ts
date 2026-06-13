@@ -13,6 +13,7 @@ import { getSourceCodePath } from '@cli/utils/get-source-code-path.ts';
 import { stripPersonAuthExample } from '@cli/utils/patch-person-features.ts';
 
 const installCalls: unknown[][] = [];
+const patchAuthCalls: unknown[][] = [];
 
 mock.module('@cli/utils/run-command.ts', () => ({
   runCommand: async () => {},
@@ -31,6 +32,12 @@ mock.module('@cli/utils/install-module.ts', () => ({
   },
 }));
 
+mock.module('@cli/utils/patch-auth-install.ts', () => ({
+  patchAuthInstall: async (...args: unknown[]) => {
+    patchAuthCalls.push(args);
+  },
+}));
+
 const { addProjectFeatures } =
   await import('@cli/utils/add-project-features.ts');
 
@@ -40,6 +47,7 @@ describe('addProjectFeatures', () => {
 
   beforeEach(() => {
     installCalls.length = 0;
+    patchAuthCalls.length = 0;
     tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-add-features-'));
 
     writeFileSync(
@@ -118,7 +126,7 @@ export class AppModule {}
     );
 
     const results = await addProjectFeatures('.', [
-      { kind: 'auth', strategy: 'jwt' },
+      { kind: 'auth', strategies: ['jwt'] },
     ]);
 
     expect(results).toEqual([{ label: 'auth (jwt)', installed: true }]);
@@ -139,7 +147,7 @@ export class AppModule {}
 
     writeFileSync(
       path.join(tempDir, 'src/host/controllers/auth/auth.module.ts'),
-      'export class AuthModule {}\n',
+      'export class AuthModule {}\nconst LoginController = 1;\n',
     );
     writeFileSync(
       path.join(tempDir, 'src/host/app.module.ts'),
@@ -156,10 +164,104 @@ export class AppModule {}
     );
 
     const results = await addProjectFeatures('.', [
-      { kind: 'auth', strategy: 'jwt' },
+      { kind: 'auth', strategies: ['jwt'] },
     ]);
 
     expect(results[0]?.installed).toBe(false);
     expect(installCalls).toHaveLength(0);
+    expect(patchAuthCalls).toHaveLength(0);
+  });
+
+  it('instala auth oauth2 do zero via installModule', async () => {
+    const results = await addProjectFeatures('.', [
+      { kind: 'auth', strategies: ['oauth2'] },
+    ]);
+
+    expect(results).toEqual([{ label: 'auth (oauth2)', installed: true }]);
+    expect(installCalls.map((call) => call[0])).toEqual([
+      installModuleExports.Modules.CACHE,
+      installModuleExports.Modules.AUTH,
+    ]);
+    expect(installCalls[1]?.[3]).toEqual({ authStrategies: ['oauth2'] });
+    expect(patchAuthCalls).toHaveLength(0);
+  });
+
+  it('instala jwt e oauth2 juntos na primeira instalação', async () => {
+    const results = await addProjectFeatures('.', [
+      { kind: 'auth', strategies: ['jwt', 'oauth2'] },
+    ]);
+
+    expect(results).toEqual([
+      { label: 'auth (jwt + oauth2)', installed: true },
+    ]);
+    expect(installCalls[1]?.[3]).toEqual({
+      authStrategies: ['jwt', 'oauth2'],
+    });
+  });
+
+  it('adiciona oauth2 incrementalmente via patchAuthInstall quando jwt já está instalado', async () => {
+    mkdirSync(path.join(tempDir, 'src/host/controllers/auth'), {
+      recursive: true,
+    });
+
+    writeFileSync(
+      path.join(tempDir, 'src/host/controllers/auth/auth.module.ts'),
+      'export class AuthModule {}\nconst LoginController = 1;\n',
+    );
+    writeFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      `import { Module } from '@nestjs/common';
+import { AuthModule } from './controllers/auth/auth.module';
+import { SecurityModule } from './security/security.module';
+import { PersonModule } from './controllers/person/person.module';
+
+@Module({
+  imports: [AuthModule, SecurityModule, PersonModule],
+})
+export class AppModule {}
+`,
+    );
+
+    const results = await addProjectFeatures('.', [
+      { kind: 'auth', strategies: ['oauth2'] },
+    ]);
+
+    expect(results).toEqual([{ label: 'auth (oauth2)', installed: true }]);
+    expect(installCalls).toHaveLength(0);
+    expect(patchAuthCalls).toEqual([
+      ['.', ['jwt', 'oauth2']],
+    ]);
+  });
+
+  it('ignora estratégias de auth já instaladas', async () => {
+    mkdirSync(path.join(tempDir, 'src/host/controllers/auth'), {
+      recursive: true,
+    });
+
+    writeFileSync(
+      path.join(tempDir, 'src/host/controllers/auth/auth.module.ts'),
+      'export class AuthModule {}\nconst LoginController = 1;\nconst OAuthAuthLinkHandler = 1;\n',
+    );
+    writeFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      `import { Module } from '@nestjs/common';
+import { AuthModule } from './controllers/auth/auth.module';
+import { SecurityModule } from './security/security.module';
+import { PersonModule } from './controllers/person/person.module';
+
+@Module({
+  imports: [AuthModule, SecurityModule, PersonModule],
+})
+export class AppModule {}
+`,
+    );
+
+    const results = await addProjectFeatures('.', [
+      { kind: 'auth', strategies: ['jwt', 'oauth2'] },
+    ]);
+
+    expect(results[0]?.installed).toBe(false);
+    expect(installCalls).toHaveLength(0);
+    expect(patchAuthCalls).toHaveLength(0);
   });
 });

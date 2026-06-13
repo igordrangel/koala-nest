@@ -80,7 +80,7 @@ export class AppModule {}
   it('instala cache, auth, cron e events no template CRUD bundled', async () => {
     const { auth, features } = resolveNewProjectOptions(
       'crudSample',
-      'jwt',
+      ['jwt'],
       [],
     );
 
@@ -97,13 +97,43 @@ export class AppModule {}
       Modules.INTERNAL_EVENT_JOBS,
     ]);
     expect(installCalls[0]?.[3]).toEqual({ withRedis: true });
-    expect(installCalls[1]?.[3]).toEqual({ authStrategy: 'jwt' });
+    expect(installCalls[1]?.[3]).toEqual({ authStrategies: ['jwt'] });
+  });
+
+  it('instala auth oauth2 no template default', async () => {
+    await applyOptionalFeatures({
+      template: 'default',
+      auth: ['oauth2'],
+      features: [],
+    });
+
+    expect(installCalls.map((call) => call[0])).toEqual([
+      Modules.CACHE,
+      Modules.AUTH,
+    ]);
+    expect(installCalls[1]?.[3]).toEqual({ authStrategies: ['oauth2'] });
+  });
+
+  it('instala auth jwt e oauth2 no template default', async () => {
+    await applyOptionalFeatures({
+      template: 'default',
+      auth: ['jwt', 'oauth2'],
+      features: [],
+    });
+
+    expect(installCalls.map((call) => call[0])).toEqual([
+      Modules.CACHE,
+      Modules.AUTH,
+    ]);
+    expect(installCalls[1]?.[3]).toEqual({
+      authStrategies: ['jwt', 'oauth2'],
+    });
   });
 
   it('não instala auth quando template padrão sem autenticação', async () => {
     await applyOptionalFeatures({
       template: 'default',
-      auth: 'none',
+      auth: [],
       features: ['health-check'],
     });
 

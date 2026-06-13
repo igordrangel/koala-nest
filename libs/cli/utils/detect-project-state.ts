@@ -5,8 +5,10 @@ import {
   ExtraFeature,
   FEATURE_ALIASES,
   isAuthStrategy,
+  listMissingAuthStrategies,
+  mergeAuthStrategies,
   ProjectMarker,
-  resolveAuthStrategyFromModule,
+  resolveAuthStrategiesFromModule,
   Template,
   type AuthStrategy as AuthStrategyType,
 } from '@cli/constants/domain';
@@ -16,7 +18,7 @@ export type CacheLevel = false | 'memory' | 'redis';
 
 export type ProjectState = {
   template: Template;
-  auth: false | AuthStrategyType;
+  auth: false | AuthStrategyType[];
   cache: CacheLevel;
   health: boolean;
   cronJobs: boolean;
@@ -70,7 +72,7 @@ export function detectProjectState(projectName = ''): ProjectState {
     existsSync(authModulePath) &&
     appModule.includes(ProjectMarker.SECURITY_MODULE)
   ) {
-    auth = resolveAuthStrategyFromModule(authModule);
+    auth = resolveAuthStrategiesFromModule(authModule);
   }
 
   let cache: CacheLevel = false;
@@ -127,13 +129,13 @@ export function listAvailableAddOptions(state: ProjectState) {
   }
 
   return {
-    auth: !state.auth,
+    authStrategies: listMissingAuthStrategies(state.auth),
     features,
   };
 }
 
 export type AddArg =
-  | { kind: typeof AddArgKind.AUTH; strategy: AuthStrategyType }
+  | { kind: typeof AddArgKind.AUTH; strategies: AuthStrategyType[] }
   | { kind: typeof AddArgKind.FEATURE; feature: ExtraFeature };
 
 export function parseAddArgs(args: string[]): AddArg[] {
@@ -147,16 +149,31 @@ export function parseAddArgs(args: string[]): AddArg[] {
     }
 
     if (arg === AddArgKind.AUTH) {
-      const strategy = args[index + 1]?.toLowerCase();
+      const strategies: AuthStrategyType[] = [];
+      let cursor = index + 1;
 
-      if (!strategy || !isAuthStrategy(strategy)) {
+      while (cursor < args.length) {
+        const strategy = args[cursor]?.toLowerCase();
+
+        if (!strategy || !isAuthStrategy(strategy)) {
+          break;
+        }
+
+        strategies.push(strategy);
+        cursor += 1;
+      }
+
+      if (strategies.length === 0) {
         throw new Error(
-          'Use: kl-nest add auth jwt  ou  kl-nest add auth oauth2',
+          'Use: kl-nest add auth jwt  ou  kl-nest add auth oauth2  ou  kl-nest add auth jwt oauth2',
         );
       }
 
-      parsed.push({ kind: AddArgKind.AUTH, strategy });
-      index += 1;
+      parsed.push({
+        kind: AddArgKind.AUTH,
+        strategies: Array.from(new Set(strategies)),
+      });
+      index = cursor - 1;
       continue;
     }
 
@@ -176,12 +193,13 @@ export function parseAddArgs(args: string[]): AddArg[] {
 
 export function dedupeAddArgs(args: AddArg[]): AddArg[] {
   const seenFeatures = new Set<ExtraFeature>();
+  const authStrategies = new Set<AuthStrategyType>();
   const result: AddArg[] = [];
 
   for (const arg of args) {
     if (arg.kind === AddArgKind.AUTH) {
-      if (!result.some((item) => item.kind === AddArgKind.AUTH)) {
-        result.push(arg);
+      for (const strategy of arg.strategies) {
+        authStrategies.add(strategy);
       }
       continue;
     }
@@ -192,5 +210,14 @@ export function dedupeAddArgs(args: AddArg[]): AddArg[] {
     }
   }
 
+  if (authStrategies.size > 0) {
+    result.unshift({
+      kind: AddArgKind.AUTH,
+      strategies: Array.from(authStrategies),
+    });
+  }
+
   return result;
 }
+
+export { mergeAuthStrategies };

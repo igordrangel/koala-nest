@@ -14,6 +14,16 @@ import {
   detectProjectState,
   type ProjectState,
 } from '@cli/utils/detect-project-state.ts';
+import {
+  assertCliProject,
+  assertCliProjectFromSelection,
+  buildProjectExpectation,
+} from '@cli/utils/cli-project-validation.ts';
+import {
+  AuthStrategy,
+  ExtraFeature,
+  Template,
+} from '@cli/constants/domain';
 
 export const repoRoot = path.resolve(import.meta.dir, '../../../..');
 export const cliEntry = path.join(repoRoot, 'dist/cli/index.js');
@@ -232,291 +242,113 @@ export function expectPathsMissing(projectDir: string, paths: string[]) {
   }
 }
 
-export function expectPackageDependencies(
-  projectDir: string,
-  dependencies: string[],
-) {
-  const packageJson = JSON.parse(
-    readProjectFile(projectDir, 'package.json'),
-  ) as {
-    dependencies?: Record<string, string>;
-    devDependencies?: Record<string, string>;
-  };
-
-  const installed = {
-    ...packageJson.dependencies,
-    ...packageJson.devDependencies,
-  };
-
-  for (const dependency of dependencies) {
-    expect(installed[dependency]).toBeDefined();
-  }
-}
-
-export function expectNestEntryHostMain(projectDir: string) {
-  const nestCli = JSON.parse(readProjectFile(projectDir, 'nest-cli.json')) as {
-    entryFile: string;
-  };
-  const packageJson = JSON.parse(
-    readProjectFile(projectDir, 'package.json'),
-  ) as {
-    scripts: Record<string, string>;
-  };
-
-  expect(nestCli.entryFile).toBe('host/main');
-  expect(packageJson.scripts['start:prod']).toBe('node dist/host/main');
-}
-
-export function assertDefaultProjectCore(projectDir: string) {
-  expectPathsExist(projectDir, [
-    'src/core/env.ts',
-    'src/host/main.ts',
-    'src/host/app.module.ts',
-    'src/host/jobs/jobs.module.ts',
-    'src/infra/infra.module.ts',
-    'src/host/open-api/define-documentation.ts',
-    'bunfig.toml',
-  ]);
-
-  expectPathsMissing(projectDir, [
-    'src/host/controllers/person/person.module.ts',
-    'src/infra/repositories/person.repository.ts',
-  ]);
-
-  expectNestEntryHostMain(projectDir);
-  expectPackageDependencies(projectDir, [
-    '@koalarx/utils',
-    'zod',
-    'typeorm',
-    '@scalar/nestjs-api-reference',
-  ]);
-
-  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
-  expect(appModule).not.toContain('PersonModule');
-  expect(appModule).toContain('JobsModule.register');
-  expect(appModule).toContain('eventHandlers: []');
-  expect(appModule).toContain('cronJobs: []');
-
-  const repositoryModule = readProjectFile(
-    projectDir,
-    'src/infra/repositories/repository.module.ts',
-  );
-  expect(repositoryModule).not.toContain('PersonRepository');
-  expect(repositoryModule).not.toContain('IPersonRepository');
-
-  const dataSourceFactory = readProjectFile(
-    projectDir,
-    'src/infra/database/data-source-factory.ts',
-  );
-  expect(dataSourceFactory).toContain('entities: []');
-}
-
 export function assertDefaultProjectWithoutAuth(
   projectDir: string,
   options: { health?: boolean } = {},
 ) {
-  assertDefaultProjectCore(projectDir);
-
-  expectPathsMissing(projectDir, [
-    'src/host/decorators/scalar-token-endpoint.decorator.ts',
-    'src/host/decorators/restriction-by-profile.decorator.ts',
-    'src/application/auth',
-    'src/infra/auth',
-  ]);
-
-  const defineDocumentation = readProjectFile(
+  assertCliProjectFromSelection(
     projectDir,
-    'src/host/open-api/define-documentation.ts',
+    Template.DEFAULT,
+    [],
+    options.health ? [ExtraFeature.HEALTH_CHECK] : [],
   );
-  expect(defineDocumentation).toContain('apiReference');
-  expect(defineDocumentation).not.toContain('buildDocAuthorizations');
-  expect(defineDocumentation).not.toContain('scalar-authentication');
-
-  expectProjectState(projectDir, {
-    template: 'default',
-    auth: false,
-    cache: false,
-    cronJobs: false,
-    eventJobs: false,
-    health: options.health ?? false,
-  });
-
-  if (options.health) {
-    assertHealthCheck(projectDir, { withRedis: false });
-  } else {
-    expectPathsMissing(projectDir, [
-      'src/host/controllers/health-check/health-check.controller.ts',
-    ]);
-  }
 }
 
 export function assertCrudProjectWithJwt(projectDir: string) {
-  expectPathsExist(projectDir, [
-    'src/host/controllers/person/person.module.ts',
-    'src/host/controllers/person/delete-person.controller.ts',
-    'src/host/controllers/auth/auth.module.ts',
-    'src/host/security/security.module.ts',
-    'src/infra/common/redis-cache.service.ts',
-    'src/core/utils/cron-expression-to-boolean.ts',
-    'src/core/background-services/event-service/event-handler.base.ts',
-    'src/host/decorators/scalar-token-endpoint.decorator.ts',
-    'src/application/person/jobs/cron/create-person.job.ts',
-    'src/application/person/jobs/cron/delete-inactive.job.ts',
-    'src/application/person/jobs/events/person/person-event.job.ts',
-    'src/application/person/jobs/events/person/inactive-person/inactive-person.handler.ts',
-    'src/application/person/jobs/events/person/inactive-person/inactive-person.event.ts',
-  ]);
-
-  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
-  expect(appModule).toContain('PersonModule');
-  expect(appModule).toContain('SecurityModule');
-  expect(appModule).toContain('AuthModule');
-  expect(appModule).toContain('JobsModule.register');
-  expect(appModule).toContain('imports: [PersonModule]');
-  expect(appModule).not.toMatch(/^\s+PersonModule,\n/m);
-  expect(appModule).toContain('InactivePersonHandler');
-  expect(appModule).toContain('CreatePersonJob');
-  expect(appModule).toContain('DeleteInactiveJob');
-  expect(appModule).toContain(
-    '@/application/person/jobs/cron/create-person.job',
-  );
-  expect(appModule).toContain(
-    '@/application/person/jobs/events/person/inactive-person/inactive-person.handler',
-  );
-
-  expectPathsMissing(projectDir, ['src/application/person/events']);
-
-  const deletePerson = readProjectFile(
+  assertCliProjectFromSelection(
     projectDir,
-    'src/host/controllers/person/delete-person.controller.ts',
+    Template.CRUD_SAMPLE,
+    [AuthStrategy.JWT],
+    [],
   );
-  expect(deletePerson).toContain('RestrictionByProfile');
+}
 
-  const defineDocumentation = readProjectFile(
+export function assertCrudProjectWithOAuth2(projectDir: string) {
+  assertCliProjectFromSelection(
     projectDir,
-    'src/host/open-api/define-documentation.ts',
+    Template.CRUD_SAMPLE,
+    [AuthStrategy.OAUTH2],
+    [],
   );
-  expect(defineDocumentation).toContain('buildDocAuthorizations');
-  expect(defineDocumentation).toContain('addBearerAuth');
+}
 
-  expectProjectState(projectDir, {
-    template: 'crudSample',
-    auth: 'jwt',
-    cache: 'redis',
-    cronJobs: true,
-    eventJobs: true,
-    health: false,
-  });
-
-  expectPackageDependencies(projectDir, [
-    'ioredis',
-    '@nestjs/jwt',
-    'passport-jwt',
-    'cron-parser',
-  ]);
+export function assertCrudProjectWithJwtAndOAuth2(projectDir: string) {
+  assertCliProjectFromSelection(
+    projectDir,
+    Template.CRUD_SAMPLE,
+    [AuthStrategy.JWT, AuthStrategy.OAUTH2],
+    [],
+  );
 }
 
 export function assertCacheRedis(projectDir: string) {
-  expectPathsExist(projectDir, ['src/infra/common/redis-cache.service.ts']);
-
-  const infraModule = readProjectFile(projectDir, 'src/infra/infra.module.ts');
-  expect(infraModule).toContain('ICacheService');
-  expect(infraModule).toContain('CacheServiceProvider');
-
-  expectPackageDependencies(projectDir, ['ioredis']);
-  expectProjectState(projectDir, { cache: 'redis' });
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], [
+    ExtraFeature.CACHE,
+  ]);
 }
 
 export function assertAuthJwt(projectDir: string) {
-  expectPathsExist(projectDir, [
-    'src/host/controllers/auth/auth.module.ts',
-    'src/host/controllers/auth/login.controller.ts',
-    'src/host/security/security.module.ts',
-    'src/application/auth/login/login.handler.ts',
-    'src/domain/entities/user/user.ts',
-    'src/infra/database/migrations/1781281330533-Init.ts',
-  ]);
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [
+    AuthStrategy.JWT,
+  ], []);
+}
 
-  const authModule = readProjectFile(
+export function assertAuthOAuth2(projectDir: string) {
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [
+    AuthStrategy.OAUTH2,
+  ], []);
+}
+
+export function assertAuthJwtAndOAuth2(projectDir: string) {
+  assertCliProjectFromSelection(
     projectDir,
-    'src/host/controllers/auth/auth.module.ts',
+    Template.DEFAULT,
+    [AuthStrategy.JWT, AuthStrategy.OAUTH2],
+    [],
   );
-  expect(authModule).toContain('LoginController');
-  expect(authModule).not.toContain('OAuthAuthLinkController');
-
-  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
-  expect(appModule).toContain('SecurityModule');
-  expect(appModule).toContain('AuthModule');
-
-  const defineDocumentation = readProjectFile(
-    projectDir,
-    'src/host/open-api/define-documentation.ts',
-  );
-  expect(defineDocumentation).toContain('JWT');
-  expect(defineDocumentation).toContain('isProviderRegistered');
-
-  expectProjectState(projectDir, { auth: 'jwt' });
-  expectPackageDependencies(projectDir, ['@nestjs/jwt', 'passport-jwt']);
 }
 
 export function assertHealthCheck(
   projectDir: string,
   options: { withRedis: boolean },
 ) {
-  expectPathsExist(projectDir, [
-    'src/host/controllers/health-check/health-check.controller.ts',
-    'src/infra/services/database.indicator.service.ts',
-  ]);
+  const features = options.withRedis
+    ? [ExtraFeature.CACHE, ExtraFeature.HEALTH_CHECK]
+    : [ExtraFeature.HEALTH_CHECK];
 
-  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
-  expect(appModule).toContain('HealthCheckModule');
-
-  const controller = readProjectFile(
-    projectDir,
-    'src/host/controllers/health-check/health-check.controller.ts',
-  );
-
-  if (options.withRedis) {
-    expectPathsExist(projectDir, [
-      'src/infra/services/redis.indicator.service.ts',
-    ]);
-    expect(controller).toContain('RedisIndicator');
-  } else {
-    expectPathsMissing(projectDir, [
-      'src/infra/services/redis.indicator.service.ts',
-    ]);
-    expect(controller).not.toContain('RedisIndicator');
-  }
-
-  expectProjectState(projectDir, { health: true });
-  expectPackageDependencies(projectDir, ['@nestjs/terminus', '@nestjs/axios']);
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], features);
 }
 
 export function assertCronJobs(projectDir: string) {
-  expectPathsExist(projectDir, [
-    'src/core/utils/cron-expression-to-boolean.ts',
-    'src/core/background-services/cron-service/cron-job.handler.base.ts',
-    'src/host/jobs/jobs.module.ts',
-    'src/host/jobs/jobs-bootstrap.service.ts',
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], [
+    ExtraFeature.INTERNAL_CRON_JOBS,
   ]);
-
-  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
-  expect(appModule).toContain('JobsModule.register');
-
-  expectProjectState(projectDir, { cronJobs: true });
-  expectPackageDependencies(projectDir, ['cron-parser']);
 }
 
 export function assertEventJobs(projectDir: string) {
-  expectPathsExist(projectDir, [
-    'src/core/background-services/event-service/event-handler.base.ts',
-    'src/host/jobs/jobs.module.ts',
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], [
+    ExtraFeature.INTERNAL_EVENT_JOBS,
   ]);
+}
 
-  const appModule = readProjectFile(projectDir, 'src/host/app.module.ts');
-  expect(appModule).toContain('JobsModule.register');
+export function assertDefaultWithAllFeatures(projectDir: string) {
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], [
+    ExtraFeature.CACHE,
+    ExtraFeature.HEALTH_CHECK,
+    ExtraFeature.INTERNAL_CRON_JOBS,
+    ExtraFeature.INTERNAL_EVENT_JOBS,
+  ]);
+}
 
-  expectProjectState(projectDir, { eventJobs: true });
+export function assertDefaultWithJwtCacheAndHealth(projectDir: string) {
+  assertCliProject(
+    projectDir,
+    buildProjectExpectation(
+      Template.DEFAULT,
+      [AuthStrategy.JWT],
+      [ExtraFeature.CACHE, ExtraFeature.HEALTH_CHECK],
+    ),
+  );
 }
 
 export function resetE2eFixtures() {

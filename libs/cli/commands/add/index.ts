@@ -2,7 +2,6 @@ import * as p from '@clack/prompts';
 import color from 'picocolors';
 import {
   AddArgKind,
-  AuthPromptChoice,
   AuthStrategy,
   ExtraFeature,
   FEATURE_PROMPT_LABELS,
@@ -41,12 +40,11 @@ async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
   const available = listAvailableAddOptions(state);
   const args: AddArg[] = [];
 
-  if (available.auth) {
-    const auth = assertNotCancel(
-      await p.select({
-        message: 'Adicionar autenticação?',
+  if (available.authStrategies.length > 0) {
+    const authStrategies = assertNotCancel(
+      await p.multiselect({
+        message: 'Estratégias de autenticação para adicionar',
         options: [
-          { value: AuthPromptChoice.SKIP, label: 'Não' },
           {
             value: AuthStrategy.JWT,
             label: 'JWT',
@@ -57,12 +55,15 @@ async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
             label: 'OAuth2',
             hint: 'JWT + OAuth2 genérico',
           },
-        ],
+        ].filter((option) =>
+          available.authStrategies.includes(option.value as AuthStrategy),
+        ),
+        required: false,
       }),
-    );
+    ) as AuthStrategy[];
 
-    if (auth !== AuthPromptChoice.SKIP) {
-      args.push({ kind: AddArgKind.AUTH, strategy: auth });
+    if (authStrategies.length > 0) {
+      args.push({ kind: AddArgKind.AUTH, strategies: authStrategies });
     }
   }
 
@@ -98,7 +99,10 @@ export async function runAdd(
   const state = detectProjectState('.');
   const available = listAvailableAddOptions(state);
 
-  if (!available.auth && available.features.length === 0) {
+  if (
+    available.authStrategies.length === 0 &&
+    available.features.length === 0
+  ) {
     p.outro(
       color.green(
         'Este projeto já possui todas as funcionalidades disponíveis.',

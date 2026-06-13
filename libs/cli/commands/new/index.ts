@@ -10,13 +10,13 @@ import {
 import { createEmptyNestProject } from './create-empty-nest-project.ts';
 import { createDDDStructure } from './create-ddd-structure.ts';
 import {
-  AuthChoice,
   AuthStrategy,
   CRUD_BUNDLED_FEATURES,
   DEFAULT_PACKAGE_MANAGER,
   ExtraFeature,
   FEATURE_LABELS,
   FEATURE_PROMPT_LABELS,
+  formatAuthStrategies,
   Template,
   TEMPLATE_LABELS,
 } from '@cli/constants/domain';
@@ -28,14 +28,14 @@ import {
 } from '@cli/utils/install-module.ts';
 import { fixLintConfig } from './fix-lint-config.ts';
 
-async function promptAuthStrategy(template: Template) {
+async function promptAuthStrategies(template: Template) {
   const isCrud = template === Template.CRUD_SAMPLE;
 
   return assertNotCancel(
-    await p.select({
+    await p.multiselect({
       message: isCrud
-        ? 'Estratégia de autenticação (incluída no exemplo CRUD)'
-        : 'Estratégia de autenticação',
+        ? 'Estratégias de autenticação (incluídas no exemplo CRUD)'
+        : 'Estratégias de autenticação',
       options: [
         {
           value: AuthStrategy.JWT,
@@ -53,10 +53,10 @@ async function promptAuthStrategy(template: Template) {
           hint: 'em breve',
           disabled: true,
         },
-        ...(isCrud ? [] : [{ value: AuthChoice.NONE, label: 'Nenhuma' }]),
       ],
+      required: isCrud,
     }),
-  ) as AuthChoice;
+  ) as AuthStrategy[];
 }
 
 async function promptExtraFeatures(template: Template) {
@@ -165,7 +165,9 @@ async function resolveProjectInput(args: string[]) {
     const packageManager =
       parsed.packageManager ?? (await promptPackageManager());
     const template = parsed.template ?? (await promptTemplate());
-    const auth = parsed.auth ?? (await promptAuthStrategy(template));
+    const auth =
+      parsed.auth ??
+      (await promptAuthStrategies(template));
     const features =
       parsed.features.length > 0
         ? parsed.features
@@ -190,7 +192,7 @@ async function resolveProjectInput(args: string[]) {
     name: parsed.projectName,
     packageManager: DEFAULT_PACKAGE_MANAGER,
     template: Template.DEFAULT,
-    auth: AuthChoice.NONE,
+    auth: [],
     features: [],
   });
 }
@@ -209,7 +211,7 @@ export async function runNew(args: string[] = []): Promise<void> {
     process.exit(1);
   }
 
-  const { auth: authChoice, features } = resolveNewProjectOptions(
+  const { auth: authStrategies, features } = resolveNewProjectOptions(
     project.template,
     project.auth,
     project.features,
@@ -238,13 +240,13 @@ export async function runNew(args: string[] = []): Promise<void> {
   await applyOptionalFeatures({
     projectName: project.name,
     template: project.template,
-    auth: authChoice,
+    auth: authStrategies,
     features,
   });
 
   spinner.stop('Projeto criado com sucesso!');
 
-  const projectFeatures = resolveProjectFeatures(features, authChoice);
+  const projectFeatures = resolveProjectFeatures(features, authStrategies);
 
   const extrasSummary = [
     project.template === Template.CRUD_SAMPLE
@@ -270,7 +272,7 @@ export async function runNew(args: string[] = []): Promise<void> {
       `${color.bold('Projeto:')} ${project.name}`,
       `${color.bold('Template:')} ${TEMPLATE_LABELS[project.template]}`,
       `${color.bold('Gerenciador:')} ${project.packageManager}`,
-      `${color.bold('Autenticação:')} ${authChoice}`,
+      `${color.bold('Autenticação:')} ${formatAuthStrategies(authStrategies)}`,
       `${color.bold('Extras:')} ${extrasSummary || color.dim('nenhum')}`,
       `${color.dim('Depois:')} cd ${project.name} && kl-nest add <feature>`,
     ].join('\n'),

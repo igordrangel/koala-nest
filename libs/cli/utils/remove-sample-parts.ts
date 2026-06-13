@@ -5,6 +5,9 @@ import { patchAppModuleJobs } from './patch-jobs-module';
 import { resolveProjectPath } from './resolve-project-path';
 import { stripMainOptionalFeatures } from './patch-main';
 import { stripDefineDocumentationAuth } from './patch-define-documentation';
+import { stripEnvAuth } from './patch-env';
+import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
+import { syncCacheConstantsWithoutOAuth } from './sync-auth-strategy-files';
 
 interface PartsToRemove {
   path: string;
@@ -106,11 +109,34 @@ const defaultTemplatePathsToRemoveWithoutAuth = [
   'src/test/core/oauth-provider.registry.spec.ts',
   'src/test/core/profiles.guard.spec.ts',
   'src/test/host/is-public-open-api.spec.ts',
+  'src/test/host/oauth-callback.controller.spec.ts',
   'src/test/infra/jwt-token.service.spec.ts',
+  'src/test/infra/logged-user-info.service.spec.ts',
   'src/test/infra/oauth2-auth.service.spec.ts',
+  'src/test/services/logged-user-info.fake-service.ts',
   'src/test/utils/jwt-test-keys.ts',
+  'src/test/core/env.spec.ts',
+  'src/test/core/oauth-provider.registry.spec.ts',
   'src/host/decorators/scalar-token-endpoint.decorator.ts',
   'src/host/decorators/restriction-by-profile.decorator.ts',
+];
+
+const defaultTemplateAuthArtifactPaths = [
+  'src/application/auth',
+  'src/domain/auth',
+  'src/domain/entities/user',
+  'src/domain/repositories/iuser.repository.ts',
+  'src/domain/dtos/logged-user-info.dto.ts',
+  'src/domain/services',
+  'src/infra/auth',
+  'src/infra/repositories/user.repository.ts',
+  'src/infra/services/logged-user-info.service.ts',
+  'src/host/security',
+  'src/host/controllers/auth',
+  'src/host/controllers/oauth2',
+  'src/core/types/auth-provider-config-response.type.ts',
+  'src/core/utils/hash-password.ts',
+  'src/core/utils/name-to-login.ts',
 ];
 
 function removePaths(projectName: string, paths: string[]) {
@@ -147,7 +173,27 @@ export async function removeSampleParts(projectName: string) {
 export async function cleanDefaultTemplateWithoutAuth(projectName: string) {
   stripDefaultProjectAuth(projectName);
   stripDefineDocumentationAuth(projectName);
+  stripEnvAuth(projectName);
   removePaths(projectName, defaultTemplatePathsToRemoveWithoutAuth);
+  removePaths(projectName, defaultTemplateAuthArtifactPaths);
+  pruneCoreAuthForSlimTemplate(projectName);
+  syncCacheConstantsWithoutOAuth(projectName);
+}
+
+function patchAppModuleForInfra(content: string) {
+  if (content.includes('InfraModule')) {
+    return content;
+  }
+
+  const patched = content.replace(
+    "import { ConfigModule } from '@nestjs/config';",
+    "import { ConfigModule } from '@nestjs/config';\nimport { InfraModule } from '@/infra/infra.module';",
+  );
+
+  return patched.replace(
+    /(ConfigModule\.forRoot\(\{[\s\S]*?\}\),)\n/,
+    '$1\n    InfraModule,\n',
+  );
 }
 
 function stripDefaultProjectAuth(projectName: string) {
@@ -166,6 +212,7 @@ function stripDefaultProjectAuth(projectName: string) {
     appModule = appModule
       .replace(/\s*SecurityModule,\n/g, '')
       .replace(/\s*AuthModule,\n/g, '');
+    appModule = patchAppModuleForInfra(appModule);
     writeFileSync(appModulePath, appModule, 'utf8');
   }
 

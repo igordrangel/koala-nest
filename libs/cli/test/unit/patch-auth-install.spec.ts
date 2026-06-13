@@ -205,7 +205,7 @@ export async function dataSourceFactory(env: EnvService) {
   });
 
   it('aplica guards globais, cookie parser e limpa OAuth2 no modo jwt', async () => {
-    await patchAuthInstall('.', 'jwt');
+    await patchAuthInstall('.', ['jwt']);
 
     const appModule = readFileSync(
       path.join(tempDir, 'src/host/app.module.ts'),
@@ -222,6 +222,20 @@ export async function dataSourceFactory(env: EnvService) {
     expect(main).toContain('AuthGuard');
     expect(main).toContain('ProfilesGuard');
     expect(authModule).not.toContain('OAuthAuthLinkHandler');
+
+    const securityModule = readFileSync(
+      path.join(tempDir, 'src/host/security/security.module.ts'),
+      'utf8',
+    );
+    expect(securityModule).not.toContain('IOAuth2Service');
+    expect(securityModule).not.toContain('OAuthProviderRegistry');
+
+    const iauthService = readFileSync(
+      path.join(tempDir, 'src/domain/auth/services/iauth.service.ts'),
+      'utf8',
+    );
+    expect(iauthService).toContain('IJwtTokenService');
+    expect(iauthService).not.toContain('IOAuth2Service');
 
     const repositoryModuleContent = readFileSync(
       path.join(tempDir, 'src/infra/repositories/repository.module.ts'),

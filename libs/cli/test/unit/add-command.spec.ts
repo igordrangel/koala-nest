@@ -9,7 +9,7 @@ import {
 } from '@cli/utils/detect-project-state.ts';
 
 function createMockProject(options: {
-  auth?: 'jwt' | 'oauth2';
+  auth?: Array<'jwt' | 'oauth2'>;
   cache?: 'memory' | 'redis';
   health?: boolean;
   cron?: boolean;
@@ -37,7 +37,7 @@ function createMockProject(options: {
     options.health
       ? "import { HealthCheckModule } from './controllers/health-check/health-check.module';"
       : '',
-    options.auth
+    options.auth?.length
       ? "import { SecurityModule } from './security/security.module';"
       : '',
   ]
@@ -46,7 +46,7 @@ function createMockProject(options: {
 
   const moduleEntries = [
     'ConfigModule.forRoot({}),',
-    options.auth ? 'SecurityModule,' : '',
+    options.auth?.length ? 'SecurityModule,' : '',
     options.health ? 'HealthCheckModule,' : '',
     options.crud ? 'PersonModule,' : '',
   ]
@@ -68,12 +68,20 @@ export class AppModule {}
 `,
   );
 
-  if (options.auth) {
+  if (options.auth?.length) {
+    let authModuleSource = 'export class AuthModule {}\n';
+
+    if (options.auth.includes('jwt')) {
+      authModuleSource += 'const LoginController = 1;\n';
+    }
+
+    if (options.auth.includes('oauth2')) {
+      authModuleSource += 'const OAuthAuthLinkHandler = 1;\n';
+    }
+
     write(
       'src/host/controllers/auth/auth.module.ts',
-      options.auth === 'oauth2'
-        ? 'export class AuthModule {}\nconst OAuthAuthLinkHandler = 1;\n'
-        : 'export class AuthModule {}\n',
+      authModuleSource,
     );
   }
 
@@ -129,8 +137,14 @@ describe('parseAddArgs', () => {
 
   it('aceita auth com estratégia', () => {
     expect(parseAddArgs(['auth', 'oauth2', 'cache'])).toEqual([
-      { kind: 'auth', strategy: 'oauth2' },
+      { kind: 'auth', strategies: ['oauth2'] },
       { kind: 'feature', feature: 'cache' },
+    ]);
+  });
+
+  it('aceita múltiplas estratégias de auth', () => {
+    expect(parseAddArgs(['auth', 'jwt', 'oauth2'])).toEqual([
+      { kind: 'auth', strategies: ['jwt', 'oauth2'] },
     ]);
   });
 
@@ -145,12 +159,12 @@ describe('dedupeAddArgs', () => {
       dedupeAddArgs([
         { kind: 'feature', feature: 'cache' },
         { kind: 'feature', feature: 'cache' },
-        { kind: 'auth', strategy: 'jwt' },
-        { kind: 'auth', strategy: 'oauth2' },
+        { kind: 'auth', strategies: ['jwt'] },
+        { kind: 'auth', strategies: ['oauth2'] },
       ]),
     ).toEqual([
+      { kind: 'auth', strategies: ['jwt', 'oauth2'] },
       { kind: 'feature', feature: 'cache' },
-      { kind: 'auth', strategy: 'jwt' },
     ]);
   });
 });
@@ -163,7 +177,7 @@ describe('detectProjectState', () => {
       health: true,
       cron: true,
       events: true,
-      auth: 'oauth2',
+      auth: ['oauth2'],
     });
 
     const previousCwd = process.cwd();
@@ -172,7 +186,7 @@ describe('detectProjectState', () => {
     try {
       expect(detectProjectState('.')).toEqual({
         template: 'crudSample',
-        auth: 'oauth2',
+        auth: ['oauth2'],
         cache: 'redis',
         health: true,
         cronJobs: true,

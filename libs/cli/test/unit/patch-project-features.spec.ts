@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import {
+  patchInfraModuleForAuth,
   patchInfraModuleForCache,
   SLIM_INFRA_MODULE,
   stripInfraModuleCache,
@@ -58,6 +59,7 @@ describe('patch-main', () => {
 describe('patch-infra-module', () => {
   it('gera infra module enxuto sem cache', () => {
     expect(stripInfraModuleCache('anything')).toBe(SLIM_INFRA_MODULE);
+    expect(SLIM_INFRA_MODULE).not.toContain('ILoggedUserInfoService');
   });
 
   it('adiciona providers de cache ao infra slim', () => {
@@ -65,5 +67,21 @@ describe('patch-infra-module', () => {
 
     expect(patched).toContain('CacheServiceProvider');
     expect(patched).toContain('IRedLockService');
+    expect(patched).not.toContain('ILoggedUserInfoService');
+  });
+
+  it('adiciona LoggedUserInfo ao infra slim', () => {
+    const patched = patchInfraModuleForAuth(SLIM_INFRA_MODULE);
+
+    expect(patched).toContain('ILoggedUserInfoService');
+    expect(patched).toContain('LoggedUserInfoService');
+  });
+
+  it('adiciona cache e mantém LoggedUserInfo quando auth já está instalado', () => {
+    const withAuth = patchInfraModuleForAuth(SLIM_INFRA_MODULE);
+    const patched = patchInfraModuleForCache(withAuth);
+
+    expect(patched).toContain('CacheServiceProvider');
+    expect(patched).toContain('ILoggedUserInfoService');
   });
 });

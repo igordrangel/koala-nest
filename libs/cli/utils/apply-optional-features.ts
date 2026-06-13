@@ -1,4 +1,4 @@
-import { AuthChoice, ExtraFeature, Template } from '@cli/constants/domain';
+import { AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
 import {
   installModule,
   mapExtraFeatureToModule,
@@ -12,8 +12,9 @@ import { formatCode } from './format-code.ts';
 export type ApplyOptionalFeaturesOptions = {
   projectName?: string;
   template: Template;
-  auth: AuthChoice;
+  auth: AuthStrategy[];
   features: ExtraFeature[];
+  skipPackages?: boolean;
 };
 
 export async function applyOptionalFeatures(
@@ -30,19 +31,21 @@ export async function applyOptionalFeatures(
       cache: projectFeatures.cacheForCrud,
       cronJobs: projectFeatures.cronJobs,
       eventJobs: projectFeatures.eventJobs,
-      auth: options.auth !== AuthChoice.NONE,
+      auth: options.auth.length > 0,
     });
   }
 
   if (projectFeatures.cache) {
     await installModule(Modules.CACHE, options.template, projectName, {
       withRedis: projectFeatures.cacheWithRedis,
+      skipPackages: options.skipPackages,
     });
   }
 
-  if (options.auth !== AuthChoice.NONE) {
+  if (options.auth.length > 0) {
     await installModule(Modules.AUTH, options.template, projectName, {
-      authStrategy: options.auth,
+      authStrategies: options.auth,
+      skipPackages: options.skipPackages,
     });
   }
 
@@ -56,14 +59,17 @@ export async function applyOptionalFeatures(
       options.template,
       projectName,
       feature === ExtraFeature.HEALTH_CHECK
-        ? { withRedisIndicator: projectFeatures.cache }
-        : {},
+        ? {
+            withRedisIndicator: projectFeatures.cache,
+            skipPackages: options.skipPackages,
+          }
+        : { skipPackages: options.skipPackages },
     );
   }
 
   if (
     options.template === Template.DEFAULT &&
-    options.auth === AuthChoice.NONE
+    options.auth.length === 0
   ) {
     await cleanDefaultTemplateWithoutAuth(projectName);
   }

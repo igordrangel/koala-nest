@@ -1,24 +1,14 @@
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { rmSync } from 'node:fs';
 import path from 'node:path';
 import { resolveProjectPath } from './resolve-project-path';
 
-const CORE_AUTH_KEEP = new Set([
-  'jwt-claims.ts',
-  'auth-profile.enum.ts',
-  'parse-oauth2-provider-env.ts',
-]);
-
 export function pruneCoreAuthForSlimTemplate(projectName: string) {
   const projectRoot = resolveProjectPath(projectName);
-  const authDir = path.join(projectRoot, 'src/core/auth');
 
-  if (existsSync(authDir)) {
-    for (const entry of readdirSync(authDir)) {
-      if (!CORE_AUTH_KEEP.has(entry)) {
-        rmSync(path.join(authDir, entry), { force: true });
-      }
-    }
-  }
+  rmSync(path.join(projectRoot, 'src/core/auth'), {
+    recursive: true,
+    force: true,
+  });
 
   for (const relativePath of [
     'src/core/utils/hash-password.ts',

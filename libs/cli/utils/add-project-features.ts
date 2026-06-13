@@ -1,7 +1,10 @@
 import {
   AddArgKind,
+  AuthStrategy,
   ExtraFeature,
   FEATURE_LABELS,
+  formatAuthStrategies,
+  mergeAuthStrategies,
   Template,
 } from '@cli/constants/domain';
 import {
@@ -28,6 +31,7 @@ import {
 } from './restore-person-features';
 import { normalizeAddArgs } from './normalize-add-args';
 import { restoreRedisHealthCheck } from './patch-health-module';
+import { patchAuthInstall } from './patch-auth-install';
 
 async function ensureMemoryCache(projectName: string, template: TemplateType) {
   const state = detectProjectState(projectName);
@@ -91,26 +95,40 @@ export async function addProjectFeatures(
 
   for (const arg of orderedArgs) {
     if (arg.kind === AddArgKind.AUTH) {
-      if (state.auth) {
+      const current = state.auth === false ? [] : state.auth;
+      const missing = arg.strategies.filter(
+        (strategy) => !current.includes(strategy),
+      );
+
+      if (missing.length === 0) {
         results.push({
-          label: `auth (${arg.strategy})`,
+          label: `auth (${formatAuthStrategies(arg.strategies)})`,
           installed: false,
-          reason: `Autenticação ${state.auth} já está instalada.`,
+          reason: `Autenticação ${formatAuthStrategies(current)} já está instalada.`,
         });
         continue;
       }
 
-      await ensureMemoryCache(projectName, template);
+      const next = mergeAuthStrategies(current, missing);
 
-      await installModule(Modules.AUTH, template, projectName, {
-        authStrategy: arg.strategy,
-      });
+      if (current.length === 0) {
+        await ensureMemoryCache(projectName, template);
 
-      if (template === Template.CRUD_SAMPLE) {
-        await restorePersonAuthExample(projectName);
+        await installModule(Modules.AUTH, template, projectName, {
+          authStrategies: next,
+        });
+
+        if (template === Template.CRUD_SAMPLE) {
+          await restorePersonAuthExample(projectName);
+        }
+      } else {
+        await patchAuthInstall(projectName, next);
       }
 
-      results.push({ label: `auth (${arg.strategy})`, installed: true });
+      results.push({
+        label: `auth (${formatAuthStrategies(missing)})`,
+        installed: true,
+      });
       state = detectProjectState(projectName);
       continue;
     }

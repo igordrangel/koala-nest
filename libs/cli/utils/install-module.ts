@@ -29,6 +29,7 @@ import {
   patchHealthCheckWithoutRedis,
 } from './patch-health-module';
 import {
+  patchInfraModuleForAuth,
   patchInfraModuleForCache,
   stripInfraModuleCache,
 } from './patch-infra-module';
@@ -60,7 +61,7 @@ export {
 } from '@cli/constants/domain';
 
 export type InstallModuleOptions = {
-  authStrategy?: AuthStrategy;
+  authStrategies?: AuthStrategy[];
   withRedis?: boolean;
   withRedisIndicator?: boolean;
   skipPackages?: boolean;
@@ -117,6 +118,18 @@ function patchInfraModuleFile(projectName: string, withCache: boolean) {
     withCache
       ? patchInfraModuleForCache(content)
       : stripInfraModuleCache(content),
+  );
+}
+
+function patchInfraModuleAuthFile(projectName: string) {
+  const infraModulePath = path.join(
+    resolveProjectPath(projectName),
+    'src/infra/infra.module.ts',
+  );
+
+  writeFileSync(
+    infraModulePath,
+    patchInfraModuleForAuth(readFileSync(infraModulePath, 'utf8')),
   );
 }
 
@@ -204,8 +217,6 @@ export async function installModule(
       install('src/core', projectName);
       install('src/domain/common/ilogging.service.ts', projectName);
       install('src/domain/dtos/pagination.dto.ts', projectName);
-      install('src/domain/dtos/logged-user-info.dto.ts', projectName);
-      install('src/domain/services', projectName);
       install('src/host/controllers/common', projectName);
       install('src/host/decorators', projectName);
       install('src/host/filters', projectName);
@@ -284,6 +295,13 @@ export async function installModule(
         ),
         { force: true },
       );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
+          'src/infra/services/logged-user-info.service.ts',
+        ),
+        { force: true },
+      );
 
       pruneCoreAuthForSlimTemplate(projectName);
 
@@ -312,7 +330,9 @@ export async function installModule(
       patchInfraModuleFile(projectName, false);
       patchMainFile(projectName, stripMainOptionalFeatures);
 
-      await installPackages(projectName, CORE_PACKAGES);
+      if (!options.skipPackages) {
+        await installPackages(projectName, CORE_PACKAGES);
+      }
 
       if (template === Template.DEFAULT) {
         await removeSampleParts(projectName);
@@ -330,11 +350,14 @@ export async function installModule(
     }
     case Modules.AUTH: {
       install('src/application/auth', projectName);
+      install('src/domain/dtos/logged-user-info.dto.ts', projectName);
+      install('src/domain/services', projectName);
       install('src/domain/auth', projectName);
       install('src/domain/entities/user', projectName);
       install('src/domain/repositories/iuser.repository.ts', projectName);
       install('src/infra/auth', projectName);
       install('src/infra/repositories/user.repository.ts', projectName);
+      install('src/infra/services/logged-user-info.service.ts', projectName);
       install('src/core/utils/hash-password.ts', projectName);
       install('src/core/utils/name-to-login.ts', projectName);
 
@@ -365,18 +388,24 @@ export async function installModule(
 
       restoreDefineDocumentationWithAuth(projectName);
 
-      await installPackages(projectName, AUTH_PACKAGES, AUTH_DEV_PACKAGES);
-      patchMainFile(projectName, patchMainForAuth);
-
-      if (options.authStrategy) {
-        await patchAuthInstall(projectName, options.authStrategy);
+      if (!options.skipPackages) {
+        await installPackages(projectName, AUTH_PACKAGES, AUTH_DEV_PACKAGES);
       }
+      patchMainFile(projectName, patchMainForAuth);
+      patchInfraModuleAuthFile(projectName);
+
+      await patchAuthInstall(
+        projectName,
+        options.authStrategies?.length
+          ? options.authStrategies
+          : [AuthStrategy.JWT],
+      );
       break;
     }
     case Modules.CACHE: {
       installCacheInfrastructure(projectName, options.withRedis ?? false);
 
-      if (options.withRedis) {
+      if (options.withRedis && !options.skipPackages) {
         await installPackages(projectName, CACHE_PACKAGES);
       }
 
@@ -405,7 +434,9 @@ export async function installModule(
     case Modules.INTERNAL_CRON_JOBS: {
       install('src/core/background-services/cron-service', projectName);
       install('src/core/utils/cron-expression-to-boolean.ts', projectName);
-      await installPackages(projectName, CRON_PACKAGES);
+      if (!options.skipPackages) {
+        await installPackages(projectName, CRON_PACKAGES);
+      }
       break;
     }
     case Modules.INTERNAL_EVENT_JOBS: {
@@ -417,13 +448,13 @@ export async function installModule(
 
 export function resolveProjectFeatures(
   features: ExtraFeature[],
-  auth: AuthChoice,
+  auth: AuthStrategy[],
 ): ProjectFeatures {
   const selected = new Set(features);
   const cacheWithRedis = selected.has(ExtraFeature.CACHE);
   const needsMemoryCache =
     cacheWithRedis ||
-    auth !== AuthChoice.NONE ||
+    auth.length > 0 ||
     selected.has(ExtraFeature.INTERNAL_CRON_JOBS);
 
   return {

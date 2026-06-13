@@ -159,12 +159,87 @@ export function isAuthStrategy(value: string): value is AuthStrategy {
   return value === AuthStrategy.JWT || value === AuthStrategy.OAUTH2;
 }
 
+export function parseAuthStrategies(
+  value: string,
+  template?: Template,
+): AuthStrategy[] {
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized === AuthChoice.NONE || normalized === '') {
+    if (template === Template.CRUD_SAMPLE) {
+      throw new Error(
+        'Template CRUD exige autenticação. Use: --auth jwt, --auth oauth2 ou --auth jwt,oauth2.',
+      );
+    }
+
+    return [];
+  }
+
+  const strategies = normalized
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      if (isAuthStrategy(item)) {
+        return item;
+      }
+
+      throw new Error(
+        `Autenticação desconhecida: "${item}". Use: none, jwt, oauth2 ou jwt,oauth2.`,
+      );
+    });
+
+  return Array.from(new Set(strategies));
+}
+
+export function formatAuthStrategies(strategies: readonly AuthStrategy[]): string {
+  if (strategies.length === 0) {
+    return AuthChoice.NONE;
+  }
+
+  return strategies.join(' + ');
+}
+
+export function resolveAuthStrategiesFromModule(
+  authModuleSource: string,
+): AuthStrategy[] {
+  const strategies: AuthStrategy[] = [];
+
+  if (authModuleSource.includes('LoginController')) {
+    strategies.push(AuthStrategy.JWT);
+  }
+
+  if (authModuleSource.includes(ProjectMarker.OAUTH_AUTH_LINK_HANDLER)) {
+    strategies.push(AuthStrategy.OAUTH2);
+  }
+
+  return strategies;
+}
+
+/** @deprecated use resolveAuthStrategiesFromModule */
 export function resolveAuthStrategyFromModule(
   authModuleSource: string,
 ): AuthStrategy {
-  return authModuleSource.includes(ProjectMarker.OAUTH_AUTH_LINK_HANDLER)
-    ? AuthStrategy.OAUTH2
-    : AuthStrategy.JWT;
+  return (
+    resolveAuthStrategiesFromModule(authModuleSource)[0] ?? AuthStrategy.JWT
+  );
+}
+
+export function mergeAuthStrategies(
+  current: readonly AuthStrategy[],
+  incoming: readonly AuthStrategy[],
+): AuthStrategy[] {
+  return Array.from(new Set([...current, ...incoming]));
+}
+
+export function listMissingAuthStrategies(
+  installed: false | readonly AuthStrategy[],
+): AuthStrategy[] {
+  const current = installed === false ? [] : installed;
+
+  return [AuthStrategy.JWT, AuthStrategy.OAUTH2].filter(
+    (strategy) => !current.includes(strategy),
+  );
 }
 
 export function mergeCrudSampleFeatures(
@@ -175,15 +250,15 @@ export function mergeCrudSampleFeatures(
 
 export function resolveNewProjectOptions(
   template: Template,
-  auth: AuthChoice,
+  auth: AuthStrategy[],
   features: ExtraFeature[],
-): { auth: AuthChoice; features: ExtraFeature[] } {
+): { auth: AuthStrategy[]; features: ExtraFeature[] } {
   if (template !== Template.CRUD_SAMPLE) {
     return { auth, features };
   }
 
   return {
-    auth: auth === AuthChoice.NONE ? AuthChoice.JWT : auth,
+    auth: auth.length === 0 ? [AuthStrategy.JWT] : auth,
     features: mergeCrudSampleFeatures(features),
   };
 }

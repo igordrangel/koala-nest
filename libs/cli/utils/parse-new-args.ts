@@ -1,7 +1,8 @@
 import type { PackageManager } from '@cli/types/index.ts';
 import {
-  AuthChoice,
+  AuthStrategy,
   FEATURE_ALIASES,
+  parseAuthStrategies,
   type ExtraFeature,
   Template,
   TEMPLATE_ALIASES,
@@ -11,7 +12,7 @@ export type ParsedNewArgs = {
   projectName?: string;
   packageManager?: PackageManager;
   template?: Template;
-  auth?: AuthChoice;
+  auth?: AuthStrategy[];
   features: ExtraFeature[];
   yes: boolean;
   interactive: boolean;
@@ -54,23 +55,7 @@ function parsePackageManager(value: string): PackageManager {
 }
 
 function parseAuth(value: string, template?: Template) {
-  if (
-    value === AuthChoice.NONE ||
-    value === AuthChoice.JWT ||
-    value === AuthChoice.OAUTH2
-  ) {
-    if (template === Template.CRUD_SAMPLE && value === AuthChoice.NONE) {
-      throw new Error(
-        'Template CRUD exige autenticação. Use: --auth jwt ou --auth oauth2.',
-      );
-    }
-
-    return value;
-  }
-
-  throw new Error(
-    `Autenticação desconhecida: "${value}". Use: none, jwt, oauth2.`,
-  );
+  return parseAuthStrategies(value, template);
 }
 
 export function parseNewArgs(args: string[]): ParsedNewArgs {
@@ -150,9 +135,13 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
     }
   }
 
-  if (auth && template === Template.CRUD_SAMPLE && auth === AuthChoice.NONE) {
+  if (
+    auth &&
+    template === Template.CRUD_SAMPLE &&
+    auth.length === 0
+  ) {
     throw new Error(
-      'Template CRUD exige autenticação. Use: --auth jwt ou --auth oauth2.',
+      'Template CRUD exige autenticação. Use: --auth jwt, --auth oauth2 ou --auth jwt,oauth2.',
     );
   }
 
@@ -173,7 +162,7 @@ export function assertNewArgsComplete(
   projectName: string;
   packageManager: PackageManager;
   template: Template;
-  auth: AuthChoice;
+  auth: AuthStrategy[];
   features: ExtraFeature[];
 } {
   if (!args.projectName) {
@@ -188,7 +177,7 @@ export function assertNewArgsComplete(
     throw new Error('Template é obrigatório.');
   }
 
-  if (!args.auth) {
+  if (args.auth === undefined) {
     throw new Error('Autenticação é obrigatória.');
   }
 }
@@ -199,7 +188,7 @@ export function buildNewProjectConfig(
     name: string;
     packageManager: PackageManager;
     template: Template;
-    auth: AuthChoice;
+    auth: AuthStrategy[];
     features: ExtraFeature[];
   },
 ) {

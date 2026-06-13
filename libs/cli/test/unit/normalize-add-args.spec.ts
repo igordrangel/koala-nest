@@ -5,13 +5,13 @@ describe('normalizeAddArgs', () => {
   it('ordena cache antes de auth e health', () => {
     expect(
       normalizeAddArgs([
-        { kind: 'auth', strategy: 'jwt' },
+        { kind: 'auth', strategies: ['jwt'] },
         { kind: 'feature', feature: 'health-check' },
         { kind: 'feature', feature: 'cache' },
       ]),
     ).toEqual([
       { kind: 'feature', feature: 'cache' },
-      { kind: 'auth', strategy: 'jwt' },
+      { kind: 'auth', strategies: ['jwt'] },
       { kind: 'feature', feature: 'health-check' },
     ]);
   });
@@ -20,10 +20,10 @@ describe('normalizeAddArgs', () => {
     expect(
       normalizeAddArgs([
         { kind: 'feature', feature: 'internal-cron-jobs' },
-        { kind: 'auth', strategy: 'oauth2' },
+        { kind: 'auth', strategies: ['oauth2'] },
       ]),
     ).toEqual([
-      { kind: 'auth', strategy: 'oauth2' },
+      { kind: 'auth', strategies: ['oauth2'] },
       { kind: 'feature', feature: 'internal-cron-jobs' },
     ]);
   });

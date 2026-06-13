@@ -87,6 +87,9 @@ describe('removeSampleParts', () => {
     const srcDir = path.join(tempDir, 'src');
     mkdirSync(path.join(srcDir, 'host/decorators'), { recursive: true });
     mkdirSync(path.join(srcDir, 'test/host'), { recursive: true });
+    mkdirSync(path.join(srcDir, 'application/auth/login'), { recursive: true });
+    mkdirSync(path.join(srcDir, 'domain/services'), { recursive: true });
+    mkdirSync(path.join(srcDir, 'core/auth'), { recursive: true });
 
     writeFileSync(
       path.join(srcDir, 'host/decorators/scalar-token-endpoint.decorator.ts'),
@@ -95,6 +98,22 @@ describe('removeSampleParts', () => {
     writeFileSync(
       path.join(srcDir, 'test/host/is-public-open-api.spec.ts'),
       "describe('auth', () => {});\n",
+    );
+    writeFileSync(
+      path.join(srcDir, 'application/auth/login/login.handler.ts'),
+      'export class LoginHandler {}\n',
+    );
+    writeFileSync(
+      path.join(srcDir, 'domain/services/ilogged-user-info.service.ts'),
+      'export abstract class ILoggedUserInfoService {}\n',
+    );
+    writeFileSync(
+      path.join(srcDir, 'core/auth/jwt-claims.ts'),
+      'export type AuthenticatedUser = {};\n',
+    );
+    writeFileSync(
+      path.join(srcDir, 'core/auth/parse-oauth2-provider-env.ts'),
+      'export function parseOauth2ProviderEnv() {}\n',
     );
 
     const previousCwd = process.cwd();
@@ -114,6 +133,18 @@ describe('removeSampleParts', () => {
       expect(
         existsSync(path.join(srcDir, 'test/host/is-public-open-api.spec.ts')),
       ).toBe(false);
+      expect(
+        existsSync(path.join(srcDir, 'application/auth/login/login.handler.ts')),
+      ).toBe(false);
+      expect(
+        existsSync(
+          path.join(srcDir, 'domain/services/ilogged-user-info.service.ts'),
+        ),
+      ).toBe(false);
+      expect(existsSync(path.join(srcDir, 'core/auth/jwt-claims.ts'))).toBe(
+        false,
+      );
+      expect(existsSync(path.join(srcDir, 'core/auth'))).toBe(false);
     } finally {
       process.chdir(previousCwd);
     }

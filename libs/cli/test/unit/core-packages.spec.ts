@@ -47,7 +47,7 @@ describe('core-packages', () => {
 
 describe('resolveProjectFeatures', () => {
   it('instala cache em memória para OAuth2 sem marcar Redis', () => {
-    const features = resolveProjectFeatures([], 'oauth2');
+    const features = resolveProjectFeatures([], ['oauth2']);
 
     expect(features.cache).toBe(true);
     expect(features.cacheWithRedis).toBe(false);
@@ -55,7 +55,7 @@ describe('resolveProjectFeatures', () => {
   });
 
   it('instala cache em memória para JWT sem marcar Redis', () => {
-    const features = resolveProjectFeatures([], 'jwt');
+    const features = resolveProjectFeatures([], ['jwt']);
 
     expect(features.cache).toBe(true);
     expect(features.cacheWithRedis).toBe(false);
@@ -63,7 +63,7 @@ describe('resolveProjectFeatures', () => {
   });
 
   it('instala Redis apenas quando cache é selecionado', () => {
-    const features = resolveProjectFeatures(['cache'], 'none');
+    const features = resolveProjectFeatures(['cache'], []);
 
     expect(features.cache).toBe(true);
     expect(features.cacheWithRedis).toBe(true);
@@ -71,7 +71,7 @@ describe('resolveProjectFeatures', () => {
   });
 
   it('cron jobs exigem cache em memória para RedLock', () => {
-    const features = resolveProjectFeatures(['internal-cron-jobs'], 'jwt');
+    const features = resolveProjectFeatures(['internal-cron-jobs'], ['jwt']);
 
     expect(features.cache).toBe(true);
     expect(features.cacheWithRedis).toBe(false);
@@ -79,7 +79,7 @@ describe('resolveProjectFeatures', () => {
   });
 
   it('CRUD sem extras selecionados não instala cache nem jobs', () => {
-    const features = resolveProjectFeatures([], 'none');
+    const features = resolveProjectFeatures([], []);
 
     expect(features.cache).toBe(false);
     expect(features.cacheWithRedis).toBe(false);
@@ -91,9 +91,9 @@ describe('resolveProjectFeatures', () => {
 
 describe('resolveNewProjectOptions', () => {
   it('força auth, cache Redis e jobs no template CRUD', () => {
-    const resolved = resolveNewProjectOptions('crudSample', 'none', []);
+    const resolved = resolveNewProjectOptions('crudSample', [], []);
 
-    expect(resolved.auth).toBe('jwt');
+    expect(resolved.auth).toEqual(['jwt']);
     expect(resolved.features).toEqual([
       'cache',
       'internal-cron-jobs',
@@ -102,11 +102,11 @@ describe('resolveNewProjectOptions', () => {
   });
 
   it('preserva estratégia de auth escolhida no CRUD', () => {
-    const resolved = resolveNewProjectOptions('crudSample', 'oauth2', [
+    const resolved = resolveNewProjectOptions('crudSample', ['oauth2'], [
       'health-check',
     ]);
 
-    expect(resolved.auth).toBe('oauth2');
+    expect(resolved.auth).toEqual(['oauth2']);
     expect(resolved.features).toEqual([
       'cache',
       'internal-cron-jobs',
@@ -116,11 +116,11 @@ describe('resolveNewProjectOptions', () => {
   });
 
   it('não altera opções do template padrão', () => {
-    const resolved = resolveNewProjectOptions('default', 'none', [
+    const resolved = resolveNewProjectOptions('default', [], [
       'health-check',
     ]);
 
-    expect(resolved.auth).toBe('none');
+    expect(resolved.auth).toEqual([]);
     expect(resolved.features).toEqual(['health-check']);
   });
 });

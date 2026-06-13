@@ -1,12 +1,13 @@
 import { ArgumentsHost } from '@nestjs/common/interfaces';
-import { AuthenticatedUser } from '@/core/auth/jwt-claims';
 import { Request, Response } from 'express';
+
+type RequestUser = { login?: string; sub?: string };
 
 export class FilterRequestParams {
   static get(host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request & { user?: AuthenticatedUser }>();
+    const request = ctx.getRequest<Request & { user?: RequestUser }>();
     const method = request.method;
     const isGetMethod = method === 'GET';
 

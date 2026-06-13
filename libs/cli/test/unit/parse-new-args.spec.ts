@@ -42,7 +42,7 @@ describe('parseNewArgs', () => {
       projectName: 'my-api',
       packageManager: 'bun',
       template: 'default',
-      auth: 'none',
+      auth: [],
       features: [],
       yes: true,
       interactive: false,
@@ -73,6 +73,31 @@ describe('parseNewArgs', () => {
         'cache,health,cron',
       ]).features,
     ).toEqual(['cache', 'health-check', 'internal-cron-jobs']);
+  });
+
+  it('aceita múltiplas estratégias de auth separadas por vírgula', () => {
+    expect(
+      parseNewArgs([
+        'demo',
+        '-y',
+        '--template',
+        'default',
+        '--auth',
+        'jwt,oauth2',
+      ]).auth,
+    ).toEqual(['jwt', 'oauth2']);
+  });
+
+  it('aceita oauth2 isolado', () => {
+    expect(parseNewArgs(['demo', '-y', '--auth', 'oauth2']).auth).toEqual([
+      'oauth2',
+    ]);
+  });
+
+  it('rejeita estratégia de auth inválida', () => {
+    expect(() => parseNewArgs(['demo', '-y', '--auth', 'saml'])).toThrow(
+      /desconhecida/,
+    );
   });
 
   it('rejeita auth none no template crud', () => {
