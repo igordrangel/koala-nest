@@ -27,6 +27,7 @@ import {
   resolveProjectFeatures,
 } from '@cli/utils/install-module.ts';
 import { fixLintConfig } from './fix-lint-config.ts';
+import { finalizeNewProjectSetup } from '@cli/utils/install-workspace-config.ts';
 
 async function promptAuthStrategies(template: Template) {
   const isCrud = template === Template.CRUD_SAMPLE;
@@ -244,6 +245,10 @@ export async function runNew(args: string[] = []): Promise<void> {
     features,
   });
 
+  spinner.message('Configurando workspace (.vscode e .env)...');
+
+  finalizeNewProjectSetup(project.name, project.packageManager);
+
   spinner.stop('Projeto criado com sucesso!');
 
   const projectFeatures = resolveProjectFeatures(features, authStrategies);
@@ -274,7 +279,8 @@ export async function runNew(args: string[] = []): Promise<void> {
       `${color.bold('Gerenciador:')} ${project.packageManager}`,
       `${color.bold('Autenticação:')} ${formatAuthStrategies(authStrategies)}`,
       `${color.bold('Extras:')} ${extrasSummary || color.dim('nenhum')}`,
-      `${color.dim('Depois:')} cd ${project.name} && kl-nest add <feature>`,
+      `${color.dim('Depois:')} cd ${project.name} && ${project.packageManager} start`,
+      `${color.dim('Extras:')} kl-nest add <feature>`,
     ].join('\n'),
     'Resumo',
   );

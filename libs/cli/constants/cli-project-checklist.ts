@@ -18,6 +18,15 @@ export type ProjectExpectation = {
   eventJobs: boolean;
 };
 
+/** Workspace pronto para abrir no VS Code e subir a API. */
+export const WORKSPACE_SETUP_PATHS = [
+  '.vscode/launch.json',
+  '.vscode/settings.json',
+  '.vscode/tasks.json',
+  '.vscode/extensions.json',
+  '.env',
+] as const;
+
 /** Núcleo comum a qualquer projeto Koala Nest. */
 export const CORE_REQUIRED_PATHS = [
   'src/core/env.ts',
@@ -221,7 +230,7 @@ export function buildProjectExpectation(
 export function requiredPathsForExpectation(
   expectation: ProjectExpectation,
 ): readonly string[] {
-  const paths: string[] = [...CORE_REQUIRED_PATHS];
+  const paths: string[] = [...CORE_REQUIRED_PATHS, ...WORKSPACE_SETUP_PATHS];
 
   if (expectation.template === Template.CRUD_SAMPLE) {
     paths.push(...CRUD_TEMPLATE_REQUIRED_PATHS);
