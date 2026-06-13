@@ -1,80 +1,115 @@
-export function patchInfraModuleForCache(content: string) {
-  if (content.includes('CacheServiceProvider')) {
-    return content;
-  }
+type InfraModuleOptions = {
+  cache: boolean;
+  auth: boolean;
+};
 
-  const withAuth = content.includes('ILoggedUserInfoService');
-
-  let patched = content
-    .replace(
-      "import { ILoggingService } from '@/domain/common/ilogging.service';",
-      "import { ICacheService } from '@/domain/common/icache.service';\nimport { ILoggingService } from '@/domain/common/ilogging.service';\nimport { IRedLockService } from '@/domain/common/ired-lock.service';",
-    )
-    .replace(
-      "import { LoggingService } from '@/infra/common/logging.service';",
-      "import { CacheServiceProvider } from '@/infra/common/cache-service.provider';\nimport { LoggingService } from '@/infra/common/logging.service';\nimport { RedLockService } from '@/infra/common/red-lock.service';",
-    )
-    .replace(
-      '  providers: [\n    { provide: ILoggingService, useClass: LoggingService },',
-      '  providers: [\n    CacheServiceProvider,\n    { provide: ICacheService, useExisting: CacheServiceProvider },\n    { provide: ILoggingService, useClass: LoggingService },\n    { provide: IRedLockService, useClass: RedLockService },',
-    );
-
-  if (withAuth) {
-    return patched.replace(
-      '  exports: [RepositoryModule, ILoggingService, ILoggedUserInfoService],',
-      '  exports: [\n    RepositoryModule,\n    ICacheService,\n    ILoggingService,\n    IRedLockService,\n    ILoggedUserInfoService,\n  ],',
-    );
-  }
-
-  return patched.replace(
-    '  exports: [RepositoryModule, ILoggingService],',
-    '  exports: [\n    RepositoryModule,\n    ICacheService,\n    ILoggingService,\n    IRedLockService,\n  ],',
+function hasCacheProviders(content: string) {
+  return content.includes(
+    '{ provide: ICacheService, useExisting: CacheServiceProvider }',
   );
 }
 
-export const SLIM_INFRA_MODULE = `import { ILoggingService } from '@/domain/common/ilogging.service';
-import { Module } from '@nestjs/common';
-import { LoggingService } from '@/infra/common/logging.service';
-import { RepositoryModule } from '@/infra/repositories/repository.module';
+function hasAuthProviders(content: string) {
+  return content.includes(
+    '{ provide: ILoggedUserInfoService, useClass: LoggedUserInfoService }',
+  );
+}
+
+export function buildInfraModule({ cache, auth }: InfraModuleOptions): string {
+  const importLines = [
+    ...(cache
+      ? ["import { ICacheService } from '@/domain/common/icache.service';"]
+      : []),
+    "import { ILoggingService } from '@/domain/common/ilogging.service';",
+    ...(auth
+      ? [
+          "import { ILoggedUserInfoService } from '@/domain/services/ilogged-user-info.service';",
+        ]
+      : []),
+    ...(cache
+      ? ["import { IRedLockService } from '@/domain/common/ired-lock.service';"]
+      : []),
+    "import { Module } from '@nestjs/common';",
+    ...(cache
+      ? [
+          "import { CacheServiceProvider } from '@/infra/common/cache-service.provider';",
+        ]
+      : []),
+    "import { LoggingService } from '@/infra/common/logging.service';",
+    ...(auth
+      ? [
+          "import { LoggedUserInfoService } from '@/infra/services/logged-user-info.service';",
+        ]
+      : []),
+    ...(cache
+      ? ["import { RedLockService } from '@/infra/common/red-lock.service';"]
+      : []),
+    "import { RepositoryModule } from '@/infra/repositories/repository.module';",
+  ];
+
+  const providerLines = [
+    ...(cache
+      ? [
+          '    CacheServiceProvider,',
+          '    { provide: ICacheService, useExisting: CacheServiceProvider },',
+        ]
+      : []),
+    '    { provide: ILoggingService, useClass: LoggingService },',
+    ...(cache
+      ? ['    { provide: IRedLockService, useClass: RedLockService },']
+      : []),
+    ...(auth
+      ? [
+          '    { provide: ILoggedUserInfoService, useClass: LoggedUserInfoService },',
+        ]
+      : []),
+  ];
+
+  const exportLines = [
+    '    RepositoryModule,',
+    ...(cache ? ['    ICacheService,'] : []),
+    '    ILoggingService,',
+    ...(cache ? ['    IRedLockService,'] : []),
+    ...(auth ? ['    ILoggedUserInfoService,'] : []),
+  ];
+
+  return `${importLines.join('\n')}
 
 @Module({
   imports: [RepositoryModule],
-  providers: [{ provide: ILoggingService, useClass: LoggingService }],
-  exports: [RepositoryModule, ILoggingService],
+  providers: [
+${providerLines.join('\n')}
+  ],
+  exports: [
+${exportLines.join('\n')}
+  ],
 })
 export class InfraModule {}
 `;
+}
 
-export function patchInfraModuleForAuth(content: string) {
-  if (content.includes('ILoggedUserInfoService')) {
+export function patchInfraModuleForCache(content: string) {
+  if (hasCacheProviders(content)) {
     return content;
   }
 
-  let patched = content
-    .replace(
-      "import { ILoggingService } from '@/domain/common/ilogging.service';",
-      "import { ILoggingService } from '@/domain/common/ilogging.service';\nimport { ILoggedUserInfoService } from '@/domain/services/ilogged-user-info.service';",
-    )
-    .replace(
-      "import { LoggingService } from '@/infra/common/logging.service';",
-      "import { LoggingService } from '@/infra/common/logging.service';\nimport { LoggedUserInfoService } from '@/infra/services/logged-user-info.service';",
-    )
-    .replace(
-      '    { provide: ILoggingService, useClass: LoggingService },',
-      '    { provide: ILoggingService, useClass: LoggingService },\n    { provide: ILoggedUserInfoService, useClass: LoggedUserInfoService },',
-    );
+  return buildInfraModule({
+    cache: true,
+    auth: hasAuthProviders(content) || content.includes('ILoggedUserInfoService'),
+  });
+}
 
-  if (patched.includes('IRedLockService,')) {
-    return patched.replace(
-      '    IRedLockService,\n  ],',
-      '    IRedLockService,\n    ILoggedUserInfoService,\n  ],',
-    );
+export const SLIM_INFRA_MODULE = buildInfraModule({ cache: false, auth: false });
+
+export function patchInfraModuleForAuth(content: string) {
+  if (hasAuthProviders(content)) {
+    return content;
   }
 
-  return patched.replace(
-    '  exports: [RepositoryModule, ILoggingService],',
-    '  exports: [RepositoryModule, ILoggingService, ILoggedUserInfoService],',
-  );
+  return buildInfraModule({
+    cache: hasCacheProviders(content) || content.includes('ICacheService'),
+    auth: true,
+  });
 }
 
 export function stripInfraModuleCache(_content: string) {
