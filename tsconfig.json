@@ -1,28 +1,37 @@
 {
   "compilerOptions": {
-    "module": "commonJs",
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./apps/example/src/*"],
-      "@koalarx/nest/*": ["./apps/koala-nest/src/*"]
-    },
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2022",
-    "incremental": true,
+    // Environment setup & latest features
+    "lib": [
+      "ESNext"
+    ],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    // Best practices
+    "strict": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "resolveJsonModule": true
-  },
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "paths": {
+      "@/*": [
+        "./libs/koala-nest/src/*"
+      ],
+      "@cli/*": [
+        "./libs/cli/*"
+      ]
+    },
+  }
 }

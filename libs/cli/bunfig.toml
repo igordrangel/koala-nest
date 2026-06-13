@@ -1,0 +1,6 @@
+[test]
+preload = ["./test/setup.ts"]
+timeoutMs = 60000
+
+[loader]
+".ts" = "tsx"

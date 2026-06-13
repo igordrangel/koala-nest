@@ -1,0 +1,14 @@
+{
+  "name": "@koalarx/nest-cli",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test --max-concurrency=1 test/isolated/ && bun test --max-concurrency=1 test/unit/ && bun test --max-concurrency=1 test/isolated-mocks/",
+    "test:unit": "bun test --max-concurrency=1 test/isolated/ && bun test --max-concurrency=1 test/unit/ && bun test --max-concurrency=1 test/isolated-mocks/",
+    "test:e2e": "bun test --max-concurrency=1 test/e2e/"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

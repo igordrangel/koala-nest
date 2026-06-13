@@ -1,0 +1,62 @@
+name: NPM Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          cd libs/koala-nest && bun install --frozen-lockfile
+
+      - name: Check if version is already published
+        id: check_version
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          set +e
+          npm view "${PACKAGE_NAME}@${VERSION}" version 2>/tmp/npm-view.err
+          EXIT_CODE=$?
+          set -e
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "Version ${VERSION} already published, skipping."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          elif grep -qE 'E404|404 Not Found|Not Found' /tmp/npm-view.err; then
+            echo "Publishing ${PACKAGE_NAME}@${VERSION}."
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Failed to check npm registry:" >&2
+            cat /tmp/npm-view.err >&2
+            exit 1
+          fi
+
+      - name: Build
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: bun run build
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Publish to npm
+        if: steps.check_version.outputs.should_publish == 'true'
+        working-directory: dist
+        run: npm publish --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

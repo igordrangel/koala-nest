@@ -1,6 +1,4 @@
 {
-  "vsicons.presets.angular": false,
-  "vsicons.presets.nestjs": true,
   "material-icon-theme.activeIconPack": "nest",
   "editor.fontFamily": "Fira Code",
   "editor.fontSize": 15,
@@ -9,11 +7,14 @@
     "javascript": "jsx"
   },
   "workbench.startupEditor": "newUntitledFile",
-  "javascript.suggest.autoImports": true,
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "editor.rulers": [80, 120],
+  "js/ts.suggest.autoImports": true,
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "editor.rulers": [
+    80,
+    120
+  ],
   "extensions.ignoreRecommendations": true,
-  "typescript.tsserver.log": "off",
+  "js/ts.tsserver.log": "off",
   "files.associations": {
     ".sequelizerc": "javascript",
     ".stylelintrc": "json",
@@ -31,7 +32,6 @@
   "[prisma]": {
     "editor.formatOnSave": true
   },
-  "typescript.suggest.autoImports": true,
   "terminal.integrated.env.osx": {
     "FIG_NEW_SESSION": "1"
   },
@@ -62,9 +62,11 @@
     "vitest.config.e2e.ts": "vitest",
     "*.e2e-spec.ts": "test-js",
     "*.dto.ts": "diff",
+    "*.handler.ts": "esbuild",
     "*.request.ts": "log",
     "*.schema.ts": "scheme",
-    "*.response.ts": "commitlint"
+    "*.response.ts": "conduct",
+    "*.validator.ts": "commitlint"
   },
   "material-icon-theme.folders.associations": {
     "adapters": "contract",
@@ -99,15 +101,47 @@
     "repositories": "mappings",
     "filters": "pipe"
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
   },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "prettier.documentSelectors": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js"
+  ],
   "terminal.integrated.defaultProfile.windows": "Command Prompt",
   "git.confirmSync": false,
   "files.eol": "\n",
   "workbench.productIconTheme": "Default",
   "npm.scriptExplorerAction": "run",
-  "npm.packageManager": "npm",
+  "npm.packageManager": "bun",
   "editor.wordWrap": "on",
-  "editor.wrappingIndent": "indent"
+  "editor.wrappingIndent": "indent",
+  "eslint.workingDirectories": [
+    {
+      "directory": "libs/koala-nest",
+      "changeProcessCWD": true
+    },
+    {
+      "directory": "libs/cli",
+      "changeProcessCWD": true
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
 }

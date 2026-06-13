@@ -1,4 +1,0 @@
-# Exclude everything from parent directories
-../../*
-
-# But include nothing (override any includes)
