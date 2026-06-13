@@ -1,7 +1,7 @@
 import { cpSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { getSourceCodePath } from "../../utils/get-source-code-path";
-import { resolveProjectPath } from "../../utils/resolve-project-pach";
+import { resolveProjectPath } from "../../utils/resolve-project-path";
 
 export function fixLintConfig(projectName: string) {
   const projectPath = resolveProjectPath(projectName);

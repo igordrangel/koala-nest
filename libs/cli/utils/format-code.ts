@@ -1,5 +1,5 @@
 import { getPackageManager } from "./get-package-manager";
-import { resolveProjectPath } from "./resolve-project-pach";
+import { resolveProjectPath } from "./resolve-project-path";
 import { runCommand } from "./run-command";
 
 export async function formatCode(projectName: string) {

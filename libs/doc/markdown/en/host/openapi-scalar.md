@@ -64,8 +64,8 @@ In `src/core/schemas/`:
 | `booleanSchema()` | Query booleans (`?active=true`) |
 | `nativeEnumSchema(enum)` | Numeric enums in query/body |
 | `emailSchema(value, required?)` | Email validation |
-| `documentNumberSchema(value)` | CPF/CNPJ |
-| `setMaskDocumentNumber(value)` | Document mask |
+| `documentNumberSchema(value)` | CPF/CNPJ, including alphanumeric CNPJ (via [`@koalarx/utils`](../core/koala-utils.md)) |
+| `setMaskDocumentNumber(value)` | Document mask (via `@koalarx/utils/KlString`) |
 | `LIST_QUERY_SCHEMA` | Pagination and sorting |
 
 Example in validators:

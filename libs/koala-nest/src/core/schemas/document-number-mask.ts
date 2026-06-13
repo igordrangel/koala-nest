@@ -1,17 +1,22 @@
-function maskCpf(value: string) {
-  return value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-}
-
-function maskCnpj(value: string) {
-  return value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-}
+import { maskCpf, maskCnpj } from '@koalarx/utils/KlString';
+import {
+  isCnpjDocument,
+  isCpfDocument,
+  unmaskDocumentNumber,
+} from '@/core/schemas/document-number.utils';
 
 export function setMaskDocumentNumber(document?: string) {
   if (!document) {
     return '';
   }
 
-  const digits = document.replace(/\D/g, '');
+  if (isCpfDocument(document)) {
+    return maskCpf(unmaskDocumentNumber(document));
+  }
 
-  return digits.length === 11 ? maskCpf(digits) : maskCnpj(digits);
+  if (isCnpjDocument(document)) {
+    return maskCnpj(unmaskDocumentNumber(document));
+  }
+
+  return document;
 }

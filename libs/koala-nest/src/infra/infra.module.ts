@@ -7,7 +7,6 @@ import { CacheServiceProvider } from '@/infra/common/cache-service.provider';
 import { LoggingService } from '@/infra/common/logging.service';
 import { RedLockService } from '@/infra/common/red-lock.service';
 import { LoggedUserInfoService } from '@/infra/services/logged-user-info.service';
-import { EnvService } from '@/infra/common/env.service';
 import { RepositoryModule } from '@/infra/repositories/repository.module';
 
 @Module({
@@ -21,7 +20,6 @@ import { RepositoryModule } from '@/infra/repositories/repository.module';
   ],
   exports: [
     RepositoryModule,
-    EnvService,
     ICacheService,
     ILoggingService,
     IRedLockService,

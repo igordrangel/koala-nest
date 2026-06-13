@@ -32,6 +32,14 @@ bun run test:e2e    # E2E (requer DATABASE_URL)
 
 O template **Exemplo de CRUD** sobe apenas `PersonModule`. Ao criar um projeto com `kl-nest new`, a CLI instala JWT ou OAuth2 e aplica patches em `app.module.ts` e `main.ts` (`SecurityModule`, `AuthModule`, guards globais).
 
+## Dependências Koala
+
+| Pacote | Uso |
+|--------|-----|
+| [`@koalarx/utils`](https://www.npmjs.com/package/@koalarx/utils) | `delay`, validação/máscara CPF-CNPJ, utilitários de string/data |
+
+Veja a [documentação Koala Utils](../../doc/markdown/pt/core/koala-utils.md).
+
 ## Scripts úteis
 
 | Script | Descrição |

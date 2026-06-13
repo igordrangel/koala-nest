@@ -1,7 +1,7 @@
 import { CreatePersonJob } from '@/application/person/jobs/create-person.job';
 import { DeleteInactiveJob } from '@/application/person/jobs/delete-inactive.job';
 import { InactivePersonHandler } from '@/application/person/events/inactive-person.handler';
-import { delay } from '@/core/utils/delay';
+import { delay } from '@koalarx/utils/KlDelay';
 import { INestApplication } from '@nestjs/common';
 
 type BootstrapOptions = {
@@ -13,12 +13,16 @@ export async function bootstrapKoalaJobs(
   app: INestApplication,
   options: BootstrapOptions,
 ) {
+  try {
+    const inactivePersonHandler = await app.resolve(InactivePersonHandler);
+    inactivePersonHandler.setupSubscriptions();
+  } catch {
+    // Event jobs não instalados no projeto.
+  }
+
   if (!options.cronJobsEnabled) {
     return;
   }
-
-  const inactivePersonHandler = await app.resolve(InactivePersonHandler);
-  inactivePersonHandler.setupSubscriptions();
 
   if (options.bootstrapDelayMs > 0) {
     await delay(options.bootstrapDelayMs);

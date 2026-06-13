@@ -1,7 +1,7 @@
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
 import { cronExpressionToBoolean } from '@/core/utils/cron-expression-to-boolean';
-import { delay } from '@/core/utils/delay';
+import { delay } from '@koalarx/utils/KlDelay';
 import { reportErrorToLogging } from '@/core/utils/report-error';
 
 export interface CronJobSettings {

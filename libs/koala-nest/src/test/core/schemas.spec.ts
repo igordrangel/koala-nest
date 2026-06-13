@@ -50,12 +50,14 @@ describe('core/schemas', () => {
   it('documentNumberSchema valida CPF e CNPJ', () => {
     expect(documentNumberSchema('529.982.247-25')).toBe(true);
     expect(documentNumberSchema('11.222.333/0001-81')).toBe(true);
+    expect(documentNumberSchema('SK.CB2.G25/0001-32')).toBe(true);
     expect(documentNumberSchema('123')).toBe(false);
   });
 
   it('setMaskDocumentNumber aplica máscara de CPF e CNPJ', () => {
     expect(setMaskDocumentNumber('52998224725')).toBe('529.982.247-25');
     expect(setMaskDocumentNumber('11222333000181')).toBe('11.222.333/0001-81');
+    expect(setMaskDocumentNumber('SKCB2G25000132')).toBe('SK.CB2.G25/0001-32');
   });
 
   it('LIST_QUERY_SCHEMA converte page 1-based para índice zero-based', () => {

@@ -22,6 +22,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 - [ObjectClass](markdown/pt/core/object-class.md): Classe utilitária para requests, responses e entidades com factory from().
 - [Paginação e filtros](markdown/pt/core/paginacao.md): Paginação, ordenação e filtros em listagens com PaginationRequest e PaginationDto.
 - [Cron e Event Jobs](markdown/pt/core/cron-event-jobs.md): Jobs agendados em background (CronJob) e processamento de eventos de domínio (EventJob).
+- [Koala Utils](markdown/pt/core/koala-utils.md): Integração com @koalarx/utils — delay, CPF/CNPJ, strings, datas e arrays.
 
 ## Domain
 
@@ -42,6 +43,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 - [Tratamento de erros](markdown/pt/host/tratamento-de-erros.md): Filtro global ErrorsFilter para Zod, TypeORM e erros internos.
 - [Autenticação](markdown/pt/host/autenticacao.md): JWT, guards globais, rotas públicas e OAuth2 genérico.
 - [Documentação OpenAPI com Scalar](markdown/pt/host/openapi-scalar.md): Como configurar e personalizar a documentação interativa em /doc com Scalar (OpenAPI via @nestjs/swagger).
+- [Health check](markdown/pt/host/health-check.md): Endpoint GET /health com NestJS Terminus — banco e Redis opcional.
 
 ## Infra
 

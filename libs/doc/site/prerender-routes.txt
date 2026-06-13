@@ -10,6 +10,7 @@
 /pt/docs/core/object-class
 /pt/docs/core/paginacao
 /pt/docs/core/cron-event-jobs
+/pt/docs/core/koala-utils
 /pt/docs/domain/entidades
 /pt/docs/domain/contratos-repositorio
 /pt/docs/application/handlers
@@ -21,6 +22,7 @@
 /pt/docs/host/tratamento-de-erros
 /pt/docs/host/autenticacao
 /pt/docs/host/openapi-scalar
+/pt/docs/host/health-check
 /pt/docs/infra/banco-de-dados
 /pt/docs/infra/repositorios
 /pt/docs/infra/migrations
@@ -36,6 +38,7 @@
 /en/docs/core/object-class
 /en/docs/core/pagination
 /en/docs/core/cron-event-jobs
+/en/docs/core/koala-utils
 /en/docs/domain/entities
 /en/docs/domain/repository-contracts
 /en/docs/application/handlers
@@ -47,6 +50,7 @@
 /en/docs/host/error-handling
 /en/docs/host/authentication
 /en/docs/host/openapi-scalar
+/en/docs/host/health-check
 /en/docs/infra/database
 /en/docs/infra/repositories
 /en/docs/infra/migrations

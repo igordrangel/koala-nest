@@ -1,7 +1,7 @@
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { formatCode } from "./format-code";
-import { resolveProjectPath } from "./resolve-project-pach";
+import { removeImportLines } from "./project-files";
+import { resolveProjectPath } from "./resolve-project-path";
 
 interface PartsToRemove {
   path: string;
@@ -53,23 +53,40 @@ const partsToRemove: PartsToRemove[] = [
   },
 ];
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const defaultTemplatePathsToRemove = [
+  "src/test/application",
+  "src/test/mockup/person",
+  "src/test/e2e/person.controller.e2e.spec.ts",
+  "src/test/e2e/auth.controller.e2e.spec.ts",
+  "src/test/app-auth-test.module.ts",
+  "src/test/create-auth-e2e-test-app.ts",
+];
 
-function removeImportLines(content: string, moduleSpecifiers: string[]) {
-  let result = content;
+const defaultTemplatePathsToRemoveWithoutAuth = [
+  "src/test/application/auth-link.handler.spec.ts",
+  "src/test/application/exchange-code.handler.spec.ts",
+  "src/test/application/issue-token.handler.spec.ts",
+  "src/test/application/refresh-token.handler.spec.ts",
+  "src/test/application/scalar-oauth-token.handler.spec.ts",
+  "src/test/application/scalar-password-token.handler.spec.ts",
+  "src/test/core/auth.guard.spec.ts",
+  "src/test/core/jwt.strategy.spec.ts",
+  "src/test/core/oauth-provider.registry.spec.ts",
+  "src/test/core/profiles.guard.spec.ts",
+  "src/test/host/apply-open-api-security.spec.ts",
+  "src/test/host/scalar-authentication.spec.ts",
+  "src/test/infra/jwt-token.service.spec.ts",
+  "src/test/infra/oauth2-auth.service.spec.ts",
+  "src/test/utils/jwt-test-keys.ts",
+];
 
-  for (const specifier of moduleSpecifiers) {
-    const pattern = new RegExp(
-      `^import\\s+(?:type\\s+)?(?:[^'";\\n]+|\\{[^}]*\\})\\s+from\\s+['"][^'"]*${escapeRegExp(specifier)}['"];?\\r?\\n`,
-      "gm",
-    );
-
-    result = result.replace(pattern, "");
+function removePaths(projectName: string, paths: string[]) {
+  for (const relativePath of paths) {
+    rmSync(path.join(resolveProjectPath(projectName), relativePath), {
+      recursive: true,
+      force: true,
+    });
   }
-
-  return result;
 }
 
 export async function removeSampleParts(projectName: string) {
@@ -89,10 +106,9 @@ export async function removeSampleParts(projectName: string) {
     writeFileSync(partPath, content, "utf8");
   }
 
-  rmSync(path.join(resolveProjectPath(projectName), "src/test/application"), {
-    recursive: true,
-    force: true,
-  });
+  removePaths(projectName, defaultTemplatePathsToRemove);
+}
 
-  await formatCode(projectName);
+export async function cleanDefaultTemplateWithoutAuth(projectName: string) {
+  removePaths(projectName, defaultTemplatePathsToRemoveWithoutAuth);
 }

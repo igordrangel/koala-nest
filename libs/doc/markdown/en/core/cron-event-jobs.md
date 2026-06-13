@@ -9,14 +9,16 @@ description: Scheduled background jobs (CronJob) and domain event processing (Ev
 
 # Cron and Event Jobs
 
-Koala Nest provides two background mechanisms in `src/core/background-services/`:
+> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add cron` / `kl-nest add events`. Cron jobs require in-memory cache (installed automatically when needed).
+
+Koala Nest provides two background mechanisms in `src/core/background-services/` (copied by the CLI when the feature is selected):
 
 | Mechanism | Base class | Use |
 | --- | --- | --- |
 | **CronJob** | `CronJobHandlerBase` | Periodic tasks with cron expression or fixed interval |
 | **EventJob** | `EventJob` + `EventHandlerBase` | React to domain events queued in memory |
 
-The **CRUD Sample** template includes implementations in the Person module. Jobs are started at bootstrap in `main.ts`.
+The **CRUD Sample** template includes implementations in the Person module and installs cron/event jobs automatically. Bootstrap in `main.ts` calls `bootstrapKoalaJobs()` when cron jobs are present.
 
 ## Flow overview
 

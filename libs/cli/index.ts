@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { printHelp } from "./commands/help.ts";
+import { runAdd } from "./commands/add/index.ts";
 import { runNew } from "./commands/new/index.ts";
 import { runVersion } from "./commands/version.ts";
 
@@ -25,6 +26,12 @@ async function main(): Promise<void> {
     case "--new":
     case "-n":
       await runNew();
+      break;
+
+    case "add":
+    case "--add":
+    case "-a":
+      await runAdd();
       break;
 
     default:

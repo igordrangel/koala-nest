@@ -1,6 +1,6 @@
 /// <reference types="bun-types/test-globals" />
 
-import { delay } from '@/core/utils/delay';
+import { delay } from '@koalarx/utils/KlDelay';
 import {
   CronJobHandlerBase,
   CronJobSettings,

@@ -47,22 +47,59 @@ The `new` command prompts for:
 - project name;
 - package manager (`bun`, `npm`, or `pnpm` — Bun recommended);
 - template (**Default** or **CRUD Example**);
-- authentication strategy (**JWT**, **OAuth2**, or none);
-- extra features (future options appear disabled).
+- authentication strategy (**JWT** or **OAuth2** — required on CRUD);
+- extra features (**Default**: cache, health, cron, events; **CRUD**: health check only — auth, Redis cache, and jobs are bundled).
+
+The **core** module installs only essentials (`@koalarx/utils`, `@nestjs/config`, `@nestjs/swagger`, `typeorm`, `pg`, `zod`, `@scalar/nestjs-api-reference`). Extra dependencies are added based on selected options:
+
+| Option | Additional packages |
+| --- | --- |
+| **JWT / OAuth2** | `@nestjs/jwt`, `passport`, `cookie-parser`, … |
+| **Cache (Redis)** | `ioredis` + `ICacheService` |
+| **Cron jobs** | `cron-parser` + `background-services` bases |
+| **Health check** | `@nestjs/terminus` + `GET /health` (DB and optional Redis) |
+
+OAuth2 and cron jobs automatically install **in-memory cache** (without `ioredis`) when Redis was not selected. See [Koala Utils](../core/koala-utils.md) and [Cache (Redis)](../core/cache.md).
 
 ## Available commands
 
 | Command | Description |
 | --- | --- |
 | `kl-nest new` | Creates a new project (interactive flow) |
+| `kl-nest add [items]` | Adds features to an existing project |
 | `kl-nest version` | Displays the CLI version |
 | `kl-nest help` | Lists available commands |
+
+## Adding features later (`add`)
+
+From an existing project root:
+
+```bash
+cd my-api
+
+# interactive — lists only what is not installed yet
+kl-nest add
+
+# direct
+kl-nest add cache
+kl-nest add auth jwt
+kl-nest add health cron events
+```
+
+| Item | Command | Notes |
+| --- | --- | --- |
+| JWT auth | `kl-nest add auth jwt` | Installs `cookie-parser` and global guards |
+| OAuth2 auth | `kl-nest add auth oauth2` | Includes in-memory cache for OAuth `state` |
+| Redis cache | `kl-nest add cache` | Adds `ioredis`; on CRUD, restores list caching |
+| Health check | `kl-nest add health` | Terminus: PostgreSQL ping + Redis (when configured) |
+| Cron jobs | `kl-nest add cron` | Requires in-memory cache (installed automatically) |
+| Event jobs | `kl-nest add events` | On CRUD, restores example handlers |
 
 ## Templates
 
 **Default** — DDD structure ready to start from scratch, without example domain code.
 
-**CRUD Example** — includes a complete `Person` module (entities, repository, handlers, controllers, and mappings) to serve as a reference.
+**CRUD Example** — includes the complete `Person` module with **auth, Redis cache, cron jobs, and event jobs** pre-installed. Only **health check** is optional during creation.
 
 ## Environment variables
 

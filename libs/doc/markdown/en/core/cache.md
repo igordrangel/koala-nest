@@ -9,6 +9,8 @@ description: Data caching with ICacheService — Redis in production or local me
 
 # Cache (Redis)
 
+> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add cache`. OAuth2 and cron jobs may install in-memory cache implicitly (without `ioredis`).
+
 The template exposes `ICacheService` to **cache data** in handlers — responses, heavy queries, aggregations, etc. The implementation is selected automatically from `.env`.
 
 This guide focuses on **data caching**. The same service also stores OAuth2 `state` (anti-CSRF, short TTL) — see [State validation](../host/authentication.md#state-validation-flow-authenticity). The full OAuth2 flow is in [Authentication](../host/authentication.md#oauth2-any-provider-any-quantity).

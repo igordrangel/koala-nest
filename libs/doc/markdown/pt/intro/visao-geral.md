@@ -11,9 +11,9 @@ description: O que é o Koala Nest e como ele se encaixa em projetos NestJS com 
 
 O **Koala Nest** é um facilitador para criar APIs NestJS com arquitetura DDD. Em vez de depender de uma biblioteca opaca, a CLI copia módulos prontos para dentro do projeto — abordagem semelhante ao [shadcn/ui](https://ui.shadcn.com). O código gerado fica no seu repositório, pronto para leitura, adaptação e manutenção.
 
-## O que o template inclui
+## Core (sempre instalado)
 
-Ao rodar `kl-nest new`, a CLI instala automaticamente o módulo **core** com:
+Ao rodar `kl-nest new`, a CLI instala automaticamente:
 
 - validação de variáveis de ambiente com **Zod**;
 - **TypeORM** com PostgreSQL e scripts de migration;
@@ -21,9 +21,30 @@ Ao rodar `kl-nest new`, a CLI instala automaticamente o módulo **core** com:
 - filtro global de erros (Zod, TypeORM e exceções HTTP);
 - bases reutilizáveis para controllers, handlers, validators e repositórios;
 - sistema de mapeamento entre entidades, requests e responses;
-- **autenticação opcional** (JWT + OAuth2 genérico) via CLI — veja [Autenticação](../host/autenticacao.md#oauth2-qualquer-provedor-qualquer-quantidade);
-- **cache de dados** com Redis ou memória local (`ICacheService`) — veja [Cache (Redis)](../core/cache.md);
-- exemplos de **CronJob** e **EventJob** no módulo Person (template CRUD) — veja [Cron e Event Jobs](../core/cron-event-jobs.md).
+- **[`@koalarx/utils`](../core/koala-utils.md)** — delay, CPF/CNPJ, strings, datas e arrays.
+
+## Funcionalidades opcionais
+
+Escolha no `kl-nest new` ou adicione depois com `kl-nest add`:
+
+| Feature | Comando | Descrição |
+| --- | --- | --- |
+| Autenticação JWT/OAuth2 | `kl-nest add auth jwt` / `oauth2` | Guards globais, Scalar OAuth |
+| Cache Redis | `kl-nest add cache` | `ICacheService` + `ioredis` |
+| Health check | `kl-nest add health` | `GET /health` com Terminus |
+| Cron jobs | `kl-nest add cron` | `CronJobHandlerBase` + bootstrap |
+| Event jobs | `kl-nest add events` | `EventJob` + handlers em memória |
+
+OAuth2 e cron jobs instalam **cache em memória** automaticamente quando Redis não foi selecionado (sem `ioredis`).
+
+## Templates
+
+| Template | Conteúdo |
+| --- | --- |
+| **Padrão** | Apenas core — sem código de exemplo |
+| **Exemplo de CRUD** | Módulo `Person` completo **com auth, cache Redis, cron e event jobs** |
+
+No template CRUD, auth, cache e jobs são **incluídos automaticamente** para demonstrar o fluxo completo. Apenas **health check** permanece opcional na criação (ou via `kl-nest add health`).
 
 ## Estrutura de pastas
 
@@ -39,14 +60,12 @@ src/
 └── test/          # testes unitários
 ```
 
-## Template de referência: Person
-
-O template **Exemplo de CRUD** inclui um módulo completo de `Person` — entidades com relacionamentos, repositório, handlers, controllers e mapeamentos — que serve de referência para novos recursos.
-
 ## Próximos passos
 
+- [Guia de instalação](../inicio/guia-de-instalacao.md) — `kl-nest new` e `kl-nest add`
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
 - [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — bootstrap e módulos Nest
-- [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo ponta a ponta
+- [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo ponta a ponta (template CRUD)
+- [Health check](../host/health-check.md) — monitoramento com Terminus
+- [Cache (Redis)](../core/cache.md) — cache distribuído
 - [Cron e Event Jobs](../core/cron-event-jobs.md) — jobs em background
-- [Cache (Redis)](../core/cache.md) — cache distribuído e uso em handlers

@@ -2,14 +2,114 @@ import * as p from "@clack/prompts";
 import color from "picocolors";
 import type { PackageManager } from "../../types/index.ts";
 import { assertNotCancel } from "../../utils/cancel.ts";
+import { applyOptionalFeatures } from "../../utils/apply-optional-features.ts";
 import { createEmptyNestProject } from "./create-empty-nest-project.ts";
 import { createDDDStructure } from "./create-ddd-structure.ts";
 import {
+  CRUD_BUNDLED_FEATURES,
   installModule,
   Modules,
+  resolveNewProjectOptions,
+  resolveProjectFeatures,
+  type ExtraFeature,
   type Template,
 } from "../../utils/install-module.ts";
 import { fixLintConfig } from "./fix-lint-config.ts";
+
+async function promptAuthStrategy(template: Template) {
+  const isCrud = template === "crudSample";
+
+  return assertNotCancel(
+    await p.select({
+      message: isCrud
+        ? "Estratégia de autenticação (incluída no exemplo CRUD)"
+        : "Estratégia de autenticação",
+      options: [
+        {
+          value: "jwt",
+          label: "JWT",
+          hint: "RS256 + guards globais",
+        },
+        {
+          value: "oauth2",
+          label: "OAuth2",
+          hint: "JWT + OAuth2 genérico",
+        },
+        {
+          value: "api-key",
+          label: "API Key",
+          hint: "em breve",
+          disabled: true,
+        },
+        ...(isCrud
+          ? []
+          : [{ value: "none" as const, label: "Nenhuma" }]),
+      ],
+    }),
+  ) as "jwt" | "oauth2" | "none";
+}
+
+async function promptExtraFeatures(template: Template) {
+  if (template === "crudSample") {
+    const bundled = CRUD_BUNDLED_FEATURES.map((feature) => {
+      switch (feature) {
+        case "cache":
+          return "cache (Redis)";
+        case "internal-cron-jobs":
+          return "cron jobs";
+        case "internal-event-jobs":
+          return "event jobs";
+      }
+    }).join(", ");
+
+    p.note(
+      `O exemplo CRUD já inclui: ${bundled} e autenticação.\n` +
+        "Escolha abaixo apenas funcionalidades adicionais.",
+      "Incluso no template",
+    );
+
+    return assertNotCancel(
+      await p.multiselect({
+        message: "Funcionalidades extras adicionais",
+        options: [
+          {
+            value: "health-check",
+            label: "Health check (GET /health)",
+          },
+        ],
+        required: false,
+      }),
+    ) as ExtraFeature[];
+  }
+
+  return assertNotCancel(
+    await p.multiselect({
+      message: "Funcionalidades extras",
+      options: [
+        {
+          value: "cache",
+          label: "Cache (Redis)",
+          hint: "ICacheService + ioredis",
+        },
+        {
+          value: "health-check",
+          label: "Health check (GET /health)",
+        },
+        {
+          value: "internal-cron-jobs",
+          label: "Jobs internos (Cron)",
+          hint: "cron-parser + bases",
+        },
+        {
+          value: "internal-event-jobs",
+          label: "Jobs internos (Eventos)",
+          hint: "EventJob + bases",
+        },
+      ],
+      required: false,
+    }),
+  ) as ExtraFeature[];
+}
 
 export async function runNew(): Promise<void> {
   p.intro(
@@ -37,8 +137,16 @@ export async function runNew(): Promise<void> {
         p.select<Template>({
           message: "Template",
           options: [
-            { value: "default", label: "Padrão" },
-            { value: "crudSample", label: "Exemplo de CRUD" },
+            {
+              value: "default",
+              label: "Padrão",
+              hint: "sem código de exemplo",
+            },
+            {
+              value: "crudSample",
+              label: "Exemplo de CRUD",
+              hint: "Person + auth, cache e jobs",
+            },
           ],
         }),
     },
@@ -50,62 +158,12 @@ export async function runNew(): Promise<void> {
     },
   );
 
-  const auth = assertNotCancel(
-    await p.select({
-      message: "Estratégia de autenticação",
-      options: [
-        {
-          value: "jwt",
-          label: "JWT",
-          hint: "RS256 + guards globais",
-        },
-        {
-          value: "oauth2",
-          label: "OAuth2",
-          hint: "JWT + OAuth2 genérico",
-        },
-        {
-          value: "api-key",
-          label: "API Key",
-          hint: "em breve",
-          disabled: true,
-        },
-        { value: "none", label: "Nenhuma" },
-      ],
-    }),
-  );
-
-  const features = assertNotCancel(
-    await p.multiselect({
-      message: "Funcionalidades extras",
-      options: [
-        {
-          value: "cache",
-          label: "Cache (Redis)",
-          hint: "em breve",
-          disabled: true,
-        },
-        {
-          value: "health-check",
-          label: "Health check (GET /health)",
-          hint: "em breve",
-          disabled: true,
-        },
-        {
-          value: "internal-cron-jobs",
-          label: "Jobs internos (Cron)",
-          hint: "em breve",
-          disabled: true,
-        },
-        {
-          value: "internal-event-jobs",
-          label: "Jobs internos (Eventos)",
-          hint: "em breve",
-          disabled: true,
-        },
-      ],
-      required: false,
-    }),
+  const auth = await promptAuthStrategy(project.template);
+  const selectedFeatures = await promptExtraFeatures(project.template);
+  const { auth: authChoice, features } = resolveNewProjectOptions(
+    project.template,
+    auth,
+    selectedFeatures,
   );
 
   const spinner = p.spinner();
@@ -126,26 +184,40 @@ export async function runNew(): Promise<void> {
 
   await installModule(Modules.CORE, project.template, project.name);
 
-  if (auth !== "none") {
-    spinner.message("Configurando autenticação...");
-    await installModule(Modules.AUTH, project.template, project.name, {
-      authStrategy: auth as "jwt" | "oauth2",
-    });
-  }
+  spinner.message("Instalando funcionalidades opcionais...");
 
-  if (features.length > 0) {
-    spinner.message("Instalando funcionalidades extras...");
-    await Bun.sleep(300);
-  }
+  await applyOptionalFeatures({
+    projectName: project.name,
+    template: project.template,
+    auth: authChoice,
+    features,
+  });
 
   spinner.stop("Projeto criado com sucesso!");
+
+  const projectFeatures = resolveProjectFeatures(features, authChoice);
+
+  const extrasSummary = [
+    project.template === "crudSample" ? color.dim("exemplo Person completo") : null,
+    projectFeatures.cacheWithRedis ? "cache (Redis)" : null,
+    projectFeatures.cache && !projectFeatures.cacheWithRedis
+      ? color.dim("cache em memória")
+      : null,
+    projectFeatures.health ? "health-check" : null,
+    projectFeatures.cronJobs ? "cron jobs" : null,
+    projectFeatures.eventJobs ? "event jobs" : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   p.note(
     [
       `${color.bold("Projeto:")} ${project.name}`,
+      `${color.bold("Template:")} ${project.template === "crudSample" ? "Exemplo de CRUD" : "Padrão"}`,
       `${color.bold("Gerenciador:")} ${project.packageManager}`,
-      `${color.bold("Autenticação:")} ${auth}`,
-      `${color.bold("Extras:")} ${features.length ? features.join(", ") : color.dim("nenhum")}`,
+      `${color.bold("Autenticação:")} ${authChoice}`,
+      `${color.bold("Extras:")} ${extrasSummary || color.dim("nenhum")}`,
+      `${color.dim("Depois:")} cd ${project.name} && kl-nest add <feature>`,
     ].join("\n"),
     "Resumo",
   );
