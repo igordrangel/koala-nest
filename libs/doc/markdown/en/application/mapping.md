@@ -1,7 +1,8 @@
 ---
 title: Mapping system
-slug: mapeamento
+slug: mapping
 category: application
+docKey: application/mapeamento
 order: 4
 description: AutoMap, createMap, AutoMapper, and mapping registration between classes.
 ---

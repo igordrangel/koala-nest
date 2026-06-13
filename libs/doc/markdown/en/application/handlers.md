@@ -2,6 +2,7 @@
 title: Handlers
 slug: handlers
 category: application
+docKey: application/handlers
 order: 1
 description: Use cases in the application layer with RequestHandlerBase.
 ---

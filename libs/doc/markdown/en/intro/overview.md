@@ -1,7 +1,8 @@
 ---
 title: Overview
-slug: visao-geral
+slug: overview
 category: intro
+docKey: intro/visao-geral
 order: 1
 description: What Koala Nest is and how it fits into NestJS projects with DDD.
 ---
@@ -41,6 +42,6 @@ The **CRUD Example** template includes a complete `Person` module — entities w
 
 ## Next steps
 
-- [DDD Architecture](./arquitetura-ddd.md) — layers and responsibilities
-- [Project structure](../inicio/estrutura-do-projeto.md) — bootstrap and Nest modules
-- [Person CRUD flow](../guias/fluxo-crud-person.md) — end-to-end example
+- [DDD Architecture](./ddd-architecture.md) — layers and responsibilities
+- [Project structure](../inicio/project-structure.md) — bootstrap and Nest modules
+- [Person CRUD flow](../guias/person-crud-flow.md) — end-to-end example

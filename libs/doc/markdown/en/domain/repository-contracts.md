@@ -1,7 +1,8 @@
 ---
 title: Repository contracts
-slug: contratos-repositorio
+slug: repository-contracts
 category: domain
+docKey: domain/contratos-repositorio
 order: 2
 description: Abstract repository classes and query DTOs in the domain.
 ---

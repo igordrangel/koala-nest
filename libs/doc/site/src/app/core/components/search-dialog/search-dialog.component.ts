@@ -4,6 +4,7 @@ import { UI_COPY } from '../../i18n/ui-copy';
 import { DocsService } from '../../services/docs.service';
 import { LocaleService } from '../../services/locale.service';
 import { SearchService } from '../../services/search.service';
+import { shouldCloseSearchDialog, shouldOpenSearchDialog } from '../../utils/doc-ui';
 
 @Component({
   selector: 'app-search-dialog',
@@ -23,11 +24,11 @@ export class SearchDialogComponent {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent) {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    if (shouldOpenSearchDialog(event)) {
       event.preventDefault();
       this.searchService.show();
     }
-    if (event.key === 'Escape') {
+    if (shouldCloseSearchDialog(event)) {
       this.searchService.hide();
     }
   }

@@ -2,6 +2,7 @@
 title: Variáveis de ambiente
 slug: variaveis-de-ambiente
 category: inicio
+docKey: inicio/variaveis-de-ambiente
 order: 1
 description: Configuração e validação de variáveis de ambiente com Zod.
 ---

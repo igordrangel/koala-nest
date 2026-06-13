@@ -13,6 +13,20 @@ export const categoryOrder = [
   'guias',
 ];
 
+export const categoryOrderByLocale = {
+  pt: categoryOrder,
+  en: [
+    'intro',
+    'getting-started',
+    'core',
+    'domain',
+    'application',
+    'host',
+    'infra',
+    'guides',
+  ],
+};
+
 export const categoryLabelsByLocale = {
   pt: {
     intro: 'Introdução',
@@ -26,13 +40,13 @@ export const categoryLabelsByLocale = {
   },
   en: {
     intro: 'Introduction',
-    inicio: 'Getting Started',
+    'getting-started': 'Getting Started',
     core: 'Core',
     domain: 'Domain',
     application: 'Application',
     host: 'Host',
     infra: 'Infra',
-    guias: 'Guides',
+    guides: 'Guides',
   },
 };
 
@@ -75,4 +89,8 @@ export function toPosix(p) {
 
 export function getCategoryLabels(locale) {
   return categoryLabelsByLocale[locale] ?? categoryLabelsByLocale[defaultLocale];
+}
+
+export function getCategoryOrder(locale) {
+  return categoryOrderByLocale[locale] ?? categoryOrderByLocale[defaultLocale];
 }

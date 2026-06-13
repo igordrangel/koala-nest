@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, inject, input, output } from '@angular/core';
 import { MarkdownComponent } from 'ngx-markdown';
+import { extractCodeText, findCopyCodeButton } from '../../utils/doc-ui';
 
 declare const Prism: {
   highlightElement: (element: HTMLElement) => void;
@@ -26,16 +27,12 @@ export class MarkdownContentComponent {
 
   @HostListener('click', ['$event'])
   onHostClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    const button = target.closest<HTMLButtonElement>('[data-copy-code]');
+    const button = findCopyCodeButton(event.target);
     if (!button) return;
 
     event.preventDefault();
 
-    const code = button.closest('.code-block')?.querySelector('code');
-    if (!code) return;
-
-    const text = code.textContent?.trim();
+    const text = extractCodeText(button);
     if (!text) return;
 
     void navigator.clipboard.writeText(text).then(() => {

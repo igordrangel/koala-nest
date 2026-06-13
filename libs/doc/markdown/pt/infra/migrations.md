@@ -2,6 +2,7 @@
 title: Migrations
 slug: migrations
 category: infra
+docKey: infra/migrations
 order: 3
 description: Geração e execução de migrations TypeORM no Koala Nest.
 ---

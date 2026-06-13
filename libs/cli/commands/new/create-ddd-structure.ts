@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { patchGeneratedProjectConfig } from "../../utils/patch-generated-project.ts";
 import { runCommand } from "../../utils/run-command";
 import type { PackageManager } from "../../types";
 
@@ -48,14 +49,19 @@ export async function createDDDStructure(
   packageJson.scripts["migration:revert"] =
     `${typeormCli}:revert ${migrationDatasource}`;
 
-  const testRunner =
-    packageManager === "bun" ? "bun" : "npx --yes bun";
-  packageJson.scripts.test = `${testRunner} test`;
-  packageJson.scripts["test:watch"] = `${testRunner} test --watch`;
+  packageJson.devDependencies ??= {};
+
+  if (packageManager !== "bun") {
+    packageJson.devDependencies["bun"] = "^1.3.6";
+  }
+
+  packageJson.scripts.test = "bun test";
+  packageJson.scripts["test:watch"] = "bun test --watch";
   delete packageJson.scripts["test:cov"];
   delete packageJson.scripts["test:debug"];
   delete packageJson.scripts["test:e2e"];
   delete packageJson.jest;
+
   delete packageJson.devDependencies["@types/jest"];
   delete packageJson.devDependencies["@types/supertest"];
   delete packageJson.devDependencies["ts-jest"];
@@ -65,6 +71,8 @@ export async function createDDDStructure(
     path.join(process.cwd(), projectName, "package.json"),
     JSON.stringify(packageJson, null, 2),
   );
+
+  patchGeneratedProjectConfig(path.join(process.cwd(), projectName));
 
   await runCommand(
     [packageManager, "install"],

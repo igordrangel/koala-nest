@@ -1,7 +1,8 @@
 ---
 title: Reusable bases
-slug: bases-reutilizaveis
+slug: reusable-bases
 category: core
+docKey: core/bases-reutilizaveis
 order: 1
 description: Base classes for handlers, validators, controllers, and repositories.
 ---

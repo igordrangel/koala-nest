@@ -1,7 +1,8 @@
 ---
 title: Person CRUD flow
-slug: fluxo-crud-person
-category: guias
+slug: person-crud-flow
+category: guides
+docKey: guias/fluxo-crud-person
 order: 1
 description: End-to-end guide to the Person module as a reference for new resources.
 ---

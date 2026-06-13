@@ -2,6 +2,7 @@
 title: OpenAPI documentation with Scalar
 slug: openapi-scalar
 category: host
+docKey: host/openapi-scalar
 order: 4
 description: How to configure and customize interactive documentation at /doc with Scalar (OpenAPI via @nestjs/swagger).
 ---
@@ -336,5 +337,5 @@ If a field schema is incomplete:
 ## Related reading
 
 - [Controllers](./controllers.md) — thin HTTP entry pattern
-- [Routes and tags](./rotas.md) — `RouterConfigBase` and Scalar grouping
+- [Routes and tags](./routes.md) — `RouterConfigBase` and Scalar grouping
 - [Requests and responses](../application/requests-responses.md) — DTOs with Swagger and `@AutoMap()`

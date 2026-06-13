@@ -2,6 +2,7 @@
 title: Requests e responses
 slug: requests-responses
 category: application
+docKey: application/requests-responses
 order: 3
 description: DTOs de entrada e saída com ObjectClass, AutoMap e decoradores Swagger.
 ---

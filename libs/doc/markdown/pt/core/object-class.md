@@ -2,6 +2,7 @@
 title: ObjectClass
 slug: object-class
 category: core
+docKey: core/object-class
 order: 2
 description: Classe utilitária para requests, responses e entidades com factory from().
 ---

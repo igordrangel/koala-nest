@@ -16,7 +16,7 @@ export const routes: Routes = [
   },
   {
     path: 'en/docs',
-    redirectTo: 'en/docs/inicio/guia-de-instalacao',
+    redirectTo: 'en/docs/getting-started/installation-guide',
     pathMatch: 'full',
   },
   {

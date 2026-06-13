@@ -2,6 +2,7 @@
 title: Repositórios TypeORM
 slug: repositorios
 category: infra
+docKey: infra/repositorios
 order: 2
 description: Implementação concreta de repositórios estendendo RepositoryBase.
 ---

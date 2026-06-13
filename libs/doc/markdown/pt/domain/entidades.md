@@ -2,6 +2,7 @@
 title: Entidades
 slug: entidades
 category: domain
+docKey: domain/entidades
 order: 1
 description: Modelagem de entidades TypeORM com EntityBase e decorador AutoMap.
 ---

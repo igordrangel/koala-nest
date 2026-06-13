@@ -12,9 +12,14 @@ test('landing em inglês carrega', async ({ page }) => {
   await expect(page.locator('h1')).toBeVisible();
 });
 
-test('abre página de documentação', async ({ page }) => {
+test('abre página de documentação em português', async ({ page }) => {
   await page.goto('/pt/docs/inicio/guia-de-instalacao');
   await expect(page.locator('h1')).toContainText(/instala/i);
+});
+
+test('abre página de documentação em inglês', async ({ page }) => {
+  await page.goto('/en/docs/getting-started/installation-guide');
+  await expect(page.locator('h1')).toContainText(/installation/i);
 });
 
 test('expõe llms.txt e markdown estático', async ({ request }) => {

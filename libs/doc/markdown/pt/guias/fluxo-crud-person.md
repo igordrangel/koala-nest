@@ -2,6 +2,7 @@
 title: Fluxo CRUD Person
 slug: fluxo-crud-person
 category: guias
+docKey: guias/fluxo-crud-person
 order: 1
 description: Guia ponta a ponta do módulo Person como referência para novos recursos.
 ---

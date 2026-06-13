@@ -1,7 +1,8 @@
 ---
 title: Database
-slug: banco-de-dados
+slug: database
 category: infra
+docKey: infra/banco-de-dados
 order: 1
 description: TypeORM configuration with PostgreSQL via DatabaseModule and DataSource factory.
 ---

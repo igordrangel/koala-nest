@@ -1,7 +1,8 @@
 ---
 title: Error handling
-slug: tratamento-de-erros
+slug: error-handling
 category: host
+docKey: host/tratamento-de-erros
 order: 3
 description: Global ErrorsFilter for Zod, TypeORM, and internal errors.
 ---

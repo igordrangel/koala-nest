@@ -1,7 +1,8 @@
 ---
 title: Entities
-slug: entidades
+slug: entities
 category: domain
+docKey: domain/entidades
 order: 1
 description: TypeORM entity modeling with EntityBase and the AutoMap decorator.
 ---

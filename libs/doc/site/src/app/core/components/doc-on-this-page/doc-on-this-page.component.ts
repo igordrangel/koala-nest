@@ -10,6 +10,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { UI_COPY } from '../../i18n/ui-copy';
 import { LocaleService } from '../../services/locale.service';
+import { collectTocItems } from '../../utils/doc-ui';
 
 interface TocItem {
   label: string;
@@ -53,17 +54,7 @@ export class DocOnThisPageComponent implements OnDestroy {
   }
 
   private scan(root: HTMLElement) {
-    const links = root.querySelectorAll('h2.scroll-hash-link, h3.scroll-hash-link');
-    const nextItems: TocItem[] = [];
-
-    links.forEach((link: Element) => {
-      const heading = link as HTMLElement;
-      const label = heading.textContent?.trim();
-      const fragment = heading.id;
-      if (label && fragment) {
-        nextItems.push({ label, fragment });
-      }
-    });
+    const nextItems = collectTocItems(root);
 
     this.items.set(nextItems);
     this.setupObserver(root, nextItems);

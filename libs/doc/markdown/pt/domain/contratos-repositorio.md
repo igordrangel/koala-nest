@@ -2,6 +2,7 @@
 title: Contratos de repositório
 slug: contratos-repositorio
 category: domain
+docKey: domain/contratos-repositorio
 order: 2
 description: Classes abstratas de repositório e DTOs de consulta no domínio.
 ---

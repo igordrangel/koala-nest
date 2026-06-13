@@ -2,6 +2,7 @@
 title: Guia de instalação
 slug: guia-de-instalacao
 category: inicio
+docKey: inicio/guia-de-instalacao
 order: 0
 description: Instale a CLI e crie seu primeiro projeto NestJS com DDD.
 ---
@@ -69,19 +70,50 @@ Após criar o projeto, configure um `.env` na raiz:
 ```env
 PORT=3000
 NODE_ENV=develop
-DATABASE_URL=postgresql://postgres:root@localhost:5432/my_api
+DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 ```
 
 ## Scripts úteis no projeto gerado
 
+O `kl-nest new` configura os scripts conforme o gerenciador escolhido. Exemplos equivalentes:
+
+**Bun (recomendado)**
+
 ```bash
-bun run start:dev          # servidor em modo watch
-bun run migration:generate # gera migration a partir das entidades
-bun run migration:run      # aplica migrations pendentes
-bun run migration:revert   # reverte a última migration
+bun run start:dev
+bun run start:prod
+bun run test
+bun run test:watch
+bun run migration:generate
+bun run migration:run
+bun run migration:revert
 ```
 
-> **Importante:** no template **Exemplo de CRUD**, execute `bun run migration:run` (ou `npm run` / `pnpm run`) para aplicar as migrations antes de iniciar a API. No template **Padrão** não há migrations iniciais.
+**npm**
+
+```bash
+npm run start:dev
+npm run start:prod
+npm run test
+npm run test:watch
+npm run migration:generate
+npm run migration:run
+npm run migration:revert
+```
+
+**pnpm**
+
+```bash
+pnpm run start:dev
+pnpm run start:prod
+pnpm run test
+pnpm run test:watch
+pnpm run migration:generate
+pnpm run migration:run
+pnpm run migration:revert
+```
+
+> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Com npm ou pnpm, o `kl-nest new` adiciona `bun` em `devDependencies` para que `npm test` funcione após `npm install`.
 
 ## Desenvolvimento local da CLI
 

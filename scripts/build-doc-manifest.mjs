@@ -4,6 +4,7 @@ import {
   categoryOrder,
   defaultLocale,
   getCategoryLabels,
+  getCategoryOrder,
   llmsIndexHeaderByLocale,
   parseFrontmatter,
   supportedLocales,
@@ -53,6 +54,7 @@ function walkLocale(locale) {
         const { meta, body } = parseFrontmatter(raw);
         docs.push({
           ...meta,
+          docKey: meta.docKey ?? `${meta.category}/${meta.slug}`,
           locale,
           mdRel: toPosix(path.join(locale, relPath)),
           route: `/${locale}/docs/${meta.category}/${meta.slug}`,
@@ -69,8 +71,9 @@ function walkLocale(locale) {
 
 function buildNavigation(docs, locale) {
   const labels = getCategoryLabels(locale);
+  const order = getCategoryOrder(locale);
 
-  return categoryOrder
+  return order
     .map((category) => ({
       category,
       label: labels[category] ?? category,
@@ -88,10 +91,11 @@ function buildNavigation(docs, locale) {
 
 function buildLlmsIndex(docs, locale) {
   const labels = getCategoryLabels(locale);
+  const order = getCategoryOrder(locale);
 
   return [
     llmsIndexHeaderByLocale[locale] ?? llmsIndexHeaderByLocale[defaultLocale],
-    ...categoryOrder.flatMap((cat) => {
+    ...order.flatMap((cat) => {
       const items = docs.filter((d) => d.category === cat);
       if (!items.length) return [];
       return [
@@ -144,15 +148,22 @@ function syncMarkdownToPublic() {
 }
 
 const locales = {};
+const routesByDocKey = {};
 
 for (const locale of supportedLocales) {
   const docs = walkLocale(locale);
   docs.sort((a, b) => {
-    const ca = categoryOrder.indexOf(a.category);
-    const cb = categoryOrder.indexOf(b.category);
+    const order = getCategoryOrder(locale);
+    const ca = order.indexOf(a.category);
+    const cb = order.indexOf(b.category);
     if (ca !== cb) return ca - cb;
     return Number(a.order ?? 0) - Number(b.order ?? 0);
   });
+
+  for (const doc of docs) {
+    routesByDocKey[doc.docKey] ??= {};
+    routesByDocKey[doc.docKey][locale] = `/${locale}/docs/${doc.category}/${doc.slug}`;
+  }
 
   locales[locale] = {
     navigation: buildNavigation(docs, locale),
@@ -160,6 +171,7 @@ for (const locale of supportedLocales) {
       title: d.title,
       slug: d.slug,
       category: d.category,
+      docKey: d.docKey,
       locale: d.locale,
       order: Number(d.order ?? 0),
       description: d.description ?? '',
@@ -167,8 +179,17 @@ for (const locale of supportedLocales) {
       mdRel: d.mdRel,
       content: d.content,
       headings: d.headings,
+      alternateRoute: '',
     })),
   };
+}
+
+for (const locale of supportedLocales) {
+  const otherLocale = locale === 'pt' ? 'en' : 'pt';
+  locales[locale].docs = locales[locale].docs.map((doc) => ({
+    ...doc,
+    alternateRoute: routesByDocKey[doc.docKey]?.[otherLocale] ?? doc.route,
+  }));
 }
 
 const manifest = {

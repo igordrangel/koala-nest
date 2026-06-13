@@ -2,6 +2,7 @@
 title: Sistema de mapeamento
 slug: mapeamento
 category: application
+docKey: application/mapeamento
 order: 4
 description: AutoMap, createMap, AutoMapper e registro de mapeamentos entre classes.
 ---

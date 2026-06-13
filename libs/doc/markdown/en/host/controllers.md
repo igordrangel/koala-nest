@@ -2,6 +2,7 @@
 title: Controllers
 slug: controllers
 category: host
+docKey: host/controllers
 order: 1
 description: Thin HTTP controllers that delegate to handlers.
 ---

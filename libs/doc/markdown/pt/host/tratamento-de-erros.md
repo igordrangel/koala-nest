@@ -2,6 +2,7 @@
 title: Tratamento de erros
 slug: tratamento-de-erros
 category: host
+docKey: host/tratamento-de-erros
 order: 3
 description: Filtro global ErrorsFilter para Zod, TypeORM e erros internos.
 ---

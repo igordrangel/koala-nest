@@ -1,7 +1,8 @@
 ---
 title: Routes and tags
-slug: rotas
+slug: routes
 category: host
+docKey: host/rotas
 order: 2
 description: Centralized route configuration with RouterConfigBase.
 ---

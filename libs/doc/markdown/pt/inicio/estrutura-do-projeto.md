@@ -2,6 +2,7 @@
 title: Estrutura do projeto
 slug: estrutura-do-projeto
 category: inicio
+docKey: inicio/estrutura-do-projeto
 order: 2
 description: Bootstrap da aplicação, módulos principais e ponto de entrada.
 ---
@@ -12,7 +13,7 @@ Este guia descreve como a aplicação NestJS é inicializada e como os módulos 
 
 ## Ponto de entrada
 
-O arquivo `src/host/main.ts` configura CORS, documentação OpenAPI, filtro global de erros e inicia o servidor:
+O arquivo `src/host/main.ts` configura CORS, documentação OpenAPI, filtro global de erros e inicia o servidor. O `nest-cli.json` aponta `entryFile` para `host/main`, e o script `start:prod` executa `node dist/host/main`.
 
 ```typescript
 import { NestFactory } from '@nestjs/core';
@@ -96,9 +97,16 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 
 ## Scripts úteis
 
+**Bun**
+
 ```bash
-bun run start:dev          # servidor em modo watch
-bun run migration:generate # gera migration a partir das entidades
-bun run migration:run      # aplica migrations pendentes
-bun run migration:revert   # reverte a última migration
+bun run start:dev
+bun run start:prod
+bun run test
+bun run test:watch
+bun run migration:generate
+bun run migration:run
+bun run migration:revert
 ```
+
+**npm / pnpm** — use `npm run` ou `pnpm run` nos mesmos nomes. O `kl-nest new` adiciona `bun` em `devDependencies` para testes locais. `migration:generate` usa `node --import ts-node/register/transpile-only`.

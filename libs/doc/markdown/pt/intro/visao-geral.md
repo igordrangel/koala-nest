@@ -2,6 +2,7 @@
 title: Visão geral
 slug: visao-geral
 category: intro
+docKey: intro/visao-geral
 order: 1
 description: O que é o Koala Nest e como ele se encaixa em projetos NestJS com DDD.
 ---

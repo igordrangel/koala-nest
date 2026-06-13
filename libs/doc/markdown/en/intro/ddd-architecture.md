@@ -1,7 +1,8 @@
 ---
 title: DDD Architecture
-slug: arquitetura-ddd
+slug: ddd-architecture
 category: intro
+docKey: intro/arquitetura-ddd
 order: 2
 description: Koala Nest layers and how a request flows through the system.
 ---
@@ -105,5 +106,5 @@ export class PersonModule {}
 ## Related reading
 
 - [Handlers](../application/handlers.md)
-- [Repository contracts](../domain/contratos-repositorio.md)
+- [Repository contracts](../domain/repository-contracts.md)
 - [Controllers](../host/controllers.md)

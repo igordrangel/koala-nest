@@ -2,6 +2,7 @@
 title: Banco de dados
 slug: banco-de-dados
 category: infra
+docKey: infra/banco-de-dados
 order: 1
 description: Configuração TypeORM com PostgreSQL via DatabaseModule e DataSource factory.
 ---

@@ -1,7 +1,8 @@
 ---
 title: Environment variables
-slug: variaveis-de-ambiente
-category: inicio
+slug: environment-variables
+category: getting-started
+docKey: inicio/variaveis-de-ambiente
 order: 1
 description: Environment variable configuration and validation with Zod.
 ---

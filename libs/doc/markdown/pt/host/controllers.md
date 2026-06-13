@@ -2,6 +2,7 @@
 title: Controllers
 slug: controllers
 category: host
+docKey: host/controllers
 order: 1
 description: Controllers HTTP finos que delegam para handlers.
 ---

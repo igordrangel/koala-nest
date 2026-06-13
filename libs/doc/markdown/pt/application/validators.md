@@ -2,6 +2,7 @@
 title: Validators
 slug: validators
 category: application
+docKey: application/validators
 order: 2
 description: Validação de entrada com RequestValidatorBase e schemas Zod.
 ---

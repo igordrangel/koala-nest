@@ -128,4 +128,42 @@ describe('AutoMapper', () => {
 
     expect(target.fullName).toBe('John Doe');
   });
+
+  it('should map nested objects using the target property name', () => {
+    class SourceChild {
+      @AutoMap()
+      street: string;
+    }
+
+    class SourceParent {
+      @AutoMap()
+      address: SourceChild;
+    }
+
+    class TargetChild {
+      @AutoMap()
+      line1: string;
+    }
+
+    class TargetParent {
+      @AutoMap()
+      address: TargetChild;
+    }
+
+    createMap(
+      SourceChild,
+      TargetChild,
+      forMember('line1', (source) => source.street),
+    );
+    createMap(SourceParent, TargetParent);
+
+    const source = Object.assign(new SourceParent(), {
+      address: Object.assign(new SourceChild(), { street: '123 Main St' }),
+    });
+
+    const target = AutoMapper.map(source, SourceParent, TargetParent);
+
+    expect(target.address).toBeInstanceOf(TargetChild);
+    expect(target.address.line1).toBe('123 Main St');
+  });
 });

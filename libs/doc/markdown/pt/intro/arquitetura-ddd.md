@@ -2,6 +2,7 @@
 title: Arquitetura DDD
 slug: arquitetura-ddd
 category: intro
+docKey: intro/arquitetura-ddd
 order: 2
 description: Camadas do Koala Nest e como a requisição percorre o sistema.
 ---

@@ -2,6 +2,7 @@
 title: Rotas e tags
 slug: rotas
 category: host
+docKey: host/rotas
 order: 2
 description: Configuração centralizada de rotas com RouterConfigBase.
 ---

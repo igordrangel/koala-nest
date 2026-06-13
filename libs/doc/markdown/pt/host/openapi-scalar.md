@@ -2,6 +2,7 @@
 title: Documentação OpenAPI com Scalar
 slug: openapi-scalar
 category: host
+docKey: host/openapi-scalar
 order: 4
 description: Como configurar e personalizar a documentação interativa em /doc com Scalar (OpenAPI via @nestjs/swagger).
 ---

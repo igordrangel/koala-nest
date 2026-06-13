@@ -8,10 +8,12 @@ export interface DocPage {
   title: string;
   slug: string;
   category: string;
+  docKey: string;
   locale: string;
   order: number;
   description: string;
   route: string;
+  alternateRoute: string;
   mdRel: string;
   content: string;
   headings: DocHeading[];

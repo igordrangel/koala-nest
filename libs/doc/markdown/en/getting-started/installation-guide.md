@@ -1,7 +1,8 @@
 ---
 title: Installation guide
-slug: guia-de-instalacao
-category: inicio
+slug: installation-guide
+category: getting-started
+docKey: inicio/guia-de-instalacao
 order: 0
 description: Install the CLI and create your first NestJS project with DDD.
 ---
@@ -69,19 +70,50 @@ After creating the project, configure a `.env` at the root:
 ```env
 PORT=3000
 NODE_ENV=develop
-DATABASE_URL=postgresql://postgres:root@localhost:5432/my_api
+DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 ```
 
 ## Useful scripts in the generated project
 
+`kl-nest new` configures scripts for the package manager you choose. Equivalent examples:
+
+**Bun (recommended)**
+
 ```bash
-bun run start:dev          # server in watch mode
-bun run migration:generate # generates migration from entities
-bun run migration:run      # applies pending migrations
-bun run migration:revert   # reverts the last migration
+bun run start:dev
+bun run start:prod
+bun run test
+bun run test:watch
+bun run migration:generate
+bun run migration:run
+bun run migration:revert
 ```
 
-> **Important:** with the **CRUD Example** template, run `bun run migration:run` (or `npm run` / `pnpm run`) to apply migrations before starting the API. The **Default** template has no initial migrations.
+**npm**
+
+```bash
+npm run start:dev
+npm run start:prod
+npm run test
+npm run test:watch
+npm run migration:generate
+npm run migration:run
+npm run migration:revert
+```
+
+**pnpm**
+
+```bash
+pnpm run start:dev
+pnpm run start:prod
+pnpm run test
+pnpm run test:watch
+pnpm run migration:generate
+pnpm run migration:run
+pnpm run migration:revert
+```
+
+> **Important:** with the **CRUD Example** template, run `migration:run` before starting the API. The **Default** template has no initial migrations. With npm or pnpm, `kl-nest new` adds `bun` to `devDependencies` so `npm test` works after `npm install`.
 
 ## Local CLI development
 
@@ -97,6 +129,6 @@ bun kl-nest new
 
 ## Next steps
 
-- [Environment variables](./variaveis-de-ambiente.md) — Zod schema and boot validation
-- [Project structure](./estrutura-do-projeto.md) — bootstrap and Nest modules
-- [Overview](../intro/visao-geral.md) — what the template includes
+- [Environment variables](./environment-variables.md) — Zod schema and boot validation
+- [Project structure](./project-structure.md) — bootstrap and Nest modules
+- [Overview](../intro/overview.md) — what the template includes

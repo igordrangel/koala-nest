@@ -31,6 +31,9 @@ export class PersonRepository
   }
 
   findById(id: number): Promise<Person | null> {
-    return this.repository.findOne({ where: { id } });
+    return this.repository.findOne({
+      where: { id },
+      relations: ['address', 'contacts'],
+    });
   }
 }

@@ -1,7 +1,8 @@
 ---
 title: TypeORM repositories
-slug: repositorios
+slug: repositories
 category: infra
+docKey: infra/repositorios
 order: 2
 description: Concrete repository implementation extending RepositoryBase.
 ---

@@ -62,15 +62,6 @@ export class AutoMapper {
       const sourcePropTypeClass = this.toClass(sourceProp.type);
 
       if (!sourceProp.isArray && this.isEntity(sourcePropTypeClass)) {
-        const sourcePropType = MappingStore.getPropType(
-          sourcePropTypeClass,
-          sourceProp.name,
-        );
-
-        if (!sourcePropType) {
-          continue;
-        }
-
         const targetPropType = targetProps.find(
           (p) => p.name === targetPropName,
         )?.type;

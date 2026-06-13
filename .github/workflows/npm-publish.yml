@@ -22,21 +22,8 @@ jobs:
           bun install --frozen-lockfile
           cd libs/koala-nest && bun install --frozen-lockfile
 
-      - name: Run tests
-        run: bun run test
-
-      - name: Build
-        run: bun run build
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org/
-
       - name: Check if version is already published
         id: check_version
-        working-directory: dist
         run: |
           PACKAGE_NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
@@ -47,6 +34,20 @@ jobs:
             echo "Publishing ${PACKAGE_NAME}@${VERSION}."
             echo "should_publish=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Run tests
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: bun run test
+
+      - name: Build
+        if: steps.check_version.outputs.should_publish == 'true'
+        run: bun run build
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
 
       - name: Publish to npm
         if: steps.check_version.outputs.should_publish == 'true'
