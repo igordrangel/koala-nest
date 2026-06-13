@@ -48,14 +48,12 @@ export class CreatePersonRequest extends ObjectClass<CreatePersonRequest> {
 Minimal responses return only the generated identifier:
 
 ```typescript
-export class CreatePersonResponse {
-  @ApiProperty({ type: 'integer', format: 'int32' })
-  @AutoMap()
-  id: number;
-}
+import { CreatedRegistreWithIdResponse } from '@/application/common/created-registre.response';
+
+export class CreatePersonResponse extends CreatedRegistreWithIdResponse {}
 ```
 
-The Person template defines `CreatePersonResponse` directly (without extending a base). For new resources, you can reuse `CreatedRegistreWithIdResponse` or `CreatedRegistreWithUUIDResponse` from `created-registre.response.ts`.
+For new resources, reuse `CreatedRegistreWithIdResponse` or `CreatedRegistreWithUUIDResponse` from `created-registre.response.ts`.
 
 ## Update request
 

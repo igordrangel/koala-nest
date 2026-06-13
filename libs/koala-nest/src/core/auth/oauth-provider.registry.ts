@@ -3,24 +3,24 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 export interface OAuthProviderEnvConfig {
   key: string;
-  domain: string;
+  domain?: string;
   clientId: string;
   clientSecret: string;
   scope: string;
   redirectPath?: string;
+  authorizationUrl?: string;
+  tokenUrl?: string;
+  userInfoUrl?: string;
 }
 
 /**
  * Registry genérico de provedores OAuth2.
  *
- * Configure no `.env`:
- * - OAUTH2_PROVIDERS=google,microsoft
- * - OAUTH2_GOOGLE_DOMAIN=https://accounts.google.com
- * - OAUTH2_GOOGLE_CLIENT_ID=...
- * - OAUTH2_GOOGLE_CLIENT_SECRET=...
- * - OAUTH2_GOOGLE_SCOPE=openid profile email
+ * Suporta **qualquer quantidade** de providers em `OAUTH2_PROVIDERS` (lista separada por vírgula).
+ * Para cada CHAVE, configure `OAUTH2_{CHAVE}_*` — google/microsoft no `.env.example` são só exemplos.
  *
- * Repita o padrão para cada provider listado em OAUTH2_PROVIDERS.
+ * Provedor OIDC (terceiro): `OAUTH2_{CHAVE}_DOMAIN` → discovery automático.
+ * Servidor OAuth próprio: `_AUTHORIZATION_URL`, `_TOKEN_URL`, `_USERINFO_URL` (sem `_DOMAIN`).
  */
 @Injectable()
 export class OAuthProviderRegistry {
@@ -47,10 +47,23 @@ export class OAuthProviderRegistry {
     const clientSecret = this.env.getDynamic(`${prefix}_CLIENT_SECRET`);
     const scope = this.env.getDynamic(`${prefix}_SCOPE`);
     const redirectPath = this.env.getDynamic(`${prefix}_REDIRECT_PATH`);
+    const authorizationUrl = this.env.getDynamic(`${prefix}_AUTHORIZATION_URL`);
+    const tokenUrl = this.env.getDynamic(`${prefix}_TOKEN_URL`);
+    const userInfoUrl = this.env.getDynamic(`${prefix}_USERINFO_URL`);
 
-    if (!domain || !clientId || !clientSecret || !scope) {
+    const hasManualEndpoints =
+      authorizationUrl && tokenUrl && userInfoUrl;
+    const hasDiscoveryDomain = Boolean(domain);
+
+    if (!clientId || !clientSecret || !scope) {
       throw new NotFoundException(
         `Provedor OAuth2 "${normalizedKey}" não configurado. Verifique variáveis ${prefix}_* no .env`,
+      );
+    }
+
+    if (!hasManualEndpoints && !hasDiscoveryDomain) {
+      throw new NotFoundException(
+        `Provedor OAuth2 "${normalizedKey}" incompleto. Defina ${prefix}_DOMAIN (OIDC) ou ${prefix}_AUTHORIZATION_URL, ${prefix}_TOKEN_URL e ${prefix}_USERINFO_URL`,
       );
     }
 
@@ -61,6 +74,9 @@ export class OAuthProviderRegistry {
       clientSecret,
       scope,
       redirectPath: redirectPath ?? '/oauth2/callback',
+      authorizationUrl,
+      tokenUrl,
+      userInfoUrl,
     };
   }
 }

@@ -1,3 +1,4 @@
+import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { describe, expect, it } from 'bun:test';
 import { JwtTokenService } from '@/infra/auth/jwt-token.service';
 import { EnvService } from '@/infra/common/env.service';
@@ -19,7 +20,7 @@ describe('JwtTokenService', () => {
 
     const service = new JwtTokenService(jwtService, envService);
 
-    expect(service.signTokenPair({ sub: 'user-1', profile: 'admin' })).toEqual({
+    expect(service.signTokenPair({ sub: 'user-1', profile: AuthProfile.admin })).toEqual({
       accessToken: '15m:user-1:access',
       refreshToken: '7d:user-1:refresh',
     });

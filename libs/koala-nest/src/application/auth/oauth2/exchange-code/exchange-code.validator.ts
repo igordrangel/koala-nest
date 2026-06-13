@@ -1,5 +1,5 @@
 import { RequestValidatorBase } from '@/application/common/request-validator.base';
-import z from 'zod';
+import { z } from 'zod';
 import { OAuthExchangeCodeRequest } from './exchange-code.request';
 
 export class OAuthExchangeCodeValidator extends RequestValidatorBase<OAuthExchangeCodeRequest> {

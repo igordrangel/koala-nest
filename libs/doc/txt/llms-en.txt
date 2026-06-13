@@ -18,8 +18,10 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 ## Core
 
 - [Reusable bases](markdown/en/core/reusable-bases.md): Base classes for handlers, validators, controllers, and repositories.
+- [Cache (Redis)](markdown/en/core/cache.md): Data caching with ICacheService — Redis in production or local memory in dev.
 - [ObjectClass](markdown/en/core/object-class.md): Utility class for requests, responses, and entities with the from() factory.
 - [Pagination and filters](markdown/en/core/pagination.md): Pagination, sorting, and filters in listings with PaginationRequest and PaginationDto.
+- [Cron and Event Jobs](markdown/en/core/cron-event-jobs.md): Scheduled background jobs (CronJob) and domain event processing (EventJob).
 
 ## Domain
 

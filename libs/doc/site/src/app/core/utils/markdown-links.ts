@@ -7,19 +7,31 @@ function resolveRelativeLink(
     return target;
   }
 
-  if (target.startsWith('/')) {
+  if (target.startsWith('/') && !target.includes('.md')) {
     return target;
   }
 
-  const clean = target.replace(/^\.\//, '').replace(/\.md$/, '');
-  if (target.startsWith('../')) {
-    const parts = target.split('/');
+  const [pathPart, anchor] = target.split('#');
+  const anchorSuffix = anchor ? `#${anchor}` : '';
+
+  if (pathPart.startsWith('../')) {
+    const parts = pathPart.split('/');
     const file = parts.pop()!.replace(/\.md$/, '');
     const parent = parts[parts.length - 1];
-    return `/${locale}/docs/${parent}/${file}`;
+    return `/${locale}/docs/${parent}/${file}${anchorSuffix}`;
   }
 
-  return `/${locale}/docs/${currentCategory}/${clean}`;
+  const clean = pathPart.replace(/^\.\//, '').replace(/\.md$/, '');
+  return `/${locale}/docs/${currentCategory}/${clean}${anchorSuffix}`;
+}
+
+function isInternalDocLink(href: string) {
+  return (
+    href.endsWith('.md') ||
+    href.includes('.md#') ||
+    href.startsWith('./') ||
+    href.startsWith('../')
+  );
 }
 
 export function transformMarkdownLinks(
@@ -29,7 +41,7 @@ export function transformMarkdownLinks(
 ): string {
   return content
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, href) => {
-      if (!href.endsWith('.md') && !href.startsWith('./') && !href.startsWith('../')) {
+      if (!isInternalDocLink(href)) {
         return match;
       }
       const route = resolveRelativeLink(href, currentCategory, locale);

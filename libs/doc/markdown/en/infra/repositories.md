@@ -95,3 +95,15 @@ where: { name: query.name ? Like(`%${query.name}%`) : undefined }
 2. Implement the domain abstract class.
 3. Inject `DATA_SOURCE_PROVIDER_TOKEN` in the constructor.
 4. Register the provider in `RepositoryModule`.
+
+## InfraModule (cache, lock, logging)
+
+Beyond repositories, `InfraModule` exports shared services:
+
+| Contract | Use |
+| --- | --- |
+| `ICacheService` | Data cache (Redis or memory) |
+| `IRedLockService` | Distributed CronJob lock |
+| `ILoggingService` | Error reporting in `ErrorsFilter` |
+
+Cache guide: [Cache (Redis)](../core/cache.md).

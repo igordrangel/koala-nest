@@ -14,6 +14,7 @@ declare const Prism: {
       ngPreserveWhitespaces
       [data]="content()"
       [disableSanitizer]="true"
+      [mermaid]="true"
       (ready)="onReady()"
     />
   `,

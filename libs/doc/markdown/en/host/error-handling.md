@@ -14,7 +14,10 @@ description: Global ErrorsFilter for Zod, TypeORM, and internal errors.
 ## Global registration
 
 ```typescript
-app.useGlobalFilters(new ErrorsFilter());
+const { httpAdapter } = app.get(HttpAdapterHost);
+const loggingService = app.get(ILoggingService);
+
+app.useGlobalFilters(new ErrorsFilter(httpAdapter, loggingService));
 ```
 
 ## Implementation
@@ -22,9 +25,14 @@ app.useGlobalFilters(new ErrorsFilter());
 ```typescript
 @Catch()
 export class ErrorsFilter extends BaseExceptionFilter {
-  private readonly logger = new Logger(ErrorsFilter.name);
+  constructor(
+    httpAdapter: AbstractHttpAdapter | undefined,
+    private readonly loggingService: ILoggingService,
+  ) {
+    super(httpAdapter);
+  }
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  async catch(exception: unknown, host: ArgumentsHost) {
     if (exception instanceof ZodError) {
       return this.sendErrorResponse(host, this.handleZodError(exception));
     }
@@ -40,7 +48,7 @@ export class ErrorsFilter extends BaseExceptionFilter {
     const error =
       exception instanceof Error ? exception : new Error(String(exception));
 
-    this.logger.error(error.message, error.stack);
+    await this.reportError(error, host);
 
     return this.sendErrorResponse(host, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -94,7 +102,7 @@ if (!person) {
 
 ## Unhandled errors
 
-Any unknown error returns HTTP 500 with a generic message. The stack trace is logged internally, without exposing details to the client.
+Any unknown error returns HTTP 500 with a generic message. The error is reported via `ILoggingService.report()` (request user + package name). If reporting fails, the filter falls back to `Logger` — without exposing details to the client.
 
 ## Response format
 

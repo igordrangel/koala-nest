@@ -3,7 +3,7 @@ title: ObjectClass
 slug: object-class
 category: core
 docKey: core/object-class
-order: 2
+order: 3
 description: Utility class for requests, responses, and entities with the from() factory.
 ---
 

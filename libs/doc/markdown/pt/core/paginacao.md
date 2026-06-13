@@ -3,7 +3,7 @@ title: Paginação e filtros
 slug: paginacao
 category: core
 docKey: core/paginacao
-order: 3
+order: 4
 description: Paginação, ordenação e filtros em listagens com PaginationRequest e PaginationDto.
 ---
 

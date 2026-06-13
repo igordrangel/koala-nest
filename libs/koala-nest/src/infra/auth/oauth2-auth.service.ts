@@ -1,66 +1,71 @@
 import { randomBytes } from 'node:crypto';
+import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { OAuthProviderRegistry } from '@/core/auth/oauth-provider.registry';
+import type { OAuthProviderEnvConfig } from '@/core/auth/oauth-provider.registry';
 import { AuthProviderConfigResponseType } from '@/core/types/auth-provider-config-response.type';
 import { AuthProviderConfigDto } from '@/domain/auth/dtos/auth-provider-config.dto';
 import { OAuthUserInfoDto } from '@/domain/auth/dtos/oauth-user-info.dto';
 import { IOAuth2Service } from '@/domain/auth/services/iauth.service';
 import { EnvService } from '@/infra/common/env.service';
+import { ICacheService } from '@/domain/common/icache.service';
+import { resolveApiHost } from '@/core/utils/resolve-api-host';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+
+const OAUTH_STATE_TTL_SECONDS = 10 * 60;
 
 @Injectable()
 export class OAuth2AuthService implements IOAuth2Service {
-  private readonly pendingStates = new Map<
-    string,
-    { provider: string; expiresAt: number }
-  >();
-
   constructor(
     private readonly env: EnvService,
     private readonly providerRegistry: OAuthProviderRegistry,
+    private readonly cache: ICacheService,
   ) {}
 
   private generateState() {
     return randomBytes(24).toString('hex');
   }
 
-  private rememberState(provider: string, state: string) {
-    this.pendingStates.set(state, {
-      provider,
-      expiresAt: Date.now() + 10 * 60 * 1000,
-    });
+  /** Grava o state temporariamente para validar autenticidade no POST /oauth2/token (anti-CSRF). */
+  private async rememberState(provider: string, state: string) {
+    await this.cache.set(
+      this.stateCacheKey(state),
+      JSON.stringify({ provider }),
+      OAUTH_STATE_TTL_SECONDS,
+    );
   }
 
-  private validateState(provider: string, state: string) {
-    const entry = this.pendingStates.get(state);
+  private async validateState(provider: string, state: string) {
+    const raw = await this.cache.get(this.stateCacheKey(state));
 
-    if (!entry || entry.provider !== provider || entry.expiresAt < Date.now()) {
+    if (!raw) {
       throw new UnauthorizedException('State OAuth2 inválido ou expirado');
     }
 
-    this.pendingStates.delete(state);
+    const entry = JSON.parse(raw) as { provider: string };
+
+    if (entry.provider !== provider) {
+      throw new UnauthorizedException('State OAuth2 inválido ou expirado');
+    }
+
+    await this.cache.invalidate(this.stateCacheKey(state));
+  }
+
+  private stateCacheKey(state: string) {
+    return `oauth2:state:${state}`;
   }
 
   private getApiHost() {
-    const host =
-      this.env.get('API_HOST') ?? `http://localhost:${this.env.get('PORT')}`;
-    return host.replace(/\/$/, '');
+    return resolveApiHost(this.env.get('API_HOST'), this.env.get('PORT'));
   }
 
   private async resolveProviderConfig(
     provider: string,
   ): Promise<AuthProviderConfigDto> {
     const providerConfig = this.providerRegistry.getProvider(provider);
-
-    const discovery = await fetch(
-      `${providerConfig.domain}/.well-known/openid-configuration`,
-    ).then(
-      (response) => response.json() as Promise<AuthProviderConfigResponseType>,
-    );
+    const endpoints = await this.resolveOAuthEndpoints(providerConfig);
 
     return AuthProviderConfigDto.from({
-      authorizationUrl: discovery.authorization_endpoint,
-      tokenUrl: discovery.token_endpoint,
-      userInfoUrl: discovery.userinfo_endpoint,
+      ...endpoints,
       clientId: providerConfig.clientId,
       clientSecret: providerConfig.clientSecret,
       state: '',
@@ -69,11 +74,37 @@ export class OAuth2AuthService implements IOAuth2Service {
     });
   }
 
+  private async resolveOAuthEndpoints(providerConfig: OAuthProviderEnvConfig) {
+    if (
+      providerConfig.authorizationUrl &&
+      providerConfig.tokenUrl &&
+      providerConfig.userInfoUrl
+    ) {
+      return {
+        authorizationUrl: providerConfig.authorizationUrl,
+        tokenUrl: providerConfig.tokenUrl,
+        userInfoUrl: providerConfig.userInfoUrl,
+      };
+    }
+
+    const discovery = await fetch(
+      `${providerConfig.domain}/.well-known/openid-configuration`,
+    ).then(
+      (response) => response.json() as Promise<AuthProviderConfigResponseType>,
+    );
+
+    return {
+      authorizationUrl: discovery.authorization_endpoint,
+      tokenUrl: discovery.token_endpoint,
+      userInfoUrl: discovery.userinfo_endpoint,
+    };
+  }
+
   async providerConfig(provider: string): Promise<AuthProviderConfigDto> {
     const providerConfig = this.providerRegistry.getProvider(provider);
     const config = await this.resolveProviderConfig(provider);
     const state = this.generateState();
-    this.rememberState(providerConfig.key, state);
+    await this.rememberState(providerConfig.key, state);
 
     return AuthProviderConfigDto.from({
       ...config,
@@ -94,7 +125,7 @@ export class OAuth2AuthService implements IOAuth2Service {
     state: string,
     redirectUri?: string,
   ): Promise<OAuthUserInfoDto> {
-    this.validateState(provider, state);
+    await this.validateState(provider, state);
     const config = await this.resolveProviderConfig(provider);
 
     const formData = new URLSearchParams();
@@ -111,7 +142,9 @@ export class OAuth2AuthService implements IOAuth2Service {
     }).then((response) => response.json() as Promise<Record<string, string>>);
 
     if (tokenResponse.error || !tokenResponse.access_token) {
-      throw new UnauthorizedException('Falha ao trocar código OAuth2 por token');
+      throw new UnauthorizedException(
+        'Falha ao trocar código OAuth2 por token',
+      );
     }
 
     return this.userInfo(config, tokenResponse.access_token);
@@ -135,7 +168,7 @@ export class OAuth2AuthService implements IOAuth2Service {
       login,
       email,
       name: data.name,
-      profile: 'user',
+      profile: AuthProfile.user,
     });
   }
 }

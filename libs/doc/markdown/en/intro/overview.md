@@ -21,8 +21,9 @@ When you run `kl-nest new`, the CLI automatically installs the **core** module w
 - global error filter (Zod, TypeORM, and HTTP exceptions);
 - reusable bases for controllers, handlers, validators, and repositories;
 - mapping system between entities, requests, and responses;
-- **optional authentication** (JWT + generic OAuth2) via CLI;
-- **CronJob** and **EventJob** examples in the Person module (CRUD template).
+- **optional authentication** (JWT + generic OAuth2) via CLI — see [Authentication](../host/authentication.md#oauth2-any-provider-any-quantity);
+- **data caching** with Redis or local memory (`ICacheService`) — see [Cache (Redis)](../core/cache.md);
+- **CronJob** and **EventJob** examples in the Person module (CRUD template) — see [Cron and Event Jobs](../core/cron-event-jobs.md).
 
 ## Folder structure
 
@@ -45,5 +46,7 @@ The **CRUD Example** template includes a complete `Person` module — entities w
 ## Next steps
 
 - [DDD Architecture](./ddd-architecture.md) — layers and responsibilities
-- [Project structure](../inicio/project-structure.md) — bootstrap and Nest modules
-- [Person CRUD flow](../guias/person-crud-flow.md) — end-to-end example
+- [Project structure](../getting-started/project-structure.md) — bootstrap and Nest modules
+- [Person CRUD flow](../guides/person-crud-flow.md) — end-to-end example
+- [Cron and Event Jobs](../core/cron-event-jobs.md) — background jobs
+- [Cache (Redis)](../core/cache.md) — distributed cache and handler usage

@@ -10,6 +10,16 @@ describe('transformMarkdownLinks', () => {
     expect(output).toContain('[Host](/pt/docs/host/controllers)');
   });
 
+  it('converte links .md com ancora em rotas da doc', () => {
+    const input =
+      'Veja [Scalar](./openapi-scalar.md#autenticacao-automatica-no-scalar).';
+    const output = transformMarkdownLinks(input, 'host', 'pt');
+
+    expect(output).toContain(
+      '[Scalar](/pt/docs/host/openapi-scalar#autenticacao-automatica-no-scalar)',
+    );
+  });
+
   it('preserva links externos e âncoras', () => {
     const input = '[Site](https://koalarx.com) e [Guia](/pt/docs/inicio/guia).';
     expect(transformMarkdownLinks(input, 'inicio', 'pt')).toBe(input);

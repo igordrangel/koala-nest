@@ -6,8 +6,10 @@
 /pt/docs/inicio/variaveis-de-ambiente
 /pt/docs/inicio/estrutura-do-projeto
 /pt/docs/core/bases-reutilizaveis
+/pt/docs/core/cache
 /pt/docs/core/object-class
 /pt/docs/core/paginacao
+/pt/docs/core/cron-event-jobs
 /pt/docs/domain/entidades
 /pt/docs/domain/contratos-repositorio
 /pt/docs/application/handlers
@@ -30,8 +32,10 @@
 /en/docs/getting-started/environment-variables
 /en/docs/getting-started/project-structure
 /en/docs/core/reusable-bases
+/en/docs/core/cache
 /en/docs/core/object-class
 /en/docs/core/pagination
+/en/docs/core/cron-event-jobs
 /en/docs/domain/entities
 /en/docs/domain/repository-contracts
 /en/docs/application/handlers

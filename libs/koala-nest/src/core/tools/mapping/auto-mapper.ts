@@ -3,13 +3,13 @@ import { MappingStore } from './mapping-store';
 
 export class AutoMapper {
   private static isEntity(value: any) {
-    const primitiveTypes = [String, Number, Boolean, Date];
+    const nonEntityTypes = [String, Number, Boolean, Date, Object, Function];
 
     return (
       value instanceof Object &&
       value !== null &&
       !Array.isArray(value) &&
-      !primitiveTypes.includes(value)
+      !nonEntityTypes.includes(value)
     );
   }
 
@@ -24,8 +24,7 @@ export class AutoMapper {
   }
 
   static map<S, R>(data: any, source: Type<S>, target: Type<R>): R {
-    const mapName = `${source.name}To${target.name}`;
-    const mapping = MappingStore.getMapping(mapName);
+    const mapping = MappingStore.getMapping(source, target);
 
     const targetInstance = new target();
 

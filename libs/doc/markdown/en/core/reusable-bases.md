@@ -148,4 +148,19 @@ export abstract class CreatedRegistreWithIdResponse extends CreatedRegistreRespo
 }
 ```
 
-The Person template defines `CreatePersonResponse` directly with `id: number` — it does not extend `CreatedRegistreWithIdResponse`, although it follows the same format (returns only the generated `id`).
+The Person template extends `CreatedRegistreWithIdResponse` in `CreatePersonResponse` — it returns only the generated `id`.
+
+## ICacheService
+
+Data cache via `ICacheService` (`get`, `set`, `invalidate`). Implementation is selected automatically:
+
+- **Redis** — when `REDIS_CONNECTION_STRING` is in `.env`
+- **In-memory** — local fallback for development
+
+Inject `ICacheService` in handlers to cache responses or derived data.
+
+Full guide: [Cache (Redis)](./cache.md).
+
+## CronJob and EventJob
+
+Background jobs use `CronJobHandlerBase` and `EventJob`/`EventHandlerBase`. See the full guide at [Cron and Event Jobs](./cron-event-jobs.md).

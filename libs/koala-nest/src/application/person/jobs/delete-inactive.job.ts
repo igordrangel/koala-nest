@@ -4,13 +4,16 @@ import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-
 import {
   CronJobHandlerBase,
   CronJobSettings,
+  demoCronSettings,
 } from '@/core/background-services/cron-service/cron-job.handler.base';
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class DeleteInactiveJob extends CronJobHandlerBase {
+  private readonly logger = new Logger(DeleteInactiveJob.name);
+
   constructor(
     redlockService: IRedLockService,
     loggingService: ILoggingService,
@@ -21,19 +24,32 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
   }
 
   protected async settings(): Promise<CronJobSettings> {
-    return {
-      isActive: true,
-      timeInMinutes: 1,
-    };
+    return demoCronSettings('0 */1 * * * *');
   }
 
   protected async run(): Promise<void> {
+    this.logger.debug('Iniciando remoção de pessoas inativas...');
+
     const result = await this.readManyPerson.handle(
       Object.assign(new ReadManyPersonRequest(), { active: false }),
     );
 
+    if (result.items.length === 0) {
+      this.logger.log('Nenhuma pessoa inativa encontrada.');
+      this.logger.log('Job concluído sem ação.');
+      return;
+    }
+
+    this.logger.debug('Removendo pessoas inativas...', result.items.length);
+
     for (const person of result.items) {
       await this.deletePerson.handle(person.id);
     }
+
+    this.logger.log(
+      'Pessoas inativas removidas com sucesso.',
+      result.items.length,
+    );
+    this.logger.log('Job concluído.');
   }
 }

@@ -95,3 +95,15 @@ where: { name: query.name ? Like(`%${query.name}%`) : undefined }
 2. Implemente a classe abstrata do domínio.
 3. Injete `DATA_SOURCE_PROVIDER_TOKEN` no construtor.
 4. Registre o provider no `RepositoryModule`.
+
+## InfraModule (cache, lock, logging)
+
+Além dos repositórios, o `InfraModule` exporta serviços compartilhados:
+
+| Contrato | Uso |
+| --- | --- |
+| `ICacheService` | Cache de dados (Redis ou memória) |
+| `IRedLockService` | Lock distribuído de CronJobs |
+| `ILoggingService` | Relato de erros no `ErrorsFilter` |
+
+Guia de cache: [Cache (Redis)](../core/cache.md).

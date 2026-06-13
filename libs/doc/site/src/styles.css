@@ -267,6 +267,48 @@
   font-size: 0.875em;
 }
 
+.prose-docs .mermaid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 1.5rem auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow-x: auto;
+  color: oklch(90% 0 0);
+}
+
+.prose-docs .mermaid svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  background: transparent !important;
+}
+
+.prose-docs .mermaid .cluster rect,
+.prose-docs .mermaid rect.background {
+  fill: transparent !important;
+  stroke: oklch(22% 0 0) !important;
+}
+
+.prose-docs .mermaid text,
+.prose-docs .mermaid .nodeLabel,
+.prose-docs .mermaid .label,
+.prose-docs .mermaid .edgeLabel .label,
+.prose-docs .mermaid .cluster-label {
+  font-size: 15px !important;
+  fill: oklch(92% 0 0) !important;
+  color: oklch(92% 0 0) !important;
+}
+
+.prose-docs .mermaid .cluster-label {
+  font-size: 16px !important;
+  font-weight: 600;
+}
+
 .code-block pre[class*='language-'] {
   margin: 0;
   background: transparent;

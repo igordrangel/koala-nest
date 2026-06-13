@@ -1,4 +1,3 @@
-import { KoalaApp } from '@/core/koala-app';
 import { AuthGuard } from '@/host/security/guards/auth.guard';
 import { ProfilesGuard } from '@/host/security/guards/profiles.guard';
 import { AppAuthTestModule } from '@/test/app-auth-test.module';
@@ -14,10 +13,10 @@ export async function createAuthE2ETestApp(): Promise<INestApplication> {
   const app = moduleRef.createNestApplication();
   setupTestApp(app);
 
-  await new KoalaApp(app)
-    .addGlobalGuard(AuthGuard)
-    .addGlobalGuard(ProfilesGuard)
-    .registerGlobalGuards();
+  app.useGlobalGuards(
+    await app.resolve(AuthGuard),
+    await app.resolve(ProfilesGuard),
+  );
 
   return initTestApp(app);
 }

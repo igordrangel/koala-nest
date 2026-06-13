@@ -3,16 +3,19 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import {
   CronJobHandlerBase,
   CronJobSettings,
+  demoCronSettings,
 } from '@/core/background-services/cron-service/cron-job.handler.base';
 import { EventQueue } from '@/core/background-services/event-service/event-queue';
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InactivePersonEvent } from '../events/inactive-person.event';
 import { PersonEventJob } from '../events/person-event.job';
 
 @Injectable()
 export class CreatePersonJob extends CronJobHandlerBase {
+  private readonly logger = new Logger(CreatePersonJob.name);
+
   constructor(
     redlockService: IRedLockService,
     loggingService: ILoggingService,
@@ -23,13 +26,12 @@ export class CreatePersonJob extends CronJobHandlerBase {
   }
 
   protected async settings(): Promise<CronJobSettings> {
-    return {
-      isActive: true,
-      timeInMinutes: 1,
-    };
+    return demoCronSettings('0 */1 * * * *');
   }
 
   protected async run(): Promise<void> {
+    this.logger.debug('Iniciando criação de pessoa...');
+
     const created = await this.createPerson.handle({
       name: 'John Doe',
       contacts: [{ contact: '22999999999@example.com' }],
@@ -39,9 +41,17 @@ export class CreatePersonJob extends CronJobHandlerBase {
     const person = await this.repository.findById(created.id);
 
     if (person) {
+      this.logger.log(`Pessoa criada com sucesso. ID: ${person.id}`);
+
       const jobs = new PersonEventJob();
       jobs.addEvent(new InactivePersonEvent());
       EventQueue.dispatchEventsForAggregate(jobs._id);
+
+      this.logger.log('Evento de inativação disparado.');
+    } else {
+      this.logger.log('Pessoa não encontrada após criação.');
     }
+
+    this.logger.log('Job concluído.');
   }
 }

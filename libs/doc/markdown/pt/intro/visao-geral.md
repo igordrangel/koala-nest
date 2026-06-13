@@ -21,8 +21,9 @@ Ao rodar `kl-nest new`, a CLI instala automaticamente o módulo **core** com:
 - filtro global de erros (Zod, TypeORM e exceções HTTP);
 - bases reutilizáveis para controllers, handlers, validators e repositórios;
 - sistema de mapeamento entre entidades, requests e responses;
-- **autenticação opcional** (JWT + OAuth2 genérico) via CLI;
-- exemplos de **CronJob** e **EventJob** no módulo Person (template CRUD).
+- **autenticação opcional** (JWT + OAuth2 genérico) via CLI — veja [Autenticação](../host/autenticacao.md#oauth2-qualquer-provedor-qualquer-quantidade);
+- **cache de dados** com Redis ou memória local (`ICacheService`) — veja [Cache (Redis)](../core/cache.md);
+- exemplos de **CronJob** e **EventJob** no módulo Person (template CRUD) — veja [Cron e Event Jobs](../core/cron-event-jobs.md).
 
 ## Estrutura de pastas
 
@@ -47,3 +48,5 @@ O template **Exemplo de CRUD** inclui um módulo completo de `Person` — entida
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
 - [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — bootstrap e módulos Nest
 - [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo ponta a ponta
+- [Cron e Event Jobs](../core/cron-event-jobs.md) — jobs em background
+- [Cache (Redis)](../core/cache.md) — cache distribuído e uso em handlers

@@ -1,4 +1,4 @@
-import { marked } from 'marked';
+import { Renderer } from 'marked';
 
 function slugify(text: string) {
   return text
@@ -62,34 +62,36 @@ function codeLabel(language: string) {
   }
 }
 
-marked.use({
-  renderer: {
-    heading({ tokens, depth }) {
-      const text = this.parser.parseInline(tokens);
-      const plain = tokens
-        .filter((token) => 'text' in token)
-        .map((token) => (token as { text: string }).text)
-        .join('');
-      const id = slugify(plain);
+export function createDocsMarkedRenderer(): Renderer {
+  const renderer = new Renderer();
 
-      if (depth < 2) {
-        return `<h${depth}>${text}</h${depth}>\n`;
-      }
+  renderer.heading = function ({ tokens, depth }) {
+    const text = this.parser.parseInline(tokens);
+    const plain = tokens
+      .filter((token) => 'text' in token)
+      .map((token) => (token as { text: string }).text)
+      .join('');
+    const id = slugify(plain);
 
-      const headingClass =
-        depth === 2
-          ? 'relative text-3xl font-bold scroll-mt-40 scroll-hash-link'
-          : 'relative text-xl font-semibold scroll-mt-40 scroll-hash-link';
+    if (depth < 2) {
+      return `<h${depth}>${text}</h${depth}>\n`;
+    }
 
-      return `<h${depth} id="${id}" class="${headingClass}">${text}</h${depth}>\n`;
-    },
-    code({ text, lang }) {
-      const language = inferLanguage(text, lang);
-      const label = codeLabel(language);
-      const icon = codeIcon(language);
-      const escaped = escapeHtml(text.replace(/\n$/, ''));
+    const headingClass =
+      depth === 2
+        ? 'relative text-3xl font-bold scroll-mt-40 scroll-hash-link'
+        : 'relative text-xl font-semibold scroll-mt-40 scroll-hash-link';
 
-      return `<div class="code-block relative rounded-xl bg-neutral-900 border border-base-300 overflow-hidden my-6">
+    return `<h${depth} id="${id}" class="${headingClass}">${text}</h${depth}>\n`;
+  };
+
+  renderer.code = function ({ text, lang }) {
+    const language = inferLanguage(text, lang);
+    const label = codeLabel(language);
+    const icon = codeIcon(language);
+    const escaped = escapeHtml(text.replace(/\n$/, ''));
+
+    return `<div class="code-block relative rounded-xl bg-neutral-900 border border-base-300 overflow-hidden my-6">
   <div class="flex items-center justify-between px-3 py-2 border-b border-base-300/80">
     <span class="flex min-w-0 items-center gap-2 text-sm text-neutral-500">
       <i class="bg-neutral-400 text-neutral-950 rounded-sm ${icon}"></i>
@@ -106,16 +108,17 @@ marked.use({
   </div>
   <pre class="language-${language} !m-0 !rounded-none !border-0 !bg-transparent"><code class="language-${language}">${escaped}</code></pre>
 </div>`;
-    },
-    blockquote({ tokens }) {
-      const body = this.parser.parse(tokens).trim();
-      const content = body.replace(/^<p>([\s\S]*)<\/p>$/m, '$1');
+  };
 
-      return `<div role="alert" class="alert alert-warning alert-dash mt-2">
+  renderer.blockquote = function ({ tokens }) {
+    const body = this.parser.parse(tokens).trim();
+    const content = body.replace(/^<p>([\s\S]*)<\/p>$/m, '$1');
+
+    return `<div role="alert" class="alert alert-warning alert-dash mt-2">
   <i class="fa-solid fa-circle-info"></i>
   <span>${content}</span>
 </div>\n`;
-    },
-  },
-});
+  };
 
+  return renderer;
+}

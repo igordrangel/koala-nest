@@ -32,7 +32,7 @@ describe('AutoMapper', () => {
     createMap(PersonAddressRequest, PersonAddress);
     createMap(PersonContactRequest, PersonContact);
 
-    const personMapping = MappingStore.getMapping('PersonToPersonResponse');
+    const personMapping = MappingStore.getMapping(Person, PersonResponse);
     expect(personMapping).toBeDefined();
     expect(personMapping?.source).toBe(Person);
     expect(personMapping?.target).toBe(PersonResponse);

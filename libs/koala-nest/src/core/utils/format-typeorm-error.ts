@@ -99,7 +99,7 @@ function getPostgresDriverError(
     return undefined;
   }
 
-  return driverError as PostgresDriverError;
+  return driverError;
 }
 
 function formatQueryFailedError(
@@ -116,9 +116,7 @@ function formatQueryFailedError(
     return {
       statusCode: mapped.statusCode,
       message: mapped.message,
-      errors: field
-        ? [{ field, message: mapped.message }]
-        : undefined,
+      errors: field ? [{ field, message: mapped.message }] : undefined,
     };
   }
 

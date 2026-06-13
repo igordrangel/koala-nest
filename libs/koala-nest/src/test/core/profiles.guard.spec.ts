@@ -1,3 +1,4 @@
+import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { describe, expect, it } from 'bun:test';
 import { ProfilesGuard } from '@/host/security/guards/profiles.guard';
 import { PROFILES_KEY } from '@/host/decorators/restriction-by-profile.decorator';
@@ -8,7 +9,9 @@ describe('ProfilesGuard', () => {
   it('permite acesso quando não há restrição de perfil', () => {
     const reflector = new Reflector();
     const guard = new ProfilesGuard(reflector);
-    const { context } = createGuardContext({ user: { sub: '1', profile: 'admin' } });
+    const { context } = createGuardContext({
+      user: { sub: '1', profile: AuthProfile.admin },
+    });
 
     expect(guard.canActivate(context)).toBe(true);
   });
@@ -17,9 +20,9 @@ describe('ProfilesGuard', () => {
     const reflector = new Reflector();
     const guard = new ProfilesGuard(reflector);
     const { context } = createGuardContext({
-      user: { sub: '1', profile: 'admin' },
+      user: { sub: '1', profile: AuthProfile.admin },
       metadataKey: PROFILES_KEY,
-      metadata: { [PROFILES_KEY]: ['admin', 'user'] },
+      metadata: { [PROFILES_KEY]: [AuthProfile.admin, AuthProfile.user] },
     });
 
     expect(guard.canActivate(context)).toBe(true);
@@ -29,9 +32,9 @@ describe('ProfilesGuard', () => {
     const reflector = new Reflector();
     const guard = new ProfilesGuard(reflector);
     const { context } = createGuardContext({
-      user: { sub: '1', profile: 'user' },
+      user: { sub: '1', profile: AuthProfile.user },
       metadataKey: PROFILES_KEY,
-      metadata: { [PROFILES_KEY]: ['admin'] },
+      metadata: { [PROFILES_KEY]: [AuthProfile.admin] },
     });
 
     expect(guard.canActivate(context)).toBe(false);

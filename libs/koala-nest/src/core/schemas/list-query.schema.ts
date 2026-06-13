@@ -8,6 +8,7 @@ export const LIST_QUERY_SCHEMA = z.object({
       if (value) {
         return value - 1;
       }
+
       return QUERY_FILTER_PARAMS.page;
     })
     .optional(),

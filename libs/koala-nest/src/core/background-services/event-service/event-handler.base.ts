@@ -2,8 +2,8 @@ import { Type } from '@nestjs/common';
 import { EventClass } from './event-class';
 import { EventQueue } from './event-queue';
 
-export abstract class EventHandlerBase {
-  constructor(public readonly event: Type<EventClass>) {}
+export abstract class EventHandlerBase<TEvent extends EventClass = EventClass> {
+  constructor(public readonly event: Type<TEvent>) {}
 
   setupSubscriptions() {
     EventQueue.register(
@@ -13,5 +13,5 @@ export abstract class EventHandlerBase {
     );
   }
 
-  abstract handleEvent(event: InstanceType<this['event']>): Promise<void>;
+  abstract handleEvent(event: TEvent): Promise<void>;
 }

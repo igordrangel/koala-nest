@@ -4,6 +4,8 @@ import {
   isTypeOrmError,
 } from '@/core/utils/format-typeorm-error';
 import { formatZodError, ZodFieldError } from '@/core/utils/format-zod-error';
+import { ILoggingService } from '@/domain/common/ilogging.service';
+import { reportErrorToLogging } from '@/core/utils/report-error';
 import {
   ArgumentsHost,
   Catch,
@@ -24,7 +26,10 @@ interface ErrorResponse {
 export class ErrorsFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(ErrorsFilter.name);
 
-  constructor(httpAdapter?: AbstractHttpAdapter) {
+  constructor(
+    httpAdapter: AbstractHttpAdapter | undefined,
+    private readonly loggingService: ILoggingService,
+  ) {
     super(httpAdapter);
   }
 
@@ -54,7 +59,21 @@ export class ErrorsFilter extends BaseExceptionFilter {
       .json(errorResponse);
   }
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  private async reportError(error: Error, host: ArgumentsHost): Promise<void> {
+    const { loggedUserName } = FilterRequestParams.get(host);
+
+    try {
+      await reportErrorToLogging(
+        this.loggingService,
+        error,
+        loggedUserName || undefined,
+      );
+    } catch {
+      this.logger.error(error.message, error.stack);
+    }
+  }
+
+  async catch(exception: unknown, host: ArgumentsHost) {
     if (exception instanceof ZodError) {
       return this.sendErrorResponse(host, this.handleZodError(exception));
     }
@@ -70,7 +89,7 @@ export class ErrorsFilter extends BaseExceptionFilter {
     const error =
       exception instanceof Error ? exception : new Error(String(exception));
 
-    this.logger.error(error.message, error.stack);
+    await this.reportError(error, host);
 
     return this.sendErrorResponse(host, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

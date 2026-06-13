@@ -1,26 +1,47 @@
 import { PersonQueryDto } from '@/domain/dtos/person-query.dto';
 import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import { EventHandlerBase } from '@/core/background-services/event-service/event-handler.base';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InactivePersonEvent } from './inactive-person.event';
 
 @Injectable()
-export class InactivePersonHandler extends EventHandlerBase {
+export class InactivePersonHandler extends EventHandlerBase<InactivePersonEvent> {
+  private readonly logger = new Logger(InactivePersonHandler.name);
+
   constructor(private readonly repository: IPersonRepository) {
     super(InactivePersonEvent);
   }
 
   async handleEvent(_event: InactivePersonEvent): Promise<void> {
-    const query = Object.assign(new PersonQueryDto(), {
-      active: true,
-      limit: 1000,
-      page: 0,
-    });
-    const { items } = await this.repository.findMany(query);
+    try {
+      this.logger.log('Recebido evento de inativação de pessoas.');
+      this.logger.debug('Iniciando inativação de pessoas ativas...');
 
-    for (const person of items) {
-      person.active = false;
-      await this.repository.save(person);
+      const query = Object.assign(new PersonQueryDto(), {
+        active: true,
+        limit: 1000,
+        page: 0,
+      });
+      const { items } = await this.repository.findMany(query);
+
+      if (items.length === 0) {
+        this.logger.log('Nenhuma pessoa ativa encontrada.');
+        return;
+      }
+
+      this.logger.debug('Inativando pessoas ativas...', items.length);
+
+      for (const person of items) {
+        person.active = false;
+        await this.repository.save(person);
+      }
+
+      this.logger.log('Pessoas inativadas com sucesso.', items.length);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      this.logger.error(`Erro ao processar evento de inativação: ${message}`);
+      throw error;
     }
   }
 }

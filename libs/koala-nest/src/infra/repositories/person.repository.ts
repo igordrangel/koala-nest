@@ -2,8 +2,8 @@ import { RepositoryBase } from '@/infra/repositories/repository.base';
 import { Person } from '@/domain/entities/person/person';
 import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import { Inject, Injectable } from '@nestjs/common';
-import { DATA_SOURCE_PROVIDER_TOKEN } from '../database/data-source-factory';
-import { DataSource, Like } from 'typeorm';
+import { DATA_SOURCE_PROVIDER_TOKEN } from '@/infra/database/data-source-factory';
+import { DataSource, FindOptionsWhere, Like } from 'typeorm';
 import { PersonQueryDto } from '@/domain/dtos/person-query.dto';
 import { ListResponse } from '@/core/types';
 
@@ -17,13 +17,10 @@ export class PersonRepository
   }
 
   findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
-    const where: {
-      name?: ReturnType<typeof Like>;
-      active?: boolean;
-    } = {};
+    const where: FindOptionsWhere<Person> = {};
 
     if (query.name) {
-      where.name = Like(`%${query.name}%`);
+      where.name = Like<string>(`%${query.name}%`);
     }
 
     if (query.active !== undefined) {

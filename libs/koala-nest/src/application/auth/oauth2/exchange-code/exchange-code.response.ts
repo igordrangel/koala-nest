@@ -1,3 +1,4 @@
+import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OAuthExchangeCodeResponse {
@@ -10,6 +11,6 @@ export class OAuthExchangeCodeResponse {
   @ApiProperty({ required: false })
   name?: string;
 
-  @ApiProperty({ required: false })
-  profile?: string;
+  @ApiProperty({ enum: AuthProfile, required: false })
+  profile?: AuthProfile;
 }

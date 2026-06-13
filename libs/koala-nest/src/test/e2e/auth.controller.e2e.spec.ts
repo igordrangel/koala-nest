@@ -9,6 +9,7 @@ import request from 'supertest';
 describe('Auth (E2E)', () => {
   let app: INestApplication;
   let accessToken: string;
+  let refreshToken: string;
 
   beforeAll(async () => {
     app = await createAuthE2ETestApp();
@@ -28,6 +29,30 @@ describe('Auth (E2E)', () => {
     expect(response.body.refreshToken).toEqual(expect.any(String));
 
     accessToken = response.body.accessToken;
+    refreshToken = response.body.refreshToken;
+  });
+
+  it('renova tokens via refresh token no header Authorization', async () => {
+    const response = await request(app.getHttpServer())
+      .post(`${AUTH_ROUTER_CONFIG.group}/refresh`)
+      .set('Authorization', `Bearer ${refreshToken}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.accessToken).toEqual(expect.any(String));
+    expect(response.body.refreshToken).toEqual(expect.any(String));
+    expect(response.body.accessToken).not.toBe(accessToken);
+
+    accessToken = response.body.accessToken;
+  });
+
+  it('renova tokens via cookie refreshToken em /auth/refresh', async () => {
+    const response = await request(app.getHttpServer())
+      .post(`${AUTH_ROUTER_CONFIG.group}/refresh`)
+      .set('Cookie', [`refreshToken=${refreshToken}`]);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.accessToken).toEqual(expect.any(String));
+    expect(response.body.refreshToken).toEqual(expect.any(String));
   });
 
   it('bloqueia rota protegida sem token', async () => {

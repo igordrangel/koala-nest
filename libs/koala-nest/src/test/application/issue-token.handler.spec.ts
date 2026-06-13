@@ -1,3 +1,4 @@
+import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { describe, expect, it } from 'bun:test';
 import { IssueTokenHandler } from '@/application/auth/issue-token/issue-token.handler';
 import { IJwtTokenService } from '@/domain/auth/services/iauth.service';
@@ -5,7 +6,7 @@ import { IJwtTokenService } from '@/domain/auth/services/iauth.service';
 describe('IssueTokenHandler', () => {
   it('gera par de tokens a partir das claims informadas', async () => {
     const jwtTokenService = {
-      signTokenPair: (claims: { sub: string; profile?: string }) => ({
+      signTokenPair: (claims: { sub: string; profile?: AuthProfile }) => ({
         accessToken: `access-${claims.sub}`,
         refreshToken: `refresh-${claims.sub}`,
       }),
@@ -15,7 +16,7 @@ describe('IssueTokenHandler', () => {
 
     const result = await handler.handle({
       sub: 'user-123',
-      profile: 'admin',
+      profile: AuthProfile.admin,
     });
 
     expect(result).toEqual({

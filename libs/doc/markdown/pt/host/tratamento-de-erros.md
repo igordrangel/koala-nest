@@ -14,7 +14,10 @@ O `ErrorsFilter` é registrado globalmente em `main.ts` e padroniza respostas de
 ## Registro global
 
 ```typescript
-app.useGlobalFilters(new ErrorsFilter());
+const { httpAdapter } = app.get(HttpAdapterHost);
+const loggingService = app.get(ILoggingService);
+
+app.useGlobalFilters(new ErrorsFilter(httpAdapter, loggingService));
 ```
 
 ## Implementação
@@ -22,9 +25,14 @@ app.useGlobalFilters(new ErrorsFilter());
 ```typescript
 @Catch()
 export class ErrorsFilter extends BaseExceptionFilter {
-  private readonly logger = new Logger(ErrorsFilter.name);
+  constructor(
+    httpAdapter: AbstractHttpAdapter | undefined,
+    private readonly loggingService: ILoggingService,
+  ) {
+    super(httpAdapter);
+  }
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  async catch(exception: unknown, host: ArgumentsHost) {
     if (exception instanceof ZodError) {
       return this.sendErrorResponse(host, this.handleZodError(exception));
     }
@@ -40,7 +48,7 @@ export class ErrorsFilter extends BaseExceptionFilter {
     const error =
       exception instanceof Error ? exception : new Error(String(exception));
 
-    this.logger.error(error.message, error.stack);
+    await this.reportError(error, host);
 
     return this.sendErrorResponse(host, {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -94,7 +102,7 @@ if (!person) {
 
 ## Erros não tratados
 
-Qualquer erro desconhecido retorna HTTP 500 com mensagem genérica. O stack trace é registrado no logger interno, sem expor detalhes ao cliente.
+Qualquer erro desconhecido retorna HTTP 500 com mensagem genérica. O erro é reportado via `ILoggingService.report()` (usuário da request + nome do pacote). Se o report falhar, o filtro usa `Logger` como fallback — sem expor detalhes ao cliente.
 
 ## Formato de resposta
 

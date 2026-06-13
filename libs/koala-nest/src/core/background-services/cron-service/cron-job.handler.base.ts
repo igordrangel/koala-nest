@@ -1,11 +1,22 @@
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
-import { KoalaGlobalVars } from '@/core/koala-global-vars';
+import { cronExpressionToBoolean } from '@/core/utils/cron-expression-to-boolean';
 import { delay } from '@/core/utils/delay';
+import { reportErrorToLogging } from '@/core/utils/report-error';
 
 export interface CronJobSettings {
   isActive: boolean;
   timeInMinutes: number;
+}
+
+export function demoCronSettings(
+  cronExpression: string,
+  timeInMinutes = 0.01,
+): CronJobSettings {
+  return {
+    isActive: cronExpressionToBoolean(cronExpression),
+    timeInMinutes,
+  };
 }
 
 export abstract class CronJobHandlerBase {
@@ -39,22 +50,14 @@ export abstract class CronJobHandlerBase {
             const reportError =
               error instanceof Error ? error : new Error(String(error));
 
-            try {
-              await this.loggingService.report({
-                error: reportError,
-                packageName: KoalaGlobalVars.appName,
-                loggedUsername: KoalaGlobalVars.internalUserName,
-              });
-            } catch {
-              console.error(reportError);
-            }
+            await reportErrorToLogging(this.loggingService, reportError);
+          } finally {
+            await this.redlockService.releaseLock(name);
           }
         }
       }
 
       await delay(timeout);
-
-      await this.redlockService.releaseLock(name);
     }
   }
 }

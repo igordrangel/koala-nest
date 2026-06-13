@@ -6,13 +6,18 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import { AutoMapper } from '@/core/tools/mapping';
 import { Person } from '@/domain/entities/person/person';
 import { CreatePersonValidator } from './create-person.validator';
+import { ICacheService } from '@/domain/common/icache.service';
+import { invalidatePersonListCache } from '@/core/utils/person-list-cache';
 
 @Injectable()
 export class CreatePersonHandler extends RequestHandlerBase<
   CreatePersonRequest,
   CreatePersonResponse
 > {
-  constructor(private readonly repository: IPersonRepository) {
+  constructor(
+    private readonly repository: IPersonRepository,
+    private readonly cache: ICacheService,
+  ) {
     super();
   }
 
@@ -23,6 +28,7 @@ export class CreatePersonHandler extends RequestHandlerBase<
       Person,
     );
     const createdPerson = await this.repository.save(person);
+    await invalidatePersonListCache(this.cache);
     return AutoMapper.map(createdPerson, Person, CreatePersonResponse);
   }
 }

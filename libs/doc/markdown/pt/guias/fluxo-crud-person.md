@@ -218,6 +218,33 @@ O gerador de migrations (`migration-datasource.ts`) descobre entidades em `src/d
 
 Acesse `http://localhost:3000/doc` para testar os endpoints interativamente.
 
+## 9. Jobs em background (Cron e Event)
+
+O template CRUD inclui exemplos em `src/application/person/jobs/` e `src/application/person/events/`:
+
+| Job / Handler | Tipo | Comportamento (exemplo) |
+| --- | --- | --- |
+| `CreatePersonJob` | CronJob | Cria pessoa a cada minuto e dispara `InactivePersonEvent` |
+| `DeleteInactiveJob` | CronJob | Remove pessoas inativas periodicamente |
+| `InactivePersonHandler` | EventJob | Inativa pessoas ativas quando o evento é despachado |
+
+Registro no bootstrap (`src/host/main.ts`):
+
+```typescript
+const inactivePersonHandler = await app.resolve(InactivePersonHandler);
+inactivePersonHandler.setupSubscriptions();
+
+await delay(5000);
+
+const createPersonJob = await app.resolve(CreatePersonJob);
+const deleteInactiveJob = await app.resolve(DeleteInactiveJob);
+
+createPersonJob.start();
+deleteInactiveJob.start();
+```
+
+Guia completo: [Cron e Event Jobs](../core/cron-event-jobs.md).
+
 ## Endpoints disponíveis
 
 | Operação | Método | Rota | Handler |

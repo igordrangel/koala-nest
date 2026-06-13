@@ -1,7 +1,7 @@
 import { JwtClaims } from '@/core/auth/jwt-claims';
 import { IJwtTokenService } from '@/domain/auth/services/iauth.service';
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { EnvService } from '@/infra/common/env.service';
 
 @Injectable()
@@ -12,15 +12,25 @@ export class JwtTokenService implements IJwtTokenService {
   ) {}
 
   signAccessToken(claims: JwtClaims): string {
-    return this.jwtService.sign({ ...claims, tokenType: 'access' }, {
-      expiresIn: this.env.get('JWT_ACCESS_TOKEN_EXPIRES_IN'),
-    });
+    return this.jwtService.sign(
+      { ...claims, tokenType: 'access' },
+      this.signOptions('JWT_ACCESS_TOKEN_EXPIRES_IN'),
+    );
   }
 
   signRefreshToken(claims: JwtClaims): string {
-    return this.jwtService.sign({ ...claims, tokenType: 'refresh' }, {
-      expiresIn: this.env.get('JWT_REFRESH_TOKEN_EXPIRES_IN'),
-    });
+    return this.jwtService.sign(
+      { ...claims, tokenType: 'refresh' },
+      this.signOptions('JWT_REFRESH_TOKEN_EXPIRES_IN'),
+    );
+  }
+
+  private signOptions(
+    key: 'JWT_ACCESS_TOKEN_EXPIRES_IN' | 'JWT_REFRESH_TOKEN_EXPIRES_IN',
+  ): JwtSignOptions {
+    return {
+      expiresIn: this.env.get(key) as JwtSignOptions['expiresIn'],
+    };
   }
 
   signTokenPair(claims: JwtClaims) {

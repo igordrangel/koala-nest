@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { AuthProfile } from './auth-profile.enum';
 
 export const jwtClaimsSchema = z.object({
   sub: z.string().min(1),
-  profile: z.string().optional(),
+  profile: z.nativeEnum(AuthProfile).optional(),
   login: z.string().optional(),
   email: z.string().email().optional(),
   tokenType: z.enum(['access', 'refresh']).optional(),

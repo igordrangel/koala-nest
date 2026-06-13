@@ -14,8 +14,11 @@ interface MappingDefinition {
 }
 
 export class MappingStore {
-  private static readonly _entities = new Map<string, EntityPropDefs[]>();
-  private static readonly _mappings = new Map<string, MappingDefinition>();
+  private static readonly _entities = new Map<Type<any>, EntityPropDefs[]>();
+  private static readonly _mappings = new Map<
+    Type<any>,
+    Map<Type<any>, MappingDefinition>
+  >();
 
   static setProp(
     entity: Type<any>,
@@ -30,7 +33,7 @@ export class MappingStore {
     const isArray = propType === Array;
     const type = isArray ? (compositionType ?? propType) : propType;
 
-    const props = this._entities.get(entity.name) || [];
+    const props = this._entities.get(entity) || [];
 
     props.push({
       name: propName,
@@ -38,16 +41,31 @@ export class MappingStore {
       isArray,
     });
 
-    this._entities.set(entity.name, props);
+    this._entities.set(entity, props);
   }
 
   static getProps(entity: Type<any>) {
-    return this._entities.get(entity.name) ?? [];
+    const props: EntityPropDefs[] = [];
+    const seen = new Set<string>();
+    let current: Type<any> | null = entity;
+
+    while (current?.prototype) {
+      for (const prop of this._entities.get(current) ?? []) {
+        if (!seen.has(prop.name)) {
+          seen.add(prop.name);
+          props.push(prop);
+        }
+      }
+
+      current = Object.getPrototypeOf(current) as Type<any> | null;
+    }
+
+    return props;
   }
 
   static getPropType(entity: Type<any>, propName: string) {
     const prop = this._entities
-      .get(entity.name)
+      .get(entity)
       ?.find((p) => p.name === propName);
 
     if (!prop) {
@@ -74,15 +92,32 @@ export class MappingStore {
     target: Type<any>,
     ...formMember: ForMemberDefinition<any, any>
   ) {
-    const mapName = `${source.name}To${target.name}`;
-    this._mappings.set(mapName, {
+    const targetMappings =
+      this._mappings.get(source) ?? new Map<Type<any>, MappingDefinition>();
+
+    targetMappings.set(target, {
       source,
       target,
       formMember,
     });
+
+    this._mappings.set(source, targetMappings);
   }
 
-  static getMapping(mapName: string) {
-    return this._mappings.get(mapName) ?? null;
+  static getMapping(source: Type<any>, target: Type<any>) {
+    return this._mappings.get(source)?.get(target) ?? null;
+  }
+
+  /** Compatibilidade com chave legada usada em testes. */
+  static getMappingByName(mapName: string) {
+    for (const targetMappings of this._mappings.values()) {
+      for (const mapping of targetMappings.values()) {
+        if (`${mapping.source.name}To${mapping.target.name}` === mapName) {
+          return mapping;
+        }
+      }
+    }
+
+    return null;
   }
 }

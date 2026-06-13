@@ -18,8 +18,7 @@
     width: 15rem;
     max-width: 15rem;
     flex: none;
-    height: 100vh;
-    padding-top: 4rem;
+    height: calc(100vh - 4rem);
     box-sizing: border-box;
   }
 }

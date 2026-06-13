@@ -11,34 +11,30 @@ export class RedLockService implements IRedLockService {
   ) {}
 
   async acquiredLock(key: string, ttlSecondsLock: number): Promise<boolean> {
-    if (
-      this.env.get('NODE_ENV') === 'test' ||
-      !this.env.get('REDIS_CONNECTION_STRING')
-    ) {
+    if (this.shouldBypassDistributedLock()) {
       return true;
     }
 
-    const lockKey = this.getLockKey(key);
-    const existingLock = await this.cache.get(lockKey);
-
-    if (existingLock) {
-      return false;
-    }
-
-    await this.cache.set(lockKey, 'RedLockService', ttlSecondsLock);
-
-    return true;
+    return this.cache.setIfNotExists(
+      this.getLockKey(key),
+      'RedLockService',
+      ttlSecondsLock,
+    );
   }
 
   async releaseLock(key: string): Promise<void> {
-    if (
-      this.env.get('NODE_ENV') === 'test' ||
-      !this.env.get('REDIS_CONNECTION_STRING')
-    ) {
+    if (this.shouldBypassDistributedLock()) {
       return;
     }
 
     await this.cache.invalidate(this.getLockKey(key));
+  }
+
+  private shouldBypassDistributedLock() {
+    return (
+      this.env.get('NODE_ENV') === 'test' ||
+      !this.env.get('REDIS_CONNECTION_STRING')
+    );
   }
 
   private getLockKey(key: string) {

@@ -42,6 +42,33 @@ describe('OAuthProviderRegistry', () => {
       clientSecret: 'client-secret',
       scope: 'openid profile email',
       redirectPath: '/oauth2/callback',
+      authorizationUrl: undefined,
+      tokenUrl: undefined,
+      userInfoUrl: undefined,
+    });
+  });
+
+  it('resolve provider com endpoints manuais para servidor OAuth próprio', () => {
+    const registry = createRegistry({
+      OAUTH2_PROVIDERS: 'myapp',
+      OAUTH2_MYAPP_CLIENT_ID: 'client-id',
+      OAUTH2_MYAPP_CLIENT_SECRET: 'client-secret',
+      OAUTH2_MYAPP_SCOPE: 'openid profile email',
+      OAUTH2_MYAPP_AUTHORIZATION_URL: 'https://auth.myapp.com/oauth/authorize',
+      OAUTH2_MYAPP_TOKEN_URL: 'https://auth.myapp.com/oauth/token',
+      OAUTH2_MYAPP_USERINFO_URL: 'https://auth.myapp.com/oauth/userinfo',
+    });
+
+    expect(registry.getProvider('myapp')).toEqual({
+      key: 'myapp',
+      domain: undefined,
+      clientId: 'client-id',
+      clientSecret: 'client-secret',
+      scope: 'openid profile email',
+      redirectPath: '/oauth2/callback',
+      authorizationUrl: 'https://auth.myapp.com/oauth/authorize',
+      tokenUrl: 'https://auth.myapp.com/oauth/token',
+      userInfoUrl: 'https://auth.myapp.com/oauth/userinfo',
     });
   });
 });

@@ -4,6 +4,15 @@ import { Person } from '@/domain/entities/person/person';
 import { PersonAddress } from '@/domain/entities/person/person-address';
 import { PersonContact } from '@/domain/entities/person/person-contact';
 import type { IPersonRepository } from '@/domain/repositories/iperson.repository';
+import type { ICacheService } from '@/domain/common/icache.service';
+
+const cacheStub = {
+  get: () => Promise.resolve(null),
+  set: () => Promise.resolve(),
+  setIfNotExists: () => Promise.resolve(true),
+  invalidate: () => Promise.resolve(),
+  invalidateByPrefix: () => Promise.resolve(),
+} as ICacheService;
 
 describe('UpdatePersonHandler', () => {
   it('carrega a entidade existente antes de salvar', async () => {
@@ -38,7 +47,7 @@ describe('UpdatePersonHandler', () => {
       },
     } as unknown as IPersonRepository;
 
-    const handler = new UpdatePersonHandler(repository);
+    const handler = new UpdatePersonHandler(repository, cacheStub);
 
     await handler.handle({
       id: 1,
@@ -60,7 +69,7 @@ describe('UpdatePersonHandler', () => {
       save: async () => undefined,
     } as unknown as IPersonRepository;
 
-    const handler = new UpdatePersonHandler(repository);
+    const handler = new UpdatePersonHandler(repository, cacheStub);
 
     await expect(
       handler.handle({

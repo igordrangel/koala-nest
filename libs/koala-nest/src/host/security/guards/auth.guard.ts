@@ -1,4 +1,5 @@
 import { AuthenticatedUser } from '@/core/auth/jwt-claims';
+import { isAuthRefreshRoute } from '@/core/auth/auth-routes';
 import { IS_PUBLIC_KEY } from '@/host/decorators/is-public.decorator';
 import {
   ExecutionContext,
@@ -7,6 +8,22 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard as NestAuthGuard } from '@nestjs/passport';
+
+type AuthRequest = {
+  cookies?: Record<string, string>;
+  url?: string;
+  headers: Record<string, string | string[] | undefined>;
+};
+
+export function applyRefreshTokenFromCookie(request: AuthRequest): void {
+  if (
+    isAuthRefreshRoute(request.url) &&
+    request.cookies?.refreshToken &&
+    !request.headers.authorization
+  ) {
+    request.headers.authorization = `Bearer ${request.cookies.refreshToken}`;
+  }
+}
 
 @Injectable()
 export class AuthGuard extends NestAuthGuard('jwt') {
@@ -24,14 +41,8 @@ export class AuthGuard extends NestAuthGuard('jwt') {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<{ cookies?: Record<string, string>; url?: string; headers: Record<string, string> }>();
-
-    if (
-      request.url?.includes('auth/refresh') &&
-      request.cookies?.refreshToken
-    ) {
-      request.headers.authorization = `Bearer ${request.cookies.refreshToken}`;
-    }
+    const request = context.switchToHttp().getRequest<AuthRequest>();
+    applyRefreshTokenFromCookie(request);
 
     return super.canActivate(context);
   }

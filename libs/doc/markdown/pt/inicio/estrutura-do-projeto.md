@@ -17,9 +17,13 @@ O arquivo `src/host/main.ts` configura CORS, documentação OpenAPI, filtro glob
 
 ```typescript
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import { bootstrapKoalaJobs } from './bootstrap/koala-bootstrap';
 import { defineDocumentation } from './open-api/define-documentation';
 import { ErrorsFilter } from './filters/errors.filter';
+import { HttpAdapterHost } from '@nestjs/core';
+import { ILoggingService } from '@/domain/common/ilogging.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,16 +34,19 @@ async function bootstrap() {
     optionsSuccessStatus: 200,
   });
 
-  defineDocumentation(app);
+  await defineDocumentation(app);
 
-  app.useGlobalFilters(new ErrorsFilter());
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  const loggingService = app.get(ILoggingService);
+  app.useGlobalFilters(new ErrorsFilter(httpAdapter, loggingService));
+
+  const config = app.get(ConfigService);
+  await bootstrapKoalaJobs(app, {
+    cronJobsEnabled: config.get('CRON_JOBS_ENABLED'),
+    bootstrapDelayMs: config.get('BOOTSTRAP_DELAY_MS'),
+  });
 
   await app.listen(process.env.PORT || 3000);
-
-  console.log(`Server is running on port ${process.env.PORT || 3000}`);
-  console.log(
-    `Documentation is available at http://localhost:${process.env.PORT || 3000}/doc`,
-  );
 }
 
 bootstrap();
@@ -62,6 +69,22 @@ O `AppModule` importa a validação de ambiente e os módulos de feature. No tem
 export class AppModule {}
 ```
 
+## Jobs em background
+
+No template **Exemplo de CRUD**, `main.ts` chama `bootstrapKoalaJobs()` antes de `listen` (controlado por `CRON_JOBS_ENABLED`):
+
+```typescript
+KoalaGlobalVars.appName = 'koala-nest';
+KoalaGlobalVars.internalUserName = 'integration.bot';
+
+await bootstrapKoalaJobs(app, {
+  cronJobsEnabled: config.get('CRON_JOBS_ENABLED'),
+  bootstrapDelayMs: config.get('BOOTSTRAP_DELAY_MS'),
+});
+```
+
+Por padrão, `CRON_JOBS_ENABLED=false` no `.env.example`. Ajuste `BOOTSTRAP_DELAY_MS` se precisar aguardar dependências antes dos jobs. Detalhes em [Cron e Event Jobs](../core/cron-event-jobs.md).
+
 ## Hierarquia de módulos
 
 ```
@@ -70,6 +93,9 @@ AppModule
     └── ControllerModule
         ├── MappingProvider (registra mapeamentos na inicialização)
         └── InfraModule
+            ├── ICacheService (Redis ou memória)
+            ├── IRedLockService (lock de CronJob)
+            ├── ILoggingService (relato de erros)
             └── RepositoryModule
                 └── DatabaseModule (DataSource TypeORM)
 ```

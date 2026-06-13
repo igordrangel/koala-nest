@@ -23,7 +23,62 @@ O Swagger UI padrão fica **desabilitado**; apenas o Scalar é exibido.
 | `src/host/open-api/define-documentation.ts` | Monta o spec e registra o Scalar |
 | `src/host/main.ts` | Chama `defineDocumentation(app)` no bootstrap |
 | `src/host/decorators/controller.decorator.ts` | Aplica rota Nest + tag Swagger |
+| `src/host/decorators/api-exclude-endpoint-diff-develop.decorator.ts` | Oculta endpoint fora de `develop` |
+| `src/host/decorators/api-property-only-develop.decorator.ts` | Documenta propriedade de DTO apenas em `develop` |
+| `src/host/decorators/api-property-enum.decorator.ts` | Documenta enums numéricos no Swagger |
+| `src/host/decorators/scalar-token-endpoint.decorator.ts` | Compõe decorators da rota scalar-token |
 | Requests/responses em `src/application/` | Schemas documentados com `@ApiProperty()` |
+| `src/core/schemas/` | Facilitadores Zod reutilizáveis (`booleanSchema`, `nativeEnumSchema`, etc.) |
+
+## Decorators para ocultar ou condicionar endpoints
+
+```typescript
+import { ApiExcludeEndpointDiffDevelop } from '@/host/decorators/api-exclude-endpoint-diff-develop.decorator';
+
+@Delete(':id')
+@ApiExcludeEndpointDiffDevelop()
+handle(@Param('id') id: string) { ... }
+```
+
+Fora de `NODE_ENV=develop`, o endpoint deixa de aparecer no Scalar. Use `@ApiPropertyOnlyDevelop()` em DTOs internos e `@ApiPropertyEnum({ enum: MyEnum })` para enums numéricos.
+
+```typescript
+import { ApiPropertyOnlyDevelop } from '@/host/decorators/api-property-only-develop.decorator';
+import { ApiPropertyEnum } from '@/host/decorators/api-property-enum.decorator';
+
+export class MyRequest {
+  @ApiPropertyOnlyDevelop({ example: 'internal-only' })
+  debugField?: string;
+
+  @ApiPropertyEnum({ enum: StatusEnum })
+  status: StatusEnum;
+}
+```
+
+## Schemas Zod reutilizáveis
+
+Em `src/core/schemas/`:
+
+| Helper | Uso |
+| --- | --- |
+| `booleanSchema()` | Query booleans (`?active=true`) |
+| `nativeEnumSchema(enum)` | Enums numéricos em query/body |
+| `emailSchema(value, required?)` | Validação de e-mail |
+| `documentNumberSchema(value)` | CPF/CNPJ |
+| `setMaskDocumentNumber(value)` | Máscara de documento |
+| `LIST_QUERY_SCHEMA` | Paginação e ordenação |
+
+Exemplo em validators:
+
+```typescript
+import { booleanSchema, LIST_QUERY_SCHEMA } from '@/core/schemas';
+
+protected get schema() {
+  return LIST_QUERY_SCHEMA.and(
+    z.object({ active: booleanSchema() }),
+  );
+}
+```
 
 ## Ativação no bootstrap
 
@@ -134,11 +189,10 @@ const documentBuilder = new DocumentBuilder()
   .setVersion('1.2.0')
   .addServer('http://localhost:3000', 'Desenvolvimento')
   .addServer('https://api.exemplo.com', 'Produção')
-  .addBearerAuth()
   .build();
 ```
 
-Se adicionar autenticação, documente nos controllers com `@ApiBearerAuth()`.
+Com autenticação instalada, `define-documentation.ts` aplica `.addBearerAuth()` e `.addSecurityRequirements('bearer')` globalmente. Rotas com `@IsPublic()` ficam sem segurança no spec — o mesmo critério do `AuthGuard` global.
 
 ### Endpoint da documentação
 
@@ -319,6 +373,124 @@ apiReference({
 
 Defina `API_URL` no `envSchema` se quiser configurar por ambiente.
 
+## Autenticacao automatica no Scalar
+
+Com o módulo de autenticação instalado, o template configura o Scalar para **obter o JWT pela própria UI** — sem copiar token manualmente. A configuração combina esquemas OAuth2 no OpenAPI com o bloco `authentication` do `apiReference`.
+
+### O que o template já faz
+
+| Arquivo | Função |
+| --- | --- |
+| `src/host/open-api/scalar-authentication.ts` | Monta `securitySchemes` e `authentication` do Scalar |
+| `src/host/open-api/define-documentation.ts` | Aplica a config ao `apiReference` quando `IJwtTokenService` está registrado |
+| `POST /auth/scalar-token` | Endpoint OAuth2 **password** usado pelo Scalar (JWT) |
+| `POST /oauth2/scalar-token` | Endpoint **authorization code** usado pelo Scalar (OAuth2) |
+
+Endpoints `scalar-token` ficam ocultos fora de `develop` (`@ApiExcludeEndpointDiffDevelop`).
+
+### JWT — fluxo password no Scalar
+
+O Scalar exibe o esquema **JWT** com fluxo `password`:
+
+- `username` → claim `sub`
+- `password` → claim `profile` (`user` ou `admin`)
+- `tokenUrl` → `POST /auth/scalar-token`
+- `x-tokenName` → `accessToken` (Scalar envia Bearer automaticamente)
+
+Em `develop`, credenciais de exemplo são pré-preenchidas (`scalar-dev-user` / `admin`). Em produção, os campos ficam vazios.
+
+**Uso em `/doc`:**
+
+1. Abra `/doc`
+2. Clique em **Authenticate**
+3. Selecione **JWT**, confirme `username`/`password` e autorize
+4. Use **Try it** nos endpoints protegidos
+
+### OAuth2 — fluxo authorization code no Scalar
+
+Para cada provider em `OAUTH2_PROVIDERS`, o template registra um esquema (ex.: **auth0**):
+
+- `authorizationUrl` — link completo gerado por `OAuth2AuthService.authLink()`
+- `tokenUrl` — `POST /oauth2/scalar-token` (troca `code`, emite JWT e devolve `{ accessToken, refreshToken }`)
+- `x-scalar-client-id`, `x-scalar-redirect-uri`, `x-scalar-security-body` — extensões do Scalar para o fluxo authorization code
+- `x-tokenName: accessToken`
+
+**Uso em `/doc`:**
+
+1. **Authenticate** → selecione o provider (ex.: auth0)
+2. Conclua o login no provedor
+3. O Scalar troca o código, recebe o JWT e aplica nos requests
+
+### Configuracao central (`scalar-authentication.ts`)
+
+A lógica fica isolada em `buildScalarAuthentication(app)`:
+
+```typescript
+export async function buildScalarAuthentication(app: INestApplication) {
+  if (!isProviderRegistered(app, IJwtTokenService)) {
+    return undefined;
+  }
+
+  // Esquema JWT (password → /auth/scalar-token)
+  // Esquemas por provider OAuth2 (authorization code → /oauth2/scalar-token)
+
+  return {
+    openApiSecuritySchemes,
+    authentication: {
+      preferredSecurityScheme: ['JWT', 'auth0', ...],
+      securitySchemes: { /* prefill em develop */ },
+    },
+    persistAuth: EnvConfig.isEnvDevelop,
+  };
+}
+```
+
+`define-documentation.ts` consome o retorno:
+
+```typescript
+const scalarAuth = await buildScalarAuthentication(app);
+
+app.use(
+  docEndpoint,
+  apiReference({
+    spec: { content: document },
+    persistAuth: scalarAuth?.persistAuth ?? false,
+    authentication: scalarAuth?.authentication,
+    // ...
+  }),
+);
+```
+
+### Rotas protegidas e públicas no OpenAPI
+
+Com guards globais (`AuthGuard`), o OpenAPI segue a mesma regra:
+
+- **Padrão:** Bearer obrigatório em todos os endpoints (`addSecurityRequirements('bearer')`)
+- **Exceção:** rotas com `@IsPublic()` recebem `security: []` no spec automaticamente
+
+Não é necessário `@ApiBearerAuth()` em cada controller.
+
+```typescript
+import { IsPublic } from '@/host/decorators/is-public.decorator';
+
+@Post('token')
+@IsPublic()
+handle() { ... }
+```
+
+### Extensões Scalar (OAuth2)
+
+| Extensão | Função |
+| --- | --- |
+| `x-tokenName` | Campo da resposta usado como Bearer (`accessToken`) |
+| `x-scalar-client-id` | Pré-preenche Client ID |
+| `x-scalar-redirect-uri` | URI de callback do authorization code |
+| `x-scalar-security-body` | Body extra no `tokenUrl` (ex.: `provider`) |
+
+Referência: [Scalar — Authentication](https://scalar.com/products/api-client/authentication).
+
+> **Segurança:** `clientSecret` e credenciais de teste só são pré-preenchidos em `develop`.
+
 ## Verificação rápida
 
 Se um endpoint não aparece em `/doc`:
@@ -338,4 +510,5 @@ Se o schema de um campo está incompleto:
 
 - [Controllers](./controllers.md) — padrão fino de entrada HTTP
 - [Rotas e tags](./rotas.md) — `RouterConfigBase` e agrupamento no Scalar
+- [Autenticação](./autenticacao.md) — JWT, guards e OAuth2
 - [Requests e responses](../application/requests-responses.md) — DTOs com Swagger e `@AutoMap()`

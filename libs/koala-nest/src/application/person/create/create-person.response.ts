@@ -1,8 +1,3 @@
-import { AutoMap } from '@/core/tools/mapping';
-import { ApiProperty } from '@nestjs/swagger';
+import { CreatedRegistreWithIdResponse } from '@/application/common/created-registre.response';
 
-export class CreatePersonResponse {
-  @ApiProperty({ type: 'integer', format: 'int32' })
-  @AutoMap()
-  id: number;
-}
+export class CreatePersonResponse extends CreatedRegistreWithIdResponse {}

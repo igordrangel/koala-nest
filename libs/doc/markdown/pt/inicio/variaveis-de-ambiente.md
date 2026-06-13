@@ -23,6 +23,9 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string().optional(),
+  CACHE_KEY_PREFIX: z.string().optional(),
+  CRON_JOBS_ENABLED: z.coerce.boolean().default(false),
+  BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
   JWT_PRIVATE_KEY: z.string().optional(),
   JWT_PUBLIC_KEY: z.string().optional(),
   JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),
@@ -52,17 +55,70 @@ JWT_REFRESH_TOKEN_EXPIRES_IN=7d
 API_HOST=http://localhost:3000
 ```
 
-### OAuth2 genérico (opcional)
+### OAuth2 (qualquer provedor)
 
-Variáveis dinâmicas por provider (`OAUTH2_{KEY}_*`) são lidas via `EnvService.getDynamic()`:
+Suporta **N provedores** via lista em `OAUTH2_PROVIDERS`. Google e Microsoft no `.env.example` são só exemplos — repita `OAUTH2_{CHAVE}_*` para cada IdP (Auth0, Keycloak, Okta, etc.).
+
+Guia completo: [Autenticação](../host/autenticacao.md#oauth2-qualquer-provedor-qualquer-quantidade).
 
 ```env
-OAUTH2_PROVIDERS=google,microsoft
-OAUTH2_GOOGLE_DOMAIN=https://accounts.google.com
-OAUTH2_GOOGLE_CLIENT_ID=...
-OAUTH2_GOOGLE_CLIENT_SECRET=...
-OAUTH2_GOOGLE_SCOPE=openid profile email
+OAUTH2_PROVIDERS=google,auth0,keycloak
+OAUTH2_AUTH0_DOMAIN=https://tenant.auth0.com
+OAUTH2_AUTH0_CLIENT_ID=...
+OAUTH2_AUTH0_CLIENT_SECRET=...
+OAUTH2_AUTH0_SCOPE=openid profile email
 ```
+
+**Servidor OAuth próprio** (sem discovery OIDC): `OAUTH2_{CHAVE}_AUTHORIZATION_URL`, `_TOKEN_URL`, `_USERINFO_URL`.
+
+O `state` do OAuth2 é gravado temporariamente na API (anti-CSRF). **Redis não é obrigatório** — em instância única, memória basta. Com **várias réplicas**, recomenda-se `REDIS_CONNECTION_STRING` para o `state` ser validado em qualquer instância. Detalhes: [Validação do `state`](../host/autenticacao.md#validacao-do-state-autenticidade-do-fluxo).
+
+### Cache (Redis)
+
+`ICacheService` é para **cache de dados** nos handlers — sem relação com autenticação. Veja [Cache (Redis)](../core/cache.md).
+
+| Cenário | Implementação |
+|----------|---------------|
+| `REDIS_CONNECTION_STRING` definido | `RedisCacheService` (ioredis) |
+| Redis ausente | `InMemoryCacheService` (processo local) |
+| Várias réplicas da API | **Recomendado** Redis (cache compartilhado, lock de CronJob, `state` OAuth2) |
+| `NODE_ENV=test` | Lock de CronJob ignorado (testes) |
+
+```env
+# Opcional em instância única; recomendado com várias réplicas
+# REDIS_CONNECTION_STRING=redis://localhost:6379
+CACHE_KEY_PREFIX=koala-nest
+```
+
+Chaves no Redis são prefixadas com `CACHE_KEY_PREFIX` (padrão: nome do app). Exemplo de uso:
+
+```typescript
+@Injectable()
+export class MyHandler {
+  constructor(private readonly cache: ICacheService) {}
+
+  async handle() {
+    const cached = await this.cache.get('person:1');
+    if (!cached) {
+      await this.cache.set('person:1', JSON.stringify(data), 300);
+    }
+  }
+}
+```
+
+Veja [Cache (Redis)](../core/cache.md) e [Cron e Event Jobs](../core/cron-event-jobs.md).
+
+### Jobs em background
+
+```env
+CRON_JOBS_ENABLED=false
+BOOTSTRAP_DELAY_MS=0
+```
+
+| Variável | Descrição |
+| --- | --- |
+| `CRON_JOBS_ENABLED` | Habilita CronJobs no bootstrap (`false` por padrão) |
+| `BOOTSTRAP_DELAY_MS` | Aguarda N ms antes de iniciar jobs (warm-up de dependências) |
 
 ## Integração com ConfigModule
 

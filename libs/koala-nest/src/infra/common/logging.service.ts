@@ -8,10 +8,12 @@ import { Injectable, Logger } from '@nestjs/common';
 export class LoggingService implements ILoggingService {
   private readonly logger = new Logger(LoggingService.name);
 
-  async report(data: LoggingReportProps): Promise<void> {
+  report(data: LoggingReportProps): Promise<void> {
     this.logger.error(
       `[${data.packageName}] ${data.loggedUsername}: ${data.error.message}`,
       data.error.stack,
     );
+
+    return Promise.resolve();
   }
 }
