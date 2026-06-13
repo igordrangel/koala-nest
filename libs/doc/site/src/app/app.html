@@ -1,0 +1,21 @@
+<div class="flex flex-col px-5 lg:px-15 mx-auto overflow-x-hidden">
+  <app-site-header
+    class="fixed left-4 right-4 lg:left-15 lg:right-15 px-0 lg:px-0 lg:pl-5 z-10 box-border"
+  />
+
+  <div class="flex w-full">
+    @if (isDocPage()) {
+      <app-docs-sidebar class="fixed hidden lg:block left-5 lg:left-15 top-0 z-[5]" />
+    }
+
+    <section [class]="mainSectionClass()">
+      <div [class]="mainContentClass()">
+        <router-outlet />
+      </div>
+
+      <app-site-footer [isDocPage]="isDocPage()" />
+    </section>
+  </div>
+
+  <app-search-dialog />
+</div>

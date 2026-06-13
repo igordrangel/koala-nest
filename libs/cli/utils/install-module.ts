@@ -62,6 +62,11 @@ export async function installModule(
         path.join(resolveProjectPath(projectName), "bunfig.toml"),
       );
 
+      cpSync(
+        path.join(getSourceCodePath(), ".env.example"),
+        path.join(resolveProjectPath(projectName), ".env.example"),
+      );
+
       await runCommand(
         [
           getPackageManager(projectName),

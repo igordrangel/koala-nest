@@ -1,0 +1,51 @@
+# Koala Nest
+
+> A facilitator for building NestJS APIs with DDD architecture. The CLI copies ready-made modules into your project — code you can read, adapt, and maintain.
+
+Documentation optimized for LLMs. Each topic links to the corresponding Markdown file — no duplicated content.
+
+## Introduction
+
+- [Overview](markdown/en/intro/visao-geral.md): What Koala Nest is and how it fits into NestJS projects with DDD.
+- [DDD Architecture](markdown/en/intro/arquitetura-ddd.md): Koala Nest layers and how a request flows through the system.
+
+## Getting Started
+
+- [Installation guide](markdown/en/inicio/guia-de-instalacao.md): Install the CLI and create your first NestJS project with DDD.
+- [Environment variables](markdown/en/inicio/variaveis-de-ambiente.md): Environment variable configuration and validation with Zod.
+- [Project structure](markdown/en/inicio/estrutura-do-projeto.md): Application bootstrap, main modules, and entry point.
+
+## Core
+
+- [Reusable bases](markdown/en/core/bases-reutilizaveis.md): Base classes for handlers, validators, controllers, and repositories.
+- [ObjectClass](markdown/en/core/object-class.md): Utility class for requests, responses, and entities with the from() factory.
+- [Pagination and filters](markdown/en/core/paginacao.md): Pagination, sorting, and filters in listings with PaginationRequest and PaginationDto.
+
+## Domain
+
+- [Entities](markdown/en/domain/entidades.md): TypeORM entity modeling with EntityBase and the AutoMap decorator.
+- [Repository contracts](markdown/en/domain/contratos-repositorio.md): Abstract repository classes and query DTOs in the domain.
+
+## Application
+
+- [Handlers](markdown/en/application/handlers.md): Use cases in the application layer with RequestHandlerBase.
+- [Validators](markdown/en/application/validators.md): Input validation with RequestValidatorBase and Zod schemas.
+- [Requests and responses](markdown/en/application/requests-responses.md): Input and output DTOs with ObjectClass, AutoMap, and Swagger decorators.
+- [Mapping system](markdown/en/application/mapeamento.md): AutoMap, createMap, AutoMapper, and mapping registration between classes.
+
+## Host
+
+- [Controllers](markdown/en/host/controllers.md): Thin HTTP controllers that delegate to handlers.
+- [Routes and tags](markdown/en/host/rotas.md): Centralized route configuration with RouterConfigBase.
+- [Error handling](markdown/en/host/tratamento-de-erros.md): Global ErrorsFilter for Zod, TypeORM, and internal errors.
+- [OpenAPI documentation with Scalar](markdown/en/host/openapi-scalar.md): How to configure and customize interactive documentation at /doc with Scalar (OpenAPI via @nestjs/swagger).
+
+## Infra
+
+- [Database](markdown/en/infra/banco-de-dados.md): TypeORM configuration with PostgreSQL via DatabaseModule and DataSource factory.
+- [TypeORM repositories](markdown/en/infra/repositorios.md): Concrete repository implementation extending RepositoryBase.
+- [Migrations](markdown/en/infra/migrations.md): TypeORM migration generation and execution in Koala Nest.
+
+## Guides
+
+- [Person CRUD flow](markdown/en/guias/fluxo-crud-person.md): End-to-end guide to the Person module as a reference for new resources.

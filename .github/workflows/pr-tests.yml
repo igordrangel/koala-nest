@@ -23,3 +23,32 @@ jobs:
 
       - name: Run lib unit tests
         run: bun run test
+
+  docs-tests:
+    name: Docs Site Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install root dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install docs site dependencies
+        run: cd libs/doc/site && bun install --frozen-lockfile
+
+      - name: Generate docs manifest
+        run: bun run doc:manifest
+
+      - name: Run unit tests
+        run: cd libs/doc/site && bun run test:unit
+
+      - name: Install Playwright Chromium
+        run: cd libs/doc/site && bunx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: cd libs/doc/site && bun run e2e

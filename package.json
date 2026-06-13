@@ -27,7 +27,10 @@
     "prepare:release": "npm version major",
     "test": "cd libs/koala-nest && bun test",
     "test:watch": "cd libs/koala-nest && bun test --watch",
-    "doc:txt": "bun scripts/build-doc-txt.mjs"
+    "doc:manifest": "bun scripts/build-doc-manifest.mjs",
+    "dev:docs": "bun run doc:manifest && cd libs/doc/site && bun run start",
+    "build:docs": "bun run doc:manifest && cd libs/doc/site && bun run build:prod",
+    "preview:docs": "cd libs/doc/site && bunx serve dist/site/browser -p 4321"
   },
   "devDependencies": {
     "@types/bun": "latest"
