@@ -2,11 +2,47 @@ name: PR TESTS
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      cli: ${{ steps.filter.outputs.cli }}
+      koala-nest: ${{ steps.filter.outputs.koala-nest }}
+      docs: ${{ steps.filter.outputs.docs }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cli:
+              - 'libs/cli/**'
+              - 'scripts/build-cli.mjs'
+            koala-nest:
+              - 'libs/koala-nest/**'
+              - 'scripts/build-koala-nest.mjs'
+            docs:
+              - 'libs/doc/**'
+              - 'scripts/build-doc-manifest.mjs'
+              - 'scripts/migrate-en-doc-slugs.mjs'
+            shared:
+              - 'package.json'
+              - 'bun.lock'
+              - 'scripts/build.mjs'
+              - 'scripts/deprecate-legacy-packages.mjs'
+              - '.github/workflows/pr-tests.yml'
+
   cli-unit-tests:
     name: CLI Unit Tests
+    needs: changes
+    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +60,8 @@ jobs:
 
   koala-nest-unit-tests:
     name: Koala Nest Unit Tests
+    needs: changes
+    if: needs.changes.outputs.koala-nest == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -43,6 +81,8 @@ jobs:
 
   koala-nest-e2e-tests:
     name: Koala Nest E2E Tests
+    needs: changes
+    if: needs.changes.outputs.koala-nest == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
 
     services:
@@ -81,6 +121,11 @@ jobs:
 
   cli-e2e-tests:
     name: CLI E2E Tests
+    needs: changes
+    if: >-
+      needs.changes.outputs.cli == 'true' ||
+      needs.changes.outputs.koala-nest == 'true' ||
+      needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -105,6 +150,8 @@ jobs:
 
   docs-tests:
     name: Docs Site Tests
+    needs: changes
+    if: needs.changes.outputs.docs == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
 
     steps:

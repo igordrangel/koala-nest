@@ -22,6 +22,13 @@ test('abre página de documentação em inglês', async ({ page }) => {
   await expect(page.locator('h1')).toContainText(/installation/i);
 });
 
+test('oculta sidebar desktop em viewport mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/pt/docs/inicio/guia-de-instalacao');
+  await expect(page.locator('div.fixed.hidden.lg\\:block')).toBeHidden();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+});
+
 test('oculta OnThisPage em viewport mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/docs/inicio/guia-de-instalacao');
