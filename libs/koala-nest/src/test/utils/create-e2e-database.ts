@@ -10,7 +10,9 @@ function resolveMigrationRunner(): string {
     packageManager?: string;
   };
 
-  if (packageJson.packageManager === 'bun') {
+  const packageManager = packageJson.packageManager ?? 'bun';
+
+  if (packageManager === 'bun') {
     return 'bun';
   }
 
