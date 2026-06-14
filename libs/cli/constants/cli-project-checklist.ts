@@ -18,6 +18,25 @@ export type ProjectExpectation = {
   eventJobs: boolean;
 };
 
+/** Infraestrutura E2E presente em todo projeto gerado. */
+export const E2E_INFRA_PATHS = [
+  'src/test/setup-e2e.ts',
+  'src/test/create-e2e-test-app.ts',
+  'src/test/e2e-context.ts',
+  'src/test/utils/create-e2e-database.ts',
+  'src/test/utils/e2e-database-client.ts',
+  'src/test/host/controllers/app/app.e2e.spec.ts',
+] as const;
+
+/** Exemplos E2E do template CRUD (Person + auth). */
+export const CRUD_E2E_EXAMPLE_PATHS = [
+  'src/test/host/controllers/person/person.controller.e2e.spec.ts',
+  'src/test/host/controllers/person/lazy-loading.e2e.spec.ts',
+  'src/test/host/controllers/auth/auth.controller.e2e.spec.ts',
+  'src/test/app-auth-test.module.ts',
+  'src/test/create-auth-e2e-test-app.ts',
+] as const;
+
 /** Workspace pronto para abrir no VS Code e subir a API. */
 export const WORKSPACE_SETUP_PATHS = [
   '.vscode/launch.json',
@@ -230,10 +249,14 @@ export function buildProjectExpectation(
 export function requiredPathsForExpectation(
   expectation: ProjectExpectation,
 ): readonly string[] {
-  const paths: string[] = [...CORE_REQUIRED_PATHS, ...WORKSPACE_SETUP_PATHS];
+  const paths: string[] = [
+    ...CORE_REQUIRED_PATHS,
+    ...WORKSPACE_SETUP_PATHS,
+    ...E2E_INFRA_PATHS,
+  ];
 
   if (expectation.template === Template.CRUD_SAMPLE) {
-    paths.push(...CRUD_TEMPLATE_REQUIRED_PATHS);
+    paths.push(...CRUD_TEMPLATE_REQUIRED_PATHS, ...CRUD_E2E_EXAMPLE_PATHS);
   }
 
   if (expectation.cache === 'redis') {
@@ -265,7 +288,7 @@ export function forbiddenPathsForExpectation(
   const paths: string[] = [];
 
   if (expectation.template === Template.DEFAULT) {
-    paths.push(...DEFAULT_TEMPLATE_FORBIDDEN_PATHS);
+    paths.push(...DEFAULT_TEMPLATE_FORBIDDEN_PATHS, ...CRUD_E2E_EXAMPLE_PATHS);
   } else {
     paths.push(...CRUD_TEMPLATE_FORBIDDEN_PATHS);
   }

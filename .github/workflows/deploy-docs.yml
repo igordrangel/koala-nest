@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'libs/doc/**'
+      - 'package.json'
       - 'scripts/build-doc-manifest.mjs'
       - '.github/workflows/deploy-docs.yml'
 

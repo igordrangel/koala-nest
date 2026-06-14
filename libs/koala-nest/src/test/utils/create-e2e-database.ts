@@ -1,8 +1,23 @@
 import { Type } from '@nestjs/common';
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { setE2EDatabaseUrl } from '../e2e-context';
 import { E2EDatabaseClient } from './e2e-database-client';
+
+function resolveMigrationRunner(): string {
+  const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
+    packageManager?: string;
+  };
+
+  const packageManager = packageJson.packageManager ?? 'bun';
+
+  if (packageManager === 'bun') {
+    return 'bun';
+  }
+
+  return 'node --import ts-node/register/transpile-only';
+}
 
 function generateUniqueDatabaseURL() {
   const schemaId = randomUUID();
@@ -33,8 +48,9 @@ export async function createE2EDatabase<T extends E2EDatabaseClient>(
     await client.createDatabase(schemaId);
 
     const env = { ...process.env, DATABASE_URL: url, NODE_ENV: 'test' };
+    const migrationRunner = resolveMigrationRunner();
     execSync(
-      'bun ./node_modules/typeorm/cli.js migration:run -d ./src/infra/database/migrations/migration-datasource.ts',
+      `${migrationRunner} ./node_modules/typeorm/cli.js migration:run -d ./src/infra/database/migrations/migration-datasource.ts`,
       {
         cwd: process.cwd(),
         env,

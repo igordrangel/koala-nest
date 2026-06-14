@@ -137,6 +137,67 @@ describe('AutoMapper', () => {
     expect(target.fullName).toBe('John Doe');
   });
 
+  it('should map inherited properties from parent classes', () => {
+    class BaseRequest {
+      @AutoMap()
+      page?: number;
+
+      @AutoMap()
+      limit?: number;
+    }
+
+    class ChildRequest extends BaseRequest {
+      @AutoMap()
+      name?: string;
+    }
+
+    class BaseDto {
+      @AutoMap()
+      page?: number = 0;
+
+      @AutoMap()
+      limit?: number = 10;
+    }
+
+    class ChildDto extends BaseDto {
+      @AutoMap()
+      name?: string;
+    }
+
+    createMap(ChildRequest, ChildDto);
+
+    const source = Object.assign(new ChildRequest(), {
+      page: 2,
+      limit: 25,
+      name: 'John',
+    });
+
+    const target = AutoMapper.map(source, ChildRequest, ChildDto);
+
+    expect(target.page).toBe(2);
+    expect(target.limit).toBe(25);
+    expect(target.name).toBe('John');
+  });
+
+  it('should resolve inherited property types via getProps and getPropType', () => {
+    class BaseRequest {
+      @AutoMap()
+      page?: number;
+    }
+
+    class ChildRequest extends BaseRequest {
+      @AutoMap()
+      name?: string;
+    }
+
+    const props = MappingStore.getProps(ChildRequest).map((p) => p.name);
+
+    expect(props).toContain('page');
+    expect(props).toContain('name');
+    expect(MappingStore.getPropType(ChildRequest, 'page')).toBe(Number);
+    expect(MappingStore.getPropType(ChildRequest, 'name')).toBe(String);
+  });
+
   it('should map nested objects using the target property name', () => {
     class SourceChild {
       @AutoMap()

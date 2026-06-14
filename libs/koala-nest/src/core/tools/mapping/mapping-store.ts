@@ -57,32 +57,40 @@ export class MappingStore {
         }
       }
 
-      current = Object.getPrototypeOf(current) as Type<any> | null;
+      const parentPrototype = Object.getPrototypeOf(current.prototype);
+      current = (parentPrototype?.constructor as Type<any> | undefined) ?? null;
     }
 
     return props;
   }
 
   static getPropType(entity: Type<any>, propName: string) {
-    const prop = this._entities.get(entity)?.find((p) => p.name === propName);
+    let current: Type<any> | null = entity;
 
-    if (!prop) {
-      throw new Error(
-        `Property ${propName} not found in entity ${entity.name}`,
-      );
+    while (current?.prototype) {
+      const prop = this._entities.get(current)?.find((p) => p.name === propName);
+
+      if (prop) {
+        const { type, isArray } = prop;
+
+        if (!type) {
+          return null;
+        }
+
+        if (isArray && type instanceof Function) {
+          return (type as () => Type<any>)();
+        }
+
+        return type;
+      }
+
+      const parentPrototype = Object.getPrototypeOf(current.prototype);
+      current = (parentPrototype?.constructor as Type<any> | undefined) ?? null;
     }
 
-    const { type, isArray } = prop;
-
-    if (!type) {
-      return null;
-    }
-
-    if (isArray && type instanceof Function) {
-      return (type as () => Type<any>)();
-    }
-
-    return type;
+    throw new Error(
+      `Property ${propName} not found in entity ${entity.name}`,
+    );
   }
 
   static add(

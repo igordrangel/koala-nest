@@ -1,6 +1,6 @@
 {
   "name": "@koalarx/nest",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "CLI para criar APIs NestJS com arquitetura DDD — copia módulos prontos para o seu repositório.",
   "license": "MIT",
   "type": "module",
@@ -20,7 +20,7 @@
     "build:koala-nest": "bun scripts/build-koala-nest.mjs",
     "build:cli": "bun scripts/build-cli.mjs",
     "build": "bun scripts/build.mjs",
-    "version": "git add -A libs",
+    "version": "bun run doc:manifest && git add -A libs",
     "postversion": "git push && git push --tags",
     "prepare:hotfix": "npm version patch",
     "prepare:feature": "npm version minor",

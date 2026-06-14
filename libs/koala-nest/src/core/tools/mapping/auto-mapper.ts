@@ -94,7 +94,11 @@ export class AutoMapper {
         continue;
       }
 
-      targetInstance[targetPropName] = data[sourceProp.name];
+      const sourceValue = data[sourceProp.name];
+
+      if (sourceValue !== undefined) {
+        targetInstance[targetPropName] = sourceValue;
+      }
     }
 
     return targetInstance;
