@@ -88,8 +88,9 @@
 }
 
 <aside
-  class="fixed left-0 top-0 z-40 h-full w-72 max-w-[85vw] bg-base-100 border-r border-base-300 shadow-xl transition-transform duration-200 ease-out lg:hidden flex flex-col"
+  class="fixed left-0 top-0 z-40 h-full w-72 max-w-[85vw] bg-base-100 border-r border-base-300 shadow-xl transition-transform duration-200 ease-out lg:hidden flex flex-col pointer-events-none"
   [class.translate-x-0]="mobileMenuOpen()"
+  [class.pointer-events-auto]="mobileMenuOpen()"
   [class.-translate-x-full]="!mobileMenuOpen()"
 >
   <div class="px-4 py-4 border-b border-base-300 flex items-center justify-between gap-3 shrink-0">
