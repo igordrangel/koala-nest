@@ -21,16 +21,56 @@ describe('ReadManyPersonHandler', () => {
       contacts: [],
     });
 
+    let capturedPage: number | undefined;
     const repository = {
-      findMany: async () => ({ items: [person], count: 1 }),
+      findMany: async (query: { page?: number; skip: () => number }) => {
+        capturedPage = query.page;
+        return { items: [person], count: 1 };
+      },
     } as unknown as IPersonRepository;
 
     const handler = new ReadManyPersonHandler(repository, new CacheStub());
-    const result = await handler.handle(new ReadManyPersonRequest());
+    const result = await handler.handle({ page: '2', limit: '5' } as never);
 
+    expect(capturedPage).toBe(1);
     expect(result.count).toBe(1);
     expect(result.items).toHaveLength(1);
     expect(result.items[0].name).toBe('Jane');
+  });
+
+  it('preserva paginação ao receber instância de ReadManyPersonRequest', async () => {
+    let capturedPage: number | undefined;
+    const repository = {
+      findMany: async (query: { page?: number }) => {
+        capturedPage = query.page;
+        return { items: [], count: 0 };
+      },
+    } as unknown as IPersonRepository;
+
+    const handler = new ReadManyPersonHandler(repository, new CacheStub());
+    const request = Object.assign(new ReadManyPersonRequest(), {
+      page: '2',
+      limit: '5',
+    });
+
+    await handler.handle(request);
+
+    expect(capturedPage).toBe(1);
+  });
+
+  it('aplica defaults de paginação quando a request não informa page', async () => {
+    let capturedPage: number | undefined;
+    const repository = {
+      findMany: async (query: { page?: number }) => {
+        capturedPage = query.page;
+        return { items: [], count: 0 };
+      },
+    } as unknown as IPersonRepository;
+
+    const handler = new ReadManyPersonHandler(repository, new CacheStub());
+    await handler.handle(new ReadManyPersonRequest());
+
+    expect(capturedPage).toBe(0);
   });
 
   it('reutiliza cache para a mesma consulta de listagem', async () => {
