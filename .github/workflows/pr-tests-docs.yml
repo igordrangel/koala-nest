@@ -1,0 +1,44 @@
+name: PR Tests — Docs
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'libs/doc/**'
+      - 'scripts/build-doc-manifest.mjs'
+      - 'scripts/migrate-en-doc-slugs.mjs'
+      - 'package.json'
+      - 'bun.lock'
+      - 'scripts/build.mjs'
+      - 'scripts/deprecate-legacy-packages.mjs'
+      - '.github/workflows/pr-tests-docs.yml'
+
+jobs:
+  docs-tests:
+    name: Docs Site Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install root dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install docs site dependencies
+        run: cd libs/doc/site && bun install --frozen-lockfile
+
+      - name: Generate docs manifest
+        run: bun run doc:manifest
+
+      - name: Run unit tests
+        run: bun run test:docs
+
+      - name: Install Playwright Chromium
+        run: cd libs/doc/site && bunx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: bun run test:docs:e2e

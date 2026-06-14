@@ -1,0 +1,71 @@
+name: PR Tests — Koala Nest
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'libs/koala-nest/**'
+      - 'scripts/build-koala-nest.mjs'
+      - 'package.json'
+      - 'bun.lock'
+      - 'scripts/build.mjs'
+      - 'scripts/deprecate-legacy-packages.mjs'
+      - '.github/workflows/pr-tests-koala-nest.yml'
+
+jobs:
+  koala-nest-unit-tests:
+    name: Koala Nest Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install deps
+        run: |
+          bun install --frozen-lockfile
+          cd libs/koala-nest && bun install --frozen-lockfile
+
+      - name: Run koala-nest unit tests
+        run: bun run test:koala-nest
+
+  koala-nest-e2e-tests:
+    name: Koala Nest E2E Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: koala_nest
+          PGDATA: /data/postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install deps
+        run: |
+          bun install --frozen-lockfile
+          cd libs/koala-nest && bun install --frozen-lockfile
+
+      - name: Run koala-nest e2e tests
+        run: bun run test:koala-nest:e2e
+        env:
+          DATABASE_URL: postgresql://postgres:root@localhost:5432/koala_nest
+          NODE_ENV: test
