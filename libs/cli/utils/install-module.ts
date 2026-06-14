@@ -327,6 +327,15 @@ export async function installModule(
         );
       }
 
+      if (packageManager !== 'bun') {
+        for (const configFile of ['vitest.config.ts', 'vitest.config.e2e.ts']) {
+          cpSync(
+            path.join(getSourceCodePath(), configFile),
+            path.join(projectPath, configFile),
+          );
+        }
+      }
+
       patchInfraModuleFile(projectName, false);
       patchMainFile(projectName, stripMainOptionalFeatures);
 

@@ -2,6 +2,7 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { removeImportLines } from './project-files';
 import { patchAppModuleJobs } from './patch-jobs-module';
+import { patchAppTestModuleForDefault } from './patch-app-test-module';
 import { resolveProjectPath } from './resolve-project-path';
 import { stripMainOptionalFeatures } from './patch-main';
 import { stripDefineDocumentationAuth } from './patch-define-documentation';
@@ -88,11 +89,14 @@ const partsToRemove: PartsToRemove[] = [
   },
 ];
 
-const defaultTemplatePathsToRemove = [
+const defaultSampleTestPathsToRemove = [
   'src/test/application',
   'src/test/mockup/person',
   'src/test/host/controllers/person/person.controller.e2e.spec.ts',
   'src/test/host/controllers/person/lazy-loading.e2e.spec.ts',
+];
+
+const defaultAuthE2ePathsToRemove = [
   'src/test/host/controllers/auth/auth.controller.e2e.spec.ts',
   'src/test/app-auth-test.module.ts',
   'src/test/create-auth-e2e-test-app.ts',
@@ -166,8 +170,12 @@ export async function removeSampleParts(projectName: string) {
   }
 
   patchAppModuleJobs(projectName, { eventHandlers: [], cronJobs: [] });
+  patchAppTestModuleForDefault(projectName);
 
-  removePaths(projectName, defaultTemplatePathsToRemove);
+  removePaths(projectName, [
+    ...defaultSampleTestPathsToRemove,
+    ...defaultAuthE2ePathsToRemove,
+  ]);
 }
 
 export async function cleanDefaultTemplateWithoutAuth(projectName: string) {

@@ -90,6 +90,8 @@ export function installWorkspaceConfig(
         task.command = runScriptCommand(packageManager, 'start:dev');
       } else if (task.command.includes('test')) {
         task.command = runScriptCommand(packageManager, 'test');
+      } else if (task.command.includes('test:e2e')) {
+        task.command = runScriptCommand(packageManager, 'test:e2e');
       } else if (task.command.includes('migration:run')) {
         task.command = runScriptCommand(packageManager, 'migration:run');
       }

@@ -122,6 +122,7 @@ bun run start:dev
 bun run start:prod
 bun test
 bun test --watch
+bun run test:e2e
 bun run migration:generate
 bun run migration:run
 bun run migration:revert
@@ -134,6 +135,7 @@ npm run start:dev
 npm run start:prod
 npm run test
 npm run test:watch
+npm run test:e2e
 npm run migration:generate
 npm run migration:run
 npm run migration:revert
@@ -146,12 +148,13 @@ pnpm run start:dev
 pnpm run start:prod
 pnpm run test
 pnpm run test:watch
+pnpm run test:e2e
 pnpm run migration:generate
 pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Testes: **Bun** usa `bun test`; **npm/pnpm** usam **Vitest** (`npm run test`). Projetos gerados não incluem script `test:e2e` por padrão.
+> **Importante:** no template **Exemplo de CRUD**, execute `migration:run` antes de iniciar a API. No template **Padrão** não há migrations iniciais. Testes unitários: **Bun** usa `bun test`; **npm/pnpm** usam **Vitest** (`npm run test`). **E2E:** todo projeto inclui `test:e2e` e a infraestrutura em `src/test/` (`setup-e2e.ts`, `create-e2e-test-app.ts`, banco Postgres efêmero). O template **Padrão** traz `app.e2e.spec.ts` mínimo; o **CRUD** inclui exemplos completos de Person e auth em `src/test/host/controllers/`. Requer `DATABASE_URL` apontando para Postgres local.
 
 ## Desenvolvimento local da CLI
 

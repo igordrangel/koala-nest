@@ -14,6 +14,7 @@ import {
 const docRoot = path.resolve('libs/doc');
 const markdownRoot = path.join(docRoot, 'markdown');
 const manifestPath = path.join(docRoot, 'site/src/generated/docs-manifest.json');
+const appVersionPath = path.join(docRoot, 'site/src/app/core/constants/app-version.ts');
 const txtRoot = path.join(docRoot, 'txt');
 const publicRoot = path.join(docRoot, 'site/public');
 const publicMarkdownRoot = path.join(publicRoot, 'markdown');
@@ -146,6 +147,29 @@ function syncMarkdownToPublic() {
   return copied;
 }
 
+function syncAppVersion() {
+  const rootPackage = JSON.parse(
+    fs.readFileSync(path.resolve('package.json'), 'utf8'),
+  );
+  const version = rootPackage.version;
+
+  if (!version || typeof version !== 'string') {
+    throw new Error('package.json raiz precisa definir "version".');
+  }
+
+  fs.mkdirSync(path.dirname(appVersionPath), { recursive: true });
+  fs.writeFileSync(
+    appVersionPath,
+    [
+      '// Gerado por scripts/build-doc-manifest.mjs — não editar manualmente.',
+      `export const APP_VERSION = '${version}';`,
+      '',
+    ].join('\n'),
+  );
+
+  return version;
+}
+
 const locales = {};
 const routesByDocKey = {};
 
@@ -205,6 +229,7 @@ fs.mkdirSync(txtRoot, { recursive: true });
 fs.mkdirSync(publicRoot, { recursive: true });
 
 const markdownFiles = syncMarkdownToPublic();
+const appVersion = syncAppVersion();
 
 for (const locale of supportedLocales) {
   const llmsIndex = buildLlmsIndex(locales[locale].docs, locale);
@@ -217,4 +242,5 @@ for (const locale of supportedLocales) {
 
 const totalDocs = Object.values(locales).reduce((sum, l) => sum + l.docs.length, 0);
 console.log(`Manifest gerado: ${totalDocs} tópicos (${supportedLocales.join(', ')}) → ${manifestPath}`);
+console.log(`Versão da doc sincronizada: v${appVersion} → ${appVersionPath}`);
 console.log(`Markdown publicado: ${markdownFiles} arquivos → ${publicMarkdownRoot}`);

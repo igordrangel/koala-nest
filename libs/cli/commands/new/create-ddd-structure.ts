@@ -4,7 +4,7 @@ import { DDD_LAYER_FOLDERS } from '@cli/constants/domain';
 import { patchGeneratedProjectConfig } from '@cli/utils/patch-generated-project.ts';
 import { runCommand } from '@cli/utils/run-command';
 import type { PackageManager } from '@cli/types';
-import { configureTestRunner } from './configure-test-runner.ts';
+import { configureE2ETestRunner, configureTestRunner } from './configure-test-runner.ts';
 
 export async function createDDDStructure(
   projectName: string,
@@ -63,16 +63,14 @@ export async function createDDDStructure(
   packageJson.devDependencies ??= {};
 
   configureTestRunner(packageJson, packageManager);
+  configureE2ETestRunner(packageJson, packageManager);
 
   delete packageJson.scripts['test:cov'];
   delete packageJson.scripts['test:debug'];
-  delete packageJson.scripts['test:e2e'];
   delete packageJson.jest;
 
   delete packageJson.devDependencies['@types/jest'];
-  delete packageJson.devDependencies['@types/supertest'];
   delete packageJson.devDependencies['ts-jest'];
-  delete packageJson.devDependencies['supertest'];
 
   writeFileSync(
     path.join(process.cwd(), projectName, 'package.json'),

@@ -27,6 +27,15 @@
     },
     {
       "type": "shell",
+      "command": "bun run test:e2e",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "label": "Run E2E tests"
+    },
+    {
+      "type": "shell",
       "command": "bun run migration:run",
       "options": {
         "cwd": "${workspaceFolder}"
