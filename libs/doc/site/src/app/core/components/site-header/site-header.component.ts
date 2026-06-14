@@ -1,6 +1,8 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter } from 'rxjs';
 import { Button } from '@/shared/components/button';
 import { APP_VERSION } from '../../constants/app-version';
 import { UI_COPY } from '../../i18n/ui-copy';
@@ -28,6 +30,7 @@ export class SiteHeaderComponent {
   private readonly searchService = inject(SearchService);
   private readonly localeService = inject(LocaleService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly version = `v${APP_VERSION}`;
   readonly mobileMenuVisible = signal(false);
@@ -40,6 +43,19 @@ export class SiteHeaderComponent {
   readonly docsNavLink = computed(() => this.localeService.docsRootRoute());
   readonly llmsUrl = () => absoluteSiteUrl(this.localeService.llmsFile());
 
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        if (this.mobileMenuVisible()) {
+          this.closeMobileMenu();
+        }
+      });
+  }
+
   switchLocale(target: 'pt' | 'en') {
     if (target === this.localeService.locale()) return;
     void this.router.navigateByUrl(this.localeService.switchLocalePath(target));
@@ -47,12 +63,13 @@ export class SiteHeaderComponent {
 
   toggleMobileMenu() {
     const visible = this.mobileMenuVisible();
-    this.mobileMenuVisible.set(!visible);
     if (!visible) {
-      setTimeout(() => this.mobileMenuOpen.set(true), 10);
-    } else {
-      this.closeMobileMenu();
+      this.mobileMenuVisible.set(true);
+      this.mobileMenuOpen.set(true);
+      return;
     }
+
+    this.closeMobileMenu();
   }
 
   closeMobileMenu() {

@@ -22,6 +22,14 @@ test('abre página de documentação em inglês', async ({ page }) => {
   await expect(page.locator('h1')).toContainText(/installation/i);
 });
 
+test('menu mobile navega para outra página de documentação', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/pt/docs/inicio/guia-de-instalacao');
+  await page.getByRole('button', { name: 'Abrir menu' }).click();
+  await page.locator('app-site-header aside app-docs-sidebar a').filter({ hasText: 'Visão geral' }).click();
+  await expect(page).toHaveURL(/\/pt\/docs\/intro\/visao-geral$/);
+});
+
 test('oculta sidebar desktop em viewport mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/pt/docs/inicio/guia-de-instalacao');
