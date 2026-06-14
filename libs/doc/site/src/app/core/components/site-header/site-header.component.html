@@ -1,5 +1,5 @@
 <ng-template #logotype>
-  <a [routerLink]="homeLink()" (click)="closeMobileMenu()">
+  <a [routerLink]="homeLink()">
     <span class="flex items-center gap-3 mr-6">
       <i class="app-icon kl-logotype size-6!"></i>
       <span class="badge badge-sm badge-soft bg-neutral-800 font-semibold sm:inline-flex">
@@ -18,7 +18,6 @@
     [routerLink]="homeLink()"
     routerLinkActive="opacity-100"
     [routerLinkActiveOptions]="{ exact: true }"
-    (click)="closeMobileMenu()"
   >
     {{ copy().home }}
   </a>
@@ -31,7 +30,6 @@
     [routerLink]="docsNavLink()"
     routerLinkActive="opacity-100"
     [routerLinkActiveOptions]="{ exact: false }"
-    (click)="closeMobileMenu()"
   >
     {{ copy().docs }}
   </a>
@@ -78,7 +76,8 @@
 
 @if (mobileMenuVisible()) {
   <button
-    class="fixed inset-0 z-30 bg-black/40 transition-opacity duration-200 ease-out lg:hidden"
+    class="fixed inset-y-0 right-0 z-40 bg-black/40 transition-opacity duration-200 ease-out lg:hidden pointer-events-auto"
+    [style.left]="'min(85vw, 18rem)'"
     [class.opacity-100]="mobileMenuOpen()"
     [class.opacity-0]="!mobileMenuOpen()"
     (click)="closeMobileMenu()"
@@ -88,16 +87,15 @@
 }
 
 <aside
-  class="fixed left-0 top-0 z-40 h-full w-72 max-w-[85vw] bg-base-100 border-r border-base-300 shadow-xl transition-transform duration-200 ease-out lg:hidden flex flex-col pointer-events-none"
+  class="fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] bg-base-100 border-r border-base-300 shadow-xl transition-transform duration-200 ease-out lg:hidden flex flex-col"
   [class.translate-x-0]="mobileMenuOpen()"
-  [class.pointer-events-auto]="mobileMenuOpen()"
   [class.-translate-x-full]="!mobileMenuOpen()"
 >
   <div class="px-4 py-4 border-b border-base-300 flex items-center justify-between gap-3 shrink-0">
     <ng-container *ngTemplateOutlet="logotype" />
   </div>
 
-  <app-docs-sidebar class="block flex-1 min-h-0" (navigate)="closeMobileMenu()" />
+  <app-docs-sidebar class="block flex-1 min-h-0" />
 
   <div class="px-3 py-3 border-t border-base-300 shrink-0">
     <div class="grid grid-cols-1 gap-2">
@@ -114,7 +112,7 @@
           [class.bg-base-200]="locale() === 'pt'"
           [class.opacity-100]="locale() === 'pt'"
           [class.opacity-50]="locale() !== 'pt'"
-          (click)="switchLocale('pt'); closeMobileMenu()"
+          (click)="switchLocale('pt')"
         >
           PT
         </button>
@@ -124,7 +122,7 @@
           [class.bg-base-200]="locale() === 'en'"
           [class.opacity-100]="locale() === 'en'"
           [class.opacity-50]="locale() !== 'en'"
-          (click)="switchLocale('en'); closeMobileMenu()"
+          (click)="switchLocale('en')"
         >
           EN
         </button>
