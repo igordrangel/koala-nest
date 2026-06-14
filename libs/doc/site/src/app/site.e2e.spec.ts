@@ -22,6 +22,31 @@ test('abre página de documentação em inglês', async ({ page }) => {
   await expect(page.locator('h1')).toContainText(/installation/i);
 });
 
+test('oculta OnThisPage em viewport mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/pt/docs/inicio/guia-de-instalacao');
+  await expect(page.locator('app-doc-on-this-page aside')).toHaveCount(0);
+});
+
+test('oculta OnThisPage em viewport tablet (1024px)', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto('/pt/docs/inicio/guia-de-instalacao');
+  await expect(page.locator('app-doc-on-this-page aside')).toHaveCount(0);
+});
+
+test('exibe OnThisPage em desktop largo', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/pt/docs/inicio/guia-de-instalacao');
+  await expect(page.locator('app-doc-on-this-page aside')).toBeVisible();
+  await expect(page.getByText('Nesta página', { exact: true })).toBeVisible();
+});
+
+test('scroll por âncora funciona no mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/pt/docs/inicio/guia-de-instalacao#forma-rapida-usando-a-cli');
+  await expect(page.locator('#forma-rapida-usando-a-cli')).toBeInViewport();
+});
+
 test('expõe llms.txt e markdown estático', async ({ request }) => {
   const llms = await request.get('/llms.txt');
   expect(llms.ok()).toBeTruthy();
