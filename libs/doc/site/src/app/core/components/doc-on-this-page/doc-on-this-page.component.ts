@@ -21,6 +21,9 @@ interface TocItem {
   selector: 'app-doc-on-this-page',
   templateUrl: './doc-on-this-page.component.html',
   imports: [RouterLink],
+  host: {
+    class: 'contents',
+  },
 })
 export class DocOnThisPageComponent implements OnDestroy {
   private readonly localeService = inject(LocaleService);
