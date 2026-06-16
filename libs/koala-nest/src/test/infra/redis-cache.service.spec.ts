@@ -35,6 +35,14 @@ class RedisStub {
     );
   }
 
+  scan(cursor: string, ...args: unknown[]) {
+    const pattern = String(args[1] ?? '');
+    const prefix = pattern.replace(/\*$/, '');
+    const keys = [...this.store.keys()].filter((key) => key.startsWith(prefix));
+
+    return Promise.resolve(['0', keys]);
+  }
+
   disconnect() {}
 }
 

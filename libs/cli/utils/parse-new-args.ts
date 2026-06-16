@@ -1,9 +1,9 @@
 import type { PackageManager } from '@cli/types/index.ts';
 import {
-  AuthStrategy,
+  type AuthStrategy,
+  type ExtraFeature,
   FEATURE_ALIASES,
   parseAuthStrategies,
-  type ExtraFeature,
   Template,
   TEMPLATE_ALIASES,
 } from '@cli/constants/domain';

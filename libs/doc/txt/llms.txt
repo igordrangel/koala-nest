@@ -38,6 +38,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 
 ## Host
 
+- [Middleware HTTP](markdown/pt/host/middleware-http.md): CORS, cookies, rate limit e bootstrap HTTP via applyHttpMiddleware.
 - [Controllers](markdown/pt/host/controllers.md): Controllers HTTP finos que delegam para handlers.
 - [Rotas e tags](markdown/pt/host/rotas.md): Configuração centralizada de rotas com RouterConfigBase.
 - [Tratamento de erros](markdown/pt/host/tratamento-de-erros.md): Filtro global ErrorsFilter para Zod, TypeORM e erros internos.

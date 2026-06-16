@@ -142,7 +142,7 @@ export abstract class CronJobHandlerBase {
 
 ### Example: DeleteInactiveJob
 
-Removes inactive people every 15 seconds (educational example — short interval for dev demo):
+Removes inactive people every 15 seconds (educational example — short interval for dev demo). The job paginates via `IPersonRepository.findMany` in batches of 100 so it does not depend on the default listing limit:
 
 ```typescript
 import { CronExpression } from '@/core/constants/cron.constants';

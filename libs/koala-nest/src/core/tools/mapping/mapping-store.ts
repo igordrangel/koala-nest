@@ -30,8 +30,15 @@ export class MappingStore {
       entity.prototype,
       propName,
     );
-    const isArray = propType === Array;
-    const type = isArray ? (compositionType ?? propType) : propType;
+    const explicitComposition = Reflect.getMetadata(
+      'composition:type',
+      entity.prototype,
+      propName,
+    );
+    const isArray = propType === Array || explicitComposition != null;
+    const type = isArray
+      ? (compositionType ?? explicitComposition ?? propType)
+      : propType;
 
     const props = this._entities.get(entity) || [];
 
@@ -62,6 +69,10 @@ export class MappingStore {
     }
 
     return props;
+  }
+
+  static getAllProps(entity: Type<any>) {
+    return this.getProps(entity);
   }
 
   static getPropType(entity: Type<any>, propName: string) {
@@ -112,18 +123,5 @@ export class MappingStore {
 
   static getMapping(source: Type<any>, target: Type<any>) {
     return this._mappings.get(source)?.get(target) ?? null;
-  }
-
-  /** Compatibilidade com chave legada usada em testes. */
-  static getMappingByName(mapName: string) {
-    for (const targetMappings of this._mappings.values()) {
-      for (const mapping of targetMappings.values()) {
-        if (`${mapping.source.name}To${mapping.target.name}` === mapName) {
-          return mapping;
-        }
-      }
-    }
-
-    return null;
   }
 }

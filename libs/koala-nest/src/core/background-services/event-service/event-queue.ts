@@ -1,4 +1,3 @@
-import { IComparableId } from '@/core/utils/icomparable';
 import { EventClass } from './event-class';
 import { EventJob } from './event-job';
 
@@ -62,7 +61,7 @@ export class EventQueue {
     }
   }
 
-  static dispatchEventsForAggregate(id: IComparableId) {
+  static dispatchEventsForAggregate(id: string) {
     const aggregate = this.findMarkedAggregateByID(id);
 
     if (aggregate) {
@@ -96,7 +95,7 @@ export class EventQueue {
   }
 
   static findMarkedAggregateByID(
-    id: IComparableId,
+    id: string,
   ): EventJob<unknown> | undefined {
     return this.markedAggregates.find((aggregate) => aggregate._id === id);
   }
