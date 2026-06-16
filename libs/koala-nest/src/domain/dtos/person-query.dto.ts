@@ -7,4 +7,12 @@ export class PersonQueryDto extends PaginationDto {
 
   @AutoMap()
   active?: boolean;
+
+  override generateOrderBy() {
+    if (this.orderBy) {
+      return super.generateOrderBy();
+    }
+
+    return { id: 'asc' };
+  }
 }

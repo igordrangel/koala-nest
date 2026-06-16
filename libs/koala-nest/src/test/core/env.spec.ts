@@ -3,6 +3,15 @@ import { parseOAuth2ProviderEnv } from '@/core/auth/parse-oauth2-provider-env';
 import { envSchema, validateEnvConfig } from '@/core/env';
 
 describe('envSchema', () => {
+  it('define HOST com default 0.0.0.0 para bind em container', () => {
+    const env = envSchema.parse({
+      NODE_ENV: 'test',
+      DATABASE_URL: 'postgres://localhost/test',
+    });
+
+    expect(env.HOST).toBe('0.0.0.0');
+  });
+
   it('interpreta CRON_JOBS_ENABLED=false como desabilitado', () => {
     const env = envSchema.parse({
       NODE_ENV: 'test',
@@ -11,6 +20,16 @@ describe('envSchema', () => {
     });
 
     expect(env.CRON_JOBS_ENABLED).toBe(false);
+  });
+
+  it('define rate limit desabilitado por padrão', () => {
+    const env = envSchema.parse({
+      NODE_ENV: 'test',
+      DATABASE_URL: 'postgres://localhost/test',
+    });
+
+    expect(env.RATE_LIMIT_MAX).toBe(0);
+    expect(env.RATE_LIMIT_WINDOW_MS).toBe(60_000);
   });
 });
 

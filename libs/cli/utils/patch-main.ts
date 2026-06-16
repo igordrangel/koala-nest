@@ -1,10 +1,8 @@
-export function stripMainOptionalFeatures(content: string) {
-  return content
-    .replace(/import cookieParser from 'cookie-parser';\n/, '')
-    .replace(/\n {2}app\.use\(cookieParser\(\)\);\n/, '\n');
-}
-
 export function patchMainForAuth(content: string) {
+  if (content.includes('applyHttpMiddleware')) {
+    return content;
+  }
+
   if (content.includes('cookieParser()')) {
     return content;
   }

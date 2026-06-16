@@ -13,9 +13,10 @@ This guide describes how the NestJS application is initialized and how modules c
 
 ## Entry point
 
-The `src/host/main.ts` file configures CORS, OpenAPI documentation, global error filter, and starts the server. **Core** projects (without auth/cron) stay slim — the CLI removes optional imports and blocks when features were not selected.
+The `src/host/main.ts` file configures OpenAPI documentation, global error filter, and starts the server. CORS, cookies, and rate limit live in `applyHttpMiddleware` (`src/host/bootstrap/`). Details: [HTTP middleware](../host/http-middleware.md). **Core** projects (without auth/cron) stay slim — the CLI removes optional imports and blocks when features were not selected.
 
 ```typescript
+import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { defineDocumentation } from './open-api/define-documentation';
@@ -26,7 +27,7 @@ import { ILoggingService } from '@/domain/common/ilogging.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({ credentials: true, origin: true, optionsSuccessStatus: 200 });
+  applyHttpMiddleware(app);
 
   await defineDocumentation(app);
 
@@ -39,7 +40,7 @@ async function bootstrap() {
 bootstrap();
 ```
 
-**With authentication** (`kl-nest add auth` or selected in `new`): `cookie-parser`, global guards (`AuthGuard`, `ProfilesGuard`).
+**With authentication** (`kl-nest add auth` or selected in `new`): global guards (`AuthGuard`, `ProfilesGuard`). Cookies are already handled by `applyHttpMiddleware`.
 
 **With cron/event jobs** (`kl-nest add cron` / `add events`): infrastructure under `src/core/background-services/` and `JobsModule.register()` in `AppModule` (empty arrays in Default; sample handlers in CRUD).
 

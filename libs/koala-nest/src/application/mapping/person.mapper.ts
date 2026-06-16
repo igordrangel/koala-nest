@@ -15,11 +15,6 @@ import {
   ReadPersonContactResponse,
   ReadPersonResponse,
 } from '@/application/person/read/read-person.response';
-import {
-  UpdatePersonAddressRequest,
-  UpdatePersonContactRequest,
-  UpdatePersonRequest,
-} from '@/application/person/update/update-person.request';
 import { ReadManyPersonResponseItem } from '@/application/person/read-many/read-many-person.response';
 
 export class PersonMapper {
@@ -33,10 +28,6 @@ export class PersonMapper {
     createMap(CreatePersonRequest, Person);
     createMap(CreatePersonAddressRequest, PersonAddress);
     createMap(CreatePersonContactRequest, PersonContact);
-
-    createMap(UpdatePersonRequest, Person);
-    createMap(UpdatePersonAddressRequest, PersonAddress);
-    createMap(UpdatePersonContactRequest, PersonContact);
 
     createMap(ReadManyPersonRequest, PersonQueryDto);
     createMap(Person, ReadManyPersonResponseItem);

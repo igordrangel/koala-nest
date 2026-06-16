@@ -39,7 +39,6 @@ Uso em entidade:
 ```typescript
 @OneToMany(() => PersonContact, (contact) => contact.person, {
   cascade: true,
-  eager: true,
   onDelete: 'CASCADE',
 })
 @AutoMap({ type: () => PersonContact })
@@ -99,6 +98,28 @@ return AutoMapper.map(createdPerson, Person, CreatePersonResponse);
 ```
 
 O `AutoMapper` resolve propriedades pelo nome, mapeia objetos aninhados recursivamente e itera arrays automaticamente.
+
+### Update com entidade já carregada
+
+Para updates, carregue a entidade do banco e aplique o payload manualmente (como em `UpdatePersonHandler`). Coleções persistidas devem ser **substituídas** pela lista do request — o comportamento esperado com TypeORM `cascade` + `orphanedRowAction: 'delete'`: ao salvar, itens ausentes na coleção viram órfãos e são removidos.
+
+```typescript
+person.contacts = validated.contacts.map((contactRequest) => {
+  if (contactRequest.id) {
+    const existing = person.contacts.find((c) => c.id === contactRequest.id);
+    if (existing) {
+      existing.contact = contactRequest.contact;
+      return existing;
+    }
+  }
+  const contact = new PersonContact();
+  contact.contact = contactRequest.contact;
+  contact.person = person;
+  return contact;
+});
+```
+
+Não use append em coleções persistidas; o `save` trata a lista como estado completo.
 
 ## Customizar com forMember
 

@@ -135,6 +135,10 @@ describe('parseAddArgs', () => {
     ]);
   });
 
+  it('rejeita rate-limit como feature desconhecida', () => {
+    expect(() => parseAddArgs(['rate-limit'])).toThrow(/desconhecida/);
+  });
+
   it('aceita auth com estratégia', () => {
     expect(parseAddArgs(['auth', 'oauth2', 'cache'])).toEqual([
       { kind: 'auth', strategies: ['oauth2'] },

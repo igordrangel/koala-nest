@@ -59,11 +59,22 @@ export class RedisCacheService implements ICacheService {
 
   async invalidateByPrefix(prefix: string): Promise<void> {
     const pattern = `${this.buildKey(prefix)}*`;
-    const keys = await this.client.keys(pattern);
+    let cursor = '0';
 
-    if (keys.length > 0) {
-      await this.client.del(...keys);
-    }
+    do {
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        100,
+      );
+      cursor = nextCursor;
+
+      if (keys.length > 0) {
+        await this.client.del(...keys);
+      }
+    } while (cursor !== '0');
   }
 
   onModuleDestroy() {

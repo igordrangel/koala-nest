@@ -10,13 +10,11 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 
 /**
- * Testes E2E do RepositoryBase - Lazy Loading
- *
- * Valida o carregamento efetivo de relacionamentos em diferentes cenários:
- * - findById: carrega recursivamente todos os relacionamentos
- * - findMany: carrega com otimização para listas
+ * Valida carregamento explícito de relacionamentos no repositório.
+ * - findById: relations { address, contacts }
+ * - findMany: sem relations (listagem leve; contacts normalizado como [])
  */
-describe('RepositoryBase - Lazy Loading (E2E)', () => {
+describe('PersonRepository - Relations (E2E)', () => {
   let moduleRef: TestingModule;
 
   beforeAll(async () => {
@@ -25,8 +23,8 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
     }).compile();
   });
 
-  describe('findById - Carregamento de Relacionamentos', () => {
-    it('should load person with all relationships using findById', async () => {
+  describe('findById - relations explícitas', () => {
+    it('should load person with address and contacts using findById', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
       const created = await createHandler.handle({
         name: 'João Silva',
@@ -53,30 +51,10 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
         'joao@example.com',
       ]);
     });
-
-    it('should have all relationships loaded and accessible', async () => {
-      const createHandler = moduleRef.get(CreatePersonHandler);
-      const created = await createHandler.handle({
-        name: 'Test Person',
-        contacts: [{ contact: 'test@example.com' }],
-        address: {
-          address: 'Test Address',
-        },
-      });
-
-      const readHandler = moduleRef.get(ReadPersonHandler);
-      const person = await readHandler.handle(created.id);
-
-      expect(person.id).toBe(created.id);
-      expect(person.address).toBeDefined();
-      expect(person.address.address).toBeDefined();
-      expect(person.contacts).toBeDefined();
-      expect(person.contacts.length).toBeGreaterThan(0);
-    });
   });
 
-  describe('findMany - Carregamento Otimizado para Listas', () => {
-    it('should load persons with relationships in findMany', async () => {
+  describe('findMany - listagem sem relations', () => {
+    it('should return persons without loading relations in findMany', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
 
       for (let i = 0; i < 2; i++) {
@@ -90,10 +68,7 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       }
 
       const repository = moduleRef.get(IPersonRepository);
-      const query = Object.assign(new PersonQueryDto(), {
-        limit: 100,
-        page: 0,
-      });
+      const query = PersonQueryDto.from({ limit: 100, page: 0 });
       const { items } = await repository.findMany(query);
 
       expect(items.length).toBeGreaterThan(0);
@@ -101,11 +76,11 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       const person = items[0];
       expect(person.id).toBeDefined();
       expect(person.name).toBeDefined();
-      expect(person.address).toBeDefined();
-      expect(person.contacts).toBeDefined();
+      expect(person.address).toBeUndefined();
+      expect(person.contacts ?? []).toHaveLength(0);
     });
 
-    it('should load multiple persons efficiently', async () => {
+    it('should list via handler without requiring relations on entities', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
 
       const createdIds: number[] = [];
@@ -120,8 +95,6 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
         createdIds.push(result.id);
       }
 
-      expect(createdIds.length).toBe(3);
-
       const readManyHandler = moduleRef.get(ReadManyPersonHandler);
       const result = await readManyHandler.handle(new ReadManyPersonRequest());
 
@@ -132,23 +105,15 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       createdIds.forEach((id) => {
         expect(returnedIds).toContain(id);
       });
-
-      result.items.forEach((person) => {
-        expect(person.id).toBeDefined();
-        expect(person.name).toBeDefined();
-      });
     });
   });
 
-  describe('Comparação entre findById e findMany', () => {
-    it('should load relationships in both methods', async () => {
+  describe('findById vs findMany', () => {
+    it('findById carrega relations; findMany retorna entidade leve', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
       const created = await createHandler.handle({
         name: 'Comparação Test',
-        contacts: [
-          { contact: 'first@example.com' },
-          { contact: 'second@example.com' },
-        ],
+        contacts: [{ contact: 'first@example.com' }],
         address: {
           address: 'Rua Comparação, 789',
         },
@@ -158,24 +123,19 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       const personFromFindById = await readHandler.handle(created.id);
 
       const repository = moduleRef.get(IPersonRepository);
-      const query = Object.assign(new PersonQueryDto(), {
-        limit: 100,
-        page: 0,
-      });
-      const { items } = await repository.findMany(query);
+      const { items } = await repository.findMany(
+        PersonQueryDto.from({ limit: 100, page: 0 }),
+      );
       const personFromFindMany = items.find((p) => p.id === created.id);
 
       expect(personFromFindMany).toBeDefined();
       expect(personFromFindById.id).toBe(personFromFindMany!.id);
       expect(personFromFindById.name).toBe(personFromFindMany!.name);
-
       expect(personFromFindById.address).toBeDefined();
       expect(personFromFindById.contacts).toBeDefined();
       expect(personFromFindById.contacts.length).toBeGreaterThan(0);
-
-      expect(personFromFindMany?.address).toBeDefined();
-      expect(personFromFindMany?.contacts).toBeDefined();
-      expect(personFromFindMany?.contacts.length).toBeGreaterThan(0);
+      expect(personFromFindMany?.address).toBeUndefined();
+      expect(personFromFindMany?.contacts ?? []).toHaveLength(0);
     });
   });
 });

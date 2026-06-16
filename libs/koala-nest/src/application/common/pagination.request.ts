@@ -3,11 +3,6 @@ import { AutoMap } from '@/core/tools/mapping';
 import type { QueryDirectionType } from '@/core/types';
 import { ApiProperty } from '@nestjs/swagger';
 
-export type PaginatedRequestProps<T extends PaginationRequest> = Omit<
-  { [K in keyof T as T[K] extends Function ? never : K]: T[K] },
-  '_id'
->;
-
 export class PaginationRequest {
   @ApiProperty({
     required: false,

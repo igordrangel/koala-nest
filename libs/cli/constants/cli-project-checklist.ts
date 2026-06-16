@@ -49,6 +49,11 @@ export const WORKSPACE_SETUP_PATHS = [
 /** Núcleo comum a qualquer projeto Koala Nest. */
 export const CORE_REQUIRED_PATHS = [
   'src/core/env.ts',
+  'src/core/common/list-response.base.ts',
+  'src/core/utils/initialize-undefined-array-props.ts',
+  'src/core/http/rate-limit.middleware.ts',
+  'src/core/utils/resolve-cors-origins.ts',
+  'src/host/bootstrap/apply-http-middleware.ts',
   'src/host/main.ts',
   'src/host/app.module.ts',
   'src/host/jobs/jobs.module.ts',

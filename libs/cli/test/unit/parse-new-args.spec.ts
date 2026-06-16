@@ -106,6 +106,12 @@ describe('parseNewArgs', () => {
     ).toThrow(/CRUD exige autenticação/);
   });
 
+  it('rejeita rate-limit em --features', () => {
+    expect(() =>
+      parseNewArgs(['demo', '-y', '--features', 'cache,rate-limit']),
+    ).toThrow(/Feature desconhecida/);
+  });
+
   it('rejeita opção desconhecida', () => {
     expect(() => parseNewArgs(['demo', '--unknown'])).toThrow(/desconhecida/);
   });

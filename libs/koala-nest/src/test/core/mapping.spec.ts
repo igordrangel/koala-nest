@@ -104,6 +104,21 @@ describe('AutoMapper', () => {
     expect(person.contacts[0].contact).toBe(personRequest.contacts[0].contact);
   });
 
+  it('inicializa arrays undefined no destino após o map', () => {
+    createMap(PersonRequest, Person);
+
+    const personRequest = PersonRequest.from({
+      name: 'John Doe',
+      address: {
+        address: '123 Main St',
+      },
+    });
+
+    const person = AutoMapper.map(personRequest, PersonRequest, Person);
+
+    expect(person.contacts).toEqual([]);
+  });
+
   it('should apply forMember custom mappings', () => {
     class SourceRequest {
       @AutoMap()

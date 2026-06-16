@@ -5,10 +5,7 @@ import {
   SLIM_INFRA_MODULE,
   stripInfraModuleCache,
 } from '@cli/utils/patch-infra-module.ts';
-import {
-  patchMainForAuth,
-  stripMainOptionalFeatures,
-} from '@cli/utils/patch-main.ts';
+import { patchMainForAuth } from '@cli/utils/patch-main.ts';
 
 const fullMain = `import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
@@ -42,15 +39,8 @@ bootstrap();
 `;
 
 describe('patch-main', () => {
-  it('remove cookie parser do template completo', () => {
-    const stripped = stripMainOptionalFeatures(fullMain);
-
-    expect(stripped).not.toContain('cookieParser');
-  });
-
-  it('adiciona cookie parser para autenticação', () => {
-    const slim = stripMainOptionalFeatures(fullMain);
-    const patched = patchMainForAuth(slim);
+  it('adiciona cookie parser para autenticação em main legado', () => {
+    const patched = patchMainForAuth(fullMain);
 
     expect(patched).toContain('cookieParser()');
   });

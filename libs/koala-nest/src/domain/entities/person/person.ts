@@ -27,7 +27,6 @@ export class Person extends EntityBase<Person> {
 
   @OneToOne(() => PersonAddress, {
     cascade: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn()
@@ -36,7 +35,6 @@ export class Person extends EntityBase<Person> {
 
   @OneToMany(() => PersonContact, (contact) => contact.person, {
     cascade: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   @AutoMap({ type: () => PersonContact })

@@ -28,7 +28,6 @@ export class Person extends EntityBase<Person> {
 
   @OneToOne(() => PersonAddress, {
     cascade: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   @JoinColumn()
@@ -37,7 +36,6 @@ export class Person extends EntityBase<Person> {
 
   @OneToMany(() => PersonContact, (contact) => contact.person, {
     cascade: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   @AutoMap({ type: () => PersonContact })
@@ -112,8 +110,33 @@ const dataSource = new DataSource({
 
 A opção `invalidWhereValuesBehavior.undefined: 'ignore'` evita que filtros opcionais (`undefined`) gerem cláusulas inválidas no TypeORM.
 
+## Carregar relacionamentos no repositório
+
+Evite `eager: true` nas entidades — carregue relations **explicitamente** no repositório conforme o caso de uso:
+
+- **`findById`** — detalhe com `relations: { address: true, contacts: true }`
+- **`findMany`** — listagem leve, sem `relations` (arrays podem ser normalizados como `[]` pelo `RepositoryBase`)
+
+```typescript
+findById(id: number): Promise<Person | null> {
+  return this.findOneNormalized({
+    where: { id },
+    relations: { address: true, contacts: true },
+  });
+}
+
+findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
+  return this.repository.findAndCount({ /* sem relations */ })
+    .then(([items, count]) => ({
+      items: this.normalizeEntities(items),
+      count,
+    }));
+}
+```
+
 ## Boas práticas
 
 - Mantenha entidades livres de lógica HTTP (sem `@ApiProperty`).
 - Use `cascade` e `onDelete` conforme a regra de negócio do agregado.
+- Coleções persistidas são **estado completo** no `save` — substitua a lista no update; itens ausentes viram órfãos com `orphanedRowAction: 'delete'`.
 - Registre novas entidades no `dataSourceFactory` e gere migrations após alterações.

@@ -1,6 +1,5 @@
-import { ObjectClass } from '@/core/base/object-class';
+import { ListResponseBase } from '@/core/common/list-response.base';
 import { AutoMap } from '@/core/tools/mapping';
-import { ListResponse } from '@/core/types';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ReadManyPersonResponseItem {
@@ -17,14 +16,4 @@ export class ReadManyPersonResponseItem {
   active: boolean;
 }
 
-export class ReadManyPersonResponse extends ObjectClass<
-  ListResponse<ReadManyPersonResponseItem>
-> {
-  @ApiProperty({ type: [ReadManyPersonResponseItem] })
-  @AutoMap({ type: () => ReadManyPersonResponseItem })
-  items: ReadManyPersonResponseItem[];
-
-  @ApiProperty()
-  @AutoMap()
-  count: number;
-}
+export class ReadManyPersonResponse extends ListResponseBase<ReadManyPersonResponseItem> {}

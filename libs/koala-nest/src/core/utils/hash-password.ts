@@ -1,5 +1,10 @@
 import { hash } from 'bcrypt';
 
-export function hashPassword(password: string): Promise<string> {
-  return hash(password, 6);
+const DEFAULT_BCRYPT_ROUNDS = 10;
+
+export function hashPassword(
+  password: string,
+  rounds = Number(process.env.BCRYPT_ROUNDS) || DEFAULT_BCRYPT_ROUNDS,
+): Promise<string> {
+  return hash(password, rounds);
 }

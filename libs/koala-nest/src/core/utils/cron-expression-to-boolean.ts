@@ -1,6 +1,37 @@
 import { CronExpressionParser } from 'cron-parser';
 
 /**
+ * Retorna uma chave única do tick cron atual, ou null se o instante não coincide.
+ */
+export function getCronExecutionKey(
+  cronExpression: string,
+  now: Date = new Date(),
+): string | null {
+  try {
+    const interval = CronExpressionParser.parse(cronExpression, {
+      currentDate: now,
+    });
+    const prev = interval.prev();
+
+    const matches =
+      prev.getFullYear() === now.getFullYear() &&
+      prev.getMonth() === now.getMonth() &&
+      prev.getDate() === now.getDate() &&
+      prev.getHours() === now.getHours() &&
+      prev.getMinutes() === now.getMinutes() &&
+      prev.getSeconds() === now.getSeconds();
+
+    if (!matches) {
+      return null;
+    }
+
+    return prev.toISOString();
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Verifica se a expressão cron corresponde ao momento atual.
  *
  * @param cronExpression Expressão cron a ser validada
@@ -45,21 +76,5 @@ export function cronExpressionToBoolean(
   cronExpression: string,
   now: Date = new Date(),
 ): boolean {
-  try {
-    const interval = CronExpressionParser.parse(cronExpression, {
-      currentDate: now,
-    });
-    const prev = interval.prev();
-
-    return (
-      prev.getFullYear() === now.getFullYear() &&
-      prev.getMonth() === now.getMonth() &&
-      prev.getDate() === now.getDate() &&
-      prev.getHours() === now.getHours() &&
-      prev.getMinutes() === now.getMinutes() &&
-      prev.getSeconds() === now.getSeconds()
-    );
-  } catch {
-    return false;
-  }
+  return getCronExecutionKey(cronExpression, now) !== null;
 }
