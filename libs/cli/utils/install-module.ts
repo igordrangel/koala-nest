@@ -11,6 +11,7 @@ import {
   AUTH_DEV_PACKAGES,
   AUTH_PACKAGES,
   CACHE_PACKAGES,
+  CORE_DEV_PACKAGES,
   CORE_PACKAGES,
   CRON_PACKAGES,
   devAddFlag,
@@ -342,7 +343,7 @@ export async function installModule(
       patchInfraModuleFile(projectName, false);
 
       if (!options.skipPackages) {
-        await installPackages(projectName, CORE_PACKAGES);
+        await installPackages(projectName, CORE_PACKAGES, CORE_DEV_PACKAGES);
       }
 
       if (template === Template.DEFAULT) {
