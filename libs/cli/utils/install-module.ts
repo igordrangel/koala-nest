@@ -36,7 +36,7 @@ import {
   patchInfraModuleForCache,
   stripInfraModuleCache,
 } from './patch-infra-module';
-import { patchMainForAuth, stripMainOptionalFeatures } from './patch-main';
+import { patchMainForAuth } from './patch-main';
 import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
 import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
