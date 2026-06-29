@@ -4,6 +4,6 @@ export abstract class E2EDatabaseClient {
     protected readonly schemaName: string,
   ) {}
 
-  abstract createDatabase(schemaName: string): Promise<void>;
-  abstract dropDatabase(): Promise<void>;
+  abstract createSchema(schemaName: string): Promise<void>;
+  abstract dropSchema(): Promise<void>;
 }

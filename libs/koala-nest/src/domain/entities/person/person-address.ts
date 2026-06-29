@@ -1,6 +1,7 @@
 import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
 import { AutoMap } from '@/core/tools/mapping';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('person_address')
 export class PersonAddress extends EntityBase<PersonAddress> {

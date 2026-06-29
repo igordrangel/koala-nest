@@ -3,7 +3,7 @@ import { AuthModule } from '@/host/controllers/auth/auth.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PersonModule } from '@/host/controllers/person/person.module';
-import { e2eDatabaseUrl } from '@/test/e2e-context';
+import { e2eDatabaseUrl, e2eSchemaName } from '@/test/e2e-context';
 import { getJwtTestKeys } from '@/test/utils/jwt-test-keys';
 
 const jwtKeys = getJwtTestKeys();
@@ -18,6 +18,7 @@ const jwtKeys = getJwtTestKeys();
           PORT: 3000,
           NODE_ENV: 'test',
           DATABASE_URL: e2eDatabaseUrl,
+          DATABASE_SCHEMA: e2eSchemaName,
           JWT_PRIVATE_KEY: jwtKeys.privateKey,
           JWT_PUBLIC_KEY: jwtKeys.publicKey,
           JWT_ACCESS_TOKEN_EXPIRES_IN: '15m',

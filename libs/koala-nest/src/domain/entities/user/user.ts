@@ -1,11 +1,11 @@
 import { AuthProfile } from '@/core/auth/auth-profile.enum';
 import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
 import { AutoMap } from '@/core/tools/mapping';
 import { UserStatus } from '@/domain/entities/user/enums/user-status.enum';
 import {
   Column,
   CreateDateColumn,
-  Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';

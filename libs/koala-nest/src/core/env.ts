@@ -10,6 +10,7 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
+  DATABASE_SCHEMA: z.string().optional(),
   REDIS_CONNECTION_STRING: z.string().optional(),
   CACHE_KEY_PREFIX: z.string().optional(),
   CRON_JOBS_ENABLED: envBooleanSchema(false),

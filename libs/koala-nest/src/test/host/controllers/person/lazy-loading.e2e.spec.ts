@@ -12,9 +12,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 /**
  * Testes E2E do RepositoryBase - Lazy Loading
  *
- * Valida o carregamento efetivo de relacionamentos em diferentes cenários:
- * - findById: carrega recursivamente todos os relacionamentos
- * - findMany: carrega com otimização para listas
+ * Valida o carregamento de relacionamentos por cenário:
+ * - findById: carrega address e contacts (detalhe da entidade)
+ * - findMany: retorna apenas dados escalares (performance em listagens)
  */
 describe('RepositoryBase - Lazy Loading (E2E)', () => {
   let moduleRef: TestingModule;
@@ -75,8 +75,8 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
     });
   });
 
-  describe('findMany - Carregamento Otimizado para Listas', () => {
-    it('should load persons with relationships in findMany', async () => {
+  describe('findMany - Listagem sem Relacionamentos', () => {
+    it('should return persons without loading relationships in findMany', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
 
       for (let i = 0; i < 2; i++) {
@@ -101,8 +101,9 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       const person = items[0];
       expect(person.id).toBeDefined();
       expect(person.name).toBeDefined();
-      expect(person.address).toBeDefined();
-      expect(person.contacts).toBeDefined();
+      expect(person.active).toBeDefined();
+      expect(person.address).toBeUndefined();
+      expect(person.contacts).toBeUndefined();
     });
 
     it('should load multiple persons efficiently', async () => {
@@ -136,12 +137,13 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       result.items.forEach((person) => {
         expect(person.id).toBeDefined();
         expect(person.name).toBeDefined();
+        expect(person.active).toBeDefined();
       });
     });
   });
 
   describe('Comparação entre findById e findMany', () => {
-    it('should load relationships in both methods', async () => {
+    it('should load relationships only in findById', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
       const created = await createHandler.handle({
         name: 'Comparação Test',
@@ -173,9 +175,8 @@ describe('RepositoryBase - Lazy Loading (E2E)', () => {
       expect(personFromFindById.contacts).toBeDefined();
       expect(personFromFindById.contacts.length).toBeGreaterThan(0);
 
-      expect(personFromFindMany?.address).toBeDefined();
-      expect(personFromFindMany?.contacts).toBeDefined();
-      expect(personFromFindMany?.contacts.length).toBeGreaterThan(0);
+      expect(personFromFindMany?.address).toBeUndefined();
+      expect(personFromFindMany?.contacts).toBeUndefined();
     });
   });
 });
