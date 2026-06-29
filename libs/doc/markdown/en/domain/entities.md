@@ -4,18 +4,48 @@ slug: entities
 category: domain
 docKey: domain/entidades
 order: 1
-description: TypeORM entity modeling with EntityBase and the AutoMap decorator.
+description: Entity modeling with core Entity decorator, EntityBase, and AutoMap.
 ---
 
 # Entities
 
-Entities represent the domain model persisted in the database. They live in `src/domain/entities` and use TypeORM decorators combined with `@AutoMap()` for the mapping system.
+Entities represent the domain model persisted in the database. They live in `src/domain/entities`, use the core `@Entity` decorator (which wraps TypeORM), and combine other TypeORM decorators with `@AutoMap()` for the mapping system.
+
+## @Entity decorator
+
+Use `@Entity` from `@/core/database/entity` — **do not** import `Entity` from `typeorm`. Under the hood, the decorator applies TypeORM's `@Entity` and registers the class in `DbContext.entities` so `dataSourceFactory` can build the array automatically:
+
+```typescript
+// src/core/database/entity.ts
+import { Entity as TypeOrmEntity } from 'typeorm';
+import { DbContext } from './db-context';
+
+export function Entity(tableName: string) {
+  return function (target: Function) {
+    TypeOrmEntity(tableName)(target);
+    DbContext.entities.add(target);
+  };
+}
+```
+
+Column and relationship decorators (`Column`, `OneToMany`, `ManyToOne`, etc.) are still imported from `typeorm`.
 
 ## Main entity
 
 The `Person` entity demonstrates `OneToOne` and `OneToMany` relationships with cascade:
 
 ```typescript
+import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
+import { AutoMap } from '@/core/tools/mapping';
+import {
+  Column,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
 @Entity('person')
 export class Person extends EntityBase<Person> {
   @PrimaryGeneratedColumn()
@@ -95,18 +125,23 @@ This allows `AutoMapper` to resolve the target type when mapping each item in th
 
 ## DataSource registration
 
-All entities must be listed in the DataSource factory:
+`dataSourceFactory` reads entities registered automatically by the `@Entity` decorator:
 
 ```typescript
+import { DbContext } from '@/core/database/db-context';
+
 const dataSource = new DataSource({
   type: 'postgres',
   url: env.get('DATABASE_URL'),
-  entities: [Person, PersonAddress, PersonContact],
+  schema: env.get('DATABASE_SCHEMA'),
+  entities: Array.from(DbContext.entities.values()),
   invalidWhereValuesBehavior: {
     undefined: 'ignore',
   },
 });
 ```
+
+When you decorate a new entity with `@Entity`, it is already included in the runtime DataSource — no manual change to `dataSourceFactory` is required.
 
 The `invalidWhereValuesBehavior.undefined: 'ignore'` option prevents optional filters (`undefined`) from generating invalid clauses in TypeORM.
 
@@ -139,4 +174,4 @@ findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
 - Keep entities free of HTTP logic (no `@ApiProperty`).
 - Use `cascade` and `onDelete` according to the aggregate's business rules.
 - Persisted collections are **full state** on `save` — replace the list on update; missing items become orphans with `orphanedRowAction: 'delete'`.
-- Register new entities in `dataSourceFactory` and generate migrations after changes.
+- Use `@Entity` from `@/core/database/entity` and generate migrations after schema changes.

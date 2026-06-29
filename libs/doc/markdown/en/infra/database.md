@@ -31,13 +31,16 @@ export class DatabaseModule {}
 ## DataSource factory
 
 ```typescript
+import { DbContext } from '@/core/database/db-context';
+
 export const DATA_SOURCE_PROVIDER_TOKEN = 'DATA_SOURCE';
 
 export async function dataSourceFactory(env: EnvService) {
   const dataSource = new DataSource({
     type: 'postgres',
     url: env.get('DATABASE_URL'),
-    entities: [Person, PersonAddress, PersonContact],
+    schema: env.get('DATABASE_SCHEMA'),
+    entities: Array.from(DbContext.entities.values()),
     invalidWhereValuesBehavior: {
       undefined: 'ignore',
     },
@@ -69,11 +72,10 @@ DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 
 ## Adding new entities
 
-1. Create the entity in `src/domain/entities/`.
-2. Include it in the `entities` array of `dataSourceFactory`.
-3. Generate and apply the migration.
+1. Create the entity in `src/domain/entities/` with `@Entity` from `@/core/database/entity`.
+2. Generate and apply the migration.
 
-`migration-datasource.ts` discovers entities automatically via glob — no need to register them manually there.
+The `@Entity` decorator registers the class in `DbContext.entities`, used by `dataSourceFactory` at runtime. `migration-datasource.ts` discovers entities automatically via glob — no manual registration is needed in either place.
 
 ## InfraModule
 

@@ -26,7 +26,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 
 ## Domain
 
-- [Entities](markdown/en/domain/entities.md): TypeORM entity modeling with EntityBase and the AutoMap decorator.
+- [Entities](markdown/en/domain/entities.md): Entity modeling with core Entity decorator, EntityBase, and AutoMap.
 - [Repository contracts](markdown/en/domain/repository-contracts.md): Abstract repository classes and query DTOs in the domain.
 
 ## Application

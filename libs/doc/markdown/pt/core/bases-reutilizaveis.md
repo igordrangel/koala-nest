@@ -126,6 +126,18 @@ export class RepositoryBase<T extends ObjectLiteral> {
 }
 ```
 
+## Entity
+
+Marque entidades de domínio com `@Entity` de `@/core/database/entity`. O decorador aplica o `@Entity` do TypeORM e registra a classe em `DbContext.entities`:
+
+```typescript
+// src/core/database/entity.ts
+import { Entity } from '@/core/database/entity';
+
+@Entity('person')
+export class Person extends EntityBase<Person> {}
+```
+
 ## EntityBase
 
 Entidades de domínio estendem `EntityBase`, que por sua vez estende `ObjectClass`:
