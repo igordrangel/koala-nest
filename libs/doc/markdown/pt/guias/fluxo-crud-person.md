@@ -47,9 +47,20 @@ src/
 
 ## 1. Modelar entidades
 
-Defina entidades com TypeORM e `@AutoMap()`:
+Defina entidades com `@Entity` do core e `@AutoMap()`:
 
 ```typescript
+import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
+import { AutoMap } from '@/core/tools/mapping';
+import {
+  Column,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
 @Entity('person')
 export class Person extends EntityBase<Person> {
   @PrimaryGeneratedColumn()
@@ -198,14 +209,9 @@ export class PersonModule {}
 
 Importe `PersonModule` no `AppModule`.
 
-## 8. Registrar entidades e gerar migration
+## 8. Gerar migration
 
-Adicione as entidades no `dataSourceFactory` (runtime) e gere a migration:
-
-```typescript
-// src/infra/database/data-source-factory.ts
-entities: [Person, PersonAddress, PersonContact],
-```
+Com as entidades decoradas com `@Entity` do core, o `dataSourceFactory` já as inclui via `DbContext`. Gere e aplique a migration:
 
 ```bash
 bun run migration:generate
@@ -213,7 +219,7 @@ bun run migration:run
 bun run start:dev
 ```
 
-O gerador de migrations (`migration-datasource.ts`) descobre entidades em `src/domain/entities/` por glob — o registro explícito no `dataSourceFactory` é obrigatório para o servidor em runtime.
+O gerador de migrations (`migration-datasource.ts`) descobre entidades em `src/domain/entities/` por glob.
 
 Acesse `http://localhost:3000/doc` para testar os endpoints interativamente.
 
@@ -270,7 +276,7 @@ Ao criar um recurso semelhante ao Person, percorra as etapas deste guia nesta or
 
 1. **Domain** — entidades, contrato `I<Recurso>Repository` e DTOs de consulta (se houver listagem)
 2. **Application** — handlers, requests, responses, validators e `<Recurso>Mapper.createMap()` no `MappingProvider`
-3. **Infra** — repositório concreto, provider no `RepositoryModule` e entidades no `dataSourceFactory`
+3. **Infra** — repositório concreto e provider no `RepositoryModule`
 4. **Host** — `router.config.ts`, controllers, `<Recurso>Module` e import no `AppModule`
 5. **Migrations** — `migration:generate`, revisão do arquivo gerado e `migration:run`
 

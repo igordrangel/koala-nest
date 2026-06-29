@@ -76,15 +76,14 @@ export default new DataSource({
 });
 ```
 
-Entities are discovered by **glob** — just create the file in `src/domain/entities/`. The runtime `dataSourceFactory`, however, lists entities explicitly in the `entities` array.
+Entities are discovered by **glob** — just create the file in `src/domain/entities/` with the core `@Entity` decorator. The runtime `dataSourceFactory` reads entities registered automatically in `DbContext.entities`.
 
 ## Recommended workflow
 
-1. Change or create entities in `src/domain/entities/`.
-2. Register new entities in `dataSourceFactory` (runtime).
-3. Run `bun run migration:generate`.
-4. Review the generated file in `src/infra/database/migrations/`.
-5. Apply with `bun run migration:run`.
+1. Change or create entities in `src/domain/entities/` with `@Entity` from `@/core/database/entity`.
+2. Run `bun run migration:generate`.
+3. Review the generated file in `src/infra/database/migrations/`.
+4. Apply with `bun run migration:run`.
 
 ## Existing migrations in the template
 

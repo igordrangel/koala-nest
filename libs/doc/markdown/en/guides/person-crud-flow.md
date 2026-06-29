@@ -47,9 +47,20 @@ src/
 
 ## 1. Model entities
 
-Define entities with TypeORM and `@AutoMap()`:
+Define entities with the core `@Entity` decorator and `@AutoMap()`:
 
 ```typescript
+import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
+import { AutoMap } from '@/core/tools/mapping';
+import {
+  Column,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
 @Entity('person')
 export class Person extends EntityBase<Person> {
   @PrimaryGeneratedColumn()
@@ -198,14 +209,9 @@ export class PersonModule {}
 
 Import `PersonModule` in `AppModule`.
 
-## 8. Register entities and generate migration
+## 8. Generate migration
 
-Add entities in `dataSourceFactory` (runtime) and generate the migration:
-
-```typescript
-// src/infra/database/data-source-factory.ts
-entities: [Person, PersonAddress, PersonContact],
-```
+With entities decorated using the core `@Entity`, `dataSourceFactory` already includes them via `DbContext`. Generate and apply the migration:
 
 ```bash
 bun run migration:generate
@@ -213,7 +219,7 @@ bun run migration:run
 bun run start:dev
 ```
 
-The migration generator (`migration-datasource.ts`) discovers entities in `src/domain/entities/` by glob — explicit registration in `dataSourceFactory` is required for the runtime server.
+The migration generator (`migration-datasource.ts`) discovers entities in `src/domain/entities/` by glob.
 
 Visit `http://localhost:3000/doc` to test endpoints interactively.
 
@@ -270,7 +276,7 @@ When creating a resource similar to Person, follow the steps in this guide in or
 
 1. **Domain** — entities, `I<Resource>Repository` contract, and query DTOs (if there is listing)
 2. **Application** — handlers, requests, responses, validators, and `<Resource>Mapper.createMap()` in `MappingProvider`
-3. **Infra** — concrete repository, provider in `RepositoryModule`, and entities in `dataSourceFactory`
+3. **Infra** — concrete repository and provider in `RepositoryModule`
 4. **Host** — `router.config.ts`, controllers, `<Resource>Module`, and import in `AppModule`
 5. **Migrations** — `migration:generate`, review the generated file, and `migration:run`
 

@@ -76,15 +76,14 @@ export default new DataSource({
 });
 ```
 
-Entidades são descobertas por **glob** — basta criar o arquivo em `src/domain/entities/`. O `dataSourceFactory` de runtime, porém, lista entidades explicitamente no array `entities`.
+Entidades são descobertas por **glob** — basta criar o arquivo em `src/domain/entities/` com `@Entity` do core. O `dataSourceFactory` de runtime lê as entidades registradas automaticamente em `DbContext.entities`.
 
 ## Fluxo recomendado
 
-1. Altere ou crie entidades em `src/domain/entities/`.
-2. Registre novas entidades no `dataSourceFactory` (runtime).
-3. Execute `bun run migration:generate`.
-4. Revise o arquivo gerado em `src/infra/database/migrations/`.
-5. Aplique com `bun run migration:run`.
+1. Altere ou crie entidades em `src/domain/entities/` com `@Entity` de `@/core/database/entity`.
+2. Execute `bun run migration:generate`.
+3. Revise o arquivo gerado em `src/infra/database/migrations/`.
+4. Aplique com `bun run migration:run`.
 
 ## Migrations existentes no template
 

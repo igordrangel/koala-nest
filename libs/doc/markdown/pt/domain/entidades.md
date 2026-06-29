@@ -4,18 +4,48 @@ slug: entidades
 category: domain
 docKey: domain/entidades
 order: 1
-description: Modelagem de entidades TypeORM com EntityBase e decorador AutoMap.
+description: Modelagem de entidades com Entity do core, EntityBase e decorador AutoMap.
 ---
 
 # Entidades
 
-Entidades representam o modelo de domínio persistido no banco. Elas ficam em `src/domain/entities` e usam decoradores TypeORM combinados com `@AutoMap()` para o sistema de mapeamento.
+Entidades representam o modelo de domínio persistido no banco. Elas ficam em `src/domain/entities`, usam o decorador `@Entity` do core (que encapsula o TypeORM) e combinam os demais decoradores TypeORM com `@AutoMap()` para o sistema de mapeamento.
+
+## Decorador @Entity
+
+Use `@Entity` de `@/core/database/entity` — **não** importe `Entity` de `typeorm`. Por baixo dos panos, o decorador aplica o `@Entity` do TypeORM e registra a classe em `DbContext.entities` para o `dataSourceFactory` montar o array automaticamente:
+
+```typescript
+// src/core/database/entity.ts
+import { Entity as TypeOrmEntity } from 'typeorm';
+import { DbContext } from './db-context';
+
+export function Entity(tableName: string) {
+  return function (target: Function) {
+    TypeOrmEntity(tableName)(target);
+    DbContext.entities.add(target);
+  };
+}
+```
+
+Os decoradores de coluna e relacionamento (`Column`, `OneToMany`, `ManyToOne`, etc.) continuam importados de `typeorm`.
 
 ## Entidade principal
 
 A entidade `Person` demonstra relacionamentos `OneToOne` e `OneToMany` com cascade:
 
 ```typescript
+import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
+import { AutoMap } from '@/core/tools/mapping';
+import {
+  Column,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
 @Entity('person')
 export class Person extends EntityBase<Person> {
   @PrimaryGeneratedColumn()
@@ -95,18 +125,23 @@ Isso permite ao `AutoMapper` resolver o tipo de destino ao mapear cada item da c
 
 ## Registro no DataSource
 
-Todas as entidades devem ser listadas no factory do DataSource:
+O `dataSourceFactory` lê as entidades registradas automaticamente pelo decorador `@Entity`:
 
 ```typescript
+import { DbContext } from '@/core/database/db-context';
+
 const dataSource = new DataSource({
   type: 'postgres',
   url: env.get('DATABASE_URL'),
-  entities: [Person, PersonAddress, PersonContact],
+  schema: env.get('DATABASE_SCHEMA'),
+  entities: Array.from(DbContext.entities.values()),
   invalidWhereValuesBehavior: {
     undefined: 'ignore',
   },
 });
 ```
+
+Ao decorar uma nova entidade com `@Entity`, ela já entra no DataSource em runtime — não é necessário alterar o `dataSourceFactory` manualmente.
 
 A opção `invalidWhereValuesBehavior.undefined: 'ignore'` evita que filtros opcionais (`undefined`) gerem cláusulas inválidas no TypeORM.
 
@@ -139,4 +174,4 @@ findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
 - Mantenha entidades livres de lógica HTTP (sem `@ApiProperty`).
 - Use `cascade` e `onDelete` conforme a regra de negócio do agregado.
 - Coleções persistidas são **estado completo** no `save` — substitua a lista no update; itens ausentes viram órfãos com `orphanedRowAction: 'delete'`.
-- Registre novas entidades no `dataSourceFactory` e gere migrations após alterações.
+- Use `@Entity` de `@/core/database/entity` e gere migrations após alterações de schema.
