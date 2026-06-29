@@ -60,14 +60,13 @@ export class Person extends EntityBase<Person> {
   @AutoMap()
   name: string;
 
-  @OneToOne(() => PersonAddress, { cascade: true, eager: true, onDelete: 'CASCADE' })
+  @OneToOne(() => PersonAddress, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn()
   @AutoMap()
   address: PersonAddress;
 
   @OneToMany(() => PersonContact, (contact) => contact.person, {
     cascade: true,
-    eager: true,
     onDelete: 'CASCADE',
   })
   @AutoMap({ type: () => PersonContact })
@@ -274,3 +273,50 @@ When creating a resource similar to Person, follow the steps in this guide in or
 3. **Infra** — concrete repository, provider in `RepositoryModule`, and entities in `dataSourceFactory`
 4. **Host** — `router.config.ts`, controllers, `<Resource>Module`, and import in `AppModule`
 5. **Migrations** — `migration:generate`, review the generated file, and `migration:run`
+
+## Framework patterns (4.x)
+
+### Query DTOs with `PaginationDto.from()`
+
+Query DTOs do **not** extend `ObjectClass` (partial props). Use the inherited factory:
+
+```typescript
+const query = PersonQueryDto.from({ name: 'Jane', limit: 50 });
+```
+
+### Paginated responses with `ListResponseBase`
+
+Handlers return `MyListResponse.from({ items, count })` instead of duplicating `items`/`count`:
+
+```typescript
+export class ReadManyPersonResponse extends ListResponseBase<ReadManyPersonResponseItem> {}
+```
+
+### Partial entities (import/jobs)
+
+For incomplete props, do **not** use `.from()` — instantiate and assign fields, or call `initializeUndefinedArrayProps(entity, EntityClass)` after `new`.
+
+### `HOST` vs `API_HOST`
+
+- **`HOST`** (default `0.0.0.0`) — server bind address (Docker/K8s).
+- **`API_HOST`** — public hostname for Swagger and OAuth URLs (`resolveApiHost`).
+
+### Default sort in Query DTO
+
+Override `generateOrderBy()` in the query DTO instead of patching the handler:
+
+```typescript
+export class PersonQueryDto extends PaginationDto {
+  override generateOrderBy() {
+    if (this.orderBy) return super.generateOrderBy();
+    return { id: 'asc' };
+  }
+}
+```
+
+### Advanced TypeORM (`PaginationDto`)
+
+- `toFindOptionsOrder()` — converts `generateOrderBy()` to `FindOptionsOrder` (ASC/DESC).
+- `applyQueryBuilderPagination(qb, alias)` — applies order + skip/take on QueryBuilder.
+
+Rate limit is included in core. See [HTTP middleware](../host/http-middleware.md).

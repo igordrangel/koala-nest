@@ -1,3 +1,4 @@
+import { initializeUndefinedArrayProps } from '@/core/utils/initialize-undefined-array-props';
 import { Type } from '@nestjs/common';
 import { MappingStore } from './mapping-store';
 
@@ -25,7 +26,6 @@ export class AutoMapper {
 
   static map<S, R>(data: any, source: Type<S>, target: Type<R>): R {
     const mapping = MappingStore.getMapping(source, target);
-
     const targetInstance = new target();
 
     if (!mapping) {
@@ -70,9 +70,14 @@ export class AutoMapper {
         }
 
         const targetClass: Type<any> = this.toClass(targetPropType);
+        const sourceValue = data[sourceProp.name];
+
+        if (sourceValue === undefined) {
+          continue;
+        }
 
         targetInstance[targetPropName] = this.map(
-          data[sourceProp.name],
+          sourceValue,
           sourcePropTypeClass,
           targetClass,
         );
@@ -80,17 +85,21 @@ export class AutoMapper {
       }
 
       if (sourceProp.isArray) {
-        targetInstance[targetPropName] = data[sourceProp.name].map(
-          (item: unknown) => {
-            const targetItemType = targetProps.find(
-              (p) => p.name === targetPropName,
-            )!.type;
+        const sourceArray = data[sourceProp.name];
 
-            const targetClassType = this.toClass(targetItemType);
+        if (sourceArray === undefined) {
+          continue;
+        }
 
-            return this.map(item, sourcePropTypeClass, targetClassType);
-          },
-        );
+        targetInstance[targetPropName] = sourceArray.map((item: unknown) => {
+          const targetItemType = targetProps.find(
+            (p) => p.name === targetPropName,
+          )!.type;
+
+          const targetClassType = this.toClass(targetItemType);
+
+          return this.map(item, sourcePropTypeClass, targetClassType);
+        });
         continue;
       }
 
@@ -100,6 +109,11 @@ export class AutoMapper {
         targetInstance[targetPropName] = sourceValue;
       }
     }
+
+    initializeUndefinedArrayProps(
+      targetInstance as Record<string, unknown>,
+      target,
+    );
 
     return targetInstance;
   }

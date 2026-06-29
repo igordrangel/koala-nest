@@ -4,7 +4,6 @@ import { removeImportLines } from './project-files';
 import { patchAppModuleJobs } from './patch-jobs-module';
 import { patchAppTestModuleForDefault } from './patch-app-test-module';
 import { resolveProjectPath } from './resolve-project-path';
-import { stripMainOptionalFeatures } from './patch-main';
 import { stripDefineDocumentationAuth } from './patch-define-documentation';
 import { stripEnvAuth } from './patch-env';
 import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
@@ -231,6 +230,6 @@ function stripDefaultProjectAuth(projectName: string) {
       './security/guards/profiles.guard',
     ]);
     main = main.replace(/\n {2}app\.useGlobalGuards\([\s\S]*?\);\n/, '\n');
-    writeFileSync(mainPath, stripMainOptionalFeatures(main), 'utf8');
+    writeFileSync(mainPath, main, 'utf8');
   }
 }

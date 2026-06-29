@@ -39,7 +39,6 @@ Usage in entity:
 ```typescript
 @OneToMany(() => PersonContact, (contact) => contact.person, {
   cascade: true,
-  eager: true,
   onDelete: 'CASCADE',
 })
 @AutoMap({ type: () => PersonContact })
@@ -99,6 +98,28 @@ return AutoMapper.map(createdPerson, Person, CreatePersonResponse);
 ```
 
 `AutoMapper` resolves properties by name, maps nested objects recursively, and iterates arrays automatically.
+
+### Update with an already-loaded entity
+
+For updates, load the entity from the database and apply the payload manually (as in `UpdatePersonHandler`). Persisted collections must be **replaced** by the request list — the expected behavior with TypeORM `cascade` + `orphanedRowAction: 'delete'`: on save, items missing from the collection become orphans and are removed.
+
+```typescript
+person.contacts = validated.contacts.map((contactRequest) => {
+  if (contactRequest.id) {
+    const existing = person.contacts.find((c) => c.id === contactRequest.id);
+    if (existing) {
+      existing.contact = contactRequest.contact;
+      return existing;
+    }
+  }
+  const contact = new PersonContact();
+  contact.contact = contactRequest.contact;
+  contact.person = person;
+  return contact;
+});
+```
+
+Do not append to persisted collections; `save` treats the list as the full state.
 
 ## Customizing with forMember
 

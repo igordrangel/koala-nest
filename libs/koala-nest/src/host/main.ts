@@ -1,7 +1,8 @@
 import 'dotenv/config';
 
+import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
+import { resolveApiHost } from '@/core/utils/resolve-api-host';
 import { NestFactory } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { defineDocumentation } from './open-api/define-documentation';
 import { ErrorsFilter } from './filters/errors.filter';
@@ -13,13 +14,7 @@ import { ILoggingService } from '@/domain/common/ilogging.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.use(cookieParser());
-
-  app.enableCors({
-    credentials: true,
-    origin: true,
-    optionsSuccessStatus: 200,
-  });
+  applyHttpMiddleware(app);
 
   await defineDocumentation(app);
 
@@ -32,12 +27,17 @@ async function bootstrap() {
     await app.resolve(ProfilesGuard),
   );
 
-  await app.listen(process.env.PORT || 3000);
+  const port = Number(process.env.PORT) || 3000;
+  const bindHost = process.env.HOST ?? '0.0.0.0';
+  const publicHost = resolveApiHost(process.env.API_HOST, port);
 
-  console.log(`Server is running on port ${process.env.PORT || 3000}`);
-  console.log(
-    `Documentation is available at http://localhost:${process.env.PORT || 3000}/doc`,
-  );
+  await app.listen(port, bindHost);
+
+  console.log(`Server is running on ${publicHost}`);
+  console.log(`Documentation is available at ${publicHost}/doc`);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

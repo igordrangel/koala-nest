@@ -58,6 +58,48 @@ describe('UpdatePersonHandler', () => {
     expect(cache.invalidateByPrefixCalls).toEqual([PERSON_LIST_CACHE_PREFIX]);
   });
 
+  it('remove contatos ausentes do payload (órfãos via TypeORM)', async () => {
+    const cache = new CacheStub();
+    const keptContact = PersonContact.from({
+      id: 10,
+      contact: 'keep@example.com',
+      person: undefined as unknown as Person,
+    });
+    const removedContact = PersonContact.from({
+      id: 11,
+      contact: 'remove@example.com',
+      person: undefined as unknown as Person,
+    });
+
+    const person = Person.from({
+      id: 1,
+      name: 'Jane',
+      active: true,
+      address: PersonAddress.from({ id: 5, address: 'Street' }),
+      contacts: [keptContact, removedContact],
+    });
+    keptContact.person = person;
+    removedContact.person = person;
+
+    const repository = {
+      findById: async () => person,
+      save: async (entity: Person) => entity,
+    } as unknown as IPersonRepository;
+
+    const handler = new UpdatePersonHandler(repository, cache);
+
+    await handler.handle({
+      id: 1,
+      name: 'Jane',
+      address: { id: 5, address: 'Street' },
+      contacts: [{ id: 10, contact: 'keep@example.com' }],
+    });
+
+    expect(person.contacts).toHaveLength(1);
+    expect(person.contacts[0].id).toBe(10);
+    expect(person.contacts[0].contact).toBe('keep@example.com');
+  });
+
   it('lança NotFoundException quando a pessoa não existe', async () => {
     const repository = {
       findById: async () => null,

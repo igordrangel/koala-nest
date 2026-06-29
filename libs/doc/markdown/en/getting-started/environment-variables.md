@@ -20,12 +20,17 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
+  HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string().optional(),
   CACHE_KEY_PREFIX: z.string().optional(),
   CRON_JOBS_ENABLED: z.coerce.boolean().default(false),
   BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
+  RATE_LIMIT_MAX: z.coerce.number().default(0),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
+  CORS_ORIGINS: z.string().optional(),
+  BCRYPT_ROUNDS: z.coerce.number().min(4).max(15).default(10),
   JWT_PRIVATE_KEY: z.string().optional(),
   JWT_PUBLIC_KEY: z.string().optional(),
   JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),
@@ -41,9 +46,32 @@ Create a `.env` at the project root (the CLI also copies `.env.example` as a ref
 
 ```env
 PORT=3000
+HOST=0.0.0.0
 NODE_ENV=develop
 DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 ```
+
+### HTTP (CORS and rate limit)
+
+Included in core via `applyHttpMiddleware`. Full guide: [HTTP middleware](../host/http-middleware.md).
+
+```env
+# Optional — comma-separated origins
+# CORS_ORIGINS=http://localhost:4200,https://app.example.com
+
+# Rate limit (0 = disabled)
+# RATE_LIMIT_MAX=300
+# RATE_LIMIT_WINDOW_MS=60000
+```
+
+| Variable | Description |
+| --- | --- |
+| `HOST` | Server bind address (Docker/K8s); default `0.0.0.0` |
+| `API_HOST` | Public hostname for Swagger and OAuth (`resolveApiHost`) |
+| `CORS_ORIGINS` | When set, limits CORS to listed origins |
+| `RATE_LIMIT_MAX` | Max requests per IP per window; `0` disables |
+| `RATE_LIMIT_WINDOW_MS` | Rate limit window in ms |
+| `BCRYPT_ROUNDS` | Password hash cost (default `10`) |
 
 ### Authentication (when installed)
 

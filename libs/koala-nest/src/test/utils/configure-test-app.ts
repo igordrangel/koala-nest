@@ -1,17 +1,11 @@
+import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
 import { ErrorsFilter } from '@/host/filters/errors.filter';
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { INestApplication } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
 
 export function setupTestApp(app: INestApplication) {
-  app.use(cookieParser());
-
-  app.enableCors({
-    credentials: true,
-    origin: true,
-    optionsSuccessStatus: 200,
-  });
+  applyHttpMiddleware(app);
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   const loggingService = app.get(ILoggingService);

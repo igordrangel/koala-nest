@@ -38,6 +38,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 
 ## Host
 
+- [HTTP middleware](markdown/en/host/http-middleware.md): CORS, cookies, rate limit, and HTTP bootstrap via applyHttpMiddleware.
 - [Controllers](markdown/en/host/controllers.md): Thin HTTP controllers that delegate to handlers.
 - [Routes and tags](markdown/en/host/routes.md): Centralized route configuration with RouterConfigBase.
 - [Error handling](markdown/en/host/error-handling.md): Global ErrorsFilter for Zod, TypeORM, and internal errors.

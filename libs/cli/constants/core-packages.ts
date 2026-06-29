@@ -9,7 +9,10 @@ export const CORE_PACKAGES = [
   'pg',
   'zod',
   '@scalar/nestjs-api-reference',
+  'cookie-parser',
 ] as const;
+
+export const CORE_DEV_PACKAGES = ['@types/cookie-parser'] as const;
 
 /** Redis — instalado ao selecionar Cache (Redis). */
 export const CACHE_PACKAGES = ['ioredis'] as const;
@@ -20,14 +23,10 @@ export const AUTH_PACKAGES = [
   '@nestjs/passport',
   'passport',
   'passport-jwt',
-  'cookie-parser',
   'bcrypt',
 ] as const;
 
-export const AUTH_DEV_PACKAGES = [
-  '@types/cookie-parser',
-  '@types/bcrypt',
-] as const;
+export const AUTH_DEV_PACKAGES = ['@types/bcrypt'] as const;
 
 /** Jobs internos com expressão cron. */
 export const CRON_PACKAGES = ['cron-parser'] as const;

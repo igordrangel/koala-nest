@@ -30,18 +30,18 @@ export class PersonRepository
     return this.repository
       .findAndCount({
         where,
-        order: query.generateOrderBy(),
+        order: query.toFindOptionsOrder(),
         skip: query.skip(),
         take: query.limit,
       })
       .then(([items, count]) => ({
-        items,
+        items: this.normalizeEntities(items),
         count,
       }));
   }
 
   findById(id: number): Promise<Person | null> {
-    return this.repository.findOne({
+    return this.findOneNormalized({
       where: { id },
       relations: { address: true, contacts: true },
     });

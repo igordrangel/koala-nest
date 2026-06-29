@@ -2,6 +2,7 @@ import {
   AUTH_DEV_PACKAGES,
   AUTH_PACKAGES,
   CACHE_PACKAGES,
+  CORE_DEV_PACKAGES,
   CORE_PACKAGES,
   CRON_PACKAGES,
   devAddFlag,
@@ -233,6 +234,11 @@ export async function installModule(
       install('src/infra/repositories/repository.base.ts', projectName);
       install('src/infra/repositories/repository.module.ts', projectName);
       install('src/infra/infra.module.ts', projectName);
+      install('src/core/http/rate-limit.middleware.ts', projectName);
+      install('src/core/utils/resolve-cors-origins.ts', projectName);
+      install('src/host/bootstrap/apply-http-middleware.ts', projectName);
+      install('src/test/core/http/rate-limit.middleware.spec.ts', projectName);
+      install('src/test/core/resolve-cors-origins.spec.ts', projectName);
       install('src/test', projectName);
 
       rmSync(
@@ -263,10 +269,6 @@ export async function installModule(
         ),
         { force: true },
       );
-      rmSync(path.join(resolveProjectPath(projectName), 'src/host/bootstrap'), {
-        recursive: true,
-        force: true,
-      });
       rmSync(
         path.join(
           resolveProjectPath(projectName),
@@ -330,10 +332,9 @@ export async function installModule(
       }
 
       patchInfraModuleFile(projectName, false);
-      patchMainFile(projectName, stripMainOptionalFeatures);
 
       if (!options.skipPackages) {
-        await installPackages(projectName, CORE_PACKAGES);
+        await installPackages(projectName, CORE_PACKAGES, CORE_DEV_PACKAGES);
       }
 
       if (template === Template.DEFAULT) {

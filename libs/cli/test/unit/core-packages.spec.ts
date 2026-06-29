@@ -6,6 +6,7 @@ import {
   AUTH_DEV_PACKAGES,
   AUTH_PACKAGES,
   CACHE_PACKAGES,
+  CORE_DEV_PACKAGES,
   CORE_PACKAGES,
   CRON_PACKAGES,
   HEALTH_PACKAGES,
@@ -22,7 +23,7 @@ describe('core-packages', () => {
   it('instala apenas dependências essenciais no core', () => {
     expect(CORE_PACKAGES).toContain('@koalarx/utils');
     expect(CORE_PACKAGES).toContain('@scalar/nestjs-api-reference');
-    expect(CORE_PACKAGES).not.toContain('cookie-parser');
+    expect(CORE_PACKAGES).toContain('cookie-parser');
     expect(CORE_PACKAGES).not.toContain('cron-parser');
     expect(CORE_PACKAGES).not.toContain('ioredis');
     expect(CORE_PACKAGES).not.toContain('@nestjs/terminus');
@@ -31,11 +32,12 @@ describe('core-packages', () => {
 
   it('agrupa pacotes por feature', () => {
     expect(AUTH_PACKAGES).toContain('@nestjs/jwt');
-    expect(AUTH_PACKAGES).toContain('cookie-parser');
+    expect(AUTH_PACKAGES).not.toContain('cookie-parser');
     expect(CACHE_PACKAGES).toEqual(['ioredis']);
     expect(CRON_PACKAGES).toEqual(['cron-parser']);
     expect(HEALTH_PACKAGES).toEqual(['@nestjs/terminus', '@nestjs/axios']);
-    expect(AUTH_DEV_PACKAGES).toContain('@types/cookie-parser');
+    expect(CORE_DEV_PACKAGES).toContain('@types/cookie-parser');
+    expect(AUTH_DEV_PACKAGES).not.toContain('@types/cookie-parser');
   });
 
   it('usa flag de dev dependency por gerenciador', () => {

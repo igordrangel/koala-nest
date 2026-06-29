@@ -90,7 +90,7 @@ import { defineDocumentation } from './open-api/define-documentation';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ... CORS, filters ...
+  // applyHttpMiddleware(app) — see HTTP middleware guide
 
   defineDocumentation(app);
 

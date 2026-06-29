@@ -9,12 +9,17 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
+  HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string().optional(),
   CACHE_KEY_PREFIX: z.string().optional(),
   CRON_JOBS_ENABLED: envBooleanSchema(false),
   BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
+  RATE_LIMIT_MAX: z.coerce.number().default(0),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
+  CORS_ORIGINS: z.string().optional(),
+  BCRYPT_ROUNDS: z.coerce.number().min(4).max(15).default(10),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -25,6 +30,8 @@ export function validateEnvConfig(config: Record<string, unknown>): Env {
 `;
 
 const envExampleWithoutAuth = `PORT=3000
+# Endereço de bind do servidor (Docker/K8s). URLs públicas usam API_HOST.
+HOST=0.0.0.0
 NODE_ENV=develop
 DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 
@@ -37,6 +44,16 @@ DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 # Cron jobs internos. Ative com \`kl-nest add cron\`.
 CRON_JOBS_ENABLED=false
 BOOTSTRAP_DELAY_MS=0
+
+# Rate limit (0 = desabilitado)
+# RATE_LIMIT_MAX=300
+# RATE_LIMIT_WINDOW_MS=60000
+
+# CORS — aberto por padrão; restrinja com origens separadas por vírgula se necessário
+# CORS_ORIGINS=http://localhost:4200,https://app.example.com
+
+# Custo do bcrypt (padrão 10)
+# BCRYPT_ROUNDS=10
 `;
 
 export function stripEnvAuth(projectName: string) {
@@ -64,12 +81,17 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
+  HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
   REDIS_CONNECTION_STRING: z.string().optional(),
   CACHE_KEY_PREFIX: z.string().optional(),
   CRON_JOBS_ENABLED: envBooleanSchema(false),
   BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
+  RATE_LIMIT_MAX: z.coerce.number().default(0),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
+  CORS_ORIGINS: z.string().optional(),
+  BCRYPT_ROUNDS: z.coerce.number().min(4).max(15).default(10),
   JWT_PRIVATE_KEY: z.string().optional(),
   JWT_PUBLIC_KEY: z.string().optional(),
   JWT_ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),
@@ -85,6 +107,8 @@ export function validateEnvConfig(config: Record<string, unknown>): Env {
 `;
 
 const envExampleJwtOnly = `PORT=3000
+# Endereço de bind do servidor (Docker/K8s). URLs públicas usam API_HOST.
+HOST=0.0.0.0
 NODE_ENV=develop
 DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 
@@ -94,6 +118,16 @@ DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 
 CRON_JOBS_ENABLED=false
 BOOTSTRAP_DELAY_MS=0
+
+# Rate limit (0 = desabilitado)
+# RATE_LIMIT_MAX=300
+# RATE_LIMIT_WINDOW_MS=60000
+
+# CORS — aberto por padrão; restrinja com origens separadas por vírgula se necessário
+# CORS_ORIGINS=http://localhost:4200,https://app.example.com
+
+# Custo do bcrypt (padrão 10)
+# BCRYPT_ROUNDS=10
 
 # JWT (RS256 — chaves em base64)
 JWT_PRIVATE_KEY=

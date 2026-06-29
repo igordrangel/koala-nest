@@ -1,15 +1,17 @@
 import { CronExpression } from '@/core/constants/cron.constants';
 import { DeletePersonHandler } from '@/application/person/delete/delete-person.handler';
-import { ReadManyPersonHandler } from '@/application/person/read-many/read-many-person.handler';
-import { ReadManyPersonRequest } from '@/application/person/read-many/read-many-person.request';
 import {
   CronJobHandlerBase,
   CronJobSettings,
   cronJobSettings,
 } from '@/core/background-services/cron-service/cron-job.handler.base';
+import { PersonQueryDto } from '@/domain/dtos/person-query.dto';
 import { ILoggingService } from '@/domain/common/ilogging.service';
 import { IRedLockService } from '@/domain/common/ired-lock.service';
+import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import { Injectable, Logger } from '@nestjs/common';
+
+const DELETE_INACTIVE_BATCH_SIZE = 100;
 
 @Injectable()
 export class DeleteInactiveJob extends CronJobHandlerBase {
@@ -18,7 +20,7 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
   constructor(
     redlockService: IRedLockService,
     loggingService: ILoggingService,
-    private readonly readManyPerson: ReadManyPersonHandler,
+    private readonly repository: IPersonRepository,
     private readonly deletePerson: DeletePersonHandler,
   ) {
     super(redlockService, loggingService);
@@ -31,27 +33,42 @@ export class DeleteInactiveJob extends CronJobHandlerBase {
   protected async run(): Promise<void> {
     this.logger.debug('Iniciando remoção de pessoas inativas...');
 
-    const request = new ReadManyPersonRequest();
-    request.active = false;
+    let page = 0;
+    let totalDeleted = 0;
 
-    const result = await this.readManyPerson.handle(request);
+    while (true) {
+      const query = PersonQueryDto.from({
+        active: false,
+        page,
+        limit: DELETE_INACTIVE_BATCH_SIZE,
+      });
+      const { items, count } = await this.repository.findMany(query);
 
-    if (result.items.length === 0) {
+      if (items.length === 0) {
+        break;
+      }
+
+      this.logger.debug('Removendo pessoas inativas...', items.length);
+
+      for (const person of items) {
+        await this.deletePerson.handle(person.id);
+      }
+
+      totalDeleted += items.length;
+      page += 1;
+
+      if (page * DELETE_INACTIVE_BATCH_SIZE >= count) {
+        break;
+      }
+    }
+
+    if (totalDeleted === 0) {
       this.logger.log('Nenhuma pessoa inativa encontrada.');
       this.logger.log('Job concluído sem ação.');
       return;
     }
 
-    this.logger.debug('Removendo pessoas inativas...', result.items.length);
-
-    for (const person of result.items) {
-      await this.deletePerson.handle(person.id);
-    }
-
-    this.logger.log(
-      'Pessoas inativas removidas com sucesso.',
-      result.items.length,
-    );
+    this.logger.log('Pessoas inativas removidas com sucesso.', totalDeleted);
     this.logger.log('Job concluído.');
   }
 }
