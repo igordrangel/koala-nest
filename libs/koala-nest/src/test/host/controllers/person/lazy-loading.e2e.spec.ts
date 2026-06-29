@@ -10,11 +10,13 @@ import { IPersonRepository } from '@/domain/repositories/iperson.repository';
 import { Test, TestingModule } from '@nestjs/testing';
 
 /**
- * Valida carregamento explícito de relacionamentos no repositório.
- * - findById: relations { address, contacts }
- * - findMany: sem relations (listagem leve; contacts normalizado como [])
+ * Testes E2E do RepositoryBase - Lazy Loading
+ *
+ * Valida o carregamento de relacionamentos por cenário:
+ * - findById: carrega address e contacts (detalhe da entidade)
+ * - findMany: retorna apenas dados escalares (performance em listagens)
  */
-describe('PersonRepository - Relations (E2E)', () => {
+describe('RepositoryBase - Lazy Loading (E2E)', () => {
   let moduleRef: TestingModule;
 
   beforeAll(async () => {
@@ -23,8 +25,8 @@ describe('PersonRepository - Relations (E2E)', () => {
     }).compile();
   });
 
-  describe('findById - relations explícitas', () => {
-    it('should load person with address and contacts using findById', async () => {
+  describe('findById - Carregamento de Relacionamentos', () => {
+    it('should load person with all relationships using findById', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
       const created = await createHandler.handle({
         name: 'João Silva',
@@ -51,10 +53,30 @@ describe('PersonRepository - Relations (E2E)', () => {
         'joao@example.com',
       ]);
     });
+
+    it('should have all relationships loaded and accessible', async () => {
+      const createHandler = moduleRef.get(CreatePersonHandler);
+      const created = await createHandler.handle({
+        name: 'Test Person',
+        contacts: [{ contact: 'test@example.com' }],
+        address: {
+          address: 'Test Address',
+        },
+      });
+
+      const readHandler = moduleRef.get(ReadPersonHandler);
+      const person = await readHandler.handle(created.id);
+
+      expect(person.id).toBe(created.id);
+      expect(person.address).toBeDefined();
+      expect(person.address.address).toBeDefined();
+      expect(person.contacts).toBeDefined();
+      expect(person.contacts.length).toBeGreaterThan(0);
+    });
   });
 
-  describe('findMany - listagem sem relations', () => {
-    it('should return persons without loading relations in findMany', async () => {
+  describe('findMany - Listagem sem Relacionamentos', () => {
+    it('should return persons without loading relationships in findMany', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
 
       for (let i = 0; i < 2; i++) {
@@ -76,11 +98,12 @@ describe('PersonRepository - Relations (E2E)', () => {
       const person = items[0];
       expect(person.id).toBeDefined();
       expect(person.name).toBeDefined();
+      expect(person.active).toBeDefined();
       expect(person.address).toBeUndefined();
-      expect(person.contacts ?? []).toHaveLength(0);
+      expect(person.contacts).toBeUndefined();
     });
 
-    it('should list via handler without requiring relations on entities', async () => {
+    it('should load multiple persons efficiently', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
 
       const createdIds: number[] = [];
@@ -95,6 +118,8 @@ describe('PersonRepository - Relations (E2E)', () => {
         createdIds.push(result.id);
       }
 
+      expect(createdIds.length).toBe(3);
+
       const readManyHandler = moduleRef.get(ReadManyPersonHandler);
       const result = await readManyHandler.handle(new ReadManyPersonRequest());
 
@@ -105,15 +130,24 @@ describe('PersonRepository - Relations (E2E)', () => {
       createdIds.forEach((id) => {
         expect(returnedIds).toContain(id);
       });
+
+      result.items.forEach((person) => {
+        expect(person.id).toBeDefined();
+        expect(person.name).toBeDefined();
+        expect(person.active).toBeDefined();
+      });
     });
   });
 
-  describe('findById vs findMany', () => {
-    it('findById carrega relations; findMany retorna entidade leve', async () => {
+  describe('Comparação entre findById e findMany', () => {
+    it('should load relationships only in findById', async () => {
       const createHandler = moduleRef.get(CreatePersonHandler);
       const created = await createHandler.handle({
         name: 'Comparação Test',
-        contacts: [{ contact: 'first@example.com' }],
+        contacts: [
+          { contact: 'first@example.com' },
+          { contact: 'second@example.com' },
+        ],
         address: {
           address: 'Rua Comparação, 789',
         },
@@ -131,11 +165,13 @@ describe('PersonRepository - Relations (E2E)', () => {
       expect(personFromFindMany).toBeDefined();
       expect(personFromFindById.id).toBe(personFromFindMany!.id);
       expect(personFromFindById.name).toBe(personFromFindMany!.name);
+
       expect(personFromFindById.address).toBeDefined();
       expect(personFromFindById.contacts).toBeDefined();
       expect(personFromFindById.contacts.length).toBeGreaterThan(0);
+
       expect(personFromFindMany?.address).toBeUndefined();
-      expect(personFromFindMany?.contacts ?? []).toHaveLength(0);
+      expect(personFromFindMany?.contacts).toBeUndefined();
     });
   });
 });

@@ -1,13 +1,4 @@
 import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import path from 'node:path';
-import {
   AUTH_DEV_PACKAGES,
   AUTH_PACKAGES,
   CACHE_PACKAGES,
@@ -18,13 +9,24 @@ import {
   HEALTH_PACKAGES,
 } from '@cli/constants/core-packages';
 import {
-  AuthChoice,
   AuthStrategy,
   ExtraFeature,
   InstallModule as Modules,
   Template,
 } from '@cli/constants/domain';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import path from 'node:path';
+import { getPackageManager } from './get-package-manager';
 import { getSourceCodePath } from './get-source-code-path';
+import { patchAuthInstall } from './patch-auth-install';
+import { restoreDefineDocumentationWithAuth } from './patch-define-documentation';
 import {
   patchAppModuleForHealth,
   patchHealthCheckWithoutRedis,
@@ -34,31 +36,20 @@ import {
   patchInfraModuleForCache,
   stripInfraModuleCache,
 } from './patch-infra-module';
-import { patchAuthInstall } from './patch-auth-install';
-import {
-  patchMainForAuth,
-} from './patch-main';
-import { restoreDefineDocumentationWithAuth } from './patch-define-documentation';
+import { patchMainForAuth } from './patch-main';
 import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
 import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
 import { runCommand } from './run-command';
-import { getPackageManager } from './get-package-manager';
 
-export type {
-  AuthChoice,
-  AuthStrategy,
-  ExtraFeature,
-  Template,
-} from '@cli/constants/domain';
 export {
   AuthChoice,
   AuthStrategy,
   CRUD_BUNDLED_FEATURES,
   ExtraFeature,
-  InstallModule as Modules,
   mapExtraFeatureToModule,
   mergeCrudSampleFeatures,
+  InstallModule as Modules,
   resolveNewProjectOptions,
   Template,
 } from '@cli/constants/domain';

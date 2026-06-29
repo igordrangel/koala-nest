@@ -1,13 +1,13 @@
+import { EntityBase } from '@/core/base/entity.base';
+import { Entity } from '@/core/database/entity';
 import { AutoMap } from '@/core/tools/mapping';
 import {
   Column,
-  Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
   type Relation,
 } from 'typeorm';
 import type { Person } from './person';
-import { EntityBase } from '@/core/base/entity.base';
 
 @Entity('person_contact')
 export class PersonContact extends EntityBase<PersonContact> {

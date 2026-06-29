@@ -6,7 +6,7 @@ const defaultAppTestModule = `import { envSchema } from '@/core/env';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { InfraModule } from '@/infra/infra.module';
-import { e2eDatabaseUrl } from '@/test/e2e-context';
+import { e2eDatabaseUrl, e2eSchemaName } from '@/test/e2e-context';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { e2eDatabaseUrl } from '@/test/e2e-context';
           PORT: 3000,
           NODE_ENV: 'test',
           DATABASE_URL: e2eDatabaseUrl,
+          DATABASE_SCHEMA: e2eSchemaName,
         }),
     }),
     InfraModule,

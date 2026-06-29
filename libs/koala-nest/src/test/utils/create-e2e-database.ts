@@ -2,7 +2,7 @@ import { Type } from '@nestjs/common';
 import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { setE2EDatabaseUrl } from '../e2e-context';
+import { setE2EDatabaseContext } from '../e2e-context';
 import { E2EDatabaseClient } from './e2e-database-client';
 
 function resolveMigrationRunner(): string {
@@ -19,35 +19,37 @@ function resolveMigrationRunner(): string {
   return 'node --import ts-node/register/transpile-only';
 }
 
-function generateUniqueDatabaseURL() {
-  const schemaId = randomUUID();
+function generateUniqueSchemaConfig() {
+  const schemaName = `e2e_${randomUUID().replace(/-/g, '_')}`;
 
   if (!process.env.DATABASE_URL) {
     throw new Error('Please provide a DATABASE_URL environment variable');
   }
 
-  const url = new URL(process.env.DATABASE_URL);
-  url.pathname = `/${schemaId}`;
-
   return {
-    url: url.toString(),
-    schemaId,
+    url: process.env.DATABASE_URL,
+    schemaName,
   };
 }
 
 export async function createE2EDatabase<T extends E2EDatabaseClient>(
   clientInstance: Type<T>,
 ) {
-  const { url, schemaId } = generateUniqueDatabaseURL();
+  const { url, schemaName } = generateUniqueSchemaConfig();
 
-  setE2EDatabaseUrl(url);
+  setE2EDatabaseContext(url, schemaName);
+
+  const client = new clientInstance(url, schemaName);
 
   try {
-    const client = new clientInstance(url, schemaId);
+    await client.createSchema(schemaName);
 
-    await client.createDatabase(schemaId);
-
-    const env = { ...process.env, DATABASE_URL: url, NODE_ENV: 'test' };
+    const env = {
+      ...process.env,
+      DATABASE_URL: url,
+      DATABASE_SCHEMA: schemaName,
+      NODE_ENV: 'test',
+    };
     const migrationRunner = resolveMigrationRunner();
     execSync(
       `${migrationRunner} ./node_modules/typeorm/cli.js migration:run -d ./src/infra/database/migrations/migration-datasource.ts`,
@@ -58,9 +60,15 @@ export async function createE2EDatabase<T extends E2EDatabaseClient>(
       },
     );
 
-    return { client, schemaId };
+    return { client, schemaName };
   } catch (error) {
-    console.error('Erro ao criar banco de dados e2e:', error);
+    try {
+      await client.dropSchema();
+    } catch {
+      // schema pode não ter sido criado
+    }
+
+    console.error('Erro ao preparar schema e2e:', error);
     throw error;
   }
 }
