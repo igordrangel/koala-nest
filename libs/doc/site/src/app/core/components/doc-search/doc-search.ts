@@ -47,11 +47,13 @@ export class DocSearch {
     return [...groups.entries()];
   });
 
-  readonly flatResults = computed(() => this.results());
+  readonly flatResults = computed(() =>
+    this.groupedResults().flatMap(([, items]) => items),
+  );
 
   constructor() {
     effect(() => {
-      this.query();
+      this.flatResults();
       this.activeIndex.set(0);
     });
 
