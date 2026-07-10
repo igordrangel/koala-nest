@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
 import { UI_COPY } from '../../i18n/ui-copy';
 import { DocsService } from '../../services/docs.service';
 import { LocaleService } from '../../services/locale.service';
-import { shouldOpenSearchDialog } from '../../utils/doc-ui';
+import { shouldCloseSearchDialog, shouldOpenSearchDialog } from '../../utils/doc-ui';
 import type { DocSearchResult } from './doc-search.types';
 
 @Component({
@@ -66,6 +66,12 @@ export class DocSearch {
 
   @HostListener('document:keydown', ['$event'])
   onGlobalKeydown(event: KeyboardEvent) {
+    if (this.open() && shouldCloseSearchDialog(event)) {
+      event.preventDefault();
+      this.close();
+      return;
+    }
+
     if (shouldOpenSearchDialog(event)) {
       event.preventDefault();
       this.toggle();
@@ -93,12 +99,6 @@ export class DocSearch {
 
   onKeydown(event: KeyboardEvent) {
     const total = this.flatResults().length;
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.close();
-      return;
-    }
 
     if (!total) return;
 
