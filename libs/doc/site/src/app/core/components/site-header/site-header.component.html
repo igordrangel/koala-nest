@@ -35,45 +35,6 @@
   </a>
 </ng-template>
 
-<ng-template #externalLinks>
-  <a
-    href="https://www.npmjs.com/package/@koalarx/nest"
-    target="_blank"
-    appButton
-    class="justify-start lg:justify-center md:inline-flex"
-    btnSize="sm"
-    btnVariant="ghost"
-    (click)="closeMobileMenu()"
-  >
-    @koalarx/nest
-    <i class="fa-solid fa-arrow-up-long opacity-50 rotate-45 text-[0.6rem]"></i>
-  </a>
-  <a
-    href="https://www.npmjs.com/package/@koalarx/utils"
-    target="_blank"
-    appButton
-    class="justify-start lg:justify-center md:inline-flex"
-    btnSize="sm"
-    btnVariant="ghost"
-    (click)="closeMobileMenu()"
-  >
-    @koalarx/utils
-    <i class="fa-solid fa-arrow-up-long opacity-50 rotate-45 text-[0.6rem]"></i>
-  </a>
-  <a
-    href="https://koalarx.com"
-    target="_blank"
-    appButton
-    class="justify-start lg:justify-center md:inline-flex"
-    btnSize="sm"
-    btnVariant="ghost"
-    (click)="closeMobileMenu()"
-  >
-    @koalarx/ui-cli
-    <i class="fa-solid fa-arrow-up-long opacity-50 rotate-45 text-[0.6rem]"></i>
-  </a>
-</ng-template>
-
 @if (mobileMenuVisible()) {
   <button
     class="fixed inset-y-0 right-0 z-40 bg-black/40 transition-opacity duration-200 ease-out lg:hidden pointer-events-auto"
@@ -100,7 +61,6 @@
   <div class="px-3 py-3 border-t border-base-300 shrink-0">
     <div class="grid grid-cols-1 gap-2">
       <ng-container *ngTemplateOutlet="navButtons" />
-      <ng-container *ngTemplateOutlet="externalLinks" />
     </div>
 
     <div class="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-base-300">
@@ -148,28 +108,7 @@
   </div>
 
   <div class="flex items-center min-w-0 gap-1 ml-auto shrink-0">
-    <button
-      class="flex md:hidden items-center justify-center rounded-lg border border-base-300 bg-base-200/60 size-8 opacity-70 hover:opacity-100 transition-opacity mr-1"
-      (click)="triggerSearch()"
-      [attr.aria-label]="copy().search"
-      type="button"
-    >
-      <i class="fa-solid fa-magnifying-glass text-xs"></i>
-    </button>
-
-    <button
-      class="hidden md:flex items-center gap-2 rounded-lg border border-base-300 bg-base-200/60 px-3 py-1.5 text-sm opacity-70 hover:opacity-100 transition-opacity mr-2"
-      (click)="triggerSearch()"
-      type="button"
-    >
-      <i class="fa-solid fa-magnifying-glass text-xs"></i>
-      <span>{{ copy().search }}</span>
-      <kbd class="text-xs opacity-60">Ctrl K</kbd>
-    </button>
-
-    <div class="hidden md:flex items-center gap-1">
-      <ng-container *ngTemplateOutlet="externalLinks" />
-    </div>
+    <app-doc-search class="mr-1" />
 
     <div class="hidden md:flex items-center gap-0.5 ml-1 mr-1 rounded-lg border border-base-300 p-0.5">
       <button

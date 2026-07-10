@@ -9,15 +9,23 @@ description: Integração com @koalarx/utils — delay, CPF/CNPJ, strings, datas
 
 # Koala Utils
 
-O template inclui [`@koalarx/utils`](https://www.npmjs.com/package/@koalarx/utils) como dependência oficial. A biblioteca concentra validadores, conversores e operadores reutilizáveis (`KlString`, `KlDelay`, `KlDate`, `KlArray`, etc.).
+O template inclui [`@koalarx/utils`](https://utils.koalarx.com/) **≥ 5** como dependência oficial. A biblioteca concentra validadores, conversores e operadores reutilizáveis (`KlString`, `KlDelay`, `KlDate`, `KlArray`, etc.).
 
 ## Instalação
 
 Já vem no `package.json` do template e é instalada automaticamente pelo `kl-nest new` (módulo **core**). Em projetos existentes:
 
 ```bash
-bun add @koalarx/utils
+bun add @koalarx/utils@^5.0.0
 ```
+
+## Major 5.0
+
+- Removido o subpath `@koalarx/utils/light`
+- Feriados são opt-in: instale o peer `date-holidays` e faça `import '@koalarx/utils/holidays'` (o template não usa feriados por padrão)
+- `KlArray.map` / `KlString.split` passam a retornar `KlArray`
+- Novos subpaths: [`operators`](https://utils.koalarx.com/) (frontend) e [`prototypes`](https://utils.koalarx.com/) (backend, opt-in no `main`)
+- Guia completo: [Migração 5.0](https://utils.koalarx.com/markdown/pt/guias/migracao-5.md) · índice LLM: [llms.txt](https://utils.koalarx.com/llms.txt)
 
 ## Onde o template usa
 
@@ -61,7 +69,7 @@ Reexportado pelo barrel `@/core/schemas` para validators de domínio.
 
 ## Outros operadores úteis
 
-Importe subpaths conforme a necessidade:
+Importe subpaths conforme a necessidade (o template mantém imports explícitos do core, sem `prototypes` globais):
 
 ```typescript
 import { KlArray } from '@koalarx/utils/KlArray';
@@ -70,7 +78,7 @@ import { KlCron } from '@koalarx/utils/KlCron';
 import { toCamelCase, randomString } from '@koalarx/utils/KlString';
 ```
 
-Consulte o [README do pacote](https://www.npmjs.com/package/@koalarx/utils) para a lista completa de métodos.
+Consulte a [documentação do @koalarx/utils](https://utils.koalarx.com/) (índice para LLMs: [llms.txt](https://utils.koalarx.com/llms.txt)) para a lista completa de métodos.
 
 ## Boas práticas
 
