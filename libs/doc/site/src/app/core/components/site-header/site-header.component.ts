@@ -6,12 +6,12 @@ import { filter } from 'rxjs';
 import { Button } from '@/shared/components/button';
 import { APP_VERSION } from '../../constants/app-version';
 import { UI_COPY } from '../../i18n/ui-copy';
-import { CopyFeedbackButtonComponent } from '../copy-feedback-button/copy-feedback-button.component';
-import { DocsSidebarComponent } from '../docs-sidebar/docs-sidebar.component';
-import { GithubStarsComponent } from '../github-stars/github-stars.component';
 import { absoluteSiteUrl } from '../../config/site-seo';
 import { LocaleService } from '../../services/locale.service';
-import { SearchService } from '../../services/search.service';
+import { CopyFeedbackButtonComponent } from '../copy-feedback-button/copy-feedback-button.component';
+import { DocSearch } from '../doc-search';
+import { DocsSidebarComponent } from '../docs-sidebar/docs-sidebar.component';
+import { GithubStarsComponent } from '../github-stars/github-stars.component';
 
 @Component({
   selector: 'app-site-header',
@@ -21,13 +21,13 @@ import { SearchService } from '../../services/search.service';
     RouterLink,
     RouterLinkActive,
     DocsSidebarComponent,
+    DocSearch,
     GithubStarsComponent,
     CopyFeedbackButtonComponent,
     NgTemplateOutlet,
   ],
 })
 export class SiteHeaderComponent {
-  private readonly searchService = inject(SearchService);
   private readonly localeService = inject(LocaleService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -75,9 +75,5 @@ export class SiteHeaderComponent {
   closeMobileMenu() {
     this.mobileMenuOpen.set(false);
     setTimeout(() => this.mobileMenuVisible.set(false), 200);
-  }
-
-  triggerSearch() {
-    this.searchService.show();
   }
 }

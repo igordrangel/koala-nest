@@ -21,7 +21,7 @@ import { getPackageManager } from '@cli/utils/get-package-manager.ts';
 
 describe('core-packages', () => {
   it('instala apenas dependências essenciais no core', () => {
-    expect(CORE_PACKAGES).toContain('@koalarx/utils');
+    expect(CORE_PACKAGES).toContain('@koalarx/utils@^5.0.0');
     expect(CORE_PACKAGES).toContain('@scalar/nestjs-api-reference');
     expect(CORE_PACKAGES).toContain('cookie-parser');
     expect(CORE_PACKAGES).not.toContain('cron-parser');

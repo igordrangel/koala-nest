@@ -9,15 +9,23 @@ description: Integration with @koalarx/utils — delay, CPF/CNPJ, strings, dates
 
 # Koala Utils
 
-The template ships with [`@koalarx/utils`](https://utils.koalarx.com/) as an official dependency. The library provides reusable validators, converters, and operators (`KlString`, `KlDelay`, `KlDate`, `KlArray`, etc.).
+The template ships with [`@koalarx/utils`](https://utils.koalarx.com/) **≥ 5** as an official dependency. The library provides reusable validators, converters, and operators (`KlString`, `KlDelay`, `KlDate`, `KlArray`, etc.).
 
 ## Installation
 
 It is already listed in the template `package.json` and installed automatically by `kl-nest new` ( **core** module). For existing projects:
 
 ```bash
-bun add @koalarx/utils
+bun add @koalarx/utils@^5.0.0
 ```
+
+## Major 5.0
+
+- Removed the `@koalarx/utils/light` subpath
+- Holidays are opt-in: install the `date-holidays` peer and `import '@koalarx/utils/holidays'` (the template does not use holidays by default)
+- `KlArray.map` / `KlString.split` now return `KlArray`
+- New subpaths: [`operators`](https://utils.koalarx.com/) (frontend) and [`prototypes`](https://utils.koalarx.com/) (backend, opt-in in `main`)
+- Full guide: [Migration 5.0](https://utils.koalarx.com/markdown/en/guides/migration-5.md) · LLM index: [llms.txt](https://utils.koalarx.com/llms.txt)
 
 ## Where the template uses it
 
@@ -61,7 +69,7 @@ Re-exported through the `@/core/schemas` barrel for domain validators.
 
 ## Other useful operators
 
-Import subpaths as needed:
+Import subpaths as needed (the template keeps explicit core imports, without global `prototypes`):
 
 ```typescript
 import { KlArray } from '@koalarx/utils/KlArray';

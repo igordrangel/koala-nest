@@ -32,6 +32,10 @@ export class DocsService {
     const term = query.trim().toLowerCase();
     if (!term) return [];
 
+    const categoryLabels = new Map(
+      this.navigation().map((section) => [section.category, section.label]),
+    );
+
     return this.docs()
       .filter((doc) => {
         const haystack = [doc.title, doc.description, doc.content, doc.category]
@@ -41,9 +45,11 @@ export class DocsService {
       })
       .slice(0, 12)
       .map((doc) => ({
+        id: doc.docKey,
         title: doc.title,
-        description: doc.description,
+        category: categoryLabels.get(doc.category) ?? doc.category,
         route: doc.route,
+        snippet: doc.description,
       }));
   }
 }

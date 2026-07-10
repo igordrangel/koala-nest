@@ -2,7 +2,7 @@
   class="mt-25 mb-8 rounded-2xl border border-base-300 bg-base-100/80 backdrop-blur-sm"
   [class]="footerClass()"
 >
-  <div class="grid grid-cols-1 gap-6 p-6 md:grid-cols-4">
+  <div class="grid grid-cols-1 gap-6 p-6 md:grid-cols-2 lg:grid-cols-5">
     <div>
       <h4 class="mb-2 text-sm font-semibold opacity-90">Koala Nest</h4>
       <p class="text-sm opacity-70">
@@ -22,6 +22,45 @@
         <i class="fa-solid fa-arrow-up-long rotate-45 text-[0.6rem]"></i>
       </a>
       <p class="mt-2 text-xs opacity-60">{{ copy().footer.creatorRole }}</p>
+    </div>
+
+    <div>
+      <h4 class="mb-2 text-sm font-semibold opacity-90">{{ copy().footer.packages }}</h4>
+      <ul class="space-y-1 text-sm opacity-80">
+        <li>
+          <a
+            href="https://www.npmjs.com/package/@koalarx/nest"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 transition-opacity hover:opacity-100"
+          >
+            @koalarx/nest
+            <i class="fa-solid fa-arrow-up-long rotate-45 text-[0.6rem]"></i>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://utils.koalarx.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 transition-opacity hover:opacity-100"
+          >
+            @koalarx/utils
+            <i class="fa-solid fa-arrow-up-long rotate-45 text-[0.6rem]"></i>
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://koalarx.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 transition-opacity hover:opacity-100"
+          >
+            @koalarx/ui-cli
+            <i class="fa-solid fa-arrow-up-long rotate-45 text-[0.6rem]"></i>
+          </a>
+        </li>
+      </ul>
     </div>
 
     <div>

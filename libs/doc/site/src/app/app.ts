@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet, Scroll } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { DocsSidebarComponent } from './core/components/docs-sidebar/docs-sidebar.component';
-import { SearchDialogComponent } from './core/components/search-dialog/search-dialog.component';
 import { SiteFooterComponent } from './core/components/site-footer/site-footer.component';
 import { SiteHeaderComponent } from './core/components/site-header/site-header.component';
 import { UI_COPY } from './core/i18n/ui-copy';
@@ -18,7 +17,6 @@ import { SeoService } from './core/services/seo.service';
     RouterOutlet,
     SiteHeaderComponent,
     SiteFooterComponent,
-    SearchDialogComponent,
     DocsSidebarComponent,
   ],
 })

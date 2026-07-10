@@ -2,7 +2,7 @@ import type { PackageManager } from '@cli/types';
 
 /** Dependências sempre instaladas com o módulo core. */
 export const CORE_PACKAGES = [
-  '@koalarx/utils',
+  '@koalarx/utils@^5.0.0',
   '@nestjs/config',
   '@nestjs/swagger',
   'typeorm',
