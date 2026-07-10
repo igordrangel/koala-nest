@@ -38,7 +38,7 @@ O template **Exemplo de CRUD** sobe apenas `PersonModule`. Ao criar um projeto c
 
 | Pacote | Uso |
 |--------|-----|
-| [`@koalarx/utils`](https://www.npmjs.com/package/@koalarx/utils) | `delay`, validação/máscara CPF-CNPJ, utilitários de string/data |
+| [`@koalarx/utils`](https://utils.koalarx.com/) | `delay`, validação/máscara CPF-CNPJ, utilitários de string/data |
 
 Veja a [documentação Koala Utils](../../doc/markdown/pt/core/koala-utils.md).
 

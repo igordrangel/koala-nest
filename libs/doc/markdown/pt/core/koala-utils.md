@@ -9,7 +9,7 @@ description: Integração com @koalarx/utils — delay, CPF/CNPJ, strings, datas
 
 # Koala Utils
 
-O template inclui [`@koalarx/utils`](https://www.npmjs.com/package/@koalarx/utils) como dependência oficial. A biblioteca concentra validadores, conversores e operadores reutilizáveis (`KlString`, `KlDelay`, `KlDate`, `KlArray`, etc.).
+O template inclui [`@koalarx/utils`](https://utils.koalarx.com/) como dependência oficial. A biblioteca concentra validadores, conversores e operadores reutilizáveis (`KlString`, `KlDelay`, `KlDate`, `KlArray`, etc.).
 
 ## Instalação
 
@@ -70,7 +70,7 @@ import { KlCron } from '@koalarx/utils/KlCron';
 import { toCamelCase, randomString } from '@koalarx/utils/KlString';
 ```
 
-Consulte o [README do pacote](https://www.npmjs.com/package/@koalarx/utils) para a lista completa de métodos.
+Consulte a [documentação do @koalarx/utils](https://utils.koalarx.com/) (índice para LLMs: [llms.txt](https://utils.koalarx.com/llms.txt)) para a lista completa de métodos.
 
 ## Boas práticas
 
