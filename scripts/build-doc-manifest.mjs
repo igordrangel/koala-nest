@@ -10,6 +10,7 @@ import {
   supportedLocales,
   toPosix,
 } from '../libs/doc/shared/nav.mjs';
+import { writeSitemap } from '../libs/doc/site/scripts/build-sitemap.mjs';
 
 const docRoot = path.resolve('libs/doc');
 const markdownRoot = path.join(docRoot, 'markdown');
@@ -18,6 +19,7 @@ const appVersionPath = path.join(docRoot, 'site/src/app/core/constants/app-versi
 const txtRoot = path.join(docRoot, 'txt');
 const publicRoot = path.join(docRoot, 'site/public');
 const publicMarkdownRoot = path.join(publicRoot, 'markdown');
+const publicSitemapPath = path.join(publicRoot, 'sitemap.xml');
 
 function extractHeadings(body) {
   const headings = [];
@@ -230,6 +232,7 @@ fs.mkdirSync(publicRoot, { recursive: true });
 
 const markdownFiles = syncMarkdownToPublic();
 const appVersion = syncAppVersion();
+writeSitemap(manifest, publicSitemapPath);
 
 for (const locale of supportedLocales) {
   const llmsIndex = buildLlmsIndex(locales[locale].docs, locale);
@@ -244,3 +247,4 @@ const totalDocs = Object.values(locales).reduce((sum, l) => sum + l.docs.length,
 console.log(`Manifest gerado: ${totalDocs} tópicos (${supportedLocales.join(', ')}) → ${manifestPath}`);
 console.log(`Versão da doc sincronizada: v${appVersion} → ${appVersionPath}`);
 console.log(`Markdown publicado: ${markdownFiles} arquivos → ${publicMarkdownRoot}`);
+console.log(`Sitemap gerado → ${publicSitemapPath}`);
