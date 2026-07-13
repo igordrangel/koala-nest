@@ -2,7 +2,7 @@
 title: Authentication
 slug: authentication
 category: host
-docKey: host/authentication
+docKey: host/autenticacao
 order: 4
 description: JWT, global guards, public routes, and generic OAuth2.
 ---

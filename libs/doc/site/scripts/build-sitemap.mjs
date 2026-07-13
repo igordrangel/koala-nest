@@ -36,7 +36,6 @@ export function buildSitemapEntries(manifest) {
   const entries = [];
 
   for (const locale of manifest.supportedLocales) {
-    const alternateHome = locale === 'pt' ? '/en' : '/pt';
     entries.push({
       loc: absoluteUrl(`/${locale}`),
       alternates: [
@@ -48,9 +47,15 @@ export function buildSitemapEntries(manifest) {
 
     for (const doc of manifest.locales[locale].docs) {
       const loc = absoluteUrl(doc.route);
-      const alternate = doc.alternateRoute
-        ? absoluteUrl(doc.alternateRoute)
-        : absoluteUrl(alternateHome);
+      const hasTranslation =
+        Boolean(doc.alternateRoute) && doc.alternateRoute !== doc.route;
+
+      if (!hasTranslation) {
+        entries.push({ loc, alternates: [] });
+        continue;
+      }
+
+      const alternate = absoluteUrl(doc.alternateRoute);
       const ptHref = locale === 'pt' ? loc : alternate;
       const enHref = locale === 'en' ? loc : alternate;
 
@@ -76,8 +81,10 @@ export function buildSitemapEntries(manifest) {
 export function buildSitemapXml(entries) {
   const urls = entries
     .map((entry) => {
-      const links = xhtmlAlternates(entry.alternates);
-      return `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>\n${links}\n  </url>`;
+      const links = entry.alternates?.length
+        ? `\n${xhtmlAlternates(entry.alternates)}`
+        : '';
+      return `  <url>\n    <loc>${escapeXml(entry.loc)}</loc>${links}\n  </url>`;
     })
     .join('\n');
 
