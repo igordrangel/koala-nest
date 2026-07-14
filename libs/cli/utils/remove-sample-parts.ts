@@ -47,6 +47,14 @@ const partsToRemove: PartsToRemove[] = [
         from: 'providers: [{ provide: IUserRepository, useClass: UserRepository }],\n',
         to: '',
       },
+      {
+        from: 'exports: [\n    DatabaseModule,\n    IPersonRepository,\n    IUserRepository,\n    IApiKeyRepository,\n  ],',
+        to: 'exports: [DatabaseModule],',
+      },
+      {
+        from: 'exports: [\n    DatabaseModule,\n    IPersonRepository,\n    IUserRepository,\n  ],',
+        to: 'exports: [DatabaseModule],',
+      },
       { from: ', IPersonRepository', to: '' },
       { from: ', IUserRepository', to: '' },
       { from: ', IApiKeyRepository', to: '' },
