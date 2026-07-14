@@ -21,22 +21,16 @@ const publicRoot = path.join(docRoot, 'site/public');
 const publicMarkdownRoot = path.join(publicRoot, 'markdown');
 const publicSitemapPath = path.join(publicRoot, 'sitemap.xml');
 
-function extractHeadings(body) {
-  const headings = [];
-  for (const line of body.split('\n')) {
-    const match = line.match(/^(#{2,3})\s+(.+)$/);
-    if (!match) continue;
-    const level = match[1].length;
-    const text = match[2].replace(/\*\*/g, '').trim();
-    const id = text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    headings.push({ level, text, id });
-  }
-  return headings;
+/** Plain text for in-site search (not used for page rendering). */
+function toSearchText(body) {
+  return String(body ?? '')
+    .replace(/```[\s\S]*?```/g, (block) => block.replace(/```\w*\n?/g, ' ').replace(/```/g, ' '))
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*_~>|`]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function walkLocale(locale) {
@@ -60,8 +54,7 @@ function walkLocale(locale) {
           locale,
           mdRel: toPosix(path.join(locale, relPath)),
           route: `/${locale}/docs/${meta.category}/${meta.slug}`,
-          content: body.trim(),
-          headings: extractHeadings(body),
+          searchText: toSearchText(body),
         });
       }
     }
@@ -202,8 +195,7 @@ for (const locale of supportedLocales) {
       description: d.description ?? '',
       route: d.route,
       mdRel: d.mdRel,
-      content: d.content,
-      headings: d.headings,
+      searchText: d.searchText ?? '',
       alternateRoute: '',
     })),
   };

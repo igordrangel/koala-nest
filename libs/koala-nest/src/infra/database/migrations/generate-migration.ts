@@ -6,13 +6,30 @@ const timestamp = String(Date.now());
 const name = process.argv[2] ?? `Migration-${timestamp}`;
 
 const migrationPath = path.join('src/infra/database/migrations', name);
-const command = [
-  './node_modules/typeorm/cli.js',
-  'migration:generate',
-  migrationPath,
-  '-d',
-  './src/infra/database/migrations/migration-datasource.ts',
-];
+
+const isBun =
+  typeof process.versions.bun === 'string' ||
+  path.basename(process.execPath).includes('bun');
+
+const command = isBun
+  ? [
+      './node_modules/typeorm/cli.js',
+      'migration:generate',
+      migrationPath,
+      '-d',
+      './src/infra/database/migrations/migration-datasource.ts',
+    ]
+  : [
+      '--import',
+      'ts-node/register/transpile-only',
+      '--require',
+      'tsconfig-paths/register',
+      './node_modules/typeorm/cli.js',
+      'migration:generate',
+      migrationPath,
+      '-d',
+      './src/infra/database/migrations/migration-datasource.ts',
+    ];
 
 if (isAutoName) {
   command.push('-t', timestamp);

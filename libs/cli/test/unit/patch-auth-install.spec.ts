@@ -145,24 +145,6 @@ import { DatabaseModule } from '@/infra/database/database.module';
 export class RepositoryModule {}
 `;
 
-  const dataSourceFactory = `import { DataSource } from 'typeorm';
-import { EnvService } from '@/infra/common/env.service';
-
-export const DATA_SOURCE_PROVIDER_TOKEN = 'DATA_SOURCE';
-
-export async function dataSourceFactory(env: EnvService) {
-  const dataSource = new DataSource({
-    type: 'postgres',
-    url: env.get('DATABASE_URL'),
-    entities: [],
-  });
-
-  await dataSource.initialize();
-
-  return dataSource;
-}
-`;
-
   beforeEach(() => {
     tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-patch-auth-'));
     mkdirSync(path.join(tempDir, 'src/host/controllers/auth'), {
@@ -171,7 +153,6 @@ export async function dataSourceFactory(env: EnvService) {
     mkdirSync(path.join(tempDir, 'src/infra/repositories'), {
       recursive: true,
     });
-    mkdirSync(path.join(tempDir, 'src/infra/database'), { recursive: true });
 
     writeFileSync(
       path.join(tempDir, 'package.json'),
@@ -189,10 +170,6 @@ export async function dataSourceFactory(env: EnvService) {
     writeFileSync(
       path.join(tempDir, 'src/infra/repositories/repository.module.ts'),
       repositoryModule,
-    );
-    writeFileSync(
-      path.join(tempDir, 'src/infra/database/data-source-factory.ts'),
-      dataSourceFactory,
     );
 
     previousCwd = process.cwd();

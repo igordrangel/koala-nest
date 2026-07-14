@@ -97,31 +97,6 @@ export function patchRepositoryForAuth(content: string) {
   return patched;
 }
 
-export function patchDataSourceForAuth(content: string) {
-  if (content.includes('@/domain/entities/user/user')) {
-    return content;
-  }
-
-  return content
-    .replace(
-      "import { EnvService } from '@/infra/common/env.service';",
-      "import { User } from '@/domain/entities/user/user';\nimport { EnvService } from '@/infra/common/env.service';",
-    )
-    .replace(/entities: \[([^\]]*)\],/, (match, entities) => {
-      const trimmed = entities.trim();
-
-      if (!trimmed) {
-        return 'entities: [User],';
-      }
-
-      if (trimmed.includes('User')) {
-        return match;
-      }
-
-      return `entities: [${trimmed}, User],`;
-    });
-}
-
 const JWT_OAUTH_IMPORTS = [
   '@/application/auth/oauth2/auth-link/auth-link.handler',
   '@/application/auth/oauth2/exchange-code/exchange-code.handler',
@@ -333,16 +308,6 @@ export async function patchAuthInstall(
       patchRepositoryForAuth(
         readFileSync(
           path.join(projectRoot, 'src/infra/repositories/repository.module.ts'),
-          'utf8',
-        ),
-      ),
-    );
-
-    writeFileSync(
-      path.join(projectRoot, 'src/infra/database/data-source-factory.ts'),
-      patchDataSourceForAuth(
-        readFileSync(
-          path.join(projectRoot, 'src/infra/database/data-source-factory.ts'),
           'utf8',
         ),
       ),

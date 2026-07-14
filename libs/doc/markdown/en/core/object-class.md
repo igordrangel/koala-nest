@@ -53,33 +53,21 @@ export class CreatePersonRequest extends ObjectClass<CreatePersonRequest> {
 
 ## Usage in paginated responses
 
-List responses also use `ObjectClass` and the `from()` factory:
+List responses use `ListResponseBase` (already provides `items`/`count` and the `from()` factory):
 
 ```typescript
-export class ReadManyPersonResponse extends ObjectClass<
-  ListResponse<ReadManyPersonResponseItem>
-> {
-  @ApiProperty({ type: [ReadManyPersonResponseItem] })
-  @AutoMap({ type: () => ReadManyPersonResponseItem })
-  items: ReadManyPersonResponseItem[];
-
-  @ApiProperty()
-  @AutoMap()
-  count: number;
-}
+export class ReadManyPersonResponse extends ListResponseBase<ReadManyPersonResponseItem> {}
 ```
 
 In the handler, the response is built with:
 
 ```typescript
-return ReadManyPersonResponse.from(
-  await this.repository.findMany(query).then((result) => ({
-    items: result.items.map((item) =>
-      AutoMapper.map(item, Person, ReadManyPersonResponseItem),
-    ),
-    count: result.count,
-  })),
-);
+return ReadManyPersonResponse.from({
+  items: result.items.map((item) =>
+    AutoMapper.map(item, Person, ReadManyPersonResponseItem),
+  ),
+  count: result.count,
+});
 ```
 
 ## Relationship with EntityBase

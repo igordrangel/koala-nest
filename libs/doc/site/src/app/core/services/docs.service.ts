@@ -2,6 +2,7 @@ import { computed, inject, Injectable } from '@angular/core';
 import manifest from '../../../generated/docs-manifest.json';
 import type { DocPage, DocsManifest } from '../models/docs.types';
 import { DEFAULT_LOCALE } from '../models/locale.types';
+import { stripFrontmatter } from '../utils/markdown-body';
 import { transformMarkdownLinks } from '../utils/markdown-links';
 import { LocaleService } from './locale.service';
 
@@ -24,8 +25,13 @@ export class DocsService {
     return this.docs().find((doc) => doc.category === category && doc.slug === slug);
   }
 
-  getRenderableContent(doc: DocPage): string {
-    return transformMarkdownLinks(doc.content, doc.category, doc.locale);
+  markdownUrl(doc: DocPage): string {
+    return `/markdown/${doc.mdRel}`;
+  }
+
+  getRenderableContent(doc: DocPage, rawMarkdown: string): string {
+    const body = stripFrontmatter(rawMarkdown);
+    return transformMarkdownLinks(body, doc.category, doc.locale);
   }
 
   search(query: string) {
@@ -38,7 +44,7 @@ export class DocsService {
 
     return this.docs()
       .filter((doc) => {
-        const haystack = [doc.title, doc.description, doc.content, doc.category]
+        const haystack = [doc.title, doc.description, doc.category, doc.searchText]
           .join(' ')
           .toLowerCase();
         return haystack.includes(term);

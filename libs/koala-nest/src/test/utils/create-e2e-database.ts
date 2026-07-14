@@ -16,7 +16,7 @@ function resolveMigrationRunner(): string {
     return 'bun';
   }
 
-  return 'node --import ts-node/register/transpile-only';
+  return 'node --import ts-node/register/transpile-only --require tsconfig-paths/register';
 }
 
 function generateUniqueSchemaConfig() {

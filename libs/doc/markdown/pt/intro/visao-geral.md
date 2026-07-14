@@ -16,12 +16,12 @@ O **Koala Nest** é um facilitador para criar APIs NestJS com arquitetura DDD. E
 Ao rodar `kl-nest new`, a CLI instala automaticamente:
 
 - validação de variáveis de ambiente com **Zod**;
-- **TypeORM** com PostgreSQL e scripts de migration;
+- **TypeORM** com PostgreSQL, migrations aplicadas no boot (`runMigrations`) e scripts CLI;
 - documentação OpenAPI em `/doc` via **Scalar**;
 - filtro global de erros (Zod, TypeORM e exceções HTTP);
 - bases reutilizáveis para controllers, handlers, validators e repositórios;
 - sistema de mapeamento entre entidades, requests e responses;
-- **[`@koalarx/utils`](../core/koala-utils.md)** — delay, CPF/CNPJ, strings, datas e arrays.
+- **[`@koalarx/utils`](../core/koala-utils.md)** — `import '@koalarx/utils/prototypes'` no boot; delay, CPF/CNPJ, strings, datas e arrays.
 
 ## Funcionalidades opcionais
 
@@ -60,10 +60,15 @@ src/
 └── test/          # testes unitários
 ```
 
+## Novidades
+
+Alterações relevantes da CLI e dos templates ficam em [Patch notes](./patch-notes.md) (também no [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) do repositório).
+
 ## Próximos passos
 
 - [Guia de instalação](../inicio/guia-de-instalacao.md) — `kl-nest new` e `kl-nest add`
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
+- [Patch notes](./patch-notes.md) — o que mudou recentemente
 - [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — bootstrap e módulos Nest
 - [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo ponta a ponta (template CRUD)
 - [Health check](../host/health-check.md) — monitoramento com Terminus

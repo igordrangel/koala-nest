@@ -1,9 +1,3 @@
-export interface DocHeading {
-  level: number;
-  text: string;
-  id: string;
-}
-
 export interface DocPage {
   title: string;
   slug: string;
@@ -15,8 +9,8 @@ export interface DocPage {
   route: string;
   alternateRoute: string;
   mdRel: string;
-  content: string;
-  headings: DocHeading[];
+  /** Indexed body text for search; page rendering loads Markdown separately. */
+  searchText: string;
 }
 
 export interface NavItem {

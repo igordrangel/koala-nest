@@ -49,12 +49,12 @@ export async function createDDDStructure(
   const migrationRunner =
     packageManager === 'bun'
       ? 'bun'
-      : 'node --import ts-node/register/transpile-only';
+      : 'node --import ts-node/register/transpile-only --require tsconfig-paths/register';
 
   packageJson.scripts['migration:generate'] =
     packageManager === 'bun'
       ? 'bun ./src/infra/database/migrations/generate-migration.ts'
-      : 'node --import ts-node/register/transpile-only ./src/infra/database/migrations/generate-migration.ts';
+      : 'node --import ts-node/register/transpile-only --require tsconfig-paths/register ./src/infra/database/migrations/generate-migration.ts';
   packageJson.scripts['migration:run'] =
     `${migrationRunner} ${typeormCli} migration:run ${migrationDatasource}`;
   packageJson.scripts['migration:revert'] =

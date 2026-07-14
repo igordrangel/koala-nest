@@ -1,4 +1,3 @@
-import { maskCpf, maskCnpj } from '@koalarx/utils/KlString';
 import {
   isCnpjDocument,
   isCpfDocument,
@@ -11,11 +10,11 @@ export function setMaskDocumentNumber(document?: string) {
   }
 
   if (isCpfDocument(document)) {
-    return maskCpf(unmaskDocumentNumber(document));
+    return unmaskDocumentNumber(document).maskCpf();
   }
 
   if (isCnpjDocument(document)) {
-    return maskCnpj(unmaskDocumentNumber(document));
+    return unmaskDocumentNumber(document).maskCnpj();
   }
 
   return document;

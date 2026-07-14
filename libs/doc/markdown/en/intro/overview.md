@@ -16,12 +16,12 @@ description: What Koala Nest is and how it fits into NestJS projects with DDD.
 When you run `kl-nest new`, the CLI automatically installs:
 
 - environment variable validation with **Zod**;
-- **TypeORM** with PostgreSQL and migration scripts;
+- **TypeORM** with PostgreSQL, migrations applied on boot (`runMigrations`), and CLI scripts;
 - OpenAPI documentation at `/doc` via **Scalar**;
 - global error filter (Zod, TypeORM, and HTTP exceptions);
 - reusable bases for controllers, handlers, validators, and repositories;
 - mapping system between entities, requests, and responses;
-- **[`@koalarx/utils`](../core/koala-utils.md)** — delay, CPF/CNPJ, strings, dates, and arrays.
+- **[`@koalarx/utils`](../core/koala-utils.md)** — `import '@koalarx/utils/prototypes'` on boot; delay, CPF/CNPJ, strings, dates, and arrays.
 
 ## Optional features
 
@@ -60,10 +60,15 @@ src/
 └── test/          # unit tests
 ```
 
+## What's new
+
+Notable CLI and template changes live in [Patch notes](./patch-notes.md) (also in the repo [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md)).
+
 ## Next steps
 
 - [Installation guide](../getting-started/installation-guide.md) — `kl-nest new` and `kl-nest add`
 - [DDD Architecture](./ddd-architecture.md) — layers and responsibilities
+- [Patch notes](./patch-notes.md) — recent changes
 - [Project structure](../getting-started/project-structure.md) — bootstrap and Nest modules
 - [Person CRUD flow](../guides/person-crud-flow.md) — end-to-end example (CRUD template)
 - [Health check](../host/health-check.md) — monitoring with Terminus

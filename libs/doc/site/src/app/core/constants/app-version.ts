@@ -1,2 +1,2 @@
 // Gerado por scripts/build-doc-manifest.mjs — não editar manualmente.
-export const APP_VERSION = '4.1.1';
+export const APP_VERSION = '4.2.0';

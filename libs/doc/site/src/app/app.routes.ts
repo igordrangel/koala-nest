@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 import { docMarkdownProviders } from './core/providers/doc-markdown.providers';
 import { localeGuard } from './core/guards/locale.guard';
-import { DocPageComponent } from './features/doc/doc-page.component';
-import { LandingPageComponent } from './features/landing/landing-page.component';
 
 export const routes: Routes = [
   {
@@ -22,13 +20,15 @@ export const routes: Routes = [
   },
   {
     path: ':locale',
-    component: LandingPageComponent,
+    loadComponent: () =>
+      import('./features/landing/landing-page.component').then((m) => m.LandingPageComponent),
     canActivate: [localeGuard],
     title: 'Koala Nest',
   },
   {
     path: ':locale/docs/:category/:slug',
-    component: DocPageComponent,
+    loadComponent: () =>
+      import('./features/doc/doc-page.component').then((m) => m.DocPageComponent),
     canActivate: [localeGuard],
     providers: docMarkdownProviders,
   },

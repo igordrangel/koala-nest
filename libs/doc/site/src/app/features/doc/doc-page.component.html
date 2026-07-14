@@ -16,7 +16,13 @@
         />
       </div>
 
-      <app-markdown-content [content]="content()" (rendered)="onMarkdownReady()" />
+      @if (contentReady()) {
+        <app-markdown-content [content]="content()" (rendered)="onMarkdownReady()" />
+      } @else if (contentError()) {
+        <p class="opacity-70 py-10" role="alert">{{ copy().contentLoadError }}</p>
+      } @else {
+        <p class="opacity-70 py-10" aria-busy="true" aria-live="polite">{{ copy().contentLoading }}</p>
+      }
     </article>
 
     <app-doc-on-this-page

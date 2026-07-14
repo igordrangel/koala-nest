@@ -21,7 +21,7 @@ O Swagger UI padrão fica **desabilitado**; apenas o Scalar é exibido.
 | Arquivo | Função |
 | --- | --- |
 | `src/host/open-api/define-documentation.ts` | Monta o spec e registra o Scalar |
-| `src/host/main.ts` | Chama `defineDocumentation(app)` no bootstrap |
+| `src/host/main.ts` | Chama `await defineDocumentation(app)` no bootstrap |
 | `src/host/decorators/controller.decorator.ts` | Aplica rota Nest + tag Swagger |
 | `src/host/decorators/api-exclude-endpoint-diff-develop.decorator.ts` | Oculta endpoint fora de `develop` |
 | `src/host/decorators/api-property-only-develop.decorator.ts` | Documenta propriedade de DTO apenas em `develop` |
@@ -65,7 +65,7 @@ Em `src/core/schemas/`:
 | `nativeEnumSchema(enum)` | Enums numéricos em query/body |
 | `emailSchema(value, required?)` | Validação de e-mail |
 | `documentNumberSchema(value)` | CPF/CNPJ, incluindo CNPJ alfanumérico (via [`@koalarx/utils`](../core/koala-utils.md)) |
-| `setMaskDocumentNumber(value)` | Máscara de documento (via `@koalarx/utils/KlString`) |
+| `setMaskDocumentNumber(value)` | Máscara de documento (via prototypes de `@koalarx/utils`) |
 | `LIST_QUERY_SCHEMA` | Paginação e ordenação |
 
 Exemplo em validators:
@@ -85,6 +85,9 @@ protected get schema() {
 Em `src/host/main.ts`, após criar a aplicação:
 
 ```typescript
+import 'dotenv/config';
+import '@koalarx/utils/prototypes';
+
 import { defineDocumentation } from './open-api/define-documentation';
 
 async function bootstrap() {
@@ -92,7 +95,7 @@ async function bootstrap() {
 
   // applyHttpMiddleware(app) — ver Middleware HTTP
 
-  defineDocumentation(app);
+  await defineDocumentation(app);
 
   await app.listen(process.env.PORT || 3000);
 }
@@ -116,7 +119,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import packageJson from '../../../package.json';
 import { apiReference } from '@scalar/nestjs-api-reference';
 
-export function defineDocumentation(app: INestApplication) {
+export async function defineDocumentation(app: INestApplication) {
   const documentBuilder = new DocumentBuilder()
     .setTitle(packageJson.name)
     .setVersion(packageJson.version)

@@ -24,21 +24,34 @@ export class PersonRepository
   }
 
   findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
+    const where: FindOptionsWhere<Person> = {};
+
+    if (query.name) {
+      where.name = Like(`%${query.name}%`);
+    }
+
+    if (query.active !== undefined) {
+      where.active = query.active;
+    }
+
     return this.repository
       .findAndCount({
-        where: { name: query.name ? Like(`%${query.name}%`) : undefined },
-        order: query.generateOrderBy(),
+        where,
+        order: query.toFindOptionsOrder(),
         skip: query.skip(),
         take: query.limit,
       })
       .then(([items, count]) => ({
-        items,
+        items: this.normalizeEntities(items),
         count,
       }));
   }
 
   findById(id: number): Promise<Person | null> {
-    return this.repository.findOne({ where: { id } });
+    return this.findOneNormalized({
+      where: { id },
+      relations: { address: true, contacts: true },
+    });
   }
 }
 ```

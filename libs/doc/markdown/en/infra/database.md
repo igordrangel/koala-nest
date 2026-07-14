@@ -32,6 +32,7 @@ export class DatabaseModule {}
 
 ```typescript
 import { DbContext } from '@/core/database/db-context';
+import path from 'node:path';
 
 export const DATA_SOURCE_PROVIDER_TOKEN = 'DATA_SOURCE';
 
@@ -41,16 +42,22 @@ export async function dataSourceFactory(env: EnvService) {
     url: env.get('DATABASE_URL'),
     schema: env.get('DATABASE_SCHEMA'),
     entities: Array.from(DbContext.entities.values()),
+    migrations: [path.join(__dirname, 'migrations', '[0-9]*.{ts,js}')],
+    migrationsTableName: 'migrations',
+    migrationsTransactionMode: 'all',
     invalidWhereValuesBehavior: {
       undefined: 'ignore',
     },
   });
 
   await dataSource.initialize();
+  await dataSource.runMigrations();
 
   return dataSource;
 }
 ```
+
+Pending migrations are applied automatically when the API starts. The `migration:run` / `migration:revert` scripts remain available for CI and manual operations.
 
 ## Injection token
 
@@ -73,9 +80,9 @@ DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
 ## Adding new entities
 
 1. Create the entity in `src/domain/entities/` with `@Entity` from `@/core/database/entity`.
-2. Generate and apply the migration.
+2. Generate the migration and restart the API (or use `migration:run`).
 
-The `@Entity` decorator registers the class in `DbContext.entities`, used by `dataSourceFactory` at runtime. `migration-datasource.ts` discovers entities automatically via glob — no manual registration is needed in either place.
+The `@Entity` decorator registers the class in `DbContext.entities`. At runtime, Nest imports entities via repositories; in the CLI, `load-all-entities.ts` loads files under `src/domain/entities/` to populate the same `DbContext` used by `migration-datasource.ts` — no manual entity list is required.
 
 ## InfraModule
 

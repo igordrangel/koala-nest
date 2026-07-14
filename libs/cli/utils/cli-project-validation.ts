@@ -9,6 +9,7 @@ import {
   healthControllerMustNotContain,
   infraModuleMustContain,
   infraModuleMustNotContain,
+  MAIN_MUST_CONTAIN,
   requiredPackagesForExpectation,
   requiredPathsForExpectation,
   type ProjectExpectation,
@@ -99,6 +100,7 @@ export function listCliProjectViolations(
     }
   }
 
+  const main = readOptional(projectRoot, 'src/host/main.ts');
   const appModule = readOptional(projectRoot, 'src/host/app.module.ts');
   const infraModule = readOptional(projectRoot, 'src/infra/infra.module.ts');
   const healthController = readOptional(
@@ -106,6 +108,7 @@ export function listCliProjectViolations(
     'src/host/controllers/health-check/health-check.controller.ts',
   );
 
+  expectContains(violations, 'main.ts', main, MAIN_MUST_CONTAIN);
   expectContains(
     violations,
     'app.module',

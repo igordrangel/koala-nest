@@ -32,13 +32,13 @@ Testes da CLI e da documentação ficam em `libs/cli` e `libs/doc/site` — na r
 
 ## Autenticação
 
-O template **Exemplo de CRUD** sobe apenas `PersonModule`. Ao criar um projeto com `kl-nest new`, a CLI instala JWT ou OAuth2 e aplica patches em `app.module.ts` e `main.ts` (`SecurityModule`, `AuthModule`, guards globais).
+O template **Exemplo de CRUD** já inclui `SecurityModule`, `AuthModule`, `PersonModule` (via `JobsModule`) e guards globais. No template **Padrão**, ao adicionar auth com `kl-nest add auth`, a CLI aplica patches em `app.module.ts`, `main.ts`, `repository.module.ts`, env e OpenAPI — **sem** alterar `data-source-factory.ts` (`User` entra via `@Entity` + `DbContext`).
 
 ## Dependências Koala
 
 | Pacote | Uso |
 |--------|-----|
-| [`@koalarx/utils`](https://utils.koalarx.com/) | `delay`, validação/máscara CPF-CNPJ, utilitários de string/data |
+| [`@koalarx/utils`](https://utils.koalarx.com/) | `import '@koalarx/utils/prototypes'` em `main.ts` e setups de teste; `delay`, validação/máscara CPF-CNPJ, utilitários de string/data |
 
 Veja a [documentação Koala Utils](../../doc/markdown/pt/core/koala-utils.md).
 
@@ -47,5 +47,7 @@ Veja a [documentação Koala Utils](../../doc/markdown/pt/core/koala-utils.md).
 | Script | Descrição |
 |--------|-----------|
 | `start:debug` | Nest em watch com inspector |
-| `migration:run` | Aplica migrations TypeORM |
+| `migration:run` | Aplica migrations TypeORM (fallback / CI) |
 | `migration:generate` | Gera migration a partir das entidades |
+
+Migrations pendentes também são aplicadas automaticamente ao subir a API (`runMigrations` no `dataSourceFactory`).

@@ -134,17 +134,19 @@ export class PaginationDto {
 
 ## Usage in the repository
 
+In the repository, use `toFindOptionsOrder()` (converts `generateOrderBy()` to `FindOptionsOrder` with ASC/DESC):
+
 ```typescript
 findMany(query: PersonQueryDto): Promise<ListResponse<Person>> {
   return this.repository
     .findAndCount({
       where: { name: query.name ? Like(`%${query.name}%`) : undefined },
-      order: query.generateOrderBy(),
+      order: query.toFindOptionsOrder(),
       skip: query.skip(),
       take: query.limit,
     })
     .then(([items, count]) => ({
-      items,
+      items: this.normalizeEntities(items),
       count,
     }));
 }

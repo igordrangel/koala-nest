@@ -154,7 +154,7 @@ pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Important:** with the **CRUD Example** template, run `migration:run` before starting the API. The **Default** template has no initial migrations. Unit tests: **Bun** uses `bun test`; **npm/pnpm** use **Vitest** (`npm run test`). **E2E:** every project includes `test:e2e` and infrastructure under `src/test/` (`setup-e2e.ts`, `create-e2e-test-app.ts`, ephemeral Postgres database). The **Default** template ships a minimal `app.e2e.spec.ts`; **CRUD** adds full Person and auth examples under `src/test/host/controllers/`. Requires `DATABASE_URL` pointing to a local Postgres instance.
+> **Important:** in any project, pending migrations are applied automatically when the API starts (`runMigrations` in `dataSourceFactory`). The `migration:run` script remains available for CI/ops. The **CRUD Example** template ships the initial migration (`1781281330533-Init.ts`); the **Default** template has no initial migrations. Unit tests: **Bun** uses `bun test`; **npm/pnpm** use **Vitest** (`npm run test`). **E2E:** every project includes `test:e2e` and infrastructure under `src/test/` (`setup-e2e.ts`, `create-e2e-test-app.ts`, ephemeral Postgres database). The **Default** template ships a minimal `app.e2e.spec.ts`; **CRUD** adds full Person and auth examples under `src/test/host/controllers/`. Requires `DATABASE_URL` pointing to a local Postgres instance.
 
 ## Local CLI development
 

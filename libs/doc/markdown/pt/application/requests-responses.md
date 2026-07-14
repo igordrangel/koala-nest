@@ -107,7 +107,7 @@ export class ReadPersonResponse {
 
 ## Response de listagem
 
-Listagens retornam `items` e `count`:
+Listagens estendem `ListResponseBase` (já expõe `items` e `count`):
 
 ```typescript
 export class ReadManyPersonResponseItem {
@@ -118,20 +118,16 @@ export class ReadManyPersonResponseItem {
   @ApiProperty()
   @AutoMap()
   name: string;
-}
-
-export class ReadManyPersonResponse extends ObjectClass<
-  ListResponse<ReadManyPersonResponseItem>
-> {
-  @ApiProperty({ type: [ReadManyPersonResponseItem] })
-  @AutoMap({ type: () => ReadManyPersonResponseItem })
-  items: ReadManyPersonResponseItem[];
 
   @ApiProperty()
   @AutoMap()
-  count: number;
+  active: boolean;
 }
+
+export class ReadManyPersonResponse extends ListResponseBase<ReadManyPersonResponseItem> {}
 ```
+
+No handler: `ReadManyPersonResponse.from({ items, count })`.
 
 ## Request de listagem
 
