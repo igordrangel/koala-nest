@@ -7,6 +7,15 @@ import path from 'node:path';
 
 const entitiesRoot = path.join(process.cwd(), 'src/domain/entities');
 
+function isMissingPathError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as NodeJS.ErrnoException).code === 'ENOENT'
+  );
+}
+
 function collectEntityFiles(dir: string): string[] {
   const entries = readdirSync(dir, { withFileTypes: true });
   const files: string[] = [];
@@ -42,12 +51,11 @@ function collectEntityFiles(dir: string): string[] {
 
 try {
   for (const file of collectEntityFiles(entitiesRoot)) {
-    try {
-      require(file);
-    } catch {
-      // Ignora arquivos que não exportam entidades válidas
-    }
+    require(file);
   }
-} catch {
-  // Diretório de entidades ausente (ex.: template limpo)
+} catch (error) {
+  // Diretório ausente (ex.: template limpo); demais erros sobem para o CLI.
+  if (!isMissingPathError(error)) {
+    throw error;
+  }
 }
