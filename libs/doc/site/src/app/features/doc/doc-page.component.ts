@@ -69,6 +69,10 @@ export class DocPageComponent {
     () => !!this.doc() && this.markdownResource.hasValue() && !this.markdownResource.isLoading(),
   );
 
+  readonly contentError = computed(
+    () => !!this.doc() && !!this.markdownResource.error() && !this.markdownResource.isLoading(),
+  );
+
   readonly markdownReady = signal(0);
   readonly copy = computed(() => UI_COPY[this.localeService.locale()]);
   readonly installGuideLink = computed(() => this.localeService.defaultDocsRoute());

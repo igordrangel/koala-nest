@@ -19,6 +19,8 @@ export const UI_COPY = {
     language: 'Idioma',
     notFound: 'Página não encontrada.',
     goToInstallGuide: 'Ir para o guia de instalação',
+    contentLoading: 'Carregando conteúdo…',
+    contentLoadError: 'Não foi possível carregar o conteúdo desta página.',
     onThisPage: 'Nesta página',
     metaDescription:
       'Facilitador para APIs NestJS com DDD e TypeORM. A CLI copia módulos prontos para o seu repositório.',
@@ -138,6 +140,8 @@ export const UI_COPY = {
     language: 'Language',
     notFound: 'Page not found.',
     goToInstallGuide: 'Go to installation guide',
+    contentLoading: 'Loading content…',
+    contentLoadError: 'Could not load this page content.',
     onThisPage: 'On this page',
     metaDescription:
       'A facilitator for building NestJS APIs with DDD and TypeORM. The CLI copies modules into your repository.',
