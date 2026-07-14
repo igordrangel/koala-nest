@@ -32,20 +32,17 @@ describe('removeSampleParts', () => {
     mkdirSync(path.join(srcDir, 'application/mapping'), { recursive: true });
     mkdirSync(path.join(srcDir, 'test/application'), { recursive: true });
 
-    const repoRoot = process.cwd();
+    const templateRepositoryModule = path.resolve(
+      import.meta.dir,
+      '../../../koala-nest/src/infra/repositories/repository.module.ts',
+    );
     writeFileSync(
       path.join(srcDir, 'host/app.module.ts'),
       `import { PersonModule } from './controllers/person/person.module';\n@Module({ imports: [PersonModule,\n] })`,
     );
     writeFileSync(
       path.join(srcDir, 'infra/repositories/repository.module.ts'),
-      readFileSync(
-        path.join(
-          repoRoot,
-          'libs/koala-nest/src/infra/repositories/repository.module.ts',
-        ),
-        'utf8',
-      ),
+      readFileSync(templateRepositoryModule, 'utf8'),
     );
     writeFileSync(
       path.join(srcDir, 'application/mapping/mapping.provider.ts'),
