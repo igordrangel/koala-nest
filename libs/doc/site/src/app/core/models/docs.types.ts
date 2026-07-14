@@ -9,6 +9,8 @@ export interface DocPage {
   route: string;
   alternateRoute: string;
   mdRel: string;
+  /** Indexed body text for search; page rendering loads Markdown separately. */
+  searchText: string;
 }
 
 export interface NavItem {

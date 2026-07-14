@@ -44,7 +44,9 @@ export class DocsService {
 
     return this.docs()
       .filter((doc) => {
-        const haystack = [doc.title, doc.description, doc.category].join(' ').toLowerCase();
+        const haystack = [doc.title, doc.description, doc.category, doc.searchText]
+          .join(' ')
+          .toLowerCase();
         return haystack.includes(term);
       })
       .slice(0, 12)

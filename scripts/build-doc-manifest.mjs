@@ -21,6 +21,18 @@ const publicRoot = path.join(docRoot, 'site/public');
 const publicMarkdownRoot = path.join(publicRoot, 'markdown');
 const publicSitemapPath = path.join(publicRoot, 'sitemap.xml');
 
+/** Plain text for in-site search (not used for page rendering). */
+function toSearchText(body) {
+  return String(body ?? '')
+    .replace(/```[\s\S]*?```/g, (block) => block.replace(/```\w*\n?/g, ' ').replace(/```/g, ' '))
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[*_~>|`]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function walkLocale(locale) {
   const localeRoot = path.join(markdownRoot, locale);
   if (!fs.existsSync(localeRoot)) return [];
@@ -35,13 +47,14 @@ function walkLocale(locale) {
         walk(full, relPath);
       } else if (entry.name.endsWith('.md')) {
         const raw = fs.readFileSync(full, 'utf8');
-        const { meta } = parseFrontmatter(raw);
+        const { meta, body } = parseFrontmatter(raw);
         docs.push({
           ...meta,
           docKey: meta.docKey ?? `${meta.category}/${meta.slug}`,
           locale,
           mdRel: toPosix(path.join(locale, relPath)),
           route: `/${locale}/docs/${meta.category}/${meta.slug}`,
+          searchText: toSearchText(body),
         });
       }
     }
@@ -182,6 +195,7 @@ for (const locale of supportedLocales) {
       description: d.description ?? '',
       route: d.route,
       mdRel: d.mdRel,
+      searchText: d.searchText ?? '',
       alternateRoute: '',
     })),
   };
