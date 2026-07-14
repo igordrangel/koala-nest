@@ -16,6 +16,7 @@
     ".prettierrc": "json",
     "*.css": "tailwindcss"
   },
+  "css.lint.unknownAtRules": "ignore",
   "explorer.confirmDelete": false,
   "gitlens.codeLens.recentChange.enabled": false,
   "terminal.integrated.showExitAlert": false,

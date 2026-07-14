@@ -1,3 +1,4 @@
+import { httpResource } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import {
   Component,
@@ -16,14 +17,15 @@ import { CopyFeedbackButtonComponent } from '../../core/components/copy-feedback
 import { DocOnThisPageComponent } from '../../core/components/doc-on-this-page/doc-on-this-page.component';
 import { MarkdownContentComponent } from '../../core/components/markdown-content/markdown-content.component';
 import { UI_COPY } from '../../core/i18n/ui-copy';
-import { DocsService } from '../../core/services/docs.service';
 import { absoluteSiteUrl } from '../../core/config/site-seo';
+import { DocsService } from '../../core/services/docs.service';
 import { LocaleService } from '../../core/services/locale.service';
 import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-doc-page',
   templateUrl: './doc-page.component.html',
+  styleUrl: './doc-page.component.css',
   imports: [MarkdownContentComponent, RouterLink, DocOnThisPageComponent, CopyFeedbackButtonComponent],
 })
 export class DocPageComponent {
@@ -51,10 +53,21 @@ export class DocPageComponent {
     return this.docsService.findDoc(category, slug);
   });
 
+  private readonly markdownResource = httpResource.text(() => {
+    const current = this.doc();
+    return current ? this.docsService.markdownUrl(current) : undefined;
+  });
+
   readonly content = computed(() => {
     const current = this.doc();
-    return current ? this.docsService.getRenderableContent(current) : '';
+    const raw = this.markdownResource.value();
+    if (!current || raw == null) return '';
+    return this.docsService.getRenderableContent(current, raw);
   });
+
+  readonly contentReady = computed(
+    () => !!this.doc() && this.markdownResource.hasValue() && !this.markdownResource.isLoading(),
+  );
 
   readonly markdownReady = signal(0);
   readonly copy = computed(() => UI_COPY[this.localeService.locale()]);

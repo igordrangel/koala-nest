@@ -16,7 +16,9 @@
         />
       </div>
 
-      <app-markdown-content [content]="content()" (rendered)="onMarkdownReady()" />
+      @if (contentReady()) {
+        <app-markdown-content [content]="content()" (rendered)="onMarkdownReady()" />
+      }
     </article>
 
     <app-doc-on-this-page
