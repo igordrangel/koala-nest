@@ -211,15 +211,14 @@ Import `PersonModule` in `AppModule`.
 
 ## 8. Generate migration
 
-With entities decorated using the core `@Entity`, `dataSourceFactory` already includes them via `DbContext`. Generate and apply the migration:
+With entities decorated using the core `@Entity`, `dataSourceFactory` already includes them via `DbContext`. Generate the migration and start the API (applies pending migrations automatically):
 
 ```bash
 bun run migration:generate
-bun run migration:run
 bun run start:dev
 ```
 
-The migration generator (`migration-datasource.ts`) discovers entities in `src/domain/entities/` by glob.
+The generator (`load-all-entities` + `migration-datasource.ts`) populates `DbContext` from `src/domain/entities/`.
 
 Visit `http://localhost:3000/doc` to test endpoints interactively.
 
@@ -278,7 +277,7 @@ When creating a resource similar to Person, follow the steps in this guide in or
 2. **Application** — handlers, requests, responses, validators, and `<Resource>Mapper.createMap()` in `MappingProvider`
 3. **Infra** — concrete repository and provider in `RepositoryModule`
 4. **Host** — `router.config.ts`, controllers, `<Resource>Module`, and import in `AppModule`
-5. **Migrations** — `migration:generate`, review the generated file, and `migration:run`
+5. **Migrations** — `migration:generate`, review the generated file, and start the API (or `migration:run`)
 
 ## Framework patterns (4.x)
 

@@ -46,29 +46,6 @@ const partsToRemove: PartsToRemove[] = [
     ],
   },
   {
-    path: 'src/infra/database/data-source-factory.ts',
-    removeImports: [
-      '@/domain/entities/person/person',
-      '@/domain/entities/person/person-address',
-      '@/domain/entities/person/person-contact',
-      '@/domain/entities/user/user',
-    ],
-    replace: [
-      {
-        from: 'entities: [Person, PersonAddress, PersonContact, User],',
-        to: 'entities: [],',
-      },
-      {
-        from: 'entities: [Person, PersonAddress, PersonContact],',
-        to: 'entities: [],',
-      },
-      {
-        from: 'entities: [User],',
-        to: 'entities: [],',
-      },
-    ],
-  },
-  {
     path: 'src/host/app.module.ts',
     removeImports: [
       './controllers/person/person.module',

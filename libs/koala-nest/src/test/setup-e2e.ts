@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import '@koalarx/utils/prototypes';
 import { createE2EDatabase } from '@/test/utils/create-e2e-database';
 import { E2EDatabaseClient } from '@/test/utils/e2e-database-client';
 import { Pool } from 'pg';

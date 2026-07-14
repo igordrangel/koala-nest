@@ -11,6 +11,8 @@ description: JWT, global guards, public routes, and generic OAuth2.
 
 The authentication module is optional in the CLI (`kl-nest new` → **JWT** or **OAuth2**). With JWT, the template includes a `User` entity, email/password login, and RS256 token issuance. With OAuth2, users are created or reused after the authorization code flow.
 
+Installing auth does **not** patch `data-source-factory.ts`: the `User` entity joins the DataSource via `@Entity` (DbContext), and `UserRepository` is registered in `RepositoryModule`.
+
 ## Main components
 
 | Piece | Role |

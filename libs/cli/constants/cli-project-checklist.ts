@@ -62,6 +62,9 @@ export const CORE_REQUIRED_PATHS = [
   'src/host/open-api/define-documentation.ts',
   'src/infra/repositories/repository.module.ts',
   'src/infra/database/data-source-factory.ts',
+  'src/infra/database/migrations/load-all-entities.ts',
+  'src/infra/database/migrations/migration-datasource.ts',
+  'src/infra/database/migrations/generate-migration.ts',
 ] as const;
 
 export const CORE_PACKAGE_DEPENDENCIES = [
@@ -350,6 +353,9 @@ export function requiredPackagesForExpectation(
 
   return [...packages];
 }
+
+/** Conteúdo obrigatório em `src/host/main.ts` (boot Nest). */
+export const MAIN_MUST_CONTAIN = ['@koalarx/utils/prototypes'] as const;
 
 export function appModuleMustContain(
   expectation: ProjectExpectation,

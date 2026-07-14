@@ -1,4 +1,3 @@
-import { validateCpf, validateCnpj } from '@koalarx/utils/KlString';
 import {
   isCnpjDocument,
   isCpfDocument,
@@ -10,11 +9,11 @@ export function documentNumberSchema(value: string) {
   }
 
   if (isCpfDocument(value)) {
-    return validateCpf(value);
+    return value.validateCpf();
   }
 
   if (isCnpjDocument(value)) {
-    return validateCnpj(value);
+    return value.validateCnpj();
   }
 
   return false;

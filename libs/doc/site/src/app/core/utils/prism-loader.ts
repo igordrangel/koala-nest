@@ -1,5 +1,9 @@
 let prismPromise: Promise<void> | null = null;
 
+export function contentHasCode(content: string) {
+  return content.includes('```');
+}
+
 export function ensurePrismLoaded() {
   if (typeof window !== 'undefined' && 'Prism' in window) {
     return Promise.resolve();

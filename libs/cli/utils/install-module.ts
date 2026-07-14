@@ -226,6 +226,10 @@ export async function installModule(
         projectName,
       );
       install(
+        'src/infra/database/migrations/load-all-entities.ts',
+        projectName,
+      );
+      install(
         'src/infra/database/migrations/migration-datasource.ts',
         projectName,
       );

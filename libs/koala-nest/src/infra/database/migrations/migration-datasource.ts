@@ -1,4 +1,6 @@
+import { DbContext } from '@/core/database/db-context';
 import 'dotenv/config';
+import './load-all-entities';
 import path from 'node:path';
 import { DataSource } from 'typeorm';
 
@@ -14,7 +16,7 @@ export default new DataSource({
         extra: { options: `-c search_path=${schema},public` },
       }
     : {}),
-  entities: [path.join(root, 'src/domain/entities/**/*.{js,ts}')],
+  entities: Array.from(DbContext.entities.values()),
   migrations: [path.join(root, 'src/infra/database/migrations/[0-9]*.{js,ts}')],
   migrationsTableName: 'migrations',
   migrationsTransactionMode: 'all',

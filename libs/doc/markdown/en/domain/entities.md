@@ -129,19 +129,27 @@ This allows `AutoMapper` to resolve the target type when mapping each item in th
 
 ```typescript
 import { DbContext } from '@/core/database/db-context';
+import path from 'node:path';
+import { DataSource } from 'typeorm';
 
 const dataSource = new DataSource({
   type: 'postgres',
   url: env.get('DATABASE_URL'),
   schema: env.get('DATABASE_SCHEMA'),
   entities: Array.from(DbContext.entities.values()),
+  migrations: [path.join(__dirname, 'migrations', '[0-9]*.{ts,js}')],
+  migrationsTableName: 'migrations',
+  migrationsTransactionMode: 'all',
   invalidWhereValuesBehavior: {
     undefined: 'ignore',
   },
 });
+
+await dataSource.initialize();
+await dataSource.runMigrations();
 ```
 
-When you decorate a new entity with `@Entity`, it is already included in the runtime DataSource — no manual change to `dataSourceFactory` is required.
+When you decorate a new entity with `@Entity`, it is already included in the runtime DataSource — no manual change to `dataSourceFactory` is required. In the migration CLI, `load-all-entities.ts` loads files under `src/domain/entities/` to fill the same `DbContext`. Pending migrations are applied on boot via `runMigrations()`.
 
 The `invalidWhereValuesBehavior.undefined: 'ignore'` option prevents optional filters (`undefined`) from generating invalid clauses in TypeORM.
 

@@ -29,7 +29,6 @@ describe('removeSampleParts', () => {
     const srcDir = path.join(tempDir, 'src');
     mkdirSync(path.join(srcDir, 'host'), { recursive: true });
     mkdirSync(path.join(srcDir, 'infra/repositories'), { recursive: true });
-    mkdirSync(path.join(srcDir, 'infra/database'), { recursive: true });
     mkdirSync(path.join(srcDir, 'application/mapping'), { recursive: true });
     mkdirSync(path.join(srcDir, 'test/application'), { recursive: true });
 
@@ -40,10 +39,6 @@ describe('removeSampleParts', () => {
     writeFileSync(
       path.join(srcDir, 'infra/repositories/repository.module.ts'),
       `import { IPersonRepository } from '@/domain/repositories/iperson.repository';\nimport { PersonRepository } from '@/infra/repositories/person.repository';\nproviders: [{ provide: IPersonRepository, useClass: PersonRepository }],\nexports: [DatabaseModule, IPersonRepository],`,
-    );
-    writeFileSync(
-      path.join(srcDir, 'infra/database/data-source-factory.ts'),
-      `import { Person } from '@/domain/entities/person/person';\nentities: [Person, PersonAddress, PersonContact],`,
     );
     writeFileSync(
       path.join(srcDir, 'application/mapping/mapping.provider.ts'),

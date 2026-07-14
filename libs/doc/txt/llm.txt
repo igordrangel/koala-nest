@@ -8,6 +8,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 
 - [Visão geral](markdown/pt/intro/visao-geral.md): O que é o Koala Nest e como ele se encaixa em projetos NestJS com DDD.
 - [Arquitetura DDD](markdown/pt/intro/arquitetura-ddd.md): Camadas do Koala Nest e como a requisição percorre o sistema.
+- [Patch notes](markdown/pt/intro/patch-notes.md): Histórico de mudanças relevantes da CLI, templates e fluxos do Koala Nest.
 
 ## Primeiros passos
 

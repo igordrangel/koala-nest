@@ -6,6 +6,8 @@ Em vez de depender de uma biblioteca opaca, a CLI **copia módulos prontos para 
 
 **Documentação:** [nest.koalarx.com](https://nest.koalarx.com/) (PT e EN)
 
+**Novidades:** [CHANGELOG.md](./CHANGELOG.md) · [Patch notes (docs)](https://nest.koalarx.com/pt/docs/intro/patch-notes)
+
 ## O que está disponível hoje
 
 | Recurso | Status |
@@ -141,15 +143,19 @@ DATABASE_URL=postgresql://user:password@localhost:5432/my_api
 ### Scripts úteis no projeto gerado
 
 ```bash
-bun run start:dev          # servidor em modo watch
+bun run start:dev          # sobe a API (aplica migrations pendentes no boot)
 bun run migration:generate # gera migration a partir das entidades
-bun run migration:run      # aplica migrations pendentes
+bun run migration:run      # aplica migrations pendentes (CI / ops)
 bun run migration:revert   # reverte a última migration
 ```
 
+Detalhes: [Migrations](https://nest.koalarx.com/pt/docs/infra/migrations) · [Patch notes](https://nest.koalarx.com/pt/docs/intro/patch-notes)
+
 ## Documentação
 
-Site completo: **[nest.koalarx.com](https://nest.koalarx.com/)** — guias de instalação, arquitetura DDD, autenticação, cache, jobs e fluxo CRUD (português e inglês).
+Site completo: **[nest.koalarx.com](https://nest.koalarx.com/)** — guias de instalação, arquitetura DDD, autenticação, cache, jobs, fluxo CRUD e [patch notes](https://nest.koalarx.com/pt/docs/intro/patch-notes) (português e inglês).
+
+Histórico resumido de mudanças: **[CHANGELOG.md](./CHANGELOG.md)**.
 
 ### Índices para agentes de IA
 

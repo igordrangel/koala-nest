@@ -16,6 +16,9 @@ This guide describes how the NestJS application is initialized and how modules c
 The `src/host/main.ts` file configures OpenAPI documentation, global error filter, and starts the server. CORS, cookies, and rate limit live in `applyHttpMiddleware` (`src/host/bootstrap/`). Details: [HTTP middleware](../host/http-middleware.md). **Core** projects (without auth/cron) stay slim — the CLI removes optional imports and blocks when features were not selected.
 
 ```typescript
+import 'dotenv/config';
+import '@koalarx/utils/prototypes';
+
 import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -65,7 +68,7 @@ bootstrap();
 export class AppModule {}
 ```
 
-> **Authentication:** in the **CRUD Example** template, auth is **required** — the CLI installs `AuthModule`, `SecurityModule`, and global guards. In the **Default** template, auth is optional. See [Authentication](/en/host/authentication).
+> **Authentication:** in the **CRUD Example** template, auth is **required** — the CLI installs `AuthModule`, `SecurityModule`, and global guards. In the **Default** template, auth is optional. See [Authentication](../host/authentication.md).
 
 ## Background jobs
 
@@ -150,4 +153,4 @@ bun run migration:run
 bun run migration:revert
 ```
 
-**npm / pnpm** — use `npm run` or `pnpm run` with the same script names. Tests use **Vitest**; `migration:generate`, `migration:run`, and `migration:revert` use `node --import ts-node/register/transpile-only`.
+**npm / pnpm** — use `npm run` or `pnpm run` with the same script names. Tests use **Vitest**; `migration:generate`, `migration:run`, and `migration:revert` use `node --import ts-node/register/transpile-only --require tsconfig-paths/register`. Starting the API (`start:dev` / `start:prod`) already applies pending migrations via `dataSourceFactory` → `runMigrations()`; `migration:run` remains a fallback / CI option.

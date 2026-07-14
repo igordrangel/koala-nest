@@ -1,7 +1,6 @@
 import { PaginationDto } from '@/domain/dtos/pagination.dto';
 import { ListResponseBase } from '@/core/common/list-response.base';
 import { QUERY_FILTER_PARAMS } from '@/core/constants/query-params';
-import { KlArray } from '@koalarx/utils/KlArray';
 import { randomUUID } from 'node:crypto';
 
 export abstract class InMemoryBaseRepository<
@@ -22,7 +21,7 @@ export abstract class InMemoryBaseRepository<
     const page = query.page ?? QUERY_FILTER_PARAMS.page;
     const limit = query.limit ?? QUERY_FILTER_PARAMS.limit;
 
-    return new KlArray(predicate ? this.items.filter(predicate) : this.items)
+    return (predicate ? this.items.filter(predicate) : this.items)
       .orderBy(query.orderBy ?? '', query.direction)
       .slice(page * limit, (page + 1) * limit);
   }
@@ -34,7 +33,7 @@ export abstract class InMemoryBaseRepository<
     const filtered = predicate ? this.items.filter(predicate) : this.items;
     const page = query.page ?? QUERY_FILTER_PARAMS.page;
     const limit = query.limit ?? QUERY_FILTER_PARAMS.limit;
-    const items = new KlArray(filtered)
+    const items = filtered
       .orderBy(query.orderBy ?? '', query.direction)
       .slice(page * limit, (page + 1) * limit);
 
@@ -71,7 +70,7 @@ export abstract class InMemoryBaseRepository<
 
   private getNewId() {
     if (this.typeId === 'number') {
-      const lastId = new KlArray(this.items).orderBy('id', 'desc')[0]?.id;
+      const lastId = this.items.orderBy('id', 'desc')[0]?.id;
       return lastId ? (lastId as number) + 1 : 1;
     }
 

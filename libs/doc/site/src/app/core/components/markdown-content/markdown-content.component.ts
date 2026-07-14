@@ -14,7 +14,7 @@ import {
 import { MarkdownComponent } from 'ngx-markdown';
 import { extractCodeText, findCopyCodeButton } from '../../utils/doc-ui';
 import { contentHasMermaid, ensureMermaidLoaded } from '../../utils/mermaid-loader';
-import { ensurePrismLoaded, highlightCodeBlocks } from '../../utils/prism-loader';
+import { contentHasCode, ensurePrismLoaded, highlightCodeBlocks } from '../../utils/prism-loader';
 
 @Component({
   selector: 'app-markdown-content',
@@ -68,30 +68,39 @@ export class MarkdownContentComponent {
 
   onReady() {
     if (this.isBrowser) {
-      this.highlightCode();
+      void this.enhanceCode();
     }
     queueMicrotask(() => this.rendered.emit());
   }
 
-  highlightCode() {
-    highlightCodeBlocks(this.host.nativeElement);
+  private async enhanceCode() {
+    const content = this.content();
+    if (contentHasCode(content)) {
+      await ensurePrismLoaded();
+      highlightCodeBlocks(this.host.nativeElement);
+    }
+
+    if (contentHasMermaid(content) && !this.usesMermaid()) {
+      await ensureMermaidLoaded();
+      this.usesMermaid.set(true);
+    }
   }
 
   private async prepare(content: string) {
-    this.renderMarkdown.set(false);
-
     const usesMermaid = contentHasMermaid(content);
-    this.usesMermaid.set(usesMermaid);
+    this.usesMermaid.set(false);
 
-    if (this.isBrowser) {
-      await ensurePrismLoaded();
+    // Paint markdown immediately (SEO / SSR HTML); enhance Prism/Mermaid after.
+    this.renderMarkdown.set(true);
 
-      if (usesMermaid) {
-        await ensureMermaidLoaded();
-      }
+    if (!this.isBrowser) {
+      return;
     }
 
-    this.renderMarkdown.set(true);
+    if (usesMermaid) {
+      await ensureMermaidLoaded();
+      this.usesMermaid.set(true);
+    }
   }
 
   private showCopiedState(button: HTMLButtonElement) {

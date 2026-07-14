@@ -3,11 +3,16 @@ import {
   buildProjectExpectation,
   CLI_NEW_SELECTION_MATRIX,
   forbiddenPathsForExpectation,
+  MAIN_MUST_CONTAIN,
   requiredPathsForExpectation,
 } from '@cli/constants/cli-project-checklist';
 import { AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
 
 describe('cli-project-checklist', () => {
+  it('main exige import de prototypes do @koalarx/utils', () => {
+    expect(MAIN_MUST_CONTAIN).toContain('@koalarx/utils/prototypes');
+  });
+
   it('buildProjectExpectation reflete resolveNewProjectOptions no CRUD', () => {
     expect(
       buildProjectExpectation(Template.CRUD_SAMPLE, [], []),

@@ -37,6 +37,9 @@ describe('core-packages', () => {
     expect(CRON_PACKAGES).toEqual(['cron-parser']);
     expect(HEALTH_PACKAGES).toEqual(['@nestjs/terminus', '@nestjs/axios']);
     expect(CORE_DEV_PACKAGES).toContain('@types/cookie-parser');
+    expect(CORE_DEV_PACKAGES).toContain('ts-node');
+    expect(CORE_DEV_PACKAGES).toContain('tsconfig-paths');
+    expect(CORE_PACKAGES).toContain('dotenv');
     expect(AUTH_DEV_PACKAGES).not.toContain('@types/cookie-parser');
   });
 
