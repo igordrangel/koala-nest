@@ -26,8 +26,8 @@ export class ApiKey extends EntityBase<ApiKey> {
   @AutoMap()
   origin: string;
 
-  /** JWT RS256 com typ=api-key — exposto apenas na criação. */
-  @Column()
+  /** Legado/vazio: o JWT é devolvido só na criação; auth valida assinatura + `iss`. */
+  @Column({ default: '' })
   key: string;
 
   @Column({ name: 'user_id' })

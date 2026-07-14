@@ -38,7 +38,7 @@ export class CreateApiKeyHandler extends RequestHandlerBase<
       throw new NotFoundException('Chave de API após criação');
     }
 
-    created.key = await this.jwt.signAsync(
+    const key = await this.jwt.signAsync(
       {
         sub: created.userId,
         iss: created.id,
@@ -50,8 +50,7 @@ export class CreateApiKeyHandler extends RequestHandlerBase<
       },
     );
 
-    await this.repository.save(created);
-
-    return CreateApiKeyResponse.from({ id: created.id, key: created.key });
+    // JWT só na resposta da criação — auth usa assinatura + iss (linha), não a coluna.
+    return CreateApiKeyResponse.from({ id: created.id, key });
   }
 }
