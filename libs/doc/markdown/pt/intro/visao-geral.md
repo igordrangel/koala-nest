@@ -16,12 +16,12 @@ O **Koala Nest** é um facilitador para criar APIs NestJS com arquitetura DDD. E
 Ao rodar `kl-nest new`, a CLI instala automaticamente:
 
 - validação de variáveis de ambiente com **Zod**;
-- **TypeORM** com PostgreSQL e scripts de migration;
+- **TypeORM** com PostgreSQL, migrations aplicadas no boot (`runMigrations`) e scripts CLI;
 - documentação OpenAPI em `/doc` via **Scalar**;
 - filtro global de erros (Zod, TypeORM e exceções HTTP);
 - bases reutilizáveis para controllers, handlers, validators e repositórios;
 - sistema de mapeamento entre entidades, requests e responses;
-- **[`@koalarx/utils`](../core/koala-utils.md)** — delay, CPF/CNPJ, strings, datas e arrays.
+- **[`@koalarx/utils`](../core/koala-utils.md)** — `import '@koalarx/utils/prototypes'` no boot; delay, CPF/CNPJ, strings, datas e arrays.
 
 ## Funcionalidades opcionais
 

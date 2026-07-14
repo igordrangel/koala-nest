@@ -16,6 +16,7 @@ Koala Nest validates environment variables on startup using **Zod**. Invalid val
 The schema lives in `src/core/env.ts`:
 
 ```typescript
+import { envBooleanSchema } from '@/core/schemas';
 import { z } from 'zod';
 
 export const envSchema = z.object({
@@ -23,9 +24,10 @@ export const envSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
   DATABASE_URL: z.string(),
+  DATABASE_SCHEMA: z.string().optional(),
   REDIS_CONNECTION_STRING: z.string().optional(),
   CACHE_KEY_PREFIX: z.string().optional(),
-  CRON_JOBS_ENABLED: z.coerce.boolean().default(false),
+  CRON_JOBS_ENABLED: envBooleanSchema(false),
   BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
   RATE_LIMIT_MAX: z.coerce.number().default(0),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000),
@@ -68,6 +70,7 @@ Included in core via `applyHttpMiddleware`. Full guide: [HTTP middleware](../hos
 | --- | --- |
 | `HOST` | Server bind address (Docker/K8s); default `0.0.0.0` |
 | `API_HOST` | Public hostname for Swagger and OAuth (`resolveApiHost`) |
+| `DATABASE_SCHEMA` | Optional Postgres schema (DataSource and migrations) |
 | `CORS_ORIGINS` | When set, limits CORS to listed origins |
 | `RATE_LIMIT_MAX` | Max requests per IP per window; `0` disables |
 | `RATE_LIMIT_WINDOW_MS` | Rate limit window in ms |

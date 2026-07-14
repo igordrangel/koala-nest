@@ -16,12 +16,12 @@ description: What Koala Nest is and how it fits into NestJS projects with DDD.
 When you run `kl-nest new`, the CLI automatically installs:
 
 - environment variable validation with **Zod**;
-- **TypeORM** with PostgreSQL and migration scripts;
+- **TypeORM** with PostgreSQL, migrations applied on boot (`runMigrations`), and CLI scripts;
 - OpenAPI documentation at `/doc` via **Scalar**;
 - global error filter (Zod, TypeORM, and HTTP exceptions);
 - reusable bases for controllers, handlers, validators, and repositories;
 - mapping system between entities, requests, and responses;
-- **[`@koalarx/utils`](../core/koala-utils.md)** — delay, CPF/CNPJ, strings, dates, and arrays.
+- **[`@koalarx/utils`](../core/koala-utils.md)** — `import '@koalarx/utils/prototypes'` on boot; delay, CPF/CNPJ, strings, dates, and arrays.
 
 ## Optional features
 

@@ -129,6 +129,8 @@ O `dataSourceFactory` lê as entidades registradas automaticamente pelo decorado
 
 ```typescript
 import { DbContext } from '@/core/database/db-context';
+import path from 'node:path';
+import { DataSource } from 'typeorm';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -136,13 +138,18 @@ const dataSource = new DataSource({
   schema: env.get('DATABASE_SCHEMA'),
   entities: Array.from(DbContext.entities.values()),
   migrations: [path.join(__dirname, 'migrations', '[0-9]*.{ts,js}')],
+  migrationsTableName: 'migrations',
+  migrationsTransactionMode: 'all',
   invalidWhereValuesBehavior: {
     undefined: 'ignore',
   },
 });
+
+await dataSource.initialize();
+await dataSource.runMigrations();
 ```
 
-Ao decorar uma nova entidade com `@Entity`, ela já entra no DataSource em runtime — não é necessário alterar o `dataSourceFactory` manualmente. No CLI de migrations, `load-all-entities.ts` carrega os arquivos de `src/domain/entities/` para preencher o mesmo `DbContext`.
+Ao decorar uma nova entidade com `@Entity`, ela já entra no DataSource em runtime — não é necessário alterar o `dataSourceFactory` manualmente. No CLI de migrations, `load-all-entities.ts` carrega os arquivos de `src/domain/entities/` para preencher o mesmo `DbContext`. Pendentes são aplicadas no boot via `runMigrations()`.
 
 A opção `invalidWhereValuesBehavior.undefined: 'ignore'` evita que filtros opcionais (`undefined`) gerem cláusulas inválidas no TypeORM.
 

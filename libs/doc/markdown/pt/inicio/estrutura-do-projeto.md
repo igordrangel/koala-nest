@@ -16,6 +16,9 @@ Este guia descreve como a aplicação NestJS é inicializada e como os módulos 
 O arquivo `src/host/main.ts` configura documentação OpenAPI, filtro global de erros e inicia o servidor. CORS, cookies e rate limit ficam em `applyHttpMiddleware` (`src/host/bootstrap/`). Detalhes: [Middleware HTTP](../host/middleware-http.md). Projetos **core** (sem auth/cron) ficam enxutos — a CLI remove imports e trechos opcionais quando as features não são selecionadas.
 
 ```typescript
+import 'dotenv/config';
+import '@koalarx/utils/prototypes';
+
 import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -65,7 +68,7 @@ O `AppModule` importa a validação de ambiente e os módulos de feature. No tem
 export class AppModule {}
 ```
 
-> **Autenticação:** no template **Exemplo de CRUD**, auth é **obrigatória** — a CLI instala `AuthModule`, `SecurityModule` e guards globais. No template **Padrão**, auth é opcional. Veja [Autenticação](/pt/host/autenticacao).
+> **Autenticação:** no template **Exemplo de CRUD**, auth é **obrigatória** — a CLI instala `AuthModule`, `SecurityModule` e guards globais. No template **Padrão**, auth é opcional. Veja [Autenticação](../host/autenticacao.md).
 
 ## Jobs em background
 
@@ -150,4 +153,4 @@ bun run migration:run
 bun run migration:revert
 ```
 
-**npm / pnpm** — use `npm run` ou `pnpm run` nos mesmos nomes. Testes via **Vitest**; `migration:generate`, `migration:run` e `migration:revert` usam `node --import ts-node/register/transpile-only --require tsconfig-paths/register`.
+**npm / pnpm** — use `npm run` ou `pnpm run` nos mesmos nomes. Testes via **Vitest**; `migration:generate`, `migration:run` e `migration:revert` usam `node --import ts-node/register/transpile-only --require tsconfig-paths/register`. Ao iniciar a API (`start:dev` / `start:prod`), migrations pendentes já são aplicadas via `dataSourceFactory` → `runMigrations()`; `migration:run` serve como fallback / CI.

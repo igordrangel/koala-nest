@@ -21,7 +21,7 @@ The default Swagger UI is **disabled**; only Scalar is displayed.
 | File | Function |
 | --- | --- |
 | `src/host/open-api/define-documentation.ts` | Builds the spec and registers Scalar |
-| `src/host/main.ts` | Calls `defineDocumentation(app)` on bootstrap |
+| `src/host/main.ts` | Calls `await defineDocumentation(app)` on bootstrap |
 | `src/host/decorators/controller.decorator.ts` | Applies Nest route + Swagger tag |
 | `src/host/decorators/api-exclude-endpoint-diff-develop.decorator.ts` | Hides endpoint outside `develop` |
 | `src/host/decorators/api-property-only-develop.decorator.ts` | Documents DTO property only in `develop` |
@@ -85,6 +85,9 @@ protected get schema() {
 In `src/host/main.ts`, after creating the application:
 
 ```typescript
+import 'dotenv/config';
+import '@koalarx/utils/prototypes';
+
 import { defineDocumentation } from './open-api/define-documentation';
 
 async function bootstrap() {
@@ -92,7 +95,7 @@ async function bootstrap() {
 
   // applyHttpMiddleware(app) — see HTTP middleware guide
 
-  defineDocumentation(app);
+  await defineDocumentation(app);
 
   await app.listen(process.env.PORT || 3000);
 }
@@ -116,7 +119,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import packageJson from '../../../package.json';
 import { apiReference } from '@scalar/nestjs-api-reference';
 
-export function defineDocumentation(app: INestApplication) {
+export async function defineDocumentation(app: INestApplication) {
   const documentBuilder = new DocumentBuilder()
     .setTitle(packageJson.name)
     .setVersion(packageJson.version)
