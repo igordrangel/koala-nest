@@ -1,0 +1,11 @@
+---
+description: Domain — entidades e contratos
+globs: src/domain/**/*.ts
+alwaysApply: false
+---
+
+# Domain
+
+- Entidades com `@Entity` de `@/core/database/entity` (registra no `DbContext`).
+- Contratos de repositório em `domain/repositories`; implementação em `infra`.
+- Sem detalhes de TypeORM Connection/QueryBuilder na entidade de domínio além do padrão do template.

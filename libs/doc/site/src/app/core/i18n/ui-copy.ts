@@ -96,7 +96,7 @@ export const UI_COPY = {
       {
         title: 'Scaffolding inteligente',
         description:
-          'Fluxo interativo para nome, gerenciador de pacotes (Bun recomendado), template, autenticação (JWT/OAuth2) e extras (cache, health, cron, eventos). API Key em breve.',
+          'Fluxo interativo para nome, gerenciador de pacotes (Bun recomendado), template, autenticação (JWT/OAuth2/API Key) e extras (cache, health, cron, eventos).',
       },
       {
         title: 'Templates úteis',
@@ -217,7 +217,7 @@ export const UI_COPY = {
       {
         title: 'Smart Scaffolding',
         description:
-          'Interactive flow for project name, package manager (Bun recommended), template, auth (JWT/OAuth2), and extras (cache, health, cron, events). API Key coming soon.',
+          'Interactive flow for project name, package manager (Bun recommended), template, auth (JWT/OAuth2/API Key), and extras (cache, health, cron, events).',
       },
       {
         title: 'Useful Templates',

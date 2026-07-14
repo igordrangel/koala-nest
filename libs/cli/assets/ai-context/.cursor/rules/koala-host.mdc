@@ -1,0 +1,12 @@
+---
+description: Host — controllers, rotas e security
+globs: src/host/**/*.ts
+alwaysApply: false
+---
+
+# Host
+
+- Controllers finos: delegam ao handler; usam `RouterConfig` / `RouterConfigBase` do template.
+- Não coloque regras de negócio no controller.
+- Auth/guards/decorators: reutilize o que já existe em `host/security` se auth estiver instalada.
+- OpenAPI via padrões do template (`define-documentation`, decorators locais).

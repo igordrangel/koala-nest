@@ -4,9 +4,19 @@ import {
   Template,
   resolveNewProjectOptions,
 } from '@cli/constants/domain';
+import {
+  AI_CONTEXT_AGENTS_PATH,
+  AI_CONTEXT_CURSOR_RULE_PATHS,
+  AI_CONTEXT_GITHUB_PATH,
+} from '@cli/constants/ai-context';
 import { resolveProjectFeatures } from '@cli/utils/install-module';
 
 export type CacheLevel = false | 'memory' | 'redis';
+
+export type AiContextExpectation = {
+  cursor: boolean;
+  github: boolean;
+};
 
 /** Estado esperado de um projeto gerado pela CLI (`new` / `add`). */
 export type ProjectExpectation = {
@@ -16,6 +26,7 @@ export type ProjectExpectation = {
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  aiContext?: AiContextExpectation;
 };
 
 /** Infraestrutura E2E presente em todo projeto gerado. */
@@ -44,6 +55,17 @@ export const WORKSPACE_SETUP_PATHS = [
   '.vscode/tasks.json',
   '.vscode/extensions.json',
   '.env',
+] as const;
+
+/** Contexto AI gerado pela CLI (Cursor / GitHub Copilot). */
+export const AI_CONTEXT_AGENTS_REQUIRED_PATHS = [AI_CONTEXT_AGENTS_PATH] as const;
+
+export const AI_CONTEXT_CURSOR_REQUIRED_PATHS = [
+  ...AI_CONTEXT_CURSOR_RULE_PATHS,
+] as const;
+
+export const AI_CONTEXT_GITHUB_REQUIRED_PATHS = [
+  AI_CONTEXT_GITHUB_PATH,
 ] as const;
 
 /** Núcleo comum a qualquer projeto Koala Nest. */
@@ -131,7 +153,11 @@ export const EVENTS_REQUIRED_PATHS = [
   'src/core/background-services/event-service/event-handler.base.ts',
 ] as const;
 
-export const AUTH_JWT_PACKAGES = ['@nestjs/jwt', 'passport-jwt'] as const;
+export const AUTH_JWT_PACKAGES = [
+  '@nestjs/jwt',
+  'passport-jwt',
+  'passport-custom',
+] as const;
 
 /** Combinações representativas do comando `new` para testes parametrizados. */
 export const CLI_NEW_SELECTION_MATRIX: readonly {
@@ -229,6 +255,7 @@ export function buildProjectExpectation(
   template: Template,
   auth: readonly AuthStrategy[],
   features: readonly ExtraFeature[],
+  aiContext: AiContextExpectation = { cursor: false, github: false },
 ): ProjectExpectation {
   const resolved = resolveNewProjectOptions(template, [...auth], [...features]);
   const projectFeatures = resolveProjectFeatures(
@@ -251,6 +278,7 @@ export function buildProjectExpectation(
     health: projectFeatures.health,
     cronJobs: projectFeatures.cronJobs,
     eventJobs: projectFeatures.eventJobs,
+    aiContext,
   };
 }
 
@@ -287,6 +315,20 @@ export function requiredPathsForExpectation(
     paths.push(...EVENTS_REQUIRED_PATHS);
   }
 
+  const aiContext = expectation.aiContext ?? { cursor: false, github: false };
+
+  if (aiContext.cursor || aiContext.github) {
+    paths.push(...AI_CONTEXT_AGENTS_REQUIRED_PATHS);
+  }
+
+  if (aiContext.cursor) {
+    paths.push(...AI_CONTEXT_CURSOR_REQUIRED_PATHS);
+  }
+
+  if (aiContext.github) {
+    paths.push(...AI_CONTEXT_GITHUB_REQUIRED_PATHS);
+  }
+
   return paths;
 }
 
@@ -317,6 +359,20 @@ export function forbiddenPathsForExpectation(
 
   if (!expectation.eventJobs) {
     paths.push(...EVENTS_REQUIRED_PATHS);
+  }
+
+  const aiContext = expectation.aiContext ?? { cursor: false, github: false };
+
+  if (!aiContext.cursor && !aiContext.github) {
+    paths.push(...AI_CONTEXT_AGENTS_REQUIRED_PATHS);
+  }
+
+  if (!aiContext.cursor) {
+    paths.push(...AI_CONTEXT_CURSOR_REQUIRED_PATHS);
+  }
+
+  if (!aiContext.github) {
+    paths.push(...AI_CONTEXT_GITHUB_REQUIRED_PATHS);
   }
 
   return paths;

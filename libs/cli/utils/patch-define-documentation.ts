@@ -231,6 +231,7 @@ export function syncDefineDocumentationForProject(
 ) {
   const hasJwt = strategies.includes(AuthStrategy.JWT);
   const hasOauth = strategies.includes(AuthStrategy.OAUTH2);
+  const hasApiKey = strategies.includes(AuthStrategy.API_KEY);
   const targetPath = path.join(
     resolveProjectPath(projectName),
     'src/host/open-api/define-documentation.ts',
@@ -238,7 +239,7 @@ export function syncDefineDocumentationForProject(
 
   mkdirSync(path.dirname(targetPath), { recursive: true });
 
-  if (hasJwt && !hasOauth) {
+  if (hasJwt && !hasOauth && !hasApiKey) {
     writeFileSync(targetPath, defineDocumentationJwtOnly);
     return;
   }

@@ -6,6 +6,7 @@ Ao introduzir mudanças **visíveis** na CLI, nos templates (`libs/koala-nest`),
 2. Atualize **`CHANGELOG.md`** na raiz na seção da versão que está subindo (sem seção `[Unreleased]` — só o que já foi ou será publicado).
 3. Se a mudança afetar onboarding ou scripts destacados, ajuste o **`README.md`** (links ou bullets em “Novidades” / scripts).
 4. Não mantenha camadas legadas “só por compatibilidade” na CLI — documente o upgrade nos patch notes.
+5. Se a mudança alterar padrões que agentes devem seguir no projeto gerado (camadas, bases, auth, docs URLs, utils), revise **`libs/cli/assets/ai-context/`** (`AGENTS.md`, `.cursor/rules`, Copilot instructions) para o vibecoding dos consumidores não ficar desatualizado.
 
 ## O que registrar
 

@@ -11,6 +11,7 @@ export const AuthChoice = {
   NONE: 'none',
   JWT: 'jwt',
   OAUTH2: 'oauth2',
+  API_KEY: 'api-key',
 } as const;
 
 export type AuthChoice = (typeof AuthChoice)[keyof typeof AuthChoice];
@@ -19,9 +20,13 @@ export type AuthChoice = (typeof AuthChoice)[keyof typeof AuthChoice];
 export const AuthStrategy = {
   JWT: AuthChoice.JWT,
   OAUTH2: AuthChoice.OAUTH2,
+  API_KEY: AuthChoice.API_KEY,
 } as const;
 
 export type AuthStrategy = (typeof AuthStrategy)[keyof typeof AuthStrategy];
+
+export const AUTH_STRATEGY_USAGE =
+  'none, jwt, oauth2, jwt,oauth2, jwt,api-key, oauth2,api-key ou jwt,oauth2,api-key';
 
 /** Features opcionais expostas na CLI (`new` / `add`). */
 export const ExtraFeature = {
@@ -47,6 +52,7 @@ export enum InstallModule {
 export const AddArgKind = {
   AUTH: 'auth',
   FEATURE: 'feature',
+  AI_CONTEXT: 'ai-context',
 } as const;
 
 export type AddArgKind = (typeof AddArgKind)[keyof typeof AddArgKind];
@@ -117,10 +123,13 @@ export const ProjectMarker = {
   PERSON_MODULE: 'PersonModule',
   SECURITY_MODULE: 'SecurityModule',
   AUTH_MODULE: 'AuthModule',
+  API_KEY_MODULE: 'ApiKeyModule',
+  API_KEY_STRATEGY: 'ApiKeyStrategy',
   HEALTH_CHECK_MODULE: 'HealthCheckModule',
   CACHE_SERVICE_PROVIDER: 'CacheServiceProvider',
   OAUTH_AUTH_LINK_HANDLER: 'OAuthAuthLinkHandler',
   REDIS_INDICATOR: 'RedisIndicator',
+  INTERNAL_SUBNET_VALIDATOR: 'InternalSubnetValidator',
 } as const;
 
 export const DDD_LAYER_FOLDERS = [
@@ -151,12 +160,31 @@ export function isAuthChoice(value: string): value is AuthChoice {
   return (
     value === AuthChoice.NONE ||
     value === AuthChoice.JWT ||
-    value === AuthChoice.OAUTH2
+    value === AuthChoice.OAUTH2 ||
+    value === AuthChoice.API_KEY
   );
 }
 
 export function isAuthStrategy(value: string): value is AuthStrategy {
-  return value === AuthStrategy.JWT || value === AuthStrategy.OAUTH2;
+  return (
+    value === AuthStrategy.JWT ||
+    value === AuthStrategy.OAUTH2 ||
+    value === AuthStrategy.API_KEY
+  );
+}
+
+export function assertAuthStrategiesCombination(
+  strategies: readonly AuthStrategy[],
+) {
+  if (
+    strategies.includes(AuthStrategy.API_KEY) &&
+    !strategies.includes(AuthStrategy.JWT) &&
+    !strategies.includes(AuthStrategy.OAUTH2)
+  ) {
+    throw new Error(
+      `API Key é aditiva e não pode ser usada sozinha. Use: jwt,api-key, oauth2,api-key ou jwt,oauth2,api-key.`,
+    );
+  }
 }
 
 export function parseAuthStrategies(
@@ -168,7 +196,7 @@ export function parseAuthStrategies(
   if (normalized === AuthChoice.NONE || normalized === '') {
     if (template === Template.CRUD_SAMPLE) {
       throw new Error(
-        'Template CRUD exige autenticação. Use: --auth jwt, --auth oauth2 ou --auth jwt,oauth2.',
+        `Template CRUD exige autenticação. Use: --auth jwt, --auth oauth2, --auth jwt,oauth2 ou com api-key (${AUTH_STRATEGY_USAGE}).`,
       );
     }
 
@@ -185,11 +213,13 @@ export function parseAuthStrategies(
       }
 
       throw new Error(
-        `Autenticação desconhecida: "${item}". Use: none, jwt, oauth2 ou jwt,oauth2.`,
+        `Autenticação desconhecida: "${item}". Use: ${AUTH_STRATEGY_USAGE}.`,
       );
     });
 
-  return Array.from(new Set(strategies));
+  const unique = Array.from(new Set(strategies));
+  assertAuthStrategiesCombination(unique);
+  return unique;
 }
 
 export function formatAuthStrategies(strategies: readonly AuthStrategy[]): string {
@@ -202,6 +232,7 @@ export function formatAuthStrategies(strategies: readonly AuthStrategy[]): strin
 
 export function resolveAuthStrategiesFromModule(
   authModuleSource: string,
+  extras?: { appModuleSource?: string; securityModuleSource?: string },
 ): AuthStrategy[] {
   const strategies: AuthStrategy[] = [];
 
@@ -211,6 +242,14 @@ export function resolveAuthStrategiesFromModule(
 
   if (authModuleSource.includes(ProjectMarker.OAUTH_AUTH_LINK_HANDLER)) {
     strategies.push(AuthStrategy.OAUTH2);
+  }
+
+  const hasApiKey =
+    extras?.appModuleSource?.includes(ProjectMarker.API_KEY_MODULE) ||
+    extras?.securityModuleSource?.includes(ProjectMarker.API_KEY_STRATEGY);
+
+  if (hasApiKey) {
+    strategies.push(AuthStrategy.API_KEY);
   }
 
   return strategies;
@@ -237,7 +276,7 @@ export function listMissingAuthStrategies(
 ): AuthStrategy[] {
   const current = installed === false ? [] : installed;
 
-  return [AuthStrategy.JWT, AuthStrategy.OAUTH2].filter(
+  return [AuthStrategy.JWT, AuthStrategy.OAUTH2, AuthStrategy.API_KEY].filter(
     (strategy) => !current.includes(strategy),
   );
 }

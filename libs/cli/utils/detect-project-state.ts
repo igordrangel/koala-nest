@@ -1,7 +1,15 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
+  AI_CONTEXT_CURSOR_MARKER,
+  AI_CONTEXT_GITHUB_PATH,
+  listMissingAiContextTargets,
+  parseAiContextTarget,
+  type AiContextTarget as AiContextTargetType,
+} from '@cli/constants/ai-context';
+import {
   AddArgKind,
+  AuthStrategy,
   ExtraFeature,
   FEATURE_ALIASES,
   isAuthStrategy,
@@ -16,6 +24,11 @@ import { resolveProjectPath } from './resolve-project-path';
 
 export type CacheLevel = false | 'memory' | 'redis';
 
+export type AiContextState = {
+  cursor: boolean;
+  github: boolean;
+};
+
 export type ProjectState = {
   template: Template;
   auth: false | AuthStrategyType[];
@@ -23,6 +36,7 @@ export type ProjectState = {
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  aiContext: AiContextState;
 };
 
 export function assertKoalaProject(projectName = ''): string {
@@ -72,7 +86,18 @@ export function detectProjectState(projectName = ''): ProjectState {
     existsSync(authModulePath) &&
     appModule.includes(ProjectMarker.SECURITY_MODULE)
   ) {
-    auth = resolveAuthStrategiesFromModule(authModule);
+    const securityModulePath = path.join(
+      resolveProjectPath(projectName),
+      'src/host/security/security.module.ts',
+    );
+    const securityModule = existsSync(securityModulePath)
+      ? readFileSync(securityModulePath, 'utf8')
+      : '';
+
+    auth = resolveAuthStrategiesFromModule(authModule, {
+      appModuleSource: appModule,
+      securityModuleSource: securityModule,
+    });
   }
 
   let cache: CacheLevel = false;
@@ -89,23 +114,26 @@ export function detectProjectState(projectName = ''): ProjectState {
     cache = hasRedisFile ? 'redis' : 'memory';
   }
 
+  const projectRoot = resolveProjectPath(projectName);
+
   return {
     template: hasPersonModule ? Template.CRUD_SAMPLE : Template.DEFAULT,
     auth,
     cache,
     health: appModule.includes(ProjectMarker.HEALTH_CHECK_MODULE),
     cronJobs: existsSync(
-      path.join(
-        resolveProjectPath(projectName),
-        'src/core/utils/cron-expression-to-boolean.ts',
-      ),
+      path.join(projectRoot, 'src/core/utils/cron-expression-to-boolean.ts'),
     ),
     eventJobs: existsSync(
       path.join(
-        resolveProjectPath(projectName),
+        projectRoot,
         'src/core/background-services/event-service/event-handler.base.ts',
       ),
     ),
+    aiContext: {
+      cursor: existsSync(path.join(projectRoot, AI_CONTEXT_CURSOR_MARKER)),
+      github: existsSync(path.join(projectRoot, AI_CONTEXT_GITHUB_PATH)),
+    },
   };
 }
 
@@ -128,15 +156,36 @@ export function listAvailableAddOptions(state: ProjectState) {
     features.push(ExtraFeature.INTERNAL_EVENT_JOBS);
   }
 
+  const missing = listMissingAuthStrategies(state.auth);
+  const installed = state.auth === false ? [] : state.auth;
+  const hasHumanAuth =
+    installed.includes(AuthStrategy.JWT) ||
+    installed.includes(AuthStrategy.OAUTH2);
+
   return {
-    authStrategies: listMissingAuthStrategies(state.auth),
+    authStrategies: missing.filter((strategy) => {
+      if (strategy !== AuthStrategy.API_KEY) {
+        return true;
+      }
+
+      return hasHumanAuth;
+    }),
     features,
+    aiContextTargets: listMissingAiContextTargets(state.aiContext),
   };
 }
 
 export type AddArg =
-  | { kind: typeof AddArgKind.AUTH; strategies: AuthStrategyType[] }
-  | { kind: typeof AddArgKind.FEATURE; feature: ExtraFeature };
+  | {
+      kind: typeof AddArgKind.AUTH;
+      strategies: AuthStrategyType[];
+      apiKeyInternalSubnet?: boolean;
+    }
+  | { kind: typeof AddArgKind.FEATURE; feature: ExtraFeature }
+  | {
+      kind: typeof AddArgKind.AI_CONTEXT;
+      targets: AiContextTargetType[];
+    };
 
 export function parseAddArgs(args: string[]): AddArg[] {
   const parsed: AddArg[] = [];
@@ -165,13 +214,55 @@ export function parseAddArgs(args: string[]): AddArg[] {
 
       if (strategies.length === 0) {
         throw new Error(
-          'Use: kl-nest add auth jwt  ou  kl-nest add auth oauth2  ou  kl-nest add auth jwt oauth2',
+          'Use: kl-nest add auth jwt  ou  kl-nest add auth oauth2  ou  kl-nest add auth jwt api-key',
         );
+      }
+
+      let apiKeyInternalSubnet = false;
+
+      if (args[cursor]?.toLowerCase() === '--api-key-internal-subnet') {
+        apiKeyInternalSubnet = true;
+        cursor += 1;
       }
 
       parsed.push({
         kind: AddArgKind.AUTH,
         strategies: Array.from(new Set(strategies)),
+        apiKeyInternalSubnet,
+      });
+      index = cursor - 1;
+      continue;
+    }
+
+    if (arg === AddArgKind.AI_CONTEXT) {
+      const targets: AiContextTargetType[] = [];
+      let cursor = index + 1;
+
+      while (cursor < args.length) {
+        const token = args[cursor]?.toLowerCase();
+
+        if (!token) {
+          break;
+        }
+
+        try {
+          targets.push(parseAiContextTarget(token));
+        } catch {
+          break;
+        }
+
+        cursor += 1;
+      }
+
+      if (targets.length === 0) {
+        throw new Error(
+          'Use: kl-nest add ai-context cursor  ou  kl-nest add ai-context github  ou  kl-nest add ai-context cursor github',
+        );
+      }
+
+      parsed.push({
+        kind: AddArgKind.AI_CONTEXT,
+        targets: Array.from(new Set(targets)),
       });
       index = cursor - 1;
       continue;
@@ -181,7 +272,7 @@ export function parseAddArgs(args: string[]): AddArg[] {
 
     if (!feature) {
       throw new Error(
-        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events.`,
+        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, ai-context.`,
       );
     }
 
@@ -194,6 +285,8 @@ export function parseAddArgs(args: string[]): AddArg[] {
 export function dedupeAddArgs(args: AddArg[]): AddArg[] {
   const seenFeatures = new Set<ExtraFeature>();
   const authStrategies = new Set<AuthStrategyType>();
+  const aiContextTargets = new Set<AiContextTargetType>();
+  let apiKeyInternalSubnet = false;
   const result: AddArg[] = [];
 
   for (const arg of args) {
@@ -201,6 +294,19 @@ export function dedupeAddArgs(args: AddArg[]): AddArg[] {
       for (const strategy of arg.strategies) {
         authStrategies.add(strategy);
       }
+
+      if (arg.apiKeyInternalSubnet) {
+        apiKeyInternalSubnet = true;
+      }
+
+      continue;
+    }
+
+    if (arg.kind === AddArgKind.AI_CONTEXT) {
+      for (const target of arg.targets) {
+        aiContextTargets.add(target);
+      }
+
       continue;
     }
 
@@ -214,6 +320,14 @@ export function dedupeAddArgs(args: AddArg[]): AddArg[] {
     result.unshift({
       kind: AddArgKind.AUTH,
       strategies: Array.from(authStrategies),
+      apiKeyInternalSubnet,
+    });
+  }
+
+  if (aiContextTargets.size > 0) {
+    result.push({
+      kind: AddArgKind.AI_CONTEXT,
+      targets: Array.from(aiContextTargets),
     });
   }
 

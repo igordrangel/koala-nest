@@ -47,8 +47,11 @@ The `new` command prompts for:
 - project name;
 - package manager (`bun`, `npm`, or `pnpm` — Bun recommended);
 - template (**Default** or **CRUD Example**);
-- authentication strategy (**JWT** or **OAuth2** — required on CRUD);
-- extra features (**Default**: cache, health, cron, events; **CRUD**: health check only — auth, Redis cache, and jobs are bundled).
+- authentication strategy (**JWT**, **OAuth2**, and/or **API Key** — required on CRUD; API Key is additive);
+- extra features (**Default**: cache, health, cron, events; **CRUD**: health check only — auth, Redis cache, and jobs are bundled);
+- **AI context** for vibecoding: **Cursor** (`.cursor/rules` + `AGENTS.md`), **GitHub Copilot** (`.github/copilot-instructions.md` + `AGENTS.md`), both, or none.
+
+With `-y` / `--yes`, AI context is **not** generated (same as empty features). You can add it later with `kl-nest add ai-context cursor` (and/or `github`).
 
 The **core** module installs only essentials (`@koalarx/utils`, `@nestjs/config`, `@nestjs/swagger`, `typeorm`, `pg`, `zod`, `@scalar/nestjs-api-reference`). Extra dependencies are added based on selected options:
 
@@ -84,6 +87,9 @@ kl-nest add
 kl-nest add cache
 kl-nest add auth jwt
 kl-nest add health cron events
+kl-nest add ai-context cursor
+kl-nest add ai-context github
+kl-nest add ai-context cursor github
 ```
 
 | Item | Command | Notes |
@@ -94,6 +100,8 @@ kl-nest add health cron events
 | Health check | `kl-nest add health` | Terminus: PostgreSQL ping + Redis (when configured) |
 | Cron jobs | `kl-nest add cron` | Requires in-memory cache (installed automatically) |
 | Event jobs | `kl-nest add events` | On CRUD, restores example handlers |
+| AI context (Cursor) | `kl-nest add ai-context cursor` | `AGENTS.md` + `.cursor/rules` (does not overwrite existing files) |
+| AI context (Copilot) | `kl-nest add ai-context github` | `AGENTS.md` + `.github/copilot-instructions.md` |
 
 ## Templates
 
@@ -103,7 +111,7 @@ kl-nest add health cron events
 
 ## Environment variables
 
-After creating the project, configure a `.env` at the root:
+After creating the project, the CLI already generates a `.env` from `.env.example` (with `DATABASE_URL` adjusted to the project name). With JWT / OAuth2 / API Key authentication, `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY` are also generated automatically in `.env`.
 
 ```env
 PORT=3000

@@ -141,19 +141,39 @@ describe('parseAddArgs', () => {
 
   it('aceita auth com estratégia', () => {
     expect(parseAddArgs(['auth', 'oauth2', 'cache'])).toEqual([
-      { kind: 'auth', strategies: ['oauth2'] },
+      { kind: 'auth', strategies: ['oauth2'], apiKeyInternalSubnet: false },
       { kind: 'feature', feature: 'cache' },
     ]);
   });
 
   it('aceita múltiplas estratégias de auth', () => {
     expect(parseAddArgs(['auth', 'jwt', 'oauth2'])).toEqual([
-      { kind: 'auth', strategies: ['jwt', 'oauth2'] },
+      {
+        kind: 'auth',
+        strategies: ['jwt', 'oauth2'],
+        apiKeyInternalSubnet: false,
+      },
     ]);
   });
 
   it('rejeita auth sem estratégia', () => {
     expect(() => parseAddArgs(['auth'])).toThrow(/auth jwt/);
+  });
+
+  it('aceita ai-context com alvos', () => {
+    expect(parseAddArgs(['ai-context', 'cursor', 'github'])).toEqual([
+      { kind: 'ai-context', targets: ['cursor', 'github'] },
+    ]);
+  });
+
+  it('aceita alias copilot para github', () => {
+    expect(parseAddArgs(['ai-context', 'copilot'])).toEqual([
+      { kind: 'ai-context', targets: ['github'] },
+    ]);
+  });
+
+  it('rejeita ai-context sem alvos', () => {
+    expect(() => parseAddArgs(['ai-context'])).toThrow(/ai-context cursor/);
   });
 });
 
@@ -165,10 +185,17 @@ describe('dedupeAddArgs', () => {
         { kind: 'feature', feature: 'cache' },
         { kind: 'auth', strategies: ['jwt'] },
         { kind: 'auth', strategies: ['oauth2'] },
+        { kind: 'ai-context', targets: ['cursor'] },
+        { kind: 'ai-context', targets: ['github', 'cursor'] },
       ]),
     ).toEqual([
-      { kind: 'auth', strategies: ['jwt', 'oauth2'] },
+      {
+        kind: 'auth',
+        strategies: ['jwt', 'oauth2'],
+        apiKeyInternalSubnet: false,
+      },
       { kind: 'feature', feature: 'cache' },
+      { kind: 'ai-context', targets: ['cursor', 'github'] },
     ]);
   });
 });
@@ -195,6 +222,7 @@ describe('detectProjectState', () => {
         health: true,
         cronJobs: true,
         eventJobs: true,
+        aiContext: { cursor: false, github: false },
       });
     } finally {
       process.chdir(previousCwd);

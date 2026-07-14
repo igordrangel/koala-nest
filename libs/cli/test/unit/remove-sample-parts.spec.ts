@@ -32,13 +32,17 @@ describe('removeSampleParts', () => {
     mkdirSync(path.join(srcDir, 'application/mapping'), { recursive: true });
     mkdirSync(path.join(srcDir, 'test/application'), { recursive: true });
 
+    const templateRepositoryModule = path.resolve(
+      import.meta.dir,
+      '../../../koala-nest/src/infra/repositories/repository.module.ts',
+    );
     writeFileSync(
       path.join(srcDir, 'host/app.module.ts'),
       `import { PersonModule } from './controllers/person/person.module';\n@Module({ imports: [PersonModule,\n] })`,
     );
     writeFileSync(
       path.join(srcDir, 'infra/repositories/repository.module.ts'),
-      `import { IPersonRepository } from '@/domain/repositories/iperson.repository';\nimport { PersonRepository } from '@/infra/repositories/person.repository';\nproviders: [{ provide: IPersonRepository, useClass: PersonRepository }],\nexports: [DatabaseModule, IPersonRepository],`,
+      readFileSync(templateRepositoryModule, 'utf8'),
     );
     writeFileSync(
       path.join(srcDir, 'application/mapping/mapping.provider.ts'),
@@ -60,18 +64,15 @@ describe('removeSampleParts', () => {
         'utf8',
       );
       expect(appModule).not.toContain('PersonModule');
-      expect(
-        readFileSync(
-          path.join(srcDir, 'infra/repositories/repository.module.ts'),
-          'utf8',
-        ),
-      ).not.toContain('IPersonRepository');
-      expect(
-        readFileSync(
-          path.join(srcDir, 'infra/repositories/repository.module.ts'),
-          'utf8',
-        ),
-      ).not.toContain('PersonRepository');
+      const repositoryModule = readFileSync(
+        path.join(srcDir, 'infra/repositories/repository.module.ts'),
+        'utf8',
+      );
+      expect(repositoryModule).not.toContain('IPersonRepository');
+      expect(repositoryModule).not.toContain('PersonRepository');
+      expect(repositoryModule).not.toContain('IUserRepository');
+      expect(repositoryModule).not.toContain('IApiKeyRepository');
+      expect(repositoryModule).toContain('exports: [DatabaseModule]');
     } finally {
       process.chdir(previousCwd);
     }

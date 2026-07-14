@@ -11,9 +11,14 @@ import { syncAuthStrategySupportFiles } from './sync-auth-strategy-files';
 import {
   installAuthArtifactsForStrategies,
   pruneAuthArtifactsForStrategies,
+  syncApiKeyArtifactsForStrategies,
 } from './prune-auth-strategies';
 
 export type { AuthStrategy } from '@cli/constants/domain';
+
+export type PatchAuthInstallOptions = {
+  apiKeyInternalSubnet?: boolean;
+};
 
 function patchFile(
   projectName: string,
@@ -288,6 +293,7 @@ export function syncSecurityModuleForProject(
 export async function patchAuthInstall(
   projectName: string,
   strategies: AuthStrategy[],
+  options: PatchAuthInstallOptions = {},
 ) {
   if (strategies.length === 0) {
     throw new Error('Informe ao menos uma estratégia de autenticação.');
@@ -334,5 +340,8 @@ export async function patchAuthInstall(
   syncDefineDocumentationForProject(projectName, strategies);
   syncAuthStrategySupportFiles(projectName, strategies);
   pruneAuthArtifactsForStrategies(projectName, strategies);
+  syncApiKeyArtifactsForStrategies(projectName, strategies, {
+    apiKeyInternalSubnet: options.apiKeyInternalSubnet,
+  });
   patchEnvForAuthStrategies(projectName, strategies);
 }

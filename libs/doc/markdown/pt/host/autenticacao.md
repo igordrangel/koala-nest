@@ -4,12 +4,12 @@ slug: autenticacao
 category: host
 docKey: host/autenticacao
 order: 4
-description: JWT, guards globais, rotas públicas e OAuth2 genérico.
+description: JWT, guards globais, rotas públicas, OAuth2 genérico e API Key.
 ---
 
 # Autenticação
 
-O módulo de autenticação é opcional na CLI (`kl-nest new` → **JWT** ou **OAuth2** ). Com JWT, o template inclui entidade `User`, login por e-mail/senha e emissão de tokens RS256. Com OAuth2, usuários são criados ou reutilizados após o fluxo authorization code.
+O módulo de autenticação é opcional na CLI (`kl-nest new` → **JWT**, **OAuth2** e/ou **API Key**). Com JWT, o template inclui entidade `User`, login por e-mail/senha e emissão de tokens RS256. Com OAuth2, usuários são criados ou reutilizados após o fluxo authorization code. **API Key** é aditiva (exige JWT e/ou OAuth2) e autentica chamadas machine-to-machine na borda HTTP.
 
 A instalação de auth **não** altera `data-source-factory.ts`: a entidade `User` entra no DataSource via `@Entity` (DbContext) e o `UserRepository` é registrado no `RepositoryModule`.
 
@@ -18,7 +18,7 @@ A instalação de auth **não** altera `data-source-factory.ts`: a entidade `Use
 | Peça | Função |
 | --- | --- |
 | `SecurityModule` | Configura JWT RS256, Passport e serviços de token/OAuth2 |
-| `AuthGuard` | Guard global — valida Bearer token |
+| `AuthGuard` | Guard global — valida Bearer JWT e/ou header `ApiKey` |
 | `ProfilesGuard` | Guard global — restringe por perfil do token |
 | `@IsPublic()` | Marca rotas que ignoram o `AuthGuard` |
 | `@RestrictionByProfile([AuthProfile.admin])` | Restringe endpoint aos perfis informados |
@@ -252,12 +252,37 @@ app.useGlobalGuards(
 
 O bootstrap de jobs inscreve handlers de eventos e inicia CronJobs apenas quando `CRON_JOBS_ENABLED=true`. O atraso antes de iniciar os jobs é controlado por `BOOTSTRAP_DELAY_MS`.
 
+## API Key (M2M)
+
+API Key autentica callers HTTP síncronos (integrações, BFF, hops pontuais entre serviços). **Não** substitui broker/eventos nem obriga proxy de arquivos — storage em cloud + mensageria continuam a escolha preferível para domínio escalável. A strategy fica no host; handlers só veem o usuário já autenticado via `ILoggedUserInfoService`.
+
+CLI: `--auth jwt,api-key` (ou `oauth2,api-key` / `jwt,oauth2,api-key`). Flag opcional `--api-key-internal-subnet` libera IPs privados (RFC1918) no tipo `domain` para pods no cluster.
+
+### CRUD e token
+
+- Endpoints em `/api-key` (criar/listar/ler/atualizar/excluir), escopados ao usuário autenticado
+- Na criação, a chave é um JWT RS256 com `typ: api-key`, `sub` = userId, `iss` = id da chave — retornada **só** neste response
+- Uso: header `ApiKey: <jwt>`
+
+### Tipos de origem (`origin` CSV)
+
+| Tipo | Validação |
+| --- | --- |
+| `host` | `req.hostname` na lista |
+| `uri` | hostname + path (sem params de rota) |
+| `domain` | IP do cliente vs IP cadastrado **ou** domínio (reverse DNS / resolve A/AAAA). Sem headers `Origin`/`Referer` |
+
+`*` na lista libera só em `develop`/`test`. Com subnet interna habilitada, IPs privados também passam no tipo `domain` sem cadastrar cada pod.
+
+Configure `trust proxy` se a API estiver atrás de load balancer / ingress.
+
 ## Autenticacao no Scalar
 
-Com autenticação instalada, o Scalar obtém o JWT automaticamente via `authentication` no `apiReference`:
+Com autenticação instalada, o Scalar obtém credenciais via `authentication` no `apiReference`:
 
 - **JWT:** esquema **JWT** (fluxo password) → `POST /auth/login`
 - **OAuth2:** um esquema por provider (authorization code) → `POST /oauth2/scalar-token`
+- **API Key:** esquema **ApiKey** (header `ApiKey`)
 
 Guia completo: [OpenAPI com Scalar](./openapi-scalar.md#autenticacao-automatica-no-scalar)
 

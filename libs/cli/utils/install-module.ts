@@ -56,6 +56,7 @@ export {
 
 export type InstallModuleOptions = {
   authStrategies?: AuthStrategy[];
+  apiKeyInternalSubnet?: boolean;
   withRedis?: boolean;
   withRedisIndicator?: boolean;
   skipPackages?: boolean;
@@ -406,6 +407,7 @@ export async function installModule(
         options.authStrategies?.length
           ? options.authStrategies
           : [AuthStrategy.JWT],
+        { apiKeyInternalSubnet: options.apiKeyInternalSubnet },
       );
       break;
     }

@@ -13,6 +13,7 @@ import {
   assertAuthStrategyPaths,
   installAuthArtifactsForStrategies,
   pruneAuthArtifactsForStrategies,
+  stripApiKeyFromRepositoryModule,
 } from '@cli/utils/prune-auth-strategies.ts';
 import { getSourceCodePath } from '@cli/utils/get-source-code-path.ts';
 
@@ -68,6 +69,43 @@ describe('patchSecurityModuleForJwt', () => {
     expect(content).not.toContain('IOAuth2Service');
     expect(content).not.toContain('OAuthProviderRegistry');
     expect(content).not.toContain('OAuth2AuthService');
+  });
+});
+
+describe('stripApiKeyFromRepositoryModule', () => {
+  it('remove IApiKeyRepository de providers e exports multilinha', () => {
+    const content = `import { IApiKeyRepository } from '@/domain/repositories/iapi-key.repository';
+import { IPersonRepository } from '@/domain/repositories/iperson.repository';
+import { IUserRepository } from '@/domain/repositories/iuser.repository';
+import { Module } from '@nestjs/common';
+import { DatabaseModule } from '@/infra/database/database.module';
+import { ApiKeyRepository } from '@/infra/repositories/api-key.repository';
+import { PersonRepository } from '@/infra/repositories/person.repository';
+import { UserRepository } from '@/infra/repositories/user.repository';
+
+@Module({
+  imports: [DatabaseModule],
+  providers: [
+    { provide: IPersonRepository, useClass: PersonRepository },
+    { provide: IUserRepository, useClass: UserRepository },
+    { provide: IApiKeyRepository, useClass: ApiKeyRepository },
+  ],
+  exports: [
+    DatabaseModule,
+    IPersonRepository,
+    IUserRepository,
+    IApiKeyRepository,
+  ],
+})
+export class RepositoryModule {}
+`;
+
+    const patched = stripApiKeyFromRepositoryModule(content);
+
+    expect(patched).not.toContain('IApiKeyRepository');
+    expect(patched).not.toContain('ApiKeyRepository');
+    expect(patched).toContain('IUserRepository');
+    expect(patched).toContain('IPersonRepository');
   });
 });
 

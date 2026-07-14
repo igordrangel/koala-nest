@@ -13,6 +13,24 @@ Changelog voltado a quem usa ou atualiza projetos gerados pela CLI. Detalhes té
 
 A versão publicada do pacote `@koalarx/nest` aparece no site e no `package.json` do repositório. O arquivo [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) na raiz espelha estas notas.
 
+## 4.3.0 — API Key (autenticação M2M)
+
+### O que mudou
+
+- **Nova estratégia aditiva `api-key`:** use com JWT e/ou OAuth2 (`--auth jwt,api-key`). Não pode ser escolhida sozinha.
+- **CRUD `/api-key`:** cria JWT RS256 long-lived (`typ: api-key`) e valida origem (`domain` / `host` / `uri`).
+- **Subnet interna opcional:** `--api-key-internal-subnet` (ou prompt na CLI) libera IPs privados entre pods no tipo `domain`.
+- **Scalar:** esquema `ApiKey` (header) além de JWT/OAuth2.
+- Doc de autenticação cobre o papel M2M sem substituir broker/storage.
+- **Contexto AI (vibecoding):** no `kl-nest new` (prompt) e no `kl-nest add ai-context cursor|github` — gera `AGENTS.md` e regras Cursor / instruções Copilot voltadas ao projeto gerado (docs-first + constraints DDD). Com `-y` não gera; use `add` depois. Não sobrescreve arquivos já existentes.
+- **Chaves JWT no `.env`:** ao escolher JWT, OAuth2 e/ou API Key no `new` ou no `add auth`, a CLI gera o par RS256 (`JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` em base64) e preenche o `.env`. Placeholders no `.env.example` ficam vazios; valores já preenchidos não são sobrescritos.
+
+### Upgrade
+
+Em projetos já gerados: `kl-nest add auth api-key` (com JWT/OAuth2 já instalado) e opcionalmente `--api-key-internal-subnet`. Gere/aplique a migration `CreateApiKey` e adicione `passport-custom` se necessário.
+
+Para contexto AI em projetos existentes: `kl-nest add ai-context cursor`, `github` ou ambos.
+
 ## 4.2.0 — Migrations e descoberta de entidades
 
 ### O que mudou

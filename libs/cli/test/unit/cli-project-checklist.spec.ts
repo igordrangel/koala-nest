@@ -23,6 +23,7 @@ describe('cli-project-checklist', () => {
       health: false,
       cronJobs: true,
       eventJobs: true,
+      aiContext: { cursor: false, github: false },
     });
   });
 
@@ -34,7 +35,21 @@ describe('cli-project-checklist', () => {
       cache: 'redis',
       cronJobs: true,
       eventJobs: true,
+      aiContext: { cursor: false, github: false },
     });
+  });
+
+  it('requiredPaths inclui contexto AI quando solicitado', () => {
+    const paths = requiredPathsForExpectation(
+      buildProjectExpectation(Template.DEFAULT, [], [], {
+        cursor: true,
+        github: true,
+      }),
+    );
+
+    expect(paths).toContain('AGENTS.md');
+    expect(paths).toContain('.cursor/rules/koala-layers.mdc');
+    expect(paths).toContain('.github/copilot-instructions.md');
   });
 
   it('buildProjectExpectation usa cache em memória para auth sem Redis', () => {

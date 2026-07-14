@@ -96,4 +96,37 @@ describe('install-workspace-config', () => {
       expected,
     );
   });
+
+  it('preenche chaves JWT vazias no .env ao copiar do .env.example', () => {
+    tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-workspace-jwt-'));
+    const projectDir = path.join(tempDir, 'my-api');
+    mkdirSync(projectDir, { recursive: true });
+
+    writeFileSync(
+      path.join(projectDir, '.env.example'),
+      'PORT=3000\nDATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest\nJWT_PRIVATE_KEY=\nJWT_PUBLIC_KEY=\n',
+    );
+
+    const previousCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      createEnvFromExample('my-api');
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const env = readFileSync(path.join(projectDir, '.env'), 'utf8');
+    const example = readFileSync(path.join(projectDir, '.env.example'), 'utf8');
+
+    expect(env).toContain('DATABASE_URL=postgresql://postgres:root@localhost:5432/my_api');
+    expect(env.match(/^JWT_PRIVATE_KEY=(.+)$/m)?.[1]?.length).toBeGreaterThan(
+      100,
+    );
+    expect(env.match(/^JWT_PUBLIC_KEY=(.+)$/m)?.[1]?.length).toBeGreaterThan(
+      100,
+    );
+    expect(example).toMatch(/^JWT_PRIVATE_KEY=$/m);
+    expect(example).toMatch(/^JWT_PUBLIC_KEY=$/m);
+  });
 });

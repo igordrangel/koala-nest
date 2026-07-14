@@ -9,6 +9,8 @@ describe('parseNewArgs', () => {
       template: undefined,
       auth: undefined,
       features: [],
+      aiContext: [],
+      apiKeyInternalSubnet: false,
       yes: false,
       interactive: true,
     });
@@ -21,6 +23,8 @@ describe('parseNewArgs', () => {
       template: 'default',
       auth: undefined,
       features: [],
+      aiContext: [],
+      apiKeyInternalSubnet: false,
       yes: false,
       interactive: true,
     });
@@ -44,6 +48,8 @@ describe('parseNewArgs', () => {
       template: 'default',
       auth: [],
       features: [],
+      aiContext: [],
+      apiKeyInternalSubnet: false,
       yes: true,
       interactive: false,
     });

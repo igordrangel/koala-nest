@@ -17,8 +17,13 @@ ${color.cyan('New — opções:')}
   ${color.dim('<nome>')}              Nome do projeto (não pergunta de novo se já informado)
   ${color.dim('--template, -t')}     ${color.dim('default')} ou ${color.dim('crud')}
   ${color.dim('--pm')}                 ${color.dim('bun')}, ${color.dim('npm')} ou ${color.dim('pnpm')}
-  ${color.dim('--auth')}               ${color.dim('none')}, ${color.dim('jwt')} ou ${color.dim('oauth2')}
+  ${color.dim('--auth')}               ${color.dim('none')}, ${color.dim('jwt')}, ${color.dim('oauth2')}, ${color.dim('api-key')} (combinações)
   ${color.dim('--features')}           ${color.dim('cache,health,cron,events')} (vírgula)
+  ${color.dim('--api-key-internal-subnet')}  Bypass de subnet interna com API Key
+
+${color.cyan('New — prompts:')}
+  Além de template/auth/features, pergunta o ${color.dim('contexto AI')} (Cursor, GitHub Copilot ou ambos).
+  Com ${color.dim('-y')} o contexto AI não é gerado (use ${color.dim('kl-nest add ai-context …')} depois).
 
 ${color.cyan('Comandos:')}
   ${color.green('new')}       Cria um novo projeto
@@ -27,11 +32,12 @@ ${color.cyan('Comandos:')}
   ${color.green('help')}      Exibe esta ajuda
 
 ${color.cyan('Add — funcionalidades:')}
-  ${color.dim('auth jwt|oauth2')}   Autenticação
-  ${color.dim('cache')}             Cache Redis (+ exemplos no CRUD)
-  ${color.dim('health')}            GET /health
-  ${color.dim('cron')}              Jobs com expressão cron
-  ${color.dim('events')}            Jobs reativos a eventos
+  ${color.dim('auth jwt|oauth2|api-key')}   Autenticação
+  ${color.dim('cache')}                     Cache Redis (+ exemplos no CRUD)
+  ${color.dim('health')}                    GET /health
+  ${color.dim('cron')}                      Jobs com expressão cron
+  ${color.dim('events')}                    Jobs reativos a eventos
+  ${color.dim('ai-context cursor|github')}  Contexto AI (AGENTS.md + regras do editor)
 
 ${color.cyan('Exemplos:')}
   kl-nest new example
@@ -41,6 +47,9 @@ ${color.cyan('Exemplos:')}
   kl-nest add cache
   kl-nest add auth jwt health --verbose
   kl-nest add cron events
+  kl-nest add ai-context cursor
+  kl-nest add ai-context github
+  kl-nest add ai-context cursor github
   kl-nest version
 `);
 }

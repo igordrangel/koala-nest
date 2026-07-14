@@ -43,4 +43,18 @@ describe('normalizeAddArgs', () => {
       { kind: 'feature', feature: 'internal-event-jobs' },
     ]);
   });
+
+  it('coloca ai-context no final', () => {
+    expect(
+      normalizeAddArgs([
+        { kind: 'ai-context', targets: ['cursor'] },
+        { kind: 'feature', feature: 'cache' },
+        { kind: 'auth', strategies: ['jwt'] },
+      ]),
+    ).toEqual([
+      { kind: 'feature', feature: 'cache' },
+      { kind: 'auth', strategies: ['jwt'] },
+      { kind: 'ai-context', targets: ['cursor'] },
+    ]);
+  });
 });

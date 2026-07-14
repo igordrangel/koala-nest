@@ -35,4 +35,18 @@ describe('JwtStrategy', () => {
     expect(user.sub).toBe('user-1');
     expect(user.profile).toBeUndefined();
   });
+
+  it('rejeita token tip=api-key mesmo em /auth/refresh', () => {
+    const request = { url: '/auth/refresh', get: () => undefined } as Request;
+    const now = Math.floor(Date.now() / 1000);
+
+    expect(() =>
+      strategy.validate(request, {
+        sub: 'user-1',
+        typ: 'api-key',
+        iat: now,
+        exp: now + 100 * 365 * 86400,
+      }),
+    ).toThrow(UnauthorizedException);
+  });
 });

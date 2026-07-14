@@ -41,7 +41,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return payload.exp - payload.iat > this.accessTokenTtlSeconds;
   }
 
-  validate(req: Request, payload: { sub: string; exp?: number; iat?: number }) {
+  validate(
+    req: Request,
+    payload: { sub: string; typ?: string; exp?: number; iat?: number },
+  ) {
+    if (payload.typ === AuthHttp.API_KEY_TOKEN_TYPE) {
+      throw new UnauthorizedException(
+        'Token de API Key não pode ser usado como Bearer JWT',
+      );
+    }
+
     const isRefreshRoute = isAuthRefreshRoute(req.url);
     const parsed = jwtPayloadSchema.parse(payload);
 

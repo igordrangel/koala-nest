@@ -19,7 +19,7 @@ type AuthRequest = Parameters<typeof applyRefreshTokenForRefreshRoute>[0] & {
 };
 
 @Injectable()
-export class AuthGuard extends NestAuthGuard('jwt') {
+export class AuthGuard extends NestAuthGuard(['jwt', 'apikey']) {
   constructor(
     private readonly reflector: Reflector,
     private readonly userRepository: IUserRepository,

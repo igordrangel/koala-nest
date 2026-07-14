@@ -17,9 +17,17 @@ import {
   FEATURE_LABELS,
   FEATURE_PROMPT_LABELS,
   formatAuthStrategies,
+  assertAuthStrategiesCombination,
   Template,
   TEMPLATE_LABELS,
 } from '@cli/constants/domain';
+import {
+  AI_CONTEXT_PROMPT_LABELS,
+  AiContextPromptChoice,
+  formatAiContextTargets,
+  resolveAiContextTargetsFromPrompt,
+  type AiContextTarget,
+} from '@cli/constants/ai-context';
 import {
   installModule,
   Modules,
@@ -49,15 +57,28 @@ async function promptAuthStrategies(template: Template) {
           hint: 'JWT + OAuth2 genérico',
         },
         {
-          value: 'api-key',
+          value: AuthStrategy.API_KEY,
           label: 'API Key',
-          hint: 'em breve',
-          disabled: true,
+          hint: 'aditiva (requer JWT e/ou OAuth2)',
         },
       ],
       required: isCrud,
     }),
   ) as AuthStrategy[];
+}
+
+async function promptApiKeyInternalSubnet(strategies: AuthStrategy[]) {
+  if (!strategies.includes(AuthStrategy.API_KEY)) {
+    return false;
+  }
+
+  return assertNotCancel(
+    await p.confirm({
+      message:
+        'Incluir bypass de subnet interna (comunicação entre pods/microserviços)?',
+      initialValue: false,
+    }),
+  );
 }
 
 async function promptExtraFeatures(template: Template) {
@@ -115,6 +136,36 @@ async function promptExtraFeatures(template: Template) {
   ) as ExtraFeature[];
 }
 
+async function promptAiContext(): Promise<AiContextTarget[]> {
+  const choice = assertNotCancel(
+    await p.select({
+      message: 'Contexto AI (Cursor / GitHub Copilot)',
+      options: [
+        {
+          value: AiContextPromptChoice.NONE,
+          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.NONE],
+        },
+        {
+          value: AiContextPromptChoice.CURSOR,
+          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.CURSOR],
+          hint: '.cursor/rules + AGENTS.md',
+        },
+        {
+          value: AiContextPromptChoice.GITHUB,
+          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.GITHUB],
+          hint: '.github/copilot-instructions.md + AGENTS.md',
+        },
+        {
+          value: AiContextPromptChoice.BOTH,
+          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.BOTH],
+        },
+      ],
+    }),
+  ) as AiContextPromptChoice;
+
+  return resolveAiContextTargetsFromPrompt(choice);
+}
+
 async function promptProjectName() {
   return assertNotCancel(
     await p.text({
@@ -166,13 +217,18 @@ async function resolveProjectInput(args: string[]) {
     const packageManager =
       parsed.packageManager ?? (await promptPackageManager());
     const template = parsed.template ?? (await promptTemplate());
-    const auth =
-      parsed.auth ??
-      (await promptAuthStrategies(template));
+    const auth = parsed.auth ?? (await promptAuthStrategies(template));
+    assertAuthStrategiesCombination(auth);
+    const apiKeyInternalSubnet =
+      parsed.apiKeyInternalSubnet ||
+      (parsed.auth
+        ? parsed.apiKeyInternalSubnet
+        : await promptApiKeyInternalSubnet(auth));
     const features =
       parsed.features.length > 0
         ? parsed.features
         : await promptExtraFeatures(template);
+    const aiContext = await promptAiContext();
 
     return buildNewProjectConfig(parsed, {
       name,
@@ -180,6 +236,8 @@ async function resolveProjectInput(args: string[]) {
       template,
       auth,
       features,
+      apiKeyInternalSubnet,
+      aiContext,
     });
   }
 
@@ -195,6 +253,7 @@ async function resolveProjectInput(args: string[]) {
     template: Template.DEFAULT,
     auth: [],
     features: [],
+    aiContext: [],
   });
 }
 
@@ -243,11 +302,16 @@ export async function runNew(args: string[] = []): Promise<void> {
     template: project.template,
     auth: authStrategies,
     features,
+    apiKeyInternalSubnet: project.apiKeyInternalSubnet,
   });
 
-  spinner.message('Configurando workspace (.vscode e .env)...');
+  spinner.message('Configurando workspace (.vscode, .env e contexto AI)...');
 
-  finalizeNewProjectSetup(project.name, project.packageManager);
+  finalizeNewProjectSetup(
+    project.name,
+    project.packageManager,
+    project.aiContext,
+  );
 
   spinner.stop('Projeto criado com sucesso!');
 
@@ -272,16 +336,22 @@ export async function runNew(args: string[] = []): Promise<void> {
     .filter(Boolean)
     .join(', ');
 
-  p.note(
-    [
-      `${color.bold('Projeto:')} ${project.name}`,
-      `${color.bold('Template:')} ${TEMPLATE_LABELS[project.template]}`,
-      `${color.bold('Gerenciador:')} ${project.packageManager}`,
-      `${color.bold('Autenticação:')} ${formatAuthStrategies(authStrategies)}`,
-      `${color.bold('Extras:')} ${extrasSummary || color.dim('nenhum')}`,
-      `${color.dim('Depois:')} cd ${project.name} && ${project.packageManager} start`,
-      `${color.dim('Extras:')} kl-nest add <feature>`,
-    ].join('\n'),
-    'Resumo',
-  );
+  const summaryLines = [
+    `${color.bold('Projeto:')} ${project.name}`,
+    `${color.bold('Template:')} ${TEMPLATE_LABELS[project.template]}`,
+    `${color.bold('Gerenciador:')} ${project.packageManager}`,
+    `${color.bold('Autenticação:')} ${formatAuthStrategies(authStrategies)}`,
+    `${color.bold('Extras:')} ${extrasSummary || color.dim('nenhum')}`,
+    `${color.bold('Contexto AI:')} ${formatAiContextTargets(project.aiContext)}`,
+    `${color.dim('Depois:')} cd ${project.name} && ${project.packageManager} start`,
+    `${color.dim('Extras:')} kl-nest add <feature>`,
+  ];
+
+  if (projectFeatures.cronJobs) {
+    summaryLines.push(
+      `${color.dim('Cron jobs:')} desligados — defina CRON_JOBS_ENABLED=true no .env para ligar`,
+    );
+  }
+
+  p.note(summaryLines.join('\n'), 'Resumo');
 }
