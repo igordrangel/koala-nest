@@ -27,8 +27,14 @@ const partsToRemove: PartsToRemove[] = [
       './person.repository',
       '@/domain/repositories/iuser.repository',
       '@/infra/repositories/user.repository',
+      '@/domain/repositories/iapi-key.repository',
+      '@/infra/repositories/api-key.repository',
     ],
     replace: [
+      {
+        from: 'providers: [\n    { provide: IPersonRepository, useClass: PersonRepository },\n    { provide: IUserRepository, useClass: UserRepository },\n    { provide: IApiKeyRepository, useClass: ApiKeyRepository },\n  ],\n',
+        to: '',
+      },
       {
         from: 'providers: [\n    { provide: IPersonRepository, useClass: PersonRepository },\n    { provide: IUserRepository, useClass: UserRepository },\n  ],\n',
         to: '',
@@ -43,25 +49,32 @@ const partsToRemove: PartsToRemove[] = [
       },
       { from: ', IPersonRepository', to: '' },
       { from: ', IUserRepository', to: '' },
+      { from: ', IApiKeyRepository', to: '' },
+      { from: 'IApiKeyRepository,\n', to: '' },
     ],
   },
   {
     path: 'src/host/app.module.ts',
     removeImports: [
       './controllers/person/person.module',
+      './controllers/api-key/api-key.module',
       '@/application/person/jobs/events/person/inactive-person/inactive-person.handler',
       '@/application/person/jobs/cron/create-person.job',
       '@/application/person/jobs/cron/delete-inactive.job',
     ],
     replace: [
       { from: 'PersonModule,\n', to: '' },
+      { from: 'ApiKeyModule,\n', to: '' },
       { from: 'imports: [PersonModule],\n      ', to: '' },
     ],
   },
   {
     path: 'src/application/mapping/mapping.provider.ts',
-    removeImports: ['./person.mapper'],
-    replace: [{ from: 'PersonMapper.createMap();', to: '' }],
+    removeImports: ['./person.mapper', './api-key.mapper'],
+    replace: [
+      { from: 'PersonMapper.createMap();', to: '' },
+      { from: 'ApiKeyMapper.createMap();', to: '' },
+    ],
   },
 ];
 
@@ -103,20 +116,30 @@ const defaultTemplatePathsToRemoveWithoutAuth = [
 
 const defaultTemplateAuthArtifactPaths = [
   'src/application/auth',
+  'src/application/api-key',
   'src/domain/auth',
   'src/domain/entities/user',
+  'src/domain/entities/api-key',
   'src/domain/repositories/iuser.repository.ts',
+  'src/domain/repositories/iapi-key.repository.ts',
   'src/domain/dtos/logged-user-info.dto.ts',
   'src/domain/services',
   'src/infra/auth',
   'src/infra/repositories/user.repository.ts',
+  'src/infra/repositories/api-key.repository.ts',
   'src/infra/services/logged-user-info.service.ts',
+  'src/infra/database/migrations/1781281330534-CreateApiKey.ts',
   'src/host/security',
   'src/host/controllers/auth',
   'src/host/controllers/oauth2',
+  'src/host/controllers/api-key',
+  'src/application/mapping/api-key.mapper.ts',
   'src/core/types/auth-provider-config-response.type.ts',
   'src/core/utils/hash-password.ts',
   'src/core/utils/name-to-login.ts',
+  'src/core/utils/capture-apikey-on-request.ts',
+  'src/core/utils/match-api-key-domain-origin.ts',
+  'src/core/utils/internal-subnet-validator.ts',
 ];
 
 function removePaths(projectName: string, paths: string[]) {

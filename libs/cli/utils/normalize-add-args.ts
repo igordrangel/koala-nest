@@ -11,6 +11,10 @@ export function normalizeAddArgs(args: AddArg[]): AddArg[] {
     (item): item is Extract<AddArg, { kind: typeof AddArgKind.AUTH }> =>
       item.kind === AddArgKind.AUTH,
   );
+  const aiContext = args.find(
+    (item): item is Extract<AddArg, { kind: typeof AddArgKind.AI_CONTEXT }> =>
+      item.kind === AddArgKind.AI_CONTEXT,
+  );
   const selectedFeatures = new Set(
     args
       .filter(
@@ -40,6 +44,10 @@ export function normalizeAddArgs(args: AddArg[]): AddArg[] {
     } else {
       ordered.unshift(authArg);
     }
+  }
+
+  if (aiContext) {
+    ordered.push(aiContext);
   }
 
   return ordered;

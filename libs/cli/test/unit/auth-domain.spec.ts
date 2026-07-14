@@ -14,17 +14,25 @@ describe('parseAuthStrategies', () => {
     expect(parseAuthStrategies('', Template.DEFAULT)).toEqual([]);
   });
 
-  it('aceita jwt, oauth2 e combinações deduplicadas', () => {
+  it('aceita jwt, oauth2, api-key aditiva e combinações deduplicadas', () => {
     expect(parseAuthStrategies('jwt')).toEqual([AuthStrategy.JWT]);
     expect(parseAuthStrategies('oauth2')).toEqual([AuthStrategy.OAUTH2]);
     expect(parseAuthStrategies('jwt,oauth2')).toEqual([
       AuthStrategy.JWT,
       AuthStrategy.OAUTH2,
     ]);
+    expect(parseAuthStrategies('jwt,api-key')).toEqual([
+      AuthStrategy.JWT,
+      AuthStrategy.API_KEY,
+    ]);
     expect(parseAuthStrategies('oauth2,jwt,oauth2')).toEqual([
       AuthStrategy.OAUTH2,
       AuthStrategy.JWT,
     ]);
+  });
+
+  it('rejeita api-key sozinha', () => {
+    expect(() => parseAuthStrategies('api-key')).toThrow(/aditiva/);
   });
 
   it('rejeita auth none no template CRUD', () => {
@@ -57,30 +65,43 @@ describe('listMissingAuthStrategies', () => {
     expect(listMissingAuthStrategies(false)).toEqual([
       AuthStrategy.JWT,
       AuthStrategy.OAUTH2,
+      AuthStrategy.API_KEY,
     ]);
   });
 
-  it('lista apenas oauth2 quando jwt já está instalado', () => {
+  it('lista oauth2 e api-key quando jwt já está instalado', () => {
     expect(listMissingAuthStrategies([AuthStrategy.JWT])).toEqual([
       AuthStrategy.OAUTH2,
+      AuthStrategy.API_KEY,
     ]);
   });
 
-  it('lista apenas jwt quando oauth2 já está instalado', () => {
+  it('lista jwt e api-key quando oauth2 já está instalado', () => {
     expect(listMissingAuthStrategies([AuthStrategy.OAUTH2])).toEqual([
       AuthStrategy.JWT,
+      AuthStrategy.API_KEY,
     ]);
   });
 
-  it('retorna vazio quando ambas estão instaladas', () => {
+  it('lista apenas api-key quando jwt e oauth2 estão instalados', () => {
     expect(
       listMissingAuthStrategies([AuthStrategy.JWT, AuthStrategy.OAUTH2]),
+    ).toEqual([AuthStrategy.API_KEY]);
+  });
+
+  it('retorna vazio quando todas estão instaladas', () => {
+    expect(
+      listMissingAuthStrategies([
+        AuthStrategy.JWT,
+        AuthStrategy.OAUTH2,
+        AuthStrategy.API_KEY,
+      ]),
     ).toEqual([]);
   });
 });
 
 describe('resolveAuthStrategiesFromModule', () => {
-  it('detecta jwt, oauth2 ou ambos pelo auth.module.ts', () => {
+  it('detecta jwt, oauth2, api-key ou combinações', () => {
     expect(
       resolveAuthStrategiesFromModule('export class LoginController {}'),
     ).toEqual([AuthStrategy.JWT]);
@@ -94,6 +115,11 @@ describe('resolveAuthStrategiesFromModule', () => {
         'LoginController\nOAuthAuthLinkHandler',
       ),
     ).toEqual([AuthStrategy.JWT, AuthStrategy.OAUTH2]);
+    expect(
+      resolveAuthStrategiesFromModule('LoginController', {
+        appModuleSource: 'ApiKeyModule',
+      }),
+    ).toEqual([AuthStrategy.JWT, AuthStrategy.API_KEY]);
     expect(resolveAuthStrategiesFromModule('export class AuthModule {}')).toEqual(
       [],
     );

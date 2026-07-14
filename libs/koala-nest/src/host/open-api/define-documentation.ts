@@ -1,3 +1,4 @@
+import { AuthHttp } from '@/core/auth/auth.constants';
 import { OAuthProviderRegistry } from '@/core/auth/oauth-provider.registry';
 import { EnvConfig } from '@/core/utils/env.config';
 import {
@@ -23,10 +24,12 @@ import packageJson from '../../../package.json';
 
 const DOC_ENDPOINT = '/doc';
 const ACCESS_TOKEN_FIELD = 'accessToken';
+const API_KEY_SCHEME_NAME = 'ApiKey';
 
 type DocAuthorization = {
   name: string;
   config: Record<string, unknown>;
+  kind: 'bearer' | 'apiKey';
 };
 
 function capitalizeProvider(key: string) {
@@ -82,6 +85,7 @@ async function buildDocAuthorizations(
   if (hasController(app, 'LoginController')) {
     authorizations.push({
       name: 'JWT',
+      kind: 'bearer',
       config: {
         type: 'oauth2',
         flows: {
@@ -110,6 +114,7 @@ async function buildDocAuthorizations(
 
         authorizations.push({
           name: capitalizeProvider(providerKey),
+          kind: 'bearer',
           config: {
             type: 'oauth2',
             flows: {
@@ -138,6 +143,18 @@ async function buildDocAuthorizations(
     }
   }
 
+  if (hasController(app, 'CreateApiKeyController')) {
+    authorizations.push({
+      name: API_KEY_SCHEME_NAME,
+      kind: 'apiKey',
+      config: {
+        type: 'apiKey',
+        in: 'header',
+        name: AuthHttp.API_KEY_HEADER,
+      },
+    });
+  }
+
   return authorizations;
 }
 
@@ -149,10 +166,18 @@ export async function defineDocumentation(app: INestApplication) {
     .setVersion(packageJson.version);
 
   for (const authorization of authorizations) {
-    documentBuilder.addBearerAuth(
-      authorization.config as never,
-      authorization.name,
-    );
+    if (authorization.kind === 'apiKey') {
+      documentBuilder.addApiKey(
+        authorization.config as never,
+        authorization.name,
+      );
+    } else {
+      documentBuilder.addBearerAuth(
+        authorization.config as never,
+        authorization.name,
+      );
+    }
+
     documentBuilder.addSecurityRequirements(authorization.name);
   }
 

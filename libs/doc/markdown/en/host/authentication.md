@@ -4,12 +4,12 @@ slug: authentication
 category: host
 docKey: host/autenticacao
 order: 4
-description: JWT, global guards, public routes, and generic OAuth2.
+description: JWT, global guards, public routes, generic OAuth2, and API Key.
 ---
 
 # Authentication
 
-The authentication module is optional in the CLI (`kl-nest new` → **JWT** or **OAuth2**). With JWT, the template includes a `User` entity, email/password login, and RS256 token issuance. With OAuth2, users are created or reused after the authorization code flow.
+The authentication module is optional in the CLI (`kl-nest new` → **JWT**, **OAuth2**, and/or **API Key**). With JWT, the template includes a `User` entity, email/password login, and RS256 token issuance. With OAuth2, users are created or reused after the authorization code flow. **API Key** is additive (requires JWT and/or OAuth2) and authenticates machine-to-machine calls at the HTTP edge.
 
 Installing auth does **not** patch `data-source-factory.ts`: the `User` entity joins the DataSource via `@Entity` (DbContext), and `UserRepository` is registered in `RepositoryModule`.
 
@@ -18,7 +18,7 @@ Installing auth does **not** patch `data-source-factory.ts`: the `User` entity j
 | Piece | Role |
 | --- | --- |
 | `SecurityModule` | Configures RS256 JWT, Passport, and token/OAuth2 services |
-| `AuthGuard` | Global guard — validates Bearer token |
+| `AuthGuard` | Global guard — validates Bearer JWT and/or `ApiKey` header |
 | `ProfilesGuard` | Global guard — restricts by token profile |
 | `@IsPublic()` | Marks routes that bypass `AuthGuard` |
 | `@RestrictionByProfile([AuthProfile.admin])` | Restricts endpoint to listed profiles |
@@ -252,12 +252,37 @@ app.useGlobalGuards(
 
 Job bootstrap subscribes to domain events and starts CronJobs only when `CRON_JOBS_ENABLED=true`. The delay before starting jobs is controlled by `BOOTSTRAP_DELAY_MS`.
 
+## API Key (M2M)
+
+API Key authenticates synchronous HTTP callers (integrations, BFF, occasional service hops). It does **not** replace a message broker or force a file-proxy API — cloud storage + messaging remain the preferred scalable design. The strategy lives in the host layer; handlers only see the already-authenticated user via `ILoggedUserInfoService`.
+
+CLI: `--auth jwt,api-key` (or `oauth2,api-key` / `jwt,oauth2,api-key`). Optional `--api-key-internal-subnet` allows private (RFC1918) IPs for `domain` type when pods talk inside the cluster.
+
+### CRUD and token
+
+- Endpoints under `/api-key` (create/list/read/update/delete), scoped to the authenticated user
+- On create, the key is an RS256 JWT with `typ: api-key`, `sub` = userId, `iss` = key id — returned **only** in that response
+- Usage: header `ApiKey: <jwt>`
+
+### Origin types (`origin` CSV)
+
+| Type | Validation |
+| --- | --- |
+| `host` | `req.hostname` in the list |
+| `uri` | hostname + path (without route params) |
+| `domain` | Client IP vs registered IP **or** domain (reverse DNS / A/AAAA lookup). No `Origin`/`Referer` headers |
+
+`*` in the list only unlocks in `develop`/`test`. With internal subnet enabled, private IPs also pass `domain` without listing every pod.
+
+Enable `trust proxy` when the API sits behind a load balancer / ingress.
+
 ## Authentication in Scalar
 
-With authentication installed, Scalar obtains the JWT automatically via `authentication` in `apiReference`:
+With authentication installed, Scalar obtains credentials via `authentication` in `apiReference`:
 
 - **JWT:** **JWT** scheme (password flow) → `POST /auth/login`
 - **OAuth2:** one scheme per provider (authorization code) → `POST /oauth2/scalar-token`
+- **API Key:** **ApiKey** scheme (header `ApiKey`)
 
 Full guide: [OpenAPI with Scalar](./openapi-scalar.md#automatic-scalar-authentication)
 

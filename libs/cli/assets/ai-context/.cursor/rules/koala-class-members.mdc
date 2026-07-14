@@ -1,0 +1,11 @@
+---
+description: Ordem de membros em classes — private, protected, public e dependência
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+# Ordem de membros em classes
+
+1. **Visibilidade (atributos e métodos):** `private` → `protected` → `public`
+2. **Estrutura:** atributos (private → protected → public) → construtor → métodos (private → protected → public)
+3. **Dependência:** no mesmo grupo, o membro usado vem antes de quem o usa

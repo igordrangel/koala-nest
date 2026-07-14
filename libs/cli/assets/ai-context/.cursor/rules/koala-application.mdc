@@ -1,0 +1,12 @@
+---
+description: Application — handlers, validators e DTOs
+globs: src/application/**/*.ts
+alwaysApply: false
+---
+
+# Application
+
+- Estenda `RequestHandlerBase`, `RequestValidatorBase` e padrões de request/response do template.
+- Validação com Zod 4 nos validators; não invente pipes Nest genéricos no lugar.
+- Mappers com AutoMap quando o projeto já usa; espelhe um handler existente (ex.: Person).
+- Receita de novo recurso: fluxo Person CRUD na documentação Nest (`llms.txt`).

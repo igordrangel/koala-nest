@@ -229,6 +229,23 @@ export function listCliProjectViolations(
       );
     }
 
+    const expectedAi = expectation.aiContext ?? {
+      cursor: false,
+      github: false,
+    };
+
+    if (detected.aiContext.cursor !== expectedAi.cursor) {
+      violations.push(
+        `state:aiContext.cursor esperado ${expectedAi.cursor}, detectado ${detected.aiContext.cursor}`,
+      );
+    }
+
+    if (detected.aiContext.github !== expectedAi.github) {
+      violations.push(
+        `state:aiContext.github esperado ${expectedAi.github}, detectado ${detected.aiContext.github}`,
+      );
+    }
+
     const expectedAuth =
       expectation.auth === false
         ? false

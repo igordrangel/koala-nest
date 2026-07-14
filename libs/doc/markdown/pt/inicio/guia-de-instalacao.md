@@ -47,8 +47,11 @@ O comando `new` pergunta:
 - nome do projeto;
 - gerenciador de pacotes (`bun`, `npm` ou `pnpm` — Bun recomendado);
 - template (**Padrão** ou **Exemplo de CRUD**);
-- estratégia de autenticação (**JWT** ou **OAuth2** — no CRUD, auth é obrigatória);
-- funcionalidades extras (no **Padrão**: cache, health, cron, eventos; no **CRUD**: apenas health check — auth, cache Redis e jobs já vêm incluídos).
+- estratégia de autenticação (**JWT**, **OAuth2** e/ou **API Key** — no CRUD, auth é obrigatória; API Key é aditiva);
+- funcionalidades extras (no **Padrão**: cache, health, cron, eventos; no **CRUD**: apenas health check — auth, cache Redis e jobs já vêm incluídos);
+- **contexto AI** para vibecoding: **Cursor** (`.cursor/rules` + `AGENTS.md`), **GitHub Copilot** (`.github/copilot-instructions.md` + `AGENTS.md`), ambos ou nenhum.
+
+Com `-y` / `--yes`, o contexto AI **não** é gerado (mesmo padrão de features vazias). Depois você pode rodar `kl-nest add ai-context cursor` (e/ou `github`).
 
 O módulo **core** instala apenas o essencial (`@koalarx/utils`, `@nestjs/config`, `@nestjs/swagger`, `typeorm`, `pg`, `zod`, `@scalar/nestjs-api-reference`). Dependências extras entram conforme as opções marcadas:
 
@@ -84,6 +87,9 @@ kl-nest add
 kl-nest add cache
 kl-nest add auth jwt
 kl-nest add health cron events
+kl-nest add ai-context cursor
+kl-nest add ai-context github
+kl-nest add ai-context cursor github
 ```
 
 | Item | Comando | Observação |
@@ -94,6 +100,8 @@ kl-nest add health cron events
 | Health check | `kl-nest add health` | Terminus: ping PostgreSQL + Redis (se configurado) |
 | Cron jobs | `kl-nest add cron` | Requer cache em memória (instalado automaticamente) |
 | Event jobs | `kl-nest add events` | No CRUD, restaura handlers de exemplo |
+| Contexto AI (Cursor) | `kl-nest add ai-context cursor` | `AGENTS.md` + `.cursor/rules` (não sobrescreve arquivos existentes) |
+| Contexto AI (Copilot) | `kl-nest add ai-context github` | `AGENTS.md` + `.github/copilot-instructions.md` |
 
 ## Templates
 
@@ -103,7 +111,7 @@ kl-nest add health cron events
 
 ## Variáveis de ambiente
 
-Após criar o projeto, configure um `.env` na raiz:
+Após criar o projeto, a CLI já gera um `.env` a partir do `.env.example` (com `DATABASE_URL` ajustada ao nome do projeto). Com autenticação JWT / OAuth2 / API Key, as chaves `JWT_PRIVATE_KEY` e `JWT_PUBLIC_KEY` também são geradas automaticamente no `.env`.
 
 ```env
 PORT=3000

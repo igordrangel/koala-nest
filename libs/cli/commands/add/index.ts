@@ -1,9 +1,14 @@
 import * as p from '@clack/prompts';
 import color from 'picocolors';
 import {
+  AI_CONTEXT_LABELS,
+  type AiContextTarget as AiContextTargetType,
+} from '@cli/constants/ai-context';
+import {
   AddArgKind,
   AuthStrategy,
   ExtraFeature,
+  FEATURE_LABELS,
   FEATURE_PROMPT_LABELS,
 } from '@cli/constants/domain';
 import { addProjectFeatures } from '@cli/utils/add-project-features.ts';
@@ -24,15 +29,27 @@ function formatResultSummary(
     return color.dim('Nenhuma alteração necessária.');
   }
 
-  return results
-    .map((result) => {
-      if (result.installed) {
-        return `${color.green('✓')} ${result.label}`;
-      }
+  const lines = results.map((result) => {
+    if (result.installed) {
+      return `${color.green('✓')} ${result.label}`;
+    }
 
-      return `${color.yellow('○')} ${result.label} — ${result.reason ?? 'já instalado'}`;
-    })
-    .join('\n');
+    return `${color.yellow('○')} ${result.label} — ${result.reason ?? 'já instalado'}`;
+  });
+
+  const cronInstalled = results.some(
+    (result) =>
+      result.installed &&
+      result.label === FEATURE_LABELS[ExtraFeature.INTERNAL_CRON_JOBS],
+  );
+
+  if (cronInstalled) {
+    lines.push(
+      `${color.dim('Cron jobs:')} desligados — defina CRON_JOBS_ENABLED=true no .env para ligar`,
+    );
+  }
+
+  return lines.join('\n');
 }
 
 async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
@@ -55,6 +72,11 @@ async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
             label: 'OAuth2',
             hint: 'JWT + OAuth2 genérico',
           },
+          {
+            value: AuthStrategy.API_KEY,
+            label: 'API Key',
+            hint: 'aditiva (requer JWT e/ou OAuth2)',
+          },
         ].filter((option) =>
           available.authStrategies.includes(option.value as AuthStrategy),
         ),
@@ -63,7 +85,23 @@ async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
     ) as AuthStrategy[];
 
     if (authStrategies.length > 0) {
-      args.push({ kind: AddArgKind.AUTH, strategies: authStrategies });
+      let apiKeyInternalSubnet = false;
+
+      if (authStrategies.includes(AuthStrategy.API_KEY)) {
+        apiKeyInternalSubnet = assertNotCancel(
+          await p.confirm({
+            message:
+              'Incluir bypass de subnet interna (comunicação entre pods/microserviços)?',
+            initialValue: false,
+          }),
+        );
+      }
+
+      args.push({
+        kind: AddArgKind.AUTH,
+        strategies: authStrategies,
+        apiKeyInternalSubnet,
+      });
     }
   }
 
@@ -84,6 +122,23 @@ async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
     }
   }
 
+  if (available.aiContextTargets.length > 0) {
+    const targets = assertNotCancel(
+      await p.multiselect({
+        message: 'Contexto AI',
+        options: available.aiContextTargets.map((target) => ({
+          value: target,
+          label: AI_CONTEXT_LABELS[target],
+        })),
+        required: false,
+      }),
+    ) as AiContextTargetType[];
+
+    if (targets.length > 0) {
+      args.push({ kind: AddArgKind.AI_CONTEXT, targets });
+    }
+  }
+
   return dedupeAddArgs(args);
 }
 
@@ -101,7 +156,8 @@ export async function runAdd(
 
   if (
     available.authStrategies.length === 0 &&
-    available.features.length === 0
+    available.features.length === 0 &&
+    available.aiContextTargets.length === 0
   ) {
     p.outro(
       color.green(

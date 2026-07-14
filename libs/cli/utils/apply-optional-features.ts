@@ -14,6 +14,7 @@ export type ApplyOptionalFeaturesOptions = {
   template: Template;
   auth: AuthStrategy[];
   features: ExtraFeature[];
+  apiKeyInternalSubnet?: boolean;
   skipPackages?: boolean;
 };
 
@@ -45,6 +46,7 @@ export async function applyOptionalFeatures(
   if (options.auth.length > 0) {
     await installModule(Modules.AUTH, options.template, projectName, {
       authStrategies: options.auth,
+      apiKeyInternalSubnet: options.apiKeyInternalSubnet,
       skipPackages: options.skipPackages,
     });
   }

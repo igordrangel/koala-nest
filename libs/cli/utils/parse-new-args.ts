@@ -7,6 +7,7 @@ import {
   Template,
   TEMPLATE_ALIASES,
 } from '@cli/constants/domain';
+import type { AiContextTarget } from '@cli/constants/ai-context';
 
 export type ParsedNewArgs = {
   projectName?: string;
@@ -14,6 +15,8 @@ export type ParsedNewArgs = {
   template?: Template;
   auth?: AuthStrategy[];
   features: ExtraFeature[];
+  aiContext: AiContextTarget[];
+  apiKeyInternalSubnet: boolean;
   yes: boolean;
   interactive: boolean;
 };
@@ -65,6 +68,7 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
   let auth: ParsedNewArgs['auth'];
   let features: ExtraFeature[] = [];
   let yes = false;
+  let apiKeyInternalSubnet = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -75,6 +79,11 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
 
     if (arg === '-y' || arg === '--yes') {
       yes = true;
+      continue;
+    }
+
+    if (arg === '--api-key-internal-subnet') {
+      apiKeyInternalSubnet = true;
       continue;
     }
 
@@ -151,6 +160,8 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
     template,
     auth,
     features,
+    aiContext: [],
+    apiKeyInternalSubnet,
     yes,
     interactive: !yes,
   };
@@ -190,6 +201,8 @@ export function buildNewProjectConfig(
     template: Template;
     auth: AuthStrategy[];
     features: ExtraFeature[];
+    apiKeyInternalSubnet?: boolean;
+    aiContext?: AiContextTarget[];
   },
 ) {
   return {
@@ -198,5 +211,8 @@ export function buildNewProjectConfig(
     template: parsed.template ?? overrides.template,
     auth: parsed.auth ?? overrides.auth,
     features: parsed.features.length > 0 ? parsed.features : overrides.features,
+    apiKeyInternalSubnet:
+      overrides.apiKeyInternalSubnet ?? parsed.apiKeyInternalSubnet,
+    aiContext: overrides.aiContext ?? parsed.aiContext,
   };
 }

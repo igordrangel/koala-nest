@@ -5,6 +5,7 @@ import {
   IJwtTokenService,
   IOAuth2Service,
 } from '@/domain/auth/services/iauth.service';
+import { ApiKeyAuthorizationService } from '@/infra/auth/api-key-authorization.service';
 import { JwtTokenService } from '@/infra/auth/jwt-token.service';
 import { OAuth2AuthService } from '@/infra/auth/oauth2-auth.service';
 import { InfraModule } from '@/infra/infra.module';
@@ -12,6 +13,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ApiKeyStrategy } from './strategies/api-key.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthGuard } from './guards/auth.guard';
 import { ProfilesGuard } from './guards/profiles.guard';
@@ -45,6 +47,8 @@ import { ProfilesGuard } from './guards/profiles.guard';
   providers: [
     OAuthProviderRegistry,
     JwtStrategy,
+    ApiKeyStrategy,
+    ApiKeyAuthorizationService,
     AuthGuard,
     ProfilesGuard,
     { provide: IJwtTokenService, useClass: JwtTokenService },

@@ -1,0 +1,17 @@
+---
+description: Camadas DDD do Koala Nest — dependências só para dentro
+globs: src/application/**/*.ts,src/domain/**/*.ts,src/host/**/*.ts,src/infra/**/*.ts,src/core/**/*.ts
+alwaysApply: false
+---
+
+# Camadas
+
+- `domain` — entidades e contratos de repositório; sem TypeORM/Nest nos detalhes de infra.
+- `application` — handlers, validators Zod, requests/responses, mappers.
+- `infra` — implementações (repos TypeORM, cache, auth services); liga contratos do domain.
+- `host` — controllers finos, modules, security, OpenAPI; orquestra handlers.
+- `core` — bases, env, utils compartilhados.
+
+Não invente imports de handlers/repos/controllers a partir de `@koalarx/nest` — o código já está em `src/`.
+
+Docs: https://nest.koalarx.com/llms.txt · https://nest.koalarx.com/llms-en.txt

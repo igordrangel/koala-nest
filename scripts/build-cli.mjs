@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { Glob } from "bun";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -99,6 +99,13 @@ function buildCli() {
     }
 
     writeFileSync(outputPath, output, "utf8");
+  }
+
+  const assetsSource = path.join(sourceDir, "assets");
+  const assetsOutput = path.join(outputDir, "assets");
+
+  if (existsSync(assetsSource)) {
+    cpSync(assetsSource, assetsOutput, { recursive: true });
   }
 
   console.log(`Build concluído: ${path.relative(rootDir, outputDir)}/`);

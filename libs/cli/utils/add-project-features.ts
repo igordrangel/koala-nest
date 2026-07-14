@@ -4,6 +4,7 @@ import {
   ExtraFeature,
   FEATURE_LABELS,
   formatAuthStrategies,
+  assertAuthStrategiesCombination,
   mergeAuthStrategies,
   Template,
 } from '@cli/constants/domain';
@@ -32,6 +33,8 @@ import {
 import { normalizeAddArgs } from './normalize-add-args';
 import { restoreRedisHealthCheck } from './patch-health-module';
 import { patchAuthInstall } from './patch-auth-install';
+import { installAiContext } from './install-ai-context';
+import { AiContextTarget } from '@cli/constants/ai-context';
 
 async function ensureMemoryCache(projectName: string, template: TemplateType) {
   const state = detectProjectState(projectName);
@@ -94,6 +97,30 @@ export async function addProjectFeatures(
   const orderedArgs = normalizeAddArgs(args);
 
   for (const arg of orderedArgs) {
+    if (arg.kind === AddArgKind.AI_CONTEXT) {
+      const missing = arg.targets.filter((target) => {
+        if (target === AiContextTarget.CURSOR) {
+          return !state.aiContext.cursor;
+        }
+
+        return !state.aiContext.github;
+      });
+
+      if (missing.length === 0) {
+        results.push({
+          label: 'contexto AI',
+          installed: false,
+          reason: 'Contexto AI solicitado já está instalado.',
+        });
+        continue;
+      }
+
+      const contextResults = installAiContext(projectName, missing);
+      results.push(...contextResults);
+      state = detectProjectState(projectName);
+      continue;
+    }
+
     if (arg.kind === AddArgKind.AUTH) {
       const current = state.auth === false ? [] : state.auth;
       const missing = arg.strategies.filter(
@@ -110,19 +137,23 @@ export async function addProjectFeatures(
       }
 
       const next = mergeAuthStrategies(current, missing);
+      assertAuthStrategiesCombination(next);
 
       if (current.length === 0) {
         await ensureMemoryCache(projectName, template);
 
         await installModule(Modules.AUTH, template, projectName, {
           authStrategies: next,
+          apiKeyInternalSubnet: arg.apiKeyInternalSubnet,
         });
 
         if (template === Template.CRUD_SAMPLE) {
           await restorePersonAuthExample(projectName);
         }
       } else {
-        await patchAuthInstall(projectName, next);
+        await patchAuthInstall(projectName, next, {
+          apiKeyInternalSubnet: arg.apiKeyInternalSubnet,
+        });
       }
 
       results.push({

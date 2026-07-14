@@ -44,7 +44,7 @@ export const envSchema = z.object({
 
 ## `.env` file
 
-Create a `.env` at the project root (the CLI also copies `.env.example` as a reference):
+The CLI creates `.env` from `.env.example` on `kl-nest new`. With auth (JWT / OAuth2 / API Key), JWT keys are already filled in `.env` (the example stays empty):
 
 ```env
 PORT=3000
@@ -77,6 +77,8 @@ Included in core via `applyHttpMiddleware`. Full guide: [HTTP middleware](../hos
 | `BCRYPT_ROUNDS` | Password hash cost (default `10`) |
 
 ### Authentication (when installed)
+
+With `kl-nest new --auth jwt` (or `api-key` / OAuth2) and `kl-nest add auth …`, the CLI generates an RS256 key pair and fills `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` in `.env` (base64). `.env.example` keeps empty placeholders. Existing non-empty values in `.env` are not overwritten.
 
 ```env
 JWT_PRIVATE_KEY=<RS256 private key in base64>

@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { InactivePersonHandler } from '@/application/person/jobs/events/person/inactive-person/inactive-person.handler';
 import { CreatePersonJob } from '@/application/person/jobs/cron/create-person.job';
 import { DeleteInactiveJob } from '@/application/person/jobs/cron/delete-inactive.job';
+import { ApiKeyModule } from './controllers/api-key/api-key.module';
 import { AuthModule } from './controllers/auth/auth.module';
 import { JobsModule } from './jobs/jobs.module';
 import { PersonModule } from './controllers/person/person.module';
@@ -17,6 +18,7 @@ import { SecurityModule } from './security/security.module';
     }),
     SecurityModule,
     AuthModule,
+    ApiKeyModule,
     JobsModule.register({
       imports: [PersonModule],
       eventHandlers: [InactivePersonHandler],

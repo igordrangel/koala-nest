@@ -22,12 +22,13 @@ export const CORE_DEV_PACKAGES = [
 /** Redis — instalado ao selecionar Cache (Redis). */
 export const CACHE_PACKAGES = ['ioredis'] as const;
 
-/** Autenticação JWT/OAuth2. */
+/** Autenticação JWT/OAuth2/API Key. */
 export const AUTH_PACKAGES = [
   '@nestjs/jwt',
   '@nestjs/passport',
   'passport',
   'passport-jwt',
+  'passport-custom',
   'bcrypt',
 ] as const;
 

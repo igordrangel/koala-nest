@@ -229,7 +229,7 @@ export class AppModule {}
     expect(results).toEqual([{ label: 'auth (oauth2)', installed: true }]);
     expect(installCalls).toHaveLength(0);
     expect(patchAuthCalls).toEqual([
-      ['.', ['jwt', 'oauth2']],
+      ['.', ['jwt', 'oauth2'], { apiKeyInternalSubnet: undefined }],
     ]);
   });
 

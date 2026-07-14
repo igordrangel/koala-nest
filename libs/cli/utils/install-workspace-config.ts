@@ -1,7 +1,10 @@
 import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { PackageManager } from '@cli/types';
+import type { AiContextTarget } from '@cli/constants/ai-context';
 import { getSourceCodePath } from './get-source-code-path';
+import { installAiContext } from './install-ai-context';
+import { ensureJwtKeysInEnv } from './patch-env';
 import { resolveProjectPath } from './resolve-project-path';
 
 const PACKAGE_MANAGER_COMMAND: Record<PackageManager, string> = {
@@ -133,12 +136,18 @@ export function createEnvFromExample(projectName: string): void {
 
   writeFileSync(examplePath, envContent);
   writeFileSync(envPath, envContent);
+  ensureJwtKeysInEnv(projectName);
 }
 
 export function finalizeNewProjectSetup(
   projectName: string,
   packageManager: PackageManager,
+  aiContext: readonly AiContextTarget[] = [],
 ): void {
   installWorkspaceConfig(projectName, packageManager);
   createEnvFromExample(projectName);
+
+  if (aiContext.length > 0) {
+    installAiContext(projectName, aiContext);
+  }
 }

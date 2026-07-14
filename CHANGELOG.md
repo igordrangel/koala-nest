@@ -9,6 +9,23 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [4.3.0] — API Key (autenticação M2M)
+
+### Added
+
+- Estratégia aditiva `api-key` na CLI (`jwt,api-key` / `oauth2,api-key` / `jwt,oauth2,api-key`).
+- CRUD `/api-key`, Passport strategy, validação de origem (`domain`/`host`/`uri`) e opção `--api-key-internal-subnet`.
+- Esquema Scalar `ApiKey` (header).
+- Documentação de autenticação e patch notes para API Key.
+- Contexto AI no `new` (prompt) e `add ai-context cursor|github`: `AGENTS.md`, `.cursor/rules` e/ou `.github/copilot-instructions.md` para vibecoding.
+- Geração automática de `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` (RS256 em base64) no `.env` ao instalar JWT, OAuth2 e/ou API Key (`new` / `add auth`).
+
+### Changed
+
+- `AuthGuard` aceita JWT Bearer e/ou header `ApiKey` quando a estratégia está instalada.
+
+Detalhes: [Patch notes — 4.3.0](https://nest.koalarx.com/pt/docs/intro/patch-notes).
+
 ## [4.2.0] — Migrations e descoberta de entidades
 
 ### Added

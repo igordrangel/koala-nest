@@ -1,8 +1,118 @@
-import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { AuthStrategy } from '@cli/constants/domain';
+import { generateJwtKeyPairBase64 } from './generate-jwt-keys';
 import { getSourceCodePath } from './get-source-code-path';
 import { resolveProjectPath } from './resolve-project-path';
+
+const JWT_PRIVATE_KEY = 'JWT_PRIVATE_KEY';
+const JWT_PUBLIC_KEY = 'JWT_PUBLIC_KEY';
+
+function readEnvAssignment(
+  content: string,
+  key: string,
+): { exists: boolean; value: string } {
+  const match = content.match(new RegExp(`^${key}=(.*)$`, 'm'));
+
+  if (!match) {
+    return { exists: false, value: '' };
+  }
+
+  return { exists: true, value: match[1] ?? '' };
+}
+
+function writeJwtKeysInEnvContent(
+  content: string,
+  privateKey: string,
+  publicKey: string,
+): string {
+  let next = content;
+  const hasPrivate = new RegExp(`^${JWT_PRIVATE_KEY}=`, 'm').test(next);
+  const hasPublic = new RegExp(`^${JWT_PUBLIC_KEY}=`, 'm').test(next);
+
+  if (hasPrivate) {
+    next = next.replace(
+      new RegExp(`^${JWT_PRIVATE_KEY}=.*$`, 'm'),
+      `${JWT_PRIVATE_KEY}=${privateKey}`,
+    );
+  }
+
+  if (hasPublic) {
+    next = next.replace(
+      new RegExp(`^${JWT_PUBLIC_KEY}=.*$`, 'm'),
+      `${JWT_PUBLIC_KEY}=${publicKey}`,
+    );
+  }
+
+  if (hasPrivate && hasPublic) {
+    return next;
+  }
+
+  if (!hasPrivate && !hasPublic) {
+    return `${next.trimEnd()}\n\n# JWT (RS256 — chaves em base64)\n${JWT_PRIVATE_KEY}=${privateKey}\n${JWT_PUBLIC_KEY}=${publicKey}\n`;
+  }
+
+  if (!hasPrivate) {
+    return next.replace(
+      new RegExp(`^${JWT_PUBLIC_KEY}=`, 'm'),
+      `${JWT_PRIVATE_KEY}=${privateKey}\n${JWT_PUBLIC_KEY}=`,
+    );
+  }
+
+  return next.replace(
+    new RegExp(`^${JWT_PRIVATE_KEY}=.*$`, 'm'),
+    `${JWT_PRIVATE_KEY}=${privateKey}\n${JWT_PUBLIC_KEY}=${publicKey}`,
+  );
+}
+
+/**
+ * Preenche JWT_PRIVATE_KEY / JWT_PUBLIC_KEY no `.env` com um par RS256 gerado.
+ * Não sobrescreve quando ambas já têm valor. `.env.example` permanece vazio (template).
+ */
+export function ensureJwtKeysInEnv(
+  projectName: string,
+  options: { addIfMissing?: boolean } = {},
+): boolean {
+  const envPath = path.join(resolveProjectPath(projectName), '.env');
+
+  if (!existsSync(envPath)) {
+    return false;
+  }
+
+  const content = readFileSync(envPath, 'utf8');
+  const privateKey = readEnvAssignment(content, JWT_PRIVATE_KEY);
+  const publicKey = readEnvAssignment(content, JWT_PUBLIC_KEY);
+
+  if (!privateKey.exists && !publicKey.exists && !options.addIfMissing) {
+    return false;
+  }
+
+  if (privateKey.value.trim() && publicKey.value.trim()) {
+    return false;
+  }
+
+  const keys = generateJwtKeyPairBase64();
+  writeFileSync(
+    envPath,
+    writeJwtKeysInEnvContent(content, keys.privateKey, keys.publicKey),
+  );
+
+  return true;
+}
+
+function authNeedsJwtKeys(strategies: AuthStrategy[]): boolean {
+  return (
+    strategies.includes(AuthStrategy.JWT) ||
+    strategies.includes(AuthStrategy.OAUTH2) ||
+    strategies.includes(AuthStrategy.API_KEY)
+  );
+}
 
 const envWithoutAuth = `import { envBooleanSchema } from '@/core/schemas';
 import { z } from 'zod';
@@ -157,8 +267,11 @@ export function patchEnvForAuthStrategies(
       path.join(projectRoot, '.env.example'),
       envExampleJwtOnly,
     );
-    return;
+  } else {
+    restoreEnvWithAuth(projectName);
   }
 
-  restoreEnvWithAuth(projectName);
+  if (authNeedsJwtKeys(strategies)) {
+    ensureJwtKeysInEnv(projectName, { addIfMissing: true });
+  }
 }

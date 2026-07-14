@@ -42,6 +42,24 @@ export const OAUTH2_INSTALL_PATHS = [
   'src/test/core/env.spec.ts',
 ] as const;
 
+/** Artefatos da estratégia API Key (aditiva a JWT/OAuth2). */
+export const API_KEY_INSTALL_PATHS = [
+  'src/application/api-key',
+  'src/host/controllers/api-key',
+  'src/domain/entities/api-key',
+  'src/domain/repositories/iapi-key.repository.ts',
+  'src/infra/repositories/api-key.repository.ts',
+  'src/infra/auth/api-key-authorization.service.ts',
+  'src/host/security/strategies/api-key.strategy.ts',
+  'src/core/utils/capture-apikey-on-request.ts',
+  'src/core/utils/match-api-key-domain-origin.ts',
+  'src/application/mapping/api-key.mapper.ts',
+  'src/infra/database/migrations/1781281330534-CreateApiKey.ts',
+] as const;
+
+export const API_KEY_SUBNET_PATH =
+  'src/core/utils/internal-subnet-validator.ts' as const;
+
 /** Removidos quando apenas OAuth2 está ativo (sem login por senha). */
 export const OAUTH2_ONLY_REMOVE_PATHS = [
   'src/application/auth/login',
