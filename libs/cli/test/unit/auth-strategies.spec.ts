@@ -367,7 +367,7 @@ export class RepositoryModule {}`,
     );
     writeFileSync(
       path.join(tempDir, 'src/infra/database/data-source-factory.ts'),
-      `export async function dataSourceFactory() { return { entities: [] }; }`,
+      `export async function dataSourceFactory() { return {}; }`,
     );
 
     process.chdir(tempDir);
@@ -424,7 +424,7 @@ export class RepositoryModule {}`,
     );
     writeFileSync(
       path.join(tempDir, 'src/infra/database/data-source-factory.ts'),
-      `export async function dataSourceFactory() { return { entities: [] }; }`,
+      `export async function dataSourceFactory() { return {}; }`,
     );
 
     process.chdir(tempDir);
@@ -477,7 +477,7 @@ export class RepositoryModule {}`,
     );
     writeFileSync(
       path.join(tempDir, 'src/infra/database/data-source-factory.ts'),
-      `export async function dataSourceFactory() { return { entities: [] }; }`,
+      `export async function dataSourceFactory() { return {}; }`,
     );
 
     process.chdir(tempDir);

@@ -150,4 +150,4 @@ bun run migration:run
 bun run migration:revert
 ```
 
-**npm / pnpm** — use `npm run` ou `pnpm run` nos mesmos nomes. Testes via **Vitest**; `migration:generate`, `migration:run` e `migration:revert` usam `node --import ts-node/register/transpile-only`.
+**npm / pnpm** — use `npm run` ou `pnpm run` nos mesmos nomes. Testes via **Vitest**; `migration:generate`, `migration:run` e `migration:revert` usam `node --import ts-node/register/transpile-only --require tsconfig-paths/register`.

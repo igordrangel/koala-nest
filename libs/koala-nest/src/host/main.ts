@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import '@koalarx/utils/prototypes';
 
 import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
 import { resolveApiHost } from '@/core/utils/resolve-api-host';

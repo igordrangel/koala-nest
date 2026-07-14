@@ -47,5 +47,7 @@ Veja a [documentação Koala Utils](../../doc/markdown/pt/core/koala-utils.md).
 | Script | Descrição |
 |--------|-----------|
 | `start:debug` | Nest em watch com inspector |
-| `migration:run` | Aplica migrations TypeORM |
+| `migration:run` | Aplica migrations TypeORM (fallback / CI) |
 | `migration:generate` | Gera migration a partir das entidades |
+
+Migrations pendentes também são aplicadas automaticamente ao subir a API.

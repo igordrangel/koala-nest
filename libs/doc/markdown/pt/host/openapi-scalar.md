@@ -65,7 +65,7 @@ Em `src/core/schemas/`:
 | `nativeEnumSchema(enum)` | Enums numéricos em query/body |
 | `emailSchema(value, required?)` | Validação de e-mail |
 | `documentNumberSchema(value)` | CPF/CNPJ, incluindo CNPJ alfanumérico (via [`@koalarx/utils`](../core/koala-utils.md)) |
-| `setMaskDocumentNumber(value)` | Máscara de documento (via `@koalarx/utils/KlString`) |
+| `setMaskDocumentNumber(value)` | Máscara de documento (via prototypes de `@koalarx/utils`) |
 | `LIST_QUERY_SCHEMA` | Paginação e ordenação |
 
 Exemplo em validators:

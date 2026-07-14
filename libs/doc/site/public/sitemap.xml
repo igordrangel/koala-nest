@@ -19,6 +19,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/intro/arquitetura-ddd/" />
   </url>
   <url>
+    <loc>https://nest.koalarx.com/pt/docs/intro/patch-notes/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/intro/patch-notes/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/intro/patch-notes/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/intro/patch-notes/" />
+  </url>
+  <url>
     <loc>https://nest.koalarx.com/pt/docs/inicio/guia-de-instalacao/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/inicio/guia-de-instalacao/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/getting-started/installation-guide/" />
@@ -191,6 +197,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/intro/arquitetura-ddd/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/intro/ddd-architecture/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/intro/arquitetura-ddd/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/intro/patch-notes/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/intro/patch-notes/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/intro/patch-notes/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/intro/patch-notes/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/getting-started/installation-guide/</loc>

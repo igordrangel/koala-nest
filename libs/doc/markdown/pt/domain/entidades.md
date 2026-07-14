@@ -135,13 +135,14 @@ const dataSource = new DataSource({
   url: env.get('DATABASE_URL'),
   schema: env.get('DATABASE_SCHEMA'),
   entities: Array.from(DbContext.entities.values()),
+  migrations: [path.join(__dirname, 'migrations', '[0-9]*.{ts,js}')],
   invalidWhereValuesBehavior: {
     undefined: 'ignore',
   },
 });
 ```
 
-Ao decorar uma nova entidade com `@Entity`, ela já entra no DataSource em runtime — não é necessário alterar o `dataSourceFactory` manualmente.
+Ao decorar uma nova entidade com `@Entity`, ela já entra no DataSource em runtime — não é necessário alterar o `dataSourceFactory` manualmente. No CLI de migrations, `load-all-entities.ts` carrega os arquivos de `src/domain/entities/` para preencher o mesmo `DbContext`.
 
 A opção `invalidWhereValuesBehavior.undefined: 'ignore'` evita que filtros opcionais (`undefined`) gerem cláusulas inválidas no TypeORM.
 

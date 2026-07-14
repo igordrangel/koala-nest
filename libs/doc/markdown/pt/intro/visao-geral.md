@@ -60,10 +60,15 @@ src/
 └── test/          # testes unitários
 ```
 
+## Novidades
+
+Alterações relevantes da CLI e dos templates ficam em [Patch notes](./patch-notes.md) (também no [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) do repositório).
+
 ## Próximos passos
 
 - [Guia de instalação](../inicio/guia-de-instalacao.md) — `kl-nest new` e `kl-nest add`
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
+- [Patch notes](./patch-notes.md) — o que mudou recentemente
 - [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — bootstrap e módulos Nest
 - [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo ponta a ponta (template CRUD)
 - [Health check](../host/health-check.md) — monitoramento com Terminus

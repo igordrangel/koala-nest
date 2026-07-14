@@ -10,9 +10,14 @@ export const CORE_PACKAGES = [
   'zod',
   '@scalar/nestjs-api-reference',
   'cookie-parser',
+  'dotenv',
 ] as const;
 
-export const CORE_DEV_PACKAGES = ['@types/cookie-parser'] as const;
+export const CORE_DEV_PACKAGES = [
+  '@types/cookie-parser',
+  'ts-node',
+  'tsconfig-paths',
+] as const;
 
 /** Redis — instalado ao selecionar Cache (Redis). */
 export const CACHE_PACKAGES = ['ioredis'] as const;
