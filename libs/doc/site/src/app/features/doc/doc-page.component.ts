@@ -25,7 +25,6 @@ import { SeoService } from '../../core/services/seo.service';
 @Component({
   selector: 'app-doc-page',
   templateUrl: './doc-page.component.html',
-  styleUrl: './doc-page.component.css',
   imports: [MarkdownContentComponent, RouterLink, DocOnThisPageComponent, CopyFeedbackButtonComponent],
 })
 export class DocPageComponent {

@@ -4,6 +4,8 @@
 @import './theme/grid.css';
 @import './theme/table.css';
 
+@import 'prism-themes/themes/prism-atom-dark.min.css';
+
 /* Font Awesome: famílias usadas — não usar all.min.css */
 @import '@fortawesome/fontawesome-free/css/fontawesome.min.css';
 @import '@fortawesome/fontawesome-free/css/solid.min.css';
