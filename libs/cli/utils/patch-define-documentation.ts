@@ -11,7 +11,7 @@ import packageJson from '../../../package.json';
 
 const DOC_ENDPOINT = '/doc';
 
-export async function defineDocumentation(app: INestApplication) {
+export function defineDocumentation(app: INestApplication) {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
@@ -45,16 +45,12 @@ export async function defineDocumentation(app: INestApplication) {
         'okhttp',
         'unirest',
         'xhr',
-        'request',
         'nsurlsession',
         'cohttp',
         'guzzle',
-        'http1',
-        'http2',
         'webrequest',
         'restmethod',
         'requests',
-        'httr',
         'httpie',
         'wget',
         'undici',
@@ -122,9 +118,7 @@ function hasController(app: INestApplication, controllerName: string) {
   return false;
 }
 
-async function buildDocAuthorizations(
-  app: INestApplication,
-): Promise<DocAuthorization[]> {
+function buildDocAuthorizations(app: INestApplication): DocAuthorization[] {
   if (!isProviderRegistered(app, IJwtTokenService)) {
     return [];
   }
@@ -156,8 +150,8 @@ async function buildDocAuthorizations(
   return authorizations;
 }
 
-export async function defineDocumentation(app: INestApplication) {
-  const authorizations = await buildDocAuthorizations(app);
+export function defineDocumentation(app: INestApplication) {
+  const authorizations = buildDocAuthorizations(app);
 
   const documentBuilder = new DocumentBuilder()
     .setTitle(packageJson.name)
@@ -206,16 +200,12 @@ export async function defineDocumentation(app: INestApplication) {
         'okhttp',
         'unirest',
         'xhr',
-        'request',
         'nsurlsession',
         'cohttp',
         'guzzle',
-        'http1',
-        'http2',
         'webrequest',
         'restmethod',
         'requests',
-        'httr',
         'httpie',
         'wget',
         'undici',
