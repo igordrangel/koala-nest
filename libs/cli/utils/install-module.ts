@@ -318,6 +318,23 @@ export async function installModule(
           path.join(getSourceCodePath(), 'bunfig.toml'),
           path.join(projectPath, 'bunfig.toml'),
         );
+        cpSync(
+          path.join(getSourceCodePath(), 'tsconfig.spec.json'),
+          path.join(projectPath, 'tsconfig.spec.json'),
+        );
+      } else {
+        writeFileSync(
+          path.join(projectPath, 'tsconfig.spec.json'),
+          `${JSON.stringify(
+            {
+              extends: './tsconfig.json',
+              include: ['src/test/**/*.ts'],
+              exclude: ['node_modules', 'dist'],
+            },
+            null,
+            2,
+          )}\n`,
+        );
       }
 
       for (const configFile of ['tsconfig.build.json', '.env.example']) {
@@ -339,7 +356,12 @@ export async function installModule(
       patchInfraModuleFile(projectName, false);
 
       if (!options.skipPackages) {
-        await installPackages(projectName, CORE_PACKAGES, CORE_DEV_PACKAGES);
+        const coreDevPackages =
+          packageManager === 'bun'
+            ? [...CORE_DEV_PACKAGES, '@types/bun']
+            : CORE_DEV_PACKAGES;
+
+        await installPackages(projectName, CORE_PACKAGES, coreDevPackages);
       }
 
       if (template === Template.DEFAULT) {

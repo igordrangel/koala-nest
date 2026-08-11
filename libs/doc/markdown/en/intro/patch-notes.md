@@ -13,6 +13,18 @@ Changelog for anyone using or upgrading CLI-generated projects. Deep dives live 
 
 The published `@koalarx/nest` version is shown on the site and in the repo `package.json`. Root [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) mirrors these notes.
 
+## 4.3.1 — OpenAPI scaffold and tsconfig
+
+### What changed
+
+- **Scalar `hiddenClients`:** removed invalid IDs (`request`, `http1`, `http2`, `httr`) that caused TypeScript errors in generated `define-documentation.ts`.
+- **Sync OpenAPI slim variants:** no-auth and JWT-only templates no longer use `async` without `await` (avoids `@typescript-eslint/require-await`).
+- **`tsconfig.spec.json` in scaffold:** copied/generated with core (Bun: template with `bun-types` + `@types/bun`; npm/pnpm: minimal variant) so ESLint finds the file referenced in `parserOptions.project`.
+
+### Upgrade
+
+On existing projects: align the `hiddenClients` list and drop unnecessary `async` in OpenAPI to match the current template; if ESLint points at a missing `tsconfig.spec.json`, copy it from the template (or the npm/pnpm variant) and, on Bun, add `@types/bun` as a devDependency.
+
 ## 4.3.0 — API Key (M2M auth)
 
 ### What changed

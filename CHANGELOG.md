@@ -9,6 +9,16 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [4.3.1]
+
+### Fixed
+
+- Scalar `hiddenClients` alinhados aos IDs tipados atuais (remove `request`, `http1`, `http2`, `httr` inválidos).
+- Variantes OpenAPI sem auth e JWT-only geradas sem `async` desnecessário (`require-await`).
+- Scaffold passa a incluir `tsconfig.spec.json` (template Bun com `bun-types`; variante mínima para npm/pnpm) e instala `@types/bun` em projetos Bun — corrige ESLint/`parserOptions.project` apontando para arquivo inexistente.
+
+Detalhes: [Patch notes — 4.3.1](https://nest.koalarx.com/pt/docs/intro/patch-notes).
+
 ## [4.3.0] — API Key (autenticação M2M)
 
 ### Added
