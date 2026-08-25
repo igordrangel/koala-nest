@@ -226,7 +226,7 @@ pnpm run migration:run
 pnpm run migration:revert
 ```
 
-> **Importante:** em qualquer projeto, ao iniciar a API as migrations pendentes são aplicadas automaticamente (`runMigrations` no `dataSourceFactory`). O script `migration:run` permanece disponível para CI/ops. O template **Exemplo de CRUD** traz a migration inicial (`1781281330533-Init.ts`); o **Padrão** não inclui migrations iniciais. Testes unitários: **Bun** usa `bun test`; **npm/pnpm** usam **Vitest** (`npm run test`). **E2E:** todo projeto inclui `test:e2e` e a infraestrutura em `src/test/`. Na **API**, o template **Padrão** traz `app.e2e.spec.ts` mínimo; o **CRUD** inclui Person/auth. No **Worker**, o E2E sobe `ApplicationContext` (sem HTTP). Requer `DATABASE_URL` apontando para Postgres local.
+> **Importante:** em qualquer projeto, ao iniciar a API as migrations pendentes são aplicadas automaticamente (`runMigrations` no `dataSourceFactory`). O script `migration:run` permanece disponível para CI/ops. O template **Exemplo de CRUD** traz a migration inicial (`1781281330533-Init.ts`); o **Padrão** não inclui migrations iniciais. Testes unitários: **Bun** usa `bun test`; **npm/pnpm** usam **Vitest** (`npm run test`). **E2E:** todo projeto inclui `test:e2e` e a infraestrutura em `src/test/`. Na **API**, o template **Padrão** traz `app.e2e.spec.ts` mínimo; o **CRUD** inclui Person/auth. No **Worker**, o E2E usa `Test.createTestingModule(...).compile()` (sem HTTP). Requer `DATABASE_URL` apontando para Postgres local.
 
 ## Desenvolvimento local da CLI
 

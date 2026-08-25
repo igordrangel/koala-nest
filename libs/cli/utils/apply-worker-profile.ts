@@ -34,11 +34,9 @@ import { INestApplicationContext } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
 export async function createE2ETestApp(): Promise<INestApplicationContext> {
-  const moduleRef = await Test.createTestingModule({
+  return Test.createTestingModule({
     imports: [AppTestModule],
   }).compile();
-
-  return moduleRef.createNestApplicationContext();
 }
 `;
 

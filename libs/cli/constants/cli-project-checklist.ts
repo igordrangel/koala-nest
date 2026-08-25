@@ -513,6 +513,17 @@ export const MAIN_WORKER_MUST_NOT_CONTAIN = [
   'defineDocumentation',
 ] as const;
 
+/** E2E Worker: TestingModule.compile() já é INestApplicationContext. */
+export const WORKER_E2E_MUST_CONTAIN = [
+  'Test.createTestingModule',
+  '.compile()',
+] as const;
+
+export const WORKER_E2E_MUST_NOT_CONTAIN = [
+  'createNestApplicationContext',
+  'createNestApplication()',
+] as const;
+
 export function appModuleMustContain(
   expectation: ProjectExpectation,
 ): readonly string[] {

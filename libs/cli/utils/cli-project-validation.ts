@@ -13,6 +13,8 @@ import {
   MAIN_MUST_CONTAIN,
   MAIN_WORKER_MUST_CONTAIN,
   MAIN_WORKER_MUST_NOT_CONTAIN,
+  WORKER_E2E_MUST_CONTAIN,
+  WORKER_E2E_MUST_NOT_CONTAIN,
   requiredPackagesForExpectation,
   requiredPathsForExpectation,
   type ProjectExpectation,
@@ -125,6 +127,20 @@ export function listCliProjectViolations(
       'main.ts',
       main,
       MAIN_WORKER_MUST_NOT_CONTAIN,
+    );
+
+    const createE2e = readOptional(projectRoot, 'src/test/create-e2e-test-app.ts');
+    expectContains(
+      violations,
+      'create-e2e-test-app.ts',
+      createE2e,
+      WORKER_E2E_MUST_CONTAIN,
+    );
+    expectNotContains(
+      violations,
+      'create-e2e-test-app.ts',
+      createE2e,
+      WORKER_E2E_MUST_NOT_CONTAIN,
     );
   } else {
     expectContains(violations, 'main.ts', main, MAIN_API_MUST_CONTAIN);
