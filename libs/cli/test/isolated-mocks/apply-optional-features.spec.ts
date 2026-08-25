@@ -96,8 +96,17 @@ export class AppModule {}
       Modules.INTERNAL_CRON_JOBS,
       Modules.INTERNAL_EVENT_JOBS,
     ]);
-    expect(installCalls[0]?.[3]).toEqual({ withRedis: true });
-    expect(installCalls[1]?.[3]).toEqual({ authStrategies: ['jwt'] });
+    expect(installCalls[0]?.[3]).toEqual({
+      withRedis: true,
+      skipPackages: undefined,
+      appType: 'api',
+    });
+    expect(installCalls[1]?.[3]).toEqual({
+      authStrategies: ['jwt'],
+      apiKeyInternalSubnet: undefined,
+      skipPackages: undefined,
+      appType: 'api',
+    });
   });
 
   it('instala auth oauth2 no template default', async () => {
@@ -111,7 +120,12 @@ export class AppModule {}
       Modules.CACHE,
       Modules.AUTH,
     ]);
-    expect(installCalls[1]?.[3]).toEqual({ authStrategies: ['oauth2'] });
+    expect(installCalls[1]?.[3]).toEqual({
+      authStrategies: ['oauth2'],
+      apiKeyInternalSubnet: undefined,
+      skipPackages: undefined,
+      appType: 'api',
+    });
   });
 
   it('instala auth jwt e oauth2 no template default', async () => {
@@ -127,6 +141,9 @@ export class AppModule {}
     ]);
     expect(installCalls[1]?.[3]).toEqual({
       authStrategies: ['jwt', 'oauth2'],
+      apiKeyInternalSubnet: undefined,
+      skipPackages: undefined,
+      appType: 'api',
     });
   });
 
@@ -138,7 +155,11 @@ export class AppModule {}
     });
 
     expect(installCalls.map((call) => call[0])).toEqual([Modules.HEALTH]);
-    expect(installCalls[0]?.[3]).toEqual({ withRedisIndicator: false });
+    expect(installCalls[0]?.[3]).toEqual({
+      withRedisIndicator: false,
+      skipPackages: undefined,
+      appType: 'api',
+    });
   });
 });
 
