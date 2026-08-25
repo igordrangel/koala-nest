@@ -242,6 +242,23 @@ export async function addProjectFeatures(
         });
         break;
       }
+      case ExtraFeature.QUEUE_JOBS: {
+        if (state.queueJobs) {
+          results.push({
+            label: FEATURE_LABELS[ExtraFeature.QUEUE_JOBS],
+            installed: false,
+            reason: 'Queue jobs já estão instalados.',
+          });
+          break;
+        }
+
+        await installModule(Modules.QUEUE_JOBS, template, projectName);
+        results.push({
+          label: FEATURE_LABELS[ExtraFeature.QUEUE_JOBS],
+          installed: true,
+        });
+        break;
+      }
     }
 
     state = detectProjectState(projectName);

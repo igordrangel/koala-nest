@@ -152,6 +152,10 @@ BOOTSTRAP_DELAY_MS=0
 | --- | --- |
 | `CRON_JOBS_ENABLED` | Habilita CronJobs no `JobsBootstrapService` (`true` no template de exemplo; defina `false` para desligar) |
 | `BOOTSTRAP_DELAY_MS` | Aguarda N ms antes de iniciar jobs (warm-up de dependências) |
+| `QUEUE_MAX_CONCURRENCY` | Concorrência do `QueueBase` (feature `queue`; default `10`) |
+| `QUEUE_CAPACITY_DELAY_MS` | Delay quando não há slots livres (default `200`) |
+| `QUEUE_IDLE_DELAY_MS` | Delay quando a fila está vazia (default `1000`) |
+| `QUEUE_ERROR_DELAY_MS` | Backoff após erro no loop (default `2000`) |
 
 ## Integração com ConfigModule
 

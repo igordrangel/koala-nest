@@ -6,6 +6,7 @@ import { getSourceCodePath } from './get-source-code-path';
 import { installAiContext } from './install-ai-context';
 import { ensureJwtKeysInEnv } from './patch-env';
 import { resolveProjectPath } from './resolve-project-path';
+import { writeDockerAssets } from './write-docker-assets';
 
 const PACKAGE_MANAGER_COMMAND: Record<PackageManager, string> = {
   bun: 'bun',
@@ -146,6 +147,7 @@ export function finalizeNewProjectSetup(
 ): void {
   installWorkspaceConfig(projectName, packageManager);
   createEnvFromExample(projectName);
+  writeDockerAssets(projectName, packageManager);
 
   if (aiContext.length > 0) {
     installAiContext(projectName, aiContext);

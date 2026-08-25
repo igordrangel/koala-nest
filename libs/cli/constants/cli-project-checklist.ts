@@ -26,6 +26,7 @@ export type ProjectExpectation = {
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  queueJobs: boolean;
   aiContext?: AiContextExpectation;
 };
 
@@ -55,6 +56,8 @@ export const WORKSPACE_SETUP_PATHS = [
   '.vscode/tasks.json',
   '.vscode/extensions.json',
   '.env',
+  'Dockerfile',
+  'entrypoint.sh',
 ] as const;
 
 /** Contexto AI gerado pela CLI (Cursor / GitHub Copilot). */
@@ -94,6 +97,7 @@ export const CORE_PACKAGE_DEPENDENCIES = [
   'zod',
   'typeorm',
   '@scalar/nestjs-api-reference',
+  'tsc-alias',
 ] as const;
 
 /** Template default — sem exemplo Person. */
@@ -153,6 +157,21 @@ export const EVENTS_REQUIRED_PATHS = [
   'src/core/background-services/event-service/event-handler.base.ts',
 ] as const;
 
+/** Queue jobs (`--features queue`). */
+export const QUEUE_REQUIRED_PATHS = [
+  'src/core/background-services/queue-service/queue.base.ts',
+  'src/domain/common/iqueue.service.ts',
+  'src/infra/services/queue.service.ts',
+  'src/test/services/queue.fake-service.ts',
+] as const;
+
+export const QUEUE_ENV_KEYS = [
+  'QUEUE_MAX_CONCURRENCY',
+  'QUEUE_CAPACITY_DELAY_MS',
+  'QUEUE_IDLE_DELAY_MS',
+  'QUEUE_ERROR_DELAY_MS',
+] as const;
+
 export const AUTH_JWT_PACKAGES = [
   '@nestjs/jwt',
   'passport-jwt',
@@ -195,6 +214,12 @@ export const CLI_NEW_SELECTION_MATRIX: readonly {
     template: Template.DEFAULT,
     auth: [],
     features: [ExtraFeature.INTERNAL_EVENT_JOBS],
+  },
+  {
+    label: 'default sem auth + queue',
+    template: Template.DEFAULT,
+    auth: [],
+    features: [ExtraFeature.QUEUE_JOBS],
   },
   {
     label: 'default sem auth + cache + health + cron + events',
@@ -278,6 +303,7 @@ export function buildProjectExpectation(
     health: projectFeatures.health,
     cronJobs: projectFeatures.cronJobs,
     eventJobs: projectFeatures.eventJobs,
+    queueJobs: projectFeatures.queueJobs,
     aiContext,
   };
 }
@@ -313,6 +339,10 @@ export function requiredPathsForExpectation(
 
   if (expectation.eventJobs) {
     paths.push(...EVENTS_REQUIRED_PATHS);
+  }
+
+  if (expectation.queueJobs) {
+    paths.push(...QUEUE_REQUIRED_PATHS);
   }
 
   const aiContext = expectation.aiContext ?? { cursor: false, github: false };
@@ -359,6 +389,10 @@ export function forbiddenPathsForExpectation(
 
   if (!expectation.eventJobs) {
     paths.push(...EVENTS_REQUIRED_PATHS);
+  }
+
+  if (!expectation.queueJobs) {
+    paths.push(...QUEUE_REQUIRED_PATHS);
   }
 
   const aiContext = expectation.aiContext ?? { cursor: false, github: false };
@@ -465,21 +499,33 @@ export function appModuleMustNotContain(
 export function infraModuleMustContain(
   expectation: ProjectExpectation,
 ): readonly string[] {
-  if (expectation.cache === false) {
-    return [];
+  const patterns: string[] = [];
+
+  if (expectation.cache !== false) {
+    patterns.push('ICacheService', 'CacheServiceProvider');
   }
 
-  return ['ICacheService', 'CacheServiceProvider'];
+  if (expectation.queueJobs) {
+    patterns.push('IQueueService', 'QueueService');
+  }
+
+  return patterns;
 }
 
 export function infraModuleMustNotContain(
   expectation: ProjectExpectation,
 ): readonly string[] {
+  const patterns: string[] = [];
+
   if (expectation.cache === false) {
-    return ['ICacheService', 'CacheServiceProvider'];
+    patterns.push('ICacheService', 'CacheServiceProvider');
   }
 
-  return [];
+  if (!expectation.queueJobs) {
+    patterns.push('IQueueService', 'QueueService');
+  }
+
+  return patterns;
 }
 
 export function healthControllerMustContain(

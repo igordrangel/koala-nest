@@ -34,6 +34,7 @@ export const ExtraFeature = {
   HEALTH_CHECK: 'health-check',
   INTERNAL_CRON_JOBS: 'internal-cron-jobs',
   INTERNAL_EVENT_JOBS: 'internal-event-jobs',
+  QUEUE_JOBS: 'queue-jobs',
 } as const;
 
 export type ExtraFeature = (typeof ExtraFeature)[keyof typeof ExtraFeature];
@@ -46,6 +47,7 @@ export enum InstallModule {
   HEALTH = 'health',
   INTERNAL_CRON_JOBS = 'internal-cron-jobs',
   INTERNAL_EVENT_JOBS = 'internal-event-jobs',
+  QUEUE_JOBS = 'queue-jobs',
 }
 
 /** Discriminador de argumentos do comando `add`. */
@@ -75,6 +77,7 @@ export const FEATURE_INSTALL_ORDER: readonly ExtraFeature[] = [
   ExtraFeature.HEALTH_CHECK,
   ExtraFeature.INTERNAL_CRON_JOBS,
   ExtraFeature.INTERNAL_EVENT_JOBS,
+  ExtraFeature.QUEUE_JOBS,
 ];
 
 export const TEMPLATE_ALIASES: Record<string, Template> = {
@@ -96,6 +99,9 @@ export const FEATURE_ALIASES: Record<string, ExtraFeature> = {
   'internal-cron-jobs': ExtraFeature.INTERNAL_CRON_JOBS,
   events: ExtraFeature.INTERNAL_EVENT_JOBS,
   'internal-event-jobs': ExtraFeature.INTERNAL_EVENT_JOBS,
+  queue: ExtraFeature.QUEUE_JOBS,
+  'queue-jobs': ExtraFeature.QUEUE_JOBS,
+  messaging: ExtraFeature.QUEUE_JOBS,
 };
 
 export const FEATURE_LABELS: Record<ExtraFeature, string> = {
@@ -103,6 +109,7 @@ export const FEATURE_LABELS: Record<ExtraFeature, string> = {
   [ExtraFeature.HEALTH_CHECK]: 'health-check',
   [ExtraFeature.INTERNAL_CRON_JOBS]: 'cron jobs',
   [ExtraFeature.INTERNAL_EVENT_JOBS]: 'event jobs',
+  [ExtraFeature.QUEUE_JOBS]: 'queue jobs',
 };
 
 /** Rótulos para prompts interativos da CLI. */
@@ -111,6 +118,7 @@ export const FEATURE_PROMPT_LABELS: Record<ExtraFeature, string> = {
   [ExtraFeature.HEALTH_CHECK]: 'Health check (GET /health)',
   [ExtraFeature.INTERNAL_CRON_JOBS]: 'Jobs internos (Cron)',
   [ExtraFeature.INTERNAL_EVENT_JOBS]: 'Jobs internos (Eventos)',
+  [ExtraFeature.QUEUE_JOBS]: 'Jobs de fila (mensageria)',
 };
 
 export const TEMPLATE_LABELS: Record<Template, string> = {
@@ -153,6 +161,8 @@ export function mapExtraFeatureToModule(feature: ExtraFeature): InstallModule {
       return InstallModule.INTERNAL_CRON_JOBS;
     case ExtraFeature.INTERNAL_EVENT_JOBS:
       return InstallModule.INTERNAL_EVENT_JOBS;
+    case ExtraFeature.QUEUE_JOBS:
+      return InstallModule.QUEUE_JOBS;
   }
 }
 

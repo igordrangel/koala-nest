@@ -24,6 +24,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 - [Pagination and filters](markdown/en/core/pagination.md): Pagination, sorting, and filters in listings with PaginationRequest and PaginationDto.
 - [Cron and Event Jobs](markdown/en/core/cron-event-jobs.md): Scheduled background jobs (CronJob) and domain event processing (EventJob).
 - [Koala Utils](markdown/en/core/koala-utils.md): Integration with @koalarx/utils — delay, CPF/CNPJ, strings, dates, and arrays.
+- [Queue jobs (messaging)](markdown/en/core/queue-jobs.md): Provider-agnostic queue handlers — QueueBase, IQueueService, and infra stub.
 
 ## Domain
 

@@ -17,6 +17,7 @@ export const CORE_DEV_PACKAGES = [
   '@types/cookie-parser',
   'ts-node',
   'tsconfig-paths',
+  'tsc-alias',
 ] as const;
 
 /** Redis — instalado ao selecionar Cache (Redis). */

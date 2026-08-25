@@ -34,6 +34,7 @@ import {
 import {
   patchInfraModuleForAuth,
   patchInfraModuleForCache,
+  patchInfraModuleForQueue,
   stripInfraModuleCache,
 } from './patch-infra-module';
 import { patchMainForAuth } from './patch-main';
@@ -41,6 +42,7 @@ import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
 import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
 import { runCommand } from './run-command';
+import { patchEnvForQueue } from './patch-env';
 
 export {
   AuthChoice,
@@ -71,6 +73,7 @@ export type ProjectFeatures = {
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  queueJobs: boolean;
 };
 
 function install(modulePath: string, projectName: string) {
@@ -125,6 +128,18 @@ function patchInfraModuleAuthFile(projectName: string) {
   writeFileSync(
     infraModulePath,
     patchInfraModuleForAuth(readFileSync(infraModulePath, 'utf8')),
+  );
+}
+
+function patchInfraModuleQueueFile(projectName: string) {
+  const infraModulePath = path.join(
+    resolveProjectPath(projectName),
+    'src/infra/infra.module.ts',
+  );
+
+  writeFileSync(
+    infraModulePath,
+    patchInfraModuleForQueue(readFileSync(infraModulePath, 'utf8')),
   );
 }
 
@@ -292,6 +307,27 @@ export async function installModule(
         path.join(
           resolveProjectPath(projectName),
           'src/infra/services/redis.indicator.service.ts',
+        ),
+        { force: true },
+      );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
+          'src/infra/services/queue.service.ts',
+        ),
+        { force: true },
+      );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
+          'src/domain/common/iqueue.service.ts',
+        ),
+        { force: true },
+      );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
+          'src/test/services/queue.fake-service.ts',
         ),
         { force: true },
       );
@@ -474,6 +510,15 @@ export async function installModule(
       install('src/core/background-services/event-service', projectName);
       break;
     }
+    case Modules.QUEUE_JOBS: {
+      install('src/core/background-services/queue-service', projectName);
+      install('src/domain/common/iqueue.service.ts', projectName);
+      install('src/infra/services/queue.service.ts', projectName);
+      install('src/test/services/queue.fake-service.ts', projectName);
+      patchInfraModuleQueueFile(projectName);
+      patchEnvForQueue(projectName);
+      break;
+    }
   }
 }
 
@@ -495,5 +540,6 @@ export function resolveProjectFeatures(
     health: selected.has(ExtraFeature.HEALTH_CHECK),
     cronJobs: selected.has(ExtraFeature.INTERNAL_CRON_JOBS),
     eventJobs: selected.has(ExtraFeature.INTERNAL_EVENT_JOBS),
+    queueJobs: selected.has(ExtraFeature.QUEUE_JOBS),
   };
 }

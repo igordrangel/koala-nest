@@ -176,3 +176,7 @@ Full guide: [Cache (Redis)](./cache.md).
 ## CronJob and EventJob
 
 Background jobs use `CronJobHandlerBase` and `EventJob`/`EventHandlerBase`. See the full guide at [Cron and Event Jobs](./cron-event-jobs.md).
+
+## Queue jobs (messaging)
+
+Provider-agnostic queue handlers use `QueueBase` + `IQueueService`. Guide: [Queue jobs](./queue-jobs.md).

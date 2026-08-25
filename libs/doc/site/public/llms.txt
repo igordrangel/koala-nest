@@ -24,6 +24,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 - [Paginação e filtros](markdown/pt/core/paginacao.md): Paginação, ordenação e filtros em listagens com PaginationRequest e PaginationDto.
 - [Cron e Event Jobs](markdown/pt/core/cron-event-jobs.md): Jobs agendados em background (CronJob) e processamento de eventos de domínio (EventJob).
 - [Koala Utils](markdown/pt/core/koala-utils.md): Integração com @koalarx/utils — delay, CPF/CNPJ, strings, datas e arrays.
+- [Queue jobs (mensageria)](markdown/pt/core/queue-jobs.md): Handlers de fila agnósticos ao provider — QueueBase, IQueueService e stub de infra.
 
 ## Domain
 

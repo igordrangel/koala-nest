@@ -79,6 +79,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
   </url>
   <url>
+    <loc>https://nest.koalarx.com/pt/docs/core/queue-jobs/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+  </url>
+  <url>
     <loc>https://nest.koalarx.com/pt/docs/domain/entidades/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/domain/entidades/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/domain/entities/" />
@@ -257,6 +263,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/core/queue-jobs/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/domain/entities/</loc>

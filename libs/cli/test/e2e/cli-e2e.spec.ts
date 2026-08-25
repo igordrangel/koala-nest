@@ -15,6 +15,7 @@ import {
   assertDefaultWithAllFeatures,
   assertDefaultWithJwtCacheAndHealth,
   assertEventJobs,
+  assertQueueJobs,
   assertHealthCheck,
   cleanupWorkspace,
   cloneDefaultProject,
@@ -402,6 +403,13 @@ describe('CLI e2e — add', () => {
 
     expectCliSuccess(runCli(['add', 'events'], projectDir));
     assertEventJobs(projectDir);
+  }, 60_000);
+
+  it('add queue instala QueueBase, stub de infra e env abstrato', () => {
+    const projectDir = trackClone('add-queue');
+
+    expectCliSuccess(runCli(['add', 'queue'], projectDir));
+    assertQueueJobs(projectDir);
   }, 60_000);
 
   it('add múltiplos recursos normaliza ordem cache → auth → health e compila', () => {

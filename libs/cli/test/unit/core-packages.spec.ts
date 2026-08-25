@@ -39,6 +39,7 @@ describe('core-packages', () => {
     expect(CORE_DEV_PACKAGES).toContain('@types/cookie-parser');
     expect(CORE_DEV_PACKAGES).toContain('ts-node');
     expect(CORE_DEV_PACKAGES).toContain('tsconfig-paths');
+    expect(CORE_DEV_PACKAGES).toContain('tsc-alias');
     expect(CORE_PACKAGES).toContain('dotenv');
     expect(AUTH_DEV_PACKAGES).not.toContain('@types/cookie-parser');
   });
@@ -91,6 +92,7 @@ describe('resolveProjectFeatures', () => {
     expect(features.cacheForCrud).toBe(false);
     expect(features.cronJobs).toBe(false);
     expect(features.eventJobs).toBe(false);
+    expect(features.queueJobs).toBe(false);
   });
 });
 

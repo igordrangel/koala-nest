@@ -101,6 +101,11 @@ async function promptExtraFeatures(template: Template) {
             value: ExtraFeature.HEALTH_CHECK,
             label: FEATURE_PROMPT_LABELS[ExtraFeature.HEALTH_CHECK],
           },
+          {
+            value: ExtraFeature.QUEUE_JOBS,
+            label: FEATURE_PROMPT_LABELS[ExtraFeature.QUEUE_JOBS],
+            hint: 'QueueBase + IQueueService (infra a implementar)',
+          },
         ],
         required: false,
       }),
@@ -129,6 +134,11 @@ async function promptExtraFeatures(template: Template) {
           value: ExtraFeature.INTERNAL_EVENT_JOBS,
           label: FEATURE_PROMPT_LABELS[ExtraFeature.INTERNAL_EVENT_JOBS],
           hint: 'EventJob + bases',
+        },
+        {
+          value: ExtraFeature.QUEUE_JOBS,
+          label: FEATURE_PROMPT_LABELS[ExtraFeature.QUEUE_JOBS],
+          hint: 'QueueBase + IQueueService (infra a implementar)',
         },
       ],
       required: false,
@@ -332,6 +342,7 @@ export async function runNew(args: string[] = []): Promise<void> {
     projectFeatures.eventJobs
       ? FEATURE_LABELS[ExtraFeature.INTERNAL_EVENT_JOBS]
       : null,
+    projectFeatures.queueJobs ? FEATURE_LABELS[ExtraFeature.QUEUE_JOBS] : null,
   ]
     .filter(Boolean)
     .join(', ');

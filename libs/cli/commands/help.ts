@@ -18,7 +18,7 @@ ${color.cyan('New — opções:')}
   ${color.dim('--template, -t')}     ${color.dim('default')} ou ${color.dim('crud')}
   ${color.dim('--pm')}                 ${color.dim('bun')}, ${color.dim('npm')} ou ${color.dim('pnpm')}
   ${color.dim('--auth')}               ${color.dim('none')}, ${color.dim('jwt')}, ${color.dim('oauth2')}, ${color.dim('api-key')} (combinações)
-  ${color.dim('--features')}           ${color.dim('cache,health,cron,events')} (vírgula)
+  ${color.dim('--features')}           ${color.dim('cache,health,cron,events,queue')} (vírgula)
   ${color.dim('--api-key-internal-subnet')}  Bypass de subnet interna com API Key
 
 ${color.cyan('New — prompts:')}
@@ -37,6 +37,7 @@ ${color.cyan('Add — funcionalidades:')}
   ${color.dim('health')}                    GET /health
   ${color.dim('cron')}                      Jobs com expressão cron
   ${color.dim('events')}                    Jobs reativos a eventos
+  ${color.dim('queue')}                     Handlers de fila (mensageria)
   ${color.dim('ai-context cursor|github')}  Contexto AI (AGENTS.md + regras do editor)
 
 ${color.cyan('Exemplos:')}
@@ -47,6 +48,7 @@ ${color.cyan('Exemplos:')}
   kl-nest add cache
   kl-nest add auth jwt health --verbose
   kl-nest add cron events
+  kl-nest add queue
   kl-nest add ai-context cursor
   kl-nest add ai-context github
   kl-nest add ai-context cursor github

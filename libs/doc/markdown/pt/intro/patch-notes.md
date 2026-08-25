@@ -13,6 +13,18 @@ Changelog voltado a quem usa ou atualiza projetos gerados pela CLI. Detalhes té
 
 A versão publicada do pacote `@koalarx/nest` aparece no site e no `package.json` do repositório. O arquivo [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) na raiz espelha estas notas.
 
+## 4.4.0 — Build, Docker e QueueBase
+
+### O que mudou
+
+- **`tsc-alias` no build:** o script `build` dos projetos gerados passa a ser `nest build && tsc-alias -p tsconfig.build.json`, evitando imports `@/*` quebrados em `dist/` (produção/Docker).
+- **Dockerfile por package manager:** `kl-nest new` gera `Dockerfile` + `entrypoint.sh` alinhados a `bun`, `npm` ou `pnpm`.
+- **Queue jobs (opt-in):** `kl-nest new` / `kl-nest add queue` copia `QueueBase`, `IQueueService`, stub `QueueService` e fake de teste; injeta vars abstratas (`QUEUE_MAX_CONCURRENCY`, delays) no `env`. Sem SDK de broker — implemente a infra depois.
+
+### Upgrade
+
+Em projetos já gerados: ajuste o script `build` e adicione `tsc-alias` como devDependency; copie um Dockerfile compatível com o seu PM se quiser containerizar; use `kl-nest add queue` para a feature de mensageria.
+
 ## 4.3.1 — Scaffold OpenAPI e tsconfig
 
 ### O que mudou

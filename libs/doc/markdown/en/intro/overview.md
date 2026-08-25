@@ -34,6 +34,7 @@ Choose during `kl-nest new` or add later with `kl-nest add`:
 | Health check | `kl-nest add health` | `GET /health` with Terminus |
 | Cron jobs | `kl-nest add cron` | `CronJobHandlerBase` + `JobsModule` |
 | Event jobs | `kl-nest add events` | `EventJob` + in-memory handlers |
+| Queue jobs | `kl-nest add queue` | `QueueBase` + `IQueueService` (implement infra later) |
 
 OAuth2 and cron jobs automatically install **in-memory cache** when Redis was not selected (no `ioredis`).
 

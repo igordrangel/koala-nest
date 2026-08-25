@@ -146,6 +146,21 @@ export function listCliProjectViolations(
     healthControllerMustNotContain(expectation),
   );
 
+  if (expectation.queueJobs) {
+    const envSource = readOptional(projectRoot, 'src/core/env.ts');
+    const envExample = readOptional(projectRoot, '.env.example');
+
+    for (const key of [
+      'QUEUE_MAX_CONCURRENCY',
+      'QUEUE_CAPACITY_DELAY_MS',
+      'QUEUE_IDLE_DELAY_MS',
+      'QUEUE_ERROR_DELAY_MS',
+    ]) {
+      expectContains(violations, 'env.ts', envSource, [key]);
+      expectContains(violations, '.env.example', envExample, [`${key}=`]);
+    }
+  }
+
   if (expectation.template === Template.CRUD_SAMPLE) {
     const deletePerson = readOptional(
       projectRoot,
@@ -226,6 +241,12 @@ export function listCliProjectViolations(
     if (detected.eventJobs !== expectation.eventJobs) {
       violations.push(
         `state:eventJobs esperado ${expectation.eventJobs}, detectado ${detected.eventJobs}`,
+      );
+    }
+
+    if (detected.queueJobs !== expectation.queueJobs) {
+      violations.push(
+        `state:queueJobs esperado ${expectation.queueJobs}, detectado ${detected.queueJobs}`,
       );
     }
 

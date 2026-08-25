@@ -176,3 +176,7 @@ Guia completo: [Cache (Redis)](./cache.md).
 ## CronJob e EventJob
 
 Jobs em background usam `CronJobHandlerBase` e `EventJob`/`EventHandlerBase`. O guia completo está em [Cron e Event Jobs](./cron-event-jobs.md).
+
+## Queue jobs (mensageria)
+
+Handlers de fila agnósticos ao provider usam `QueueBase` + `IQueueService`. Guia: [Queue jobs](./queue-jobs.md).

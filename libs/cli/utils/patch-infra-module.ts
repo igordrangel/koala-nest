@@ -1,6 +1,7 @@
 type InfraModuleOptions = {
   cache: boolean;
   auth: boolean;
+  queue: boolean;
 };
 
 function hasCacheProviders(content: string) {
@@ -15,12 +16,23 @@ function hasAuthProviders(content: string) {
   );
 }
 
-export function buildInfraModule({ cache, auth }: InfraModuleOptions): string {
+function hasQueueProviders(content: string) {
+  return content.includes('{ provide: IQueueService, useClass: QueueService }');
+}
+
+export function buildInfraModule({
+  cache,
+  auth,
+  queue,
+}: InfraModuleOptions): string {
   const importLines = [
     ...(cache
       ? ["import { ICacheService } from '@/domain/common/icache.service';"]
       : []),
     "import { ILoggingService } from '@/domain/common/ilogging.service';",
+    ...(queue
+      ? ["import { IQueueService } from '@/domain/common/iqueue.service';"]
+      : []),
     ...(auth
       ? [
           "import { ILoggedUserInfoService } from '@/domain/services/ilogged-user-info.service';",
@@ -40,6 +52,9 @@ export function buildInfraModule({ cache, auth }: InfraModuleOptions): string {
       ? [
           "import { LoggedUserInfoService } from '@/infra/services/logged-user-info.service';",
         ]
+      : []),
+    ...(queue
+      ? ["import { QueueService } from '@/infra/services/queue.service';"]
       : []),
     ...(cache
       ? ["import { RedLockService } from '@/infra/common/red-lock.service';"]
@@ -63,6 +78,9 @@ export function buildInfraModule({ cache, auth }: InfraModuleOptions): string {
           '    { provide: ILoggedUserInfoService, useClass: LoggedUserInfoService },',
         ]
       : []),
+    ...(queue
+      ? ['    { provide: IQueueService, useClass: QueueService },']
+      : []),
   ];
 
   const exportLines = [
@@ -71,6 +89,7 @@ export function buildInfraModule({ cache, auth }: InfraModuleOptions): string {
     '    ILoggingService,',
     ...(cache ? ['    IRedLockService,'] : []),
     ...(auth ? ['    ILoggedUserInfoService,'] : []),
+    ...(queue ? ['    IQueueService,'] : []),
   ];
 
   return `${importLines.join('\n')}
@@ -88,18 +107,31 @@ export class InfraModule {}
 `;
 }
 
+function resolveInfraFlags(content: string): InfraModuleOptions {
+  return {
+    cache: hasCacheProviders(content) || content.includes('ICacheService'),
+    auth:
+      hasAuthProviders(content) || content.includes('ILoggedUserInfoService'),
+    queue: hasQueueProviders(content) || content.includes('IQueueService'),
+  };
+}
+
 export function patchInfraModuleForCache(content: string) {
   if (hasCacheProviders(content)) {
     return content;
   }
 
   return buildInfraModule({
+    ...resolveInfraFlags(content),
     cache: true,
-    auth: hasAuthProviders(content) || content.includes('ILoggedUserInfoService'),
   });
 }
 
-export const SLIM_INFRA_MODULE = buildInfraModule({ cache: false, auth: false });
+export const SLIM_INFRA_MODULE = buildInfraModule({
+  cache: false,
+  auth: false,
+  queue: false,
+});
 
 export function patchInfraModuleForAuth(content: string) {
   if (hasAuthProviders(content)) {
@@ -107,11 +139,28 @@ export function patchInfraModuleForAuth(content: string) {
   }
 
   return buildInfraModule({
-    cache: hasCacheProviders(content) || content.includes('ICacheService'),
+    ...resolveInfraFlags(content),
     auth: true,
   });
 }
 
-export function stripInfraModuleCache(_content: string) {
-  return SLIM_INFRA_MODULE;
+export function patchInfraModuleForQueue(content: string) {
+  if (hasQueueProviders(content)) {
+    return content;
+  }
+
+  return buildInfraModule({
+    ...resolveInfraFlags(content),
+    queue: true,
+  });
+}
+
+export function stripInfraModuleCache(content: string) {
+  const flags = resolveInfraFlags(content);
+
+  return buildInfraModule({
+    cache: false,
+    auth: flags.auth,
+    queue: flags.queue,
+  });
 }

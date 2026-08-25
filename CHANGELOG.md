@@ -9,6 +9,20 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [4.4.0] — Build, Docker e QueueBase
+
+### Added
+
+- Feature opt-in `queue` / `queue-jobs`: `QueueBase`, `IQueueService`, stub `QueueService`, `QueueFakeService` e vars abstratas de env.
+- `Dockerfile` + `entrypoint.sh` gerados no `kl-nest new` conforme `bun` / `npm` / `pnpm`.
+- Documentação PT/EN de queue jobs.
+
+### Changed
+
+- Script `build` dos projetos gerados: `nest build && tsc-alias -p tsconfig.build.json` (`tsc-alias` em `CORE_DEV_PACKAGES`).
+
+Detalhes: [Patch notes — 4.4.0](https://nest.koalarx.com/pt/docs/intro/patch-notes).
+
 ## [4.3.1]
 
 ### Fixed

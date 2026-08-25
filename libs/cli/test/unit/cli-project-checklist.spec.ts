@@ -23,6 +23,7 @@ describe('cli-project-checklist', () => {
       health: false,
       cronJobs: true,
       eventJobs: true,
+      queueJobs: false,
       aiContext: { cursor: false, github: false },
     });
   });
@@ -93,6 +94,7 @@ describe('cli-project-checklist', () => {
     expect(labels).toContain('default sem auth + cache');
     expect(labels).toContain('default sem auth + cron');
     expect(labels).toContain('default sem auth + events');
+    expect(labels).toContain('default sem auth + queue');
     expect(labels).toContain('default sem auth + cache + health + cron + events');
     expect(labels).toContain('default jwt + cache + health');
   });
@@ -112,7 +114,7 @@ describe('cli-project-checklist', () => {
     }
   });
 
-  it('default sem features proíbe artefatos de cache, health, cron e events', () => {
+  it('default sem features proíbe artefatos de cache, health, cron, events e queue', () => {
     const expectation = buildProjectExpectation(Template.DEFAULT, [], []);
 
     expect(forbiddenPathsForExpectation(expectation)).toEqual(
@@ -121,6 +123,7 @@ describe('cli-project-checklist', () => {
         'src/host/controllers/health-check/health-check.controller.ts',
         'src/core/utils/cron-expression-to-boolean.ts',
         'src/core/background-services/event-service/event-handler.base.ts',
+        'src/core/background-services/queue-service/queue.base.ts',
       ]),
     );
   });

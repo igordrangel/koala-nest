@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
   patchInfraModuleForAuth,
   patchInfraModuleForCache,
+  patchInfraModuleForQueue,
   SLIM_INFRA_MODULE,
   stripInfraModuleCache,
 } from '@cli/utils/patch-infra-module.ts';
@@ -87,5 +88,18 @@ describe('patch-infra-module', () => {
     expect(patched).toMatch(
       /providers:\s*\[[\s\S]*CacheServiceProvider[\s\S]*LoggedUserInfoService[\s\S]*\]/,
     );
+  });
+
+  it('adiciona IQueueService e preserva cache/auth', () => {
+    const withCacheAndAuth = patchInfraModuleForAuth(
+      patchInfraModuleForCache(SLIM_INFRA_MODULE),
+    );
+    const patched = patchInfraModuleForQueue(withCacheAndAuth);
+
+    expect(patched).toContain(
+      '{ provide: IQueueService, useClass: QueueService }',
+    );
+    expect(patched).toContain('ICacheService');
+    expect(patched).toContain('ILoggedUserInfoService');
   });
 });
