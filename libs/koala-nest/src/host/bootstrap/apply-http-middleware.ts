@@ -15,10 +15,18 @@ export function applyHttpMiddleware(app: INestApplication) {
         directives: {
           defaultSrc: ["'none'"],
           scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", 'data:'],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://cdn.jsdelivr.net',
+          ],
+          imgSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
           connectSrc: ["'self'"],
-          fontSrc: ["'self'"],
+          fontSrc: [
+            "'self'",
+            'https://cdn.jsdelivr.net',
+            'https://fonts.scalar.com',
+          ],
           objectSrc: ["'none'"],
           frameAncestors: ["'none'"],
           formAction: ["'self'"],

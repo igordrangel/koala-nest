@@ -360,3 +360,50 @@ export function patchEnvForQueue(projectName: string): void {
     );
   }
 }
+
+const envWorker = `import { envBooleanSchema } from '@/core/schemas';
+import { z } from 'zod';
+
+export const envSchema = z.object({
+  NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
+  DATABASE_URL: z.string(),
+  DATABASE_SCHEMA: z.string().optional(),
+  REDIS_CONNECTION_STRING: z.string().optional(),
+  CACHE_KEY_PREFIX: z.string().optional(),
+  CRON_JOBS_ENABLED: envBooleanSchema(false),
+  BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+export function validateEnvConfig(config: Record<string, unknown>): Env {
+  return envSchema.parse(config);
+}
+`;
+
+const envExampleWorker = `NODE_ENV=develop
+DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
+
+# Redis (opcional)
+# Instância única: pode omitir — usa memória local (cache, lock de CronJob em dev).
+# Várias réplicas: recomendado para cache/lock consistentes entre processos.
+# REDIS_CONNECTION_STRING=redis://localhost:6379
+# CACHE_KEY_PREFIX=koala-nest
+
+# Cron jobs internos. Ative com \`kl-nest add cron\`.
+CRON_JOBS_ENABLED=false
+BOOTSTRAP_DELAY_MS=0
+`;
+
+/** Env sem PORT/HOST/CORS/rate-limit/API_HOST — perfil Worker. */
+export function stripEnvForWorker(projectName: string) {
+  const projectRoot = resolveProjectPath(projectName);
+
+  mkdirSync(path.join(projectRoot, 'src/core'), { recursive: true });
+  writeFileSync(path.join(projectRoot, 'src/core/env.ts'), envWorker);
+  writeFileSync(path.join(projectRoot, '.env.example'), envExampleWorker);
+
+  if (projectHasQueueFeature(projectName)) {
+    patchEnvForQueue(projectName);
+  }
+}

@@ -127,6 +127,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
   </url>
   <url>
+    <loc>https://nest.koalarx.com/pt/docs/host/seguranca/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+  </url>
+  <url>
     <loc>https://nest.koalarx.com/pt/docs/host/controllers/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/controllers/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/controllers/" />
@@ -311,6 +317,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/http-middleware/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/host/security/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/host/controllers/</loc>

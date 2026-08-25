@@ -9,7 +9,7 @@ description: Provider-agnostic queue handlers — QueueBase, IQueueService, and 
 
 # Queue jobs (messaging)
 
-> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add queue`.
+> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add queue`. On a **Worker**, this is usually the main feature (`kl-nest new my-worker -y --type worker --features queue`).
 
 This feature copies **broker-agnostic** bases (Cloudflare Queues, SQS, RabbitMQ, etc.). You implement the infra adapter later; the consume loop and port are ready.
 

@@ -1,6 +1,7 @@
 import { chmodSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { PackageManager } from '@cli/types';
+import { AppType } from '@cli/constants/domain';
 import { resolveProjectPath } from './resolve-project-path';
 
 const ENTRYPOINT = `#!/bin/sh
@@ -9,7 +10,9 @@ set -e
 exec node dist/host/main
 `;
 
-function dockerfileForBun(): string {
+function dockerfileForBun(exposeHttp: boolean): string {
+  const expose = exposeHttp ? '\nEXPOSE 3000\n' : '\n';
+
   return `ARG BUN_IMAGE=oven/bun:1.3.6-debian
 
 # ====== STAGE 1: BUILDER ======
@@ -37,15 +40,15 @@ COPY --from=builder --chown=bun:bun /home/bun/app/package.json ./package.json
 COPY --from=builder --chown=bun:bun /home/bun/app/entrypoint.sh ./entrypoint.sh
 
 USER bun
-
-EXPOSE 3000
-
+${expose}
 RUN chmod +x entrypoint.sh
 CMD ["./entrypoint.sh"]
 `;
 }
 
-function dockerfileForNpm(): string {
+function dockerfileForNpm(exposeHttp: boolean): string {
+  const expose = exposeHttp ? '\nEXPOSE 3000\n' : '\n';
+
   return `FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
@@ -65,15 +68,16 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
 
+RUN chmod +x entrypoint.sh
 USER node
-
-EXPOSE 3000
-
+${expose}
 CMD ["./entrypoint.sh"]
 `;
 }
 
-function dockerfileForPnpm(): string {
+function dockerfileForPnpm(exposeHttp: boolean): string {
+  const expose = exposeHttp ? '\nEXPOSE 3000\n' : '\n';
+
   return `FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
@@ -97,34 +101,39 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
 
+RUN chmod +x entrypoint.sh
 USER node
-
-EXPOSE 3000
-
+${expose}
 CMD ["./entrypoint.sh"]
 `;
 }
 
-export function buildDockerfile(packageManager: PackageManager): string {
+export function buildDockerfile(
+  packageManager: PackageManager,
+  appType: AppType = AppType.API,
+): string {
+  const exposeHttp = appType === AppType.API;
+
   switch (packageManager) {
     case 'bun':
-      return dockerfileForBun();
+      return dockerfileForBun(exposeHttp);
     case 'npm':
-      return dockerfileForNpm();
+      return dockerfileForNpm(exposeHttp);
     case 'pnpm':
-      return dockerfileForPnpm();
+      return dockerfileForPnpm(exposeHttp);
   }
 }
 
 export function writeDockerAssets(
   projectName: string,
   packageManager: PackageManager,
+  appType: AppType = AppType.API,
 ): void {
   const projectRoot = resolveProjectPath(projectName);
   const dockerfilePath = path.join(projectRoot, 'Dockerfile');
   const entrypointPath = path.join(projectRoot, 'entrypoint.sh');
 
-  writeFileSync(dockerfilePath, buildDockerfile(packageManager));
+  writeFileSync(dockerfilePath, buildDockerfile(packageManager, appType));
   writeFileSync(entrypointPath, ENTRYPOINT);
   chmodSync(entrypointPath, 0o755);
 }

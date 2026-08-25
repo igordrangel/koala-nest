@@ -17,11 +17,12 @@ Ao rodar `kl-nest new`, a CLI instala automaticamente:
 
 - validação de variáveis de ambiente com **Zod**;
 - **TypeORM** com PostgreSQL, migrations aplicadas no boot (`runMigrations`) e scripts CLI;
-- documentação OpenAPI em `/doc` via **Scalar**;
-- filtro global de erros (Zod, TypeORM e exceções HTTP);
-- bases reutilizáveis para controllers, handlers, validators e repositórios;
+- filtro global de erros (Zod, TypeORM e exceções HTTP) — na **API**;
+- bases reutilizáveis para handlers, validators e repositórios (e controllers na API);
 - sistema de mapeamento entre entidades, requests e responses;
 - **[`@koalarx/utils`](../core/koala-utils.md)** — `import '@koalarx/utils/prototypes'` no boot; delay, CPF/CNPJ, strings, datas e arrays.
+
+Na **API**, também: documentação OpenAPI em `/doc` via **Scalar**, Helmet/CORS/rate-limit. No **Worker**: `NestFactory.createApplicationContext` (sem porta HTTP). Comparativo e flags silent: [Guia de instalação](../inicio/guia-de-instalacao.md#api-vs-worker).
 
 ## Funcionalidades opcionais
 
@@ -69,6 +70,7 @@ Alterações relevantes da CLI e dos templates ficam em [Patch notes](./patch-no
 
 - [Guia de instalação](../inicio/guia-de-instalacao.md) — `kl-nest new` e `kl-nest add`
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
+- [Segurança](../host/seguranca.md) — Helmet, CORS, auth e demais camadas
 - [Patch notes](./patch-notes.md) — o que mudou recentemente
 - [Estrutura do projeto](../inicio/estrutura-do-projeto.md) — bootstrap e módulos Nest
 - [Fluxo CRUD Person](../guias/fluxo-crud-person.md) — exemplo ponta a ponta (template CRUD)

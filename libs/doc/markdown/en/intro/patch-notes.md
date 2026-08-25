@@ -13,7 +13,7 @@ Changelog for anyone using or upgrading CLI-generated projects. Deep dives live 
 
 The published `@koalarx/nest` version is shown on the site and in the repo `package.json`. Root [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) mirrors these notes.
 
-## 4.4.0 — Build, Docker, QueueBase, and Helmet
+## 4.4.0 — Build, Docker, QueueBase, Helmet, and Worker
 
 ### What changed
 
@@ -21,10 +21,13 @@ The published `@koalarx/nest` version is shown on the site and in the repo `pack
 - **Dockerfile per package manager:** `kl-nest new` writes `Dockerfile` + `entrypoint.sh` for `bun`, `npm`, or `pnpm`.
 - **Queue jobs (opt-in):** `kl-nest new` / `kl-nest add queue` copies `QueueBase`, `IQueueService`, stub `QueueService`, and a test fake; injects abstract env vars (`QUEUE_MAX_CONCURRENCY`, delays). `QueueBase` reads concurrency/delays via `EnvService` (do not pass them in the constructor). No broker SDK — implement infra later.
 - **Helmet in core:** `applyHttpMiddleware` sets security headers (CSP tuned for Scalar/`cdn.jsdelivr.net`, HSTS only in `production`), following the Globo Seguros pattern.
+- **Security docs:** new [Security](../host/security.md) topic (PT/EN) with a layered view (Helmet, CORS, rate limit, cookies, validation, auth, RedLock).
+- **`refreshToken` cookie:** on login, `SameSite`/`Secure` follow `API_HOST` — localhost uses `Strict` without `Secure`; otherwise `None` + `Secure` for cross-site XHR.
+- **App type (API vs Worker):** `kl-nest new` asks for the type (or `--type` / `--app-type`). **API** keeps HTTP + OpenAPI. **Worker** (broker / queue / background) uses `NestFactory.createApplicationContext` — no listen, Helmet, CORS, Scalar, or PORT/HOST; Dockerfile without `EXPOSE 3000`. Prefer `--features queue,cron,events`. Incompatible with CRUD template, HTTP auth, and health. Full guide (prompts + **silent `-y` mode**): [Installation guide](../getting-started/installation-guide.md#api-vs-worker).
 
 ### Upgrade
 
-On existing projects: update the `build` script and add `tsc-alias` as a devDependency; copy a Dockerfile matching your PM if you containerize; use `kl-nest add queue` for messaging; install `helmet` and align `apply-http-middleware.ts` with the current template.
+On existing projects: update the `build` script and add `tsc-alias` as a devDependency; copy a Dockerfile matching your PM if you containerize; use `kl-nest add queue` for messaging; install `helmet` and align `apply-http-middleware.ts` with the current template; align `refreshToken` cookie options in `login.controller.ts` with the current template. For a new worker/broker: `kl-nest new my-worker -y --type worker --features queue`.
 
 ## 4.3.1 — OpenAPI scaffold and tsconfig
 

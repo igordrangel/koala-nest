@@ -10,6 +10,9 @@ import {
 import { createEmptyNestProject } from './create-empty-nest-project.ts';
 import { createDDDStructure } from './create-ddd-structure.ts';
 import {
+  AppType,
+  APP_TYPE_HINTS,
+  APP_TYPE_LABELS,
   AuthStrategy,
   CRUD_BUNDLED_FEATURES,
   DEFAULT_PACKAGE_MANAGER,
@@ -18,6 +21,7 @@ import {
   FEATURE_PROMPT_LABELS,
   formatAuthStrategies,
   assertAuthStrategiesCombination,
+  assertWorkerCompatibleOptions,
   Template,
   TEMPLATE_LABELS,
 } from '@cli/constants/domain';
@@ -81,7 +85,44 @@ async function promptApiKeyInternalSubnet(strategies: AuthStrategy[]) {
   );
 }
 
-async function promptExtraFeatures(template: Template) {
+async function promptExtraFeatures(template: Template, appType: AppType) {
+  if (appType === AppType.WORKER) {
+    p.note(
+      'Worker usa ApplicationContext (sem HTTP).\n' +
+        'Prefira fila, cron e eventos. Health check e auth HTTP não se aplicam.',
+      'Perfil Worker',
+    );
+
+    return assertNotCancel(
+      await p.multiselect({
+        message: 'Funcionalidades (worker / broker)',
+        options: [
+          {
+            value: ExtraFeature.CACHE,
+            label: FEATURE_PROMPT_LABELS[ExtraFeature.CACHE],
+            hint: 'ICacheService + ioredis',
+          },
+          {
+            value: ExtraFeature.QUEUE_JOBS,
+            label: FEATURE_PROMPT_LABELS[ExtraFeature.QUEUE_JOBS],
+            hint: 'recomendado — QueueBase + IQueueService',
+          },
+          {
+            value: ExtraFeature.INTERNAL_CRON_JOBS,
+            label: FEATURE_PROMPT_LABELS[ExtraFeature.INTERNAL_CRON_JOBS],
+            hint: 'cron-parser + bases',
+          },
+          {
+            value: ExtraFeature.INTERNAL_EVENT_JOBS,
+            label: FEATURE_PROMPT_LABELS[ExtraFeature.INTERNAL_EVENT_JOBS],
+            hint: 'EventJob + bases',
+          },
+        ],
+        required: false,
+      }),
+    ) as ExtraFeature[];
+  }
+
   if (template === Template.CRUD_SAMPLE) {
     const bundled = CRUD_BUNDLED_FEATURES.map(
       (feature) => FEATURE_LABELS[feature],
@@ -199,6 +240,26 @@ async function promptPackageManager() {
   );
 }
 
+async function promptAppType() {
+  return assertNotCancel(
+    await p.select<AppType>({
+      message: 'Tipo de aplicação',
+      options: [
+        {
+          value: AppType.API,
+          label: APP_TYPE_LABELS[AppType.API],
+          hint: APP_TYPE_HINTS[AppType.API],
+        },
+        {
+          value: AppType.WORKER,
+          label: APP_TYPE_LABELS[AppType.WORKER],
+          hint: APP_TYPE_HINTS[AppType.WORKER],
+        },
+      ],
+    }),
+  );
+}
+
 async function promptTemplate() {
   return assertNotCancel(
     await p.select<Template>({
@@ -226,23 +287,43 @@ async function resolveProjectInput(args: string[]) {
     const name = parsed.projectName ?? (await promptProjectName());
     const packageManager =
       parsed.packageManager ?? (await promptPackageManager());
-    const template = parsed.template ?? (await promptTemplate());
-    const auth = parsed.auth ?? (await promptAuthStrategies(template));
-    assertAuthStrategiesCombination(auth);
+    const appType = parsed.appType ?? (await promptAppType());
+
+    const template =
+      appType === AppType.WORKER
+        ? Template.DEFAULT
+        : (parsed.template ?? (await promptTemplate()));
+
+    const auth =
+      appType === AppType.WORKER
+        ? []
+        : (parsed.auth ?? (await promptAuthStrategies(template)));
+
+    if (appType !== AppType.WORKER) {
+      assertAuthStrategiesCombination(auth);
+    }
+
     const apiKeyInternalSubnet =
-      parsed.apiKeyInternalSubnet ||
-      (parsed.auth
-        ? parsed.apiKeyInternalSubnet
-        : await promptApiKeyInternalSubnet(auth));
+      appType === AppType.WORKER
+        ? false
+        : parsed.apiKeyInternalSubnet ||
+          (parsed.auth
+            ? parsed.apiKeyInternalSubnet
+            : await promptApiKeyInternalSubnet(auth));
+
     const features =
       parsed.features.length > 0
         ? parsed.features
-        : await promptExtraFeatures(template);
+        : await promptExtraFeatures(template, appType);
+
+    assertWorkerCompatibleOptions(appType, template, auth, features);
+
     const aiContext = await promptAiContext();
 
     return buildNewProjectConfig(parsed, {
       name,
       packageManager,
+      appType,
       template,
       auth,
       features,
@@ -260,6 +341,7 @@ async function resolveProjectInput(args: string[]) {
   return buildNewProjectConfig(parsed, {
     name: parsed.projectName,
     packageManager: DEFAULT_PACKAGE_MANAGER,
+    appType: AppType.API,
     template: Template.DEFAULT,
     auth: [],
     features: [],
@@ -285,6 +367,7 @@ export async function runNew(args: string[] = []): Promise<void> {
     project.template,
     project.auth,
     project.features,
+    project.appType,
   );
 
   const spinner = p.spinner();
@@ -303,12 +386,15 @@ export async function runNew(args: string[] = []): Promise<void> {
 
   spinner.message('Instalando módulo core...');
 
-  await installModule(Modules.CORE, project.template, project.name);
+  await installModule(Modules.CORE, project.template, project.name, {
+    appType: project.appType,
+  });
 
   spinner.message('Instalando funcionalidades opcionais...');
 
   await applyOptionalFeatures({
     projectName: project.name,
+    appType: project.appType,
     template: project.template,
     auth: authStrategies,
     features,
@@ -321,6 +407,7 @@ export async function runNew(args: string[] = []): Promise<void> {
     project.name,
     project.packageManager,
     project.aiContext,
+    project.appType,
   );
 
   spinner.stop('Projeto criado com sucesso!');
@@ -349,6 +436,7 @@ export async function runNew(args: string[] = []): Promise<void> {
 
   const summaryLines = [
     `${color.bold('Projeto:')} ${project.name}`,
+    `${color.bold('Tipo:')} ${APP_TYPE_LABELS[project.appType]}`,
     `${color.bold('Template:')} ${TEMPLATE_LABELS[project.template]}`,
     `${color.bold('Gerenciador:')} ${project.packageManager}`,
     `${color.bold('Autenticação:')} ${formatAuthStrategies(authStrategies)}`,
@@ -357,6 +445,12 @@ export async function runNew(args: string[] = []): Promise<void> {
     `${color.dim('Depois:')} cd ${project.name} && ${project.packageManager} start`,
     `${color.dim('Extras:')} kl-nest add <feature>`,
   ];
+
+  if (project.appType === AppType.WORKER) {
+    summaryLines.push(
+      `${color.dim('Boot:')} NestFactory.createApplicationContext (sem HTTP)`,
+    );
+  }
 
   if (projectFeatures.cronJobs) {
     summaryLines.push(

@@ -9,18 +9,25 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
-## [4.4.0] — Build, Docker, QueueBase e Helmet
+## [4.4.0] — Build, Docker, QueueBase, Helmet e Worker
 
 ### Added
 
 - Feature opt-in `queue` / `queue-jobs`: `QueueBase`, `IQueueService`, stub `QueueService`, `QueueFakeService` e vars abstratas de env (lidas pelo `QueueBase` via `EnvService`).
 - `Dockerfile` + `entrypoint.sh` gerados no `kl-nest new` conforme `bun` / `npm` / `pnpm`.
 - `helmet` no core (`applyHttpMiddleware`) com CSP/HSTS no padrão Globo Seguros.
+- Tipo de app **API** vs **Worker** no `kl-nest new` (`--type` / `--app-type`): Worker usa `createApplicationContext` sem superfície HTTP.
 - Documentação PT/EN de queue jobs e middleware HTTP atualizada.
+- Tópico [Segurança](https://nest.koalarx.com/pt/docs/host/seguranca) / [Security](https://nest.koalarx.com/en/docs/host/security) — visão em camadas.
+- Guia de instalação: comparativo **API vs Worker** e referência do **modo silencioso `-y`** (flags/defaults para LLMs e CI).
 
 ### Changed
 
 - Script `build` dos projetos gerados: `nest build && tsc-alias -p tsconfig.build.json` (`tsc-alias` em `CORE_DEV_PACKAGES`).
+
+### Fixed
+
+- Cookie `refreshToken` no login: `SameSite`/`Secure` conforme `API_HOST` (localhost: `Strict` sem `Secure`; produção cross-site: `None` + `Secure`).
 
 Detalhes: [Patch notes — 4.4.0](https://nest.koalarx.com/pt/docs/intro/patch-notes).
 

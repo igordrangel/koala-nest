@@ -2,13 +2,14 @@ import {
   AUTH_DEV_PACKAGES,
   AUTH_PACKAGES,
   CACHE_PACKAGES,
-  CORE_DEV_PACKAGES,
-  CORE_PACKAGES,
   CRON_PACKAGES,
   devAddFlag,
+  getCoreDevPackages,
+  getCorePackages,
   HEALTH_PACKAGES,
 } from '@cli/constants/core-packages';
 import {
+  AppType,
   AuthStrategy,
   ExtraFeature,
   InstallModule as Modules,
@@ -23,6 +24,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
+import { applyWorkerProfile } from './apply-worker-profile';
 import { getPackageManager } from './get-package-manager';
 import { getSourceCodePath } from './get-source-code-path';
 import { patchAuthInstall } from './patch-auth-install';
@@ -42,9 +44,10 @@ import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
 import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
 import { runCommand } from './run-command';
-import { patchEnvForQueue } from './patch-env';
+import { patchEnvForQueue, stripEnvForWorker } from './patch-env';
 
 export {
+  AppType,
   AuthChoice,
   AuthStrategy,
   CRUD_BUNDLED_FEATURES,
@@ -57,6 +60,7 @@ export {
 } from '@cli/constants/domain';
 
 export type InstallModuleOptions = {
+  appType?: AppType;
   authStrategies?: AuthStrategy[];
   apiKeyInternalSubnet?: boolean;
   withRedis?: boolean;
@@ -391,13 +395,17 @@ export async function installModule(
 
       patchInfraModuleFile(projectName, false);
 
+      const appType = options.appType ?? AppType.API;
+
       if (!options.skipPackages) {
+        const corePackages = getCorePackages(appType);
+        const coreDevBase = getCoreDevPackages(appType);
         const coreDevPackages =
           packageManager === 'bun'
-            ? [...CORE_DEV_PACKAGES, '@types/bun']
-            : CORE_DEV_PACKAGES;
+            ? [...coreDevBase, '@types/bun']
+            : coreDevBase;
 
-        await installPackages(projectName, CORE_PACKAGES, coreDevPackages);
+        await installPackages(projectName, corePackages, coreDevPackages);
       }
 
       if (template === Template.DEFAULT) {
@@ -411,6 +419,11 @@ export async function installModule(
         install('src/host/controllers/person', projectName);
         install('src/infra/repositories/person.repository.ts', projectName);
         install('src/infra/database/migrations', projectName);
+      }
+
+      if (appType === AppType.WORKER) {
+        applyWorkerProfile(projectName);
+        stripEnvForWorker(projectName);
       }
       break;
     }

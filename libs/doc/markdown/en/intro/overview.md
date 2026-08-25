@@ -13,15 +13,15 @@ description: What Koala Nest is and how it fits into NestJS projects with DDD.
 
 ## Core (always installed)
 
-When you run `kl-nest new`, the CLI automatically installs:
+When you run `kl-nest new`, the CLI asks for **API** or **Worker**, then installs:
 
 - environment variable validation with **Zod**;
 - **TypeORM** with PostgreSQL, migrations applied on boot (`runMigrations`), and CLI scripts;
-- OpenAPI documentation at `/doc` via **Scalar**;
-- global error filter (Zod, TypeORM, and HTTP exceptions);
-- reusable bases for controllers, handlers, validators, and repositories;
+- reusable bases for handlers, validators, and repositories (and controllers on API);
 - mapping system between entities, requests, and responses;
 - **[`@koalarx/utils`](../core/koala-utils.md)** — `import '@koalarx/utils/prototypes'` on boot; delay, CPF/CNPJ, strings, dates, and arrays.
+
+On **API**, also: OpenAPI at `/doc` via **Scalar**, Helmet/CORS/rate-limit, and a global error filter. On **Worker**: `NestFactory.createApplicationContext` (no HTTP port). Details and silent flags: [Installation guide](../getting-started/installation-guide.md#api-vs-worker).
 
 ## Optional features
 
@@ -69,6 +69,7 @@ Notable CLI and template changes live in [Patch notes](./patch-notes.md) (also i
 
 - [Installation guide](../getting-started/installation-guide.md) — `kl-nest new` and `kl-nest add`
 - [DDD Architecture](./ddd-architecture.md) — layers and responsibilities
+- [Security](../host/security.md) — Helmet, CORS, auth, and other layers
 - [Patch notes](./patch-notes.md) — recent changes
 - [Project structure](../getting-started/project-structure.md) — bootstrap and Nest modules
 - [Person CRUD flow](../guides/person-crud-flow.md) — end-to-end example (CRUD template)

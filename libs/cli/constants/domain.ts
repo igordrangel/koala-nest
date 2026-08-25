@@ -1,3 +1,11 @@
+/** Perfil de aplicação no `kl-nest new` (API HTTP vs worker/broker). */
+export const AppType = {
+  API: 'api',
+  WORKER: 'worker',
+} as const;
+
+export type AppType = (typeof AppType)[keyof typeof AppType];
+
 /** Template de projeto gerado pela CLI. */
 export const Template = {
   DEFAULT: 'default',
@@ -90,6 +98,15 @@ export const TEMPLATE_ALIASES: Record<string, Template> = {
   crudsample: Template.CRUD_SAMPLE,
 };
 
+export const APP_TYPE_ALIASES: Record<string, AppType> = {
+  api: AppType.API,
+  http: AppType.API,
+  worker: AppType.WORKER,
+  broker: AppType.WORKER,
+  background: AppType.WORKER,
+  'background-service': AppType.WORKER,
+};
+
 export const FEATURE_ALIASES: Record<string, ExtraFeature> = {
   cache: ExtraFeature.CACHE,
   redis: ExtraFeature.CACHE,
@@ -124,6 +141,16 @@ export const FEATURE_PROMPT_LABELS: Record<ExtraFeature, string> = {
 export const TEMPLATE_LABELS: Record<Template, string> = {
   [Template.DEFAULT]: 'Padrão',
   [Template.CRUD_SAMPLE]: 'Exemplo de CRUD',
+};
+
+export const APP_TYPE_LABELS: Record<AppType, string> = {
+  [AppType.API]: 'API',
+  [AppType.WORKER]: 'Worker',
+};
+
+export const APP_TYPE_HINTS: Record<AppType, string> = {
+  [AppType.API]: 'HTTP + OpenAPI / Scalar',
+  [AppType.WORKER]: 'broker / fila / serviço em background (sem HTTP)',
 };
 
 /** Marcadores de texto usados para detectar o estado do projeto gerado. */
@@ -297,11 +324,55 @@ export function mergeCrudSampleFeatures(
   return Array.from(new Set([...CRUD_BUNDLED_FEATURES, ...features]));
 }
 
+export function isAppType(value: string): value is AppType {
+  return value === AppType.API || value === AppType.WORKER;
+}
+
+export function assertWorkerCompatibleOptions(
+  appType: AppType,
+  template: Template,
+  auth: readonly AuthStrategy[],
+  features: readonly ExtraFeature[],
+) {
+  if (appType !== AppType.WORKER) {
+    return;
+  }
+
+  if (template === Template.CRUD_SAMPLE) {
+    throw new Error(
+      'Worker não aceita template CRUD (stack HTTP). Use --template default.',
+    );
+  }
+
+  if (auth.length > 0) {
+    throw new Error(
+      'Worker não aceita autenticação HTTP. Use --auth none (ou omita).',
+    );
+  }
+
+  if (features.includes(ExtraFeature.HEALTH_CHECK)) {
+    throw new Error(
+      'Worker não aceita health-check (endpoint HTTP). Remova health de --features.',
+    );
+  }
+}
+
 export function resolveNewProjectOptions(
   template: Template,
   auth: AuthStrategy[],
   features: ExtraFeature[],
+  appType: AppType = AppType.API,
 ): { auth: AuthStrategy[]; features: ExtraFeature[] } {
+  if (appType === AppType.WORKER) {
+    assertWorkerCompatibleOptions(appType, template, auth, features);
+    return {
+      auth: [],
+      features: features.filter(
+        (feature) => feature !== ExtraFeature.HEALTH_CHECK,
+      ),
+    };
+  }
+
   if (template !== Template.CRUD_SAMPLE) {
     return { auth, features };
   }

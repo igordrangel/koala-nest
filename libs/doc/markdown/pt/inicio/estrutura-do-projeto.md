@@ -9,11 +9,11 @@ description: Bootstrap da aplicação, módulos principais e ponto de entrada.
 
 # Estrutura do projeto
 
-Este guia descreve como a aplicação NestJS é inicializada e como os módulos se conectam.
+Este guia descreve como a aplicação NestJS é inicializada e como os módulos se conectam. O perfil (**API** ou **Worker**) é escolhido no `kl-nest new` — ver [Guia de instalação](./guia-de-instalacao.md#api-vs-worker).
 
-## Ponto de entrada
+## Ponto de entrada (API)
 
-O arquivo `src/host/main.ts` configura documentação OpenAPI, filtro global de erros e inicia o servidor. CORS, cookies e rate limit ficam em `applyHttpMiddleware` (`src/host/bootstrap/`). Detalhes: [Middleware HTTP](../host/middleware-http.md). Projetos **core** (sem auth/cron) ficam enxutos — a CLI remove imports e trechos opcionais quando as features não são selecionadas.
+Na **API**, `src/host/main.ts` configura documentação OpenAPI, filtro global de erros e inicia o servidor. CORS, cookies e rate limit ficam em `applyHttpMiddleware` (`src/host/bootstrap/`). Detalhes: [Middleware HTTP](../host/middleware-http.md). Projetos **core** (sem auth/cron) ficam enxutos — a CLI remove imports e trechos opcionais quando as features não são selecionadas.
 
 ```typescript
 import 'dotenv/config';
@@ -46,6 +46,40 @@ bootstrap();
 **Com autenticação** (`kl-nest add auth` ou seleção no `new`): guards globais (`AuthGuard`, `ProfilesGuard`). Cookies já passam pelo `applyHttpMiddleware`.
 
 **Com cron/event jobs** (`kl-nest add cron` / `add events`): infraestrutura em `src/core/background-services/` e `JobsModule.register()` no `AppModule` (arrays vazios no template Padrão; handlers de exemplo no CRUD).
+
+## Ponto de entrada (Worker)
+
+No **Worker**, não há `listen`, Helmet, CORS nem OpenAPI. O bootstrap usa `NestFactory.createApplicationContext` e encerra o contexto em `SIGINT`/`SIGTERM`:
+
+```typescript
+import 'dotenv/config';
+import '@koalarx/utils/prototypes';
+
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.createApplicationContext(AppModule);
+
+  const shutdown = async () => {
+    await app.close();
+  };
+
+  process.once('SIGINT', () => {
+    void shutdown();
+  });
+  process.once('SIGTERM', () => {
+    void shutdown();
+  });
+}
+
+bootstrap().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+```
+
+Handlers de fila (`QueueBase`) são tipicamente iniciados a partir de módulos em `host/services` (ou resolvidos no `main` após o context). Prefira `--features queue` (e/ou cron/events) no scaffold.
 
 ## Módulo raiz
 

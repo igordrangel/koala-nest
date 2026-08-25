@@ -6,7 +6,7 @@ import {
   MAIN_MUST_CONTAIN,
   requiredPathsForExpectation,
 } from '@cli/constants/cli-project-checklist';
-import { AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
+import { AppType, AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
 
 describe('cli-project-checklist', () => {
   it('main exige import de prototypes do @koalarx/utils', () => {
@@ -17,6 +17,7 @@ describe('cli-project-checklist', () => {
     expect(
       buildProjectExpectation(Template.CRUD_SAMPLE, [], []),
     ).toEqual({
+      appType: AppType.API,
       template: Template.CRUD_SAMPLE,
       auth: [AuthStrategy.JWT],
       cache: 'redis',
@@ -32,6 +33,7 @@ describe('cli-project-checklist', () => {
     expect(
       buildProjectExpectation(Template.CRUD_SAMPLE, [AuthStrategy.OAUTH2], []),
     ).toMatchObject({
+      appType: AppType.API,
       auth: [AuthStrategy.OAUTH2],
       cache: 'redis',
       cronJobs: true,
@@ -57,6 +59,7 @@ describe('cli-project-checklist', () => {
     expect(
       buildProjectExpectation(Template.DEFAULT, [AuthStrategy.JWT], []),
     ).toMatchObject({
+      appType: AppType.API,
       cache: 'memory',
       health: false,
       cronJobs: false,
@@ -70,8 +73,26 @@ describe('cli-project-checklist', () => {
         ExtraFeature.INTERNAL_CRON_JOBS,
       ]),
     ).toMatchObject({
+      appType: AppType.API,
       cache: 'memory',
       cronJobs: true,
+    });
+  });
+
+  it('buildProjectExpectation worker sem HTTP/auth', () => {
+    expect(
+      buildProjectExpectation(
+        Template.DEFAULT,
+        [],
+        [ExtraFeature.QUEUE_JOBS],
+        undefined,
+        AppType.WORKER,
+      ),
+    ).toMatchObject({
+      appType: AppType.WORKER,
+      auth: false,
+      health: false,
+      queueJobs: true,
     });
   });
 
@@ -85,6 +106,8 @@ describe('cli-project-checklist', () => {
     expect(labels).toContain('crud jwt');
     expect(labels).toContain('crud oauth2');
     expect(labels).toContain('crud jwt + oauth2');
+    expect(labels).toContain('worker sem extras');
+    expect(labels).toContain('worker + queue + cron');
   });
 
   it('matriz new cobre features opcionais isoladas e combinadas', () => {
@@ -105,6 +128,8 @@ describe('cli-project-checklist', () => {
         selection.template,
         selection.auth,
         selection.features,
+        undefined,
+        selection.appType ?? AppType.API,
       );
       const required = new Set(requiredPathsForExpectation(expectation));
       const forbidden = forbiddenPathsForExpectation(expectation);
@@ -124,6 +149,24 @@ describe('cli-project-checklist', () => {
         'src/core/utils/cron-expression-to-boolean.ts',
         'src/core/background-services/event-service/event-handler.base.ts',
         'src/core/background-services/queue-service/queue.base.ts',
+      ]),
+    );
+  });
+
+  it('worker proíbe superfície HTTP', () => {
+    const expectation = buildProjectExpectation(
+      Template.DEFAULT,
+      [],
+      [],
+      undefined,
+      AppType.WORKER,
+    );
+
+    expect(forbiddenPathsForExpectation(expectation)).toEqual(
+      expect.arrayContaining([
+        'src/host/bootstrap/apply-http-middleware.ts',
+        'src/host/open-api/define-documentation.ts',
+        'src/core/http/rate-limit.middleware.ts',
       ]),
     );
   });

@@ -9,7 +9,7 @@ description: Handlers de fila agnósticos ao provider — QueueBase, IQueueServi
 
 # Queue jobs (mensageria)
 
-> **Opt-in:** instale com `kl-nest new` (multiselect) ou `kl-nest add queue`.
+> **Opt-in:** instale com `kl-nest new` (multiselect) ou `kl-nest add queue`. Em **Worker**, costuma ser a feature principal (`kl-nest new my-worker -y --type worker --features queue`).
 
 A feature copia bases **agnósticas ao broker** (Cloudflare Queues, SQS, RabbitMQ, etc.). Você implementa o adapter de infra depois; o loop de consumo e o contrato já vêm prontos.
 

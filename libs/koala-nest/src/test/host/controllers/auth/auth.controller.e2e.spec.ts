@@ -28,6 +28,17 @@ describe('Auth (E2E)', () => {
     expect(response.body.accessToken).toEqual(expect.any(String));
     expect(response.body.refreshToken).toEqual(expect.any(String));
 
+    const setCookie = response.headers['set-cookie'];
+    const cookies = Array.isArray(setCookie) ? setCookie : [setCookie];
+    const refreshCookie = cookies.find((cookie) =>
+      cookie?.startsWith('refreshToken='),
+    );
+    expect(refreshCookie).toEqual(expect.any(String));
+    expect(refreshCookie).toContain('HttpOnly');
+    expect(refreshCookie).toContain('Path=/');
+    expect(refreshCookie).toMatch(/SameSite=Strict/i);
+    expect(refreshCookie).not.toMatch(/;\s*Secure/i);
+
     accessToken = response.body.accessToken;
     refreshToken = response.body.refreshToken;
   });

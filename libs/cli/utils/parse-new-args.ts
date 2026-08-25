@@ -1,17 +1,22 @@
-import type { PackageManager } from '@cli/types/index.ts';
 import {
+  APP_TYPE_ALIASES,
+  type AppType,
+  AppType as AppTypeEnum,
   type AuthStrategy,
   type ExtraFeature,
   FEATURE_ALIASES,
   parseAuthStrategies,
   Template,
   TEMPLATE_ALIASES,
+  assertWorkerCompatibleOptions,
 } from '@cli/constants/domain';
+import type { PackageManager } from '@cli/types/index.ts';
 import type { AiContextTarget } from '@cli/constants/ai-context';
 
 export type ParsedNewArgs = {
   projectName?: string;
   packageManager?: PackageManager;
+  appType?: AppType;
   template?: Template;
   auth?: AuthStrategy[];
   features: ExtraFeature[];
@@ -31,7 +36,7 @@ function parseFeatures(value: string): ExtraFeature[] {
 
       if (!feature) {
         throw new Error(
-          `Feature desconhecida: "${item}". Use: cache, health, cron, events.`,
+          `Feature desconhecida: "${item}". Use: cache, health, cron, events, queue.`,
         );
       }
 
@@ -49,6 +54,18 @@ function parseTemplate(value: string): Template {
   return template;
 }
 
+function parseAppType(value: string): AppType {
+  const appType = APP_TYPE_ALIASES[value.toLowerCase()];
+
+  if (!appType) {
+    throw new Error(
+      `Tipo de app desconhecido: "${value}". Use: api, worker (aliases: broker, background).`,
+    );
+  }
+
+  return appType;
+}
+
 function parsePackageManager(value: string): PackageManager {
   if (value === 'bun' || value === 'npm' || value === 'pnpm') {
     return value;
@@ -64,6 +81,7 @@ function parseAuth(value: string, template?: Template) {
 export function parseNewArgs(args: string[]): ParsedNewArgs {
   let projectName: string | undefined;
   let packageManager: PackageManager | undefined;
+  let appType: AppType | undefined;
   let template: Template | undefined;
   let auth: ParsedNewArgs['auth'];
   let features: ExtraFeature[] = [];
@@ -84,6 +102,18 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
 
     if (arg === '--api-key-internal-subnet') {
       apiKeyInternalSubnet = true;
+      continue;
+    }
+
+    if (arg === '--type' || arg === '--app-type') {
+      const value = args[index + 1];
+
+      if (!value) {
+        throw new Error('Valor ausente para --type / --app-type.');
+      }
+
+      appType = parseAppType(value);
+      index += 1;
       continue;
     }
 
@@ -154,9 +184,19 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
     );
   }
 
+  if (appType === AppTypeEnum.WORKER) {
+    assertWorkerCompatibleOptions(
+      appType,
+      template ?? Template.DEFAULT,
+      auth ?? [],
+      features,
+    );
+  }
+
   return {
     projectName,
     packageManager,
+    appType,
     template,
     auth,
     features,
@@ -172,6 +212,7 @@ export function assertNewArgsComplete(
 ): asserts args is ParsedNewArgs & {
   projectName: string;
   packageManager: PackageManager;
+  appType: AppType;
   template: Template;
   auth: AuthStrategy[];
   features: ExtraFeature[];
@@ -182,6 +223,10 @@ export function assertNewArgsComplete(
 
   if (!args.packageManager) {
     throw new Error('Gerenciador de pacotes é obrigatório.');
+  }
+
+  if (!args.appType) {
+    throw new Error('Tipo de app é obrigatório.');
   }
 
   if (!args.template) {
@@ -198,6 +243,7 @@ export function buildNewProjectConfig(
   overrides: {
     name: string;
     packageManager: PackageManager;
+    appType: AppType;
     template: Template;
     auth: AuthStrategy[];
     features: ExtraFeature[];
@@ -208,6 +254,7 @@ export function buildNewProjectConfig(
   return {
     name: overrides.name,
     packageManager: parsed.packageManager ?? overrides.packageManager,
+    appType: parsed.appType ?? overrides.appType,
     template: parsed.template ?? overrides.template,
     auth: parsed.auth ?? overrides.auth,
     features: parsed.features.length > 0 ? parsed.features : overrides.features,

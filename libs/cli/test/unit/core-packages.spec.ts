@@ -10,8 +10,11 @@ import {
   CORE_PACKAGES,
   CRON_PACKAGES,
   HEALTH_PACKAGES,
+  getCoreDevPackages,
+  getCorePackages,
   devAddFlag,
 } from '@cli/constants/core-packages.ts';
+import { AppType } from '@cli/constants/domain';
 import {
   mergeCrudSampleFeatures,
   resolveNewProjectOptions,
@@ -29,6 +32,20 @@ describe('core-packages', () => {
     expect(CORE_PACKAGES).not.toContain('ioredis');
     expect(CORE_PACKAGES).not.toContain('@nestjs/terminus');
     expect(CORE_PACKAGES).not.toContain('@nestjs/axios');
+  });
+
+  it('worker omite pacotes HTTP/OpenAPI', () => {
+    const workerPackages = getCorePackages(AppType.WORKER);
+    const workerDev = getCoreDevPackages(AppType.WORKER);
+
+    expect(workerPackages).toContain('@koalarx/utils@^5.0.0');
+    expect(workerPackages).toContain('dotenv');
+    expect(workerPackages).not.toContain('helmet');
+    expect(workerPackages).not.toContain('@nestjs/swagger');
+    expect(workerPackages).not.toContain('@scalar/nestjs-api-reference');
+    expect(workerPackages).not.toContain('cookie-parser');
+    expect(workerDev).not.toContain('@types/cookie-parser');
+    expect(workerDev).toContain('tsc-alias');
   });
 
   it('agrupa pacotes por feature', () => {

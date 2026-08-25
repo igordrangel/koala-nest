@@ -1,4 +1,5 @@
 import {
+  AppType,
   AuthStrategy,
   ExtraFeature,
   Template,
@@ -20,6 +21,7 @@ export type AiContextExpectation = {
 
 /** Estado esperado de um projeto gerado pela CLI (`new` / `add`). */
 export type ProjectExpectation = {
+  appType: AppType;
   template: Template;
   auth: false | readonly AuthStrategy[];
   cache: CacheLevel;
@@ -76,15 +78,11 @@ export const CORE_REQUIRED_PATHS = [
   'src/core/env.ts',
   'src/core/common/list-response.base.ts',
   'src/core/utils/initialize-undefined-array-props.ts',
-  'src/core/http/rate-limit.middleware.ts',
-  'src/core/utils/resolve-cors-origins.ts',
-  'src/host/bootstrap/apply-http-middleware.ts',
   'src/host/main.ts',
   'src/host/app.module.ts',
   'src/host/jobs/jobs.module.ts',
   'src/host/jobs/jobs-bootstrap.service.ts',
   'src/infra/infra.module.ts',
-  'src/host/open-api/define-documentation.ts',
   'src/infra/repositories/repository.module.ts',
   'src/infra/database/data-source-factory.ts',
   'src/infra/database/migrations/load-all-entities.ts',
@@ -92,12 +90,30 @@ export const CORE_REQUIRED_PATHS = [
   'src/infra/database/migrations/generate-migration.ts',
 ] as const;
 
+/** Paths HTTP exclusivos do perfil API. */
+export const CORE_API_REQUIRED_PATHS = [
+  'src/core/http/rate-limit.middleware.ts',
+  'src/core/utils/resolve-cors-origins.ts',
+  'src/host/bootstrap/apply-http-middleware.ts',
+  'src/host/open-api/define-documentation.ts',
+] as const;
+
+/** Paths HTTP que o Worker não deve ter. */
+export const WORKER_FORBIDDEN_HTTP_PATHS = [
+  ...CORE_API_REQUIRED_PATHS,
+  'src/host/controllers/common/controller.base.ts',
+  'src/test/utils/configure-test-app.ts',
+] as const;
+
 export const CORE_PACKAGE_DEPENDENCIES = [
   '@koalarx/utils',
   'zod',
   'typeorm',
-  '@scalar/nestjs-api-reference',
   'tsc-alias',
+] as const;
+
+export const CORE_API_PACKAGE_DEPENDENCIES = [
+  '@scalar/nestjs-api-reference',
   'helmet',
 ] as const;
 
@@ -182,6 +198,7 @@ export const AUTH_JWT_PACKAGES = [
 /** Combinações representativas do comando `new` para testes parametrizados. */
 export const CLI_NEW_SELECTION_MATRIX: readonly {
   label: string;
+  appType?: AppType;
   template: Template;
   auth: readonly AuthStrategy[];
   features: readonly ExtraFeature[];
@@ -191,6 +208,20 @@ export const CLI_NEW_SELECTION_MATRIX: readonly {
     template: Template.DEFAULT,
     auth: [],
     features: [],
+  },
+  {
+    label: 'worker sem extras',
+    appType: AppType.WORKER,
+    template: Template.DEFAULT,
+    auth: [],
+    features: [],
+  },
+  {
+    label: 'worker + queue + cron',
+    appType: AppType.WORKER,
+    template: Template.DEFAULT,
+    auth: [],
+    features: [ExtraFeature.QUEUE_JOBS, ExtraFeature.INTERNAL_CRON_JOBS],
   },
   {
     label: 'default sem auth + health',
@@ -282,8 +313,14 @@ export function buildProjectExpectation(
   auth: readonly AuthStrategy[],
   features: readonly ExtraFeature[],
   aiContext: AiContextExpectation = { cursor: false, github: false },
+  appType: AppType = AppType.API,
 ): ProjectExpectation {
-  const resolved = resolveNewProjectOptions(template, [...auth], [...features]);
+  const resolved = resolveNewProjectOptions(
+    template,
+    [...auth],
+    [...features],
+    appType,
+  );
   const projectFeatures = resolveProjectFeatures(
     resolved.features,
     resolved.auth,
@@ -298,6 +335,7 @@ export function buildProjectExpectation(
   }
 
   return {
+    appType,
     template,
     auth: resolved.auth.length === 0 ? false : resolved.auth,
     cache,
@@ -317,6 +355,10 @@ export function requiredPathsForExpectation(
     ...WORKSPACE_SETUP_PATHS,
     ...E2E_INFRA_PATHS,
   ];
+
+  if (expectation.appType === AppType.API) {
+    paths.push(...CORE_API_REQUIRED_PATHS);
+  }
 
   if (expectation.template === Template.CRUD_SAMPLE) {
     paths.push(...CRUD_TEMPLATE_REQUIRED_PATHS, ...CRUD_E2E_EXAMPLE_PATHS);
@@ -368,6 +410,10 @@ export function forbiddenPathsForExpectation(
 ): readonly string[] {
   const paths: string[] = [];
 
+  if (expectation.appType === AppType.WORKER) {
+    paths.push(...WORKER_FORBIDDEN_HTTP_PATHS);
+  }
+
   if (expectation.template === Template.DEFAULT) {
     paths.push(...DEFAULT_TEMPLATE_FORBIDDEN_PATHS, ...CRUD_E2E_EXAMPLE_PATHS);
   } else {
@@ -418,6 +464,12 @@ export function requiredPackagesForExpectation(
 ): readonly string[] {
   const packages = new Set<string>(CORE_PACKAGE_DEPENDENCIES);
 
+  if (expectation.appType === AppType.API) {
+    for (const pkg of CORE_API_PACKAGE_DEPENDENCIES) {
+      packages.add(pkg);
+    }
+  }
+
   if (expectation.cache === 'redis') {
     for (const pkg of CACHE_REDIS_PACKAGES) {
       packages.add(pkg);
@@ -447,6 +499,19 @@ export function requiredPackagesForExpectation(
 
 /** Conteúdo obrigatório em `src/host/main.ts` (boot Nest). */
 export const MAIN_MUST_CONTAIN = ['@koalarx/utils/prototypes'] as const;
+
+export const MAIN_API_MUST_CONTAIN = [
+  'NestFactory.create(AppModule)',
+  'applyHttpMiddleware',
+] as const;
+
+export const MAIN_WORKER_MUST_CONTAIN = ['createApplicationContext'] as const;
+
+export const MAIN_WORKER_MUST_NOT_CONTAIN = [
+  'app.listen',
+  'applyHttpMiddleware',
+  'defineDocumentation',
+] as const;
 
 export function appModuleMustContain(
   expectation: ProjectExpectation,

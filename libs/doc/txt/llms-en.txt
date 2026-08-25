@@ -12,7 +12,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 
 ## Getting Started
 
-- [Installation guide](markdown/en/getting-started/installation-guide.md): Install the CLI and create your first NestJS project with DDD.
+- [Installation guide](markdown/en/getting-started/installation-guide.md): kl-nest CLI — new (API/Worker), silent -y mode, flags, and add.
 - [Environment variables](markdown/en/getting-started/environment-variables.md): Environment variable configuration and validation with Zod.
 - [Project structure](markdown/en/getting-started/project-structure.md): Application bootstrap, main modules, and entry point.
 
@@ -41,6 +41,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 ## Host
 
 - [HTTP middleware](markdown/en/host/http-middleware.md): Helmet, CORS, cookies, rate limit, and HTTP bootstrap via applyHttpMiddleware.
+- [Security](markdown/en/host/security.md): API security layers — Helmet, CORS, rate limit, cookies, validation, auth, and RedLock.
 - [Controllers](markdown/en/host/controllers.md): Thin HTTP controllers that delegate to handlers.
 - [Routes and tags](markdown/en/host/routes.md): Centralized route configuration with RouterConfigBase.
 - [Error handling](markdown/en/host/error-handling.md): Global ErrorsFilter for Zod, TypeORM, and internal errors.

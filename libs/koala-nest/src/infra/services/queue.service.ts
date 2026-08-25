@@ -15,28 +15,22 @@ export class QueueService extends IQueueService {
     throw new Error(NOT_IMPLEMENTED);
   }
 
-  async push(_queue: QueueName, _body: QueueMessageBody): Promise<void> {
-    throw new Error(NOT_IMPLEMENTED);
+  push(_queue: QueueName, _body: QueueMessageBody): Promise<void> {
+    return Promise.reject(new Error(NOT_IMPLEMENTED));
   }
 
-  async pull(
-    _queue: QueueName,
-    _batchSize: number,
-  ): Promise<PulledQueueMessage[]> {
-    throw new Error(NOT_IMPLEMENTED);
+  pull(_queue: QueueName, _batchSize: number): Promise<PulledQueueMessage[]> {
+    return Promise.reject(new Error(NOT_IMPLEMENTED));
   }
 
-  async ack(
-    _queue: QueueName,
-    _messages: Array<{ leaseId: string }>,
-  ): Promise<void> {
-    throw new Error(NOT_IMPLEMENTED);
+  ack(_queue: QueueName, _messages: Array<{ leaseId: string }>): Promise<void> {
+    return Promise.reject(new Error(NOT_IMPLEMENTED));
   }
 
-  async retry(
+  retry(
     _queue: QueueName,
     _messages: Array<{ leaseId: string; delaySeconds?: number }>,
   ): Promise<void> {
-    throw new Error(NOT_IMPLEMENTED);
+    return Promise.reject(new Error(NOT_IMPLEMENTED));
   }
 }

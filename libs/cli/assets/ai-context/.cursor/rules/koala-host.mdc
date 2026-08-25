@@ -10,3 +10,4 @@ alwaysApply: false
 - Não coloque regras de negócio no controller.
 - Auth/guards/decorators: reutilize o que já existe em `host/security` se auth estiver instalada.
 - OpenAPI via padrões do template (`define-documentation`, decorators locais).
+- **Worker:** `main.ts` usa `NestFactory.createApplicationContext` — sem `listen`, Helmet, CORS ou Scalar. Prefira jobs/filas em `host/jobs` e handlers de aplicação; não introduza controllers HTTP sem necessidade.

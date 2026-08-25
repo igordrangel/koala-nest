@@ -28,10 +28,19 @@ describe('write-docker-assets', () => {
   it('gera Dockerfile por package manager', () => {
     expect(buildDockerfile('bun')).toContain('oven/bun:1.3.6-debian');
     expect(buildDockerfile('bun')).toContain('bun ci');
+    expect(buildDockerfile('bun')).toContain('EXPOSE 3000');
+    expect(buildDockerfile('bun')).toContain('chmod +x entrypoint.sh');
     expect(buildDockerfile('npm')).toContain('node:22-bookworm-slim');
     expect(buildDockerfile('npm')).toContain('npm ci');
+    expect(buildDockerfile('npm')).toContain('chmod +x entrypoint.sh');
     expect(buildDockerfile('pnpm')).toContain('pnpm install --frozen-lockfile');
     expect(buildDockerfile('pnpm')).toContain('corepack enable');
+    expect(buildDockerfile('pnpm')).toContain('chmod +x entrypoint.sh');
+  });
+
+  it('worker não expõe porta HTTP', () => {
+    expect(buildDockerfile('bun', 'worker')).not.toContain('EXPOSE 3000');
+    expect(buildDockerfile('npm', 'worker')).not.toContain('EXPOSE 3000');
   });
 
   it('escreve Dockerfile e entrypoint executável', () => {

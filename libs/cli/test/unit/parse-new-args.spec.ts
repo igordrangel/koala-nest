@@ -6,6 +6,7 @@ describe('parseNewArgs', () => {
     expect(parseNewArgs([])).toEqual({
       projectName: undefined,
       packageManager: undefined,
+      appType: undefined,
       template: undefined,
       auth: undefined,
       features: [],
@@ -20,6 +21,7 @@ describe('parseNewArgs', () => {
     expect(parseNewArgs(['my-api', '--template', 'default'])).toEqual({
       projectName: 'my-api',
       packageManager: undefined,
+      appType: undefined,
       template: 'default',
       auth: undefined,
       features: [],
@@ -45,6 +47,7 @@ describe('parseNewArgs', () => {
     ).toEqual({
       projectName: 'my-api',
       packageManager: 'bun',
+      appType: undefined,
       template: 'default',
       auth: [],
       features: [],
@@ -64,6 +67,47 @@ describe('parseNewArgs', () => {
     expect(
       parseNewArgs(['demo', '-y', '-t', 'example', '--auth', 'jwt']).template,
     ).toBe('crudSample');
+  });
+
+  it('parseia --type worker e aliases', () => {
+    expect(parseNewArgs(['demo', '-y', '--type', 'worker']).appType).toBe(
+      'worker',
+    );
+    expect(parseNewArgs(['demo', '-y', '--app-type', 'broker']).appType).toBe(
+      'worker',
+    );
+  });
+
+  it('rejeita worker com template crud', () => {
+    expect(() =>
+      parseNewArgs([
+        'demo',
+        '-y',
+        '--type',
+        'worker',
+        '--template',
+        'crud',
+      ]),
+    ).toThrow(/Worker não aceita template CRUD/);
+  });
+
+  it('rejeita worker com auth', () => {
+    expect(() =>
+      parseNewArgs(['demo', '-y', '--type', 'worker', '--auth', 'jwt']),
+    ).toThrow(/Worker não aceita autenticação/);
+  });
+
+  it('rejeita worker com health', () => {
+    expect(() =>
+      parseNewArgs([
+        'demo',
+        '-y',
+        '--type',
+        'worker',
+        '--features',
+        'health',
+      ]),
+    ).toThrow(/Worker não aceita health-check/);
   });
 
   it('parseia features separadas por vírgula', () => {

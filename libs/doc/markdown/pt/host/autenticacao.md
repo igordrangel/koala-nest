@@ -89,6 +89,8 @@ Authorization: Bearer <refreshToken>
 
 Ou envie o refresh token como **cookie httpOnly** `refreshToken` — o `AuthGuard` promove automaticamente para `Authorization` nesta rota.
 
+No login, o cookie é definido com `httpOnly` e `path=/`. Em localhost (`API_HOST` contendo `localhost`): `SameSite=Strict` sem `Secure`. Fora de localhost (front ≠ API): `SameSite=None; Secure` para o navegador aceitar o `Set-Cookie` em XHR cross-site.
+
 O formato da resposta é o mesmo de `POST /auth/login` (`accessToken` + `refreshToken`). Refresh tokens são rejeitados em todas as demais rotas pelo `JwtStrategy`.
 
 ## Usuário logado nos handlers
@@ -288,6 +290,7 @@ Guia completo: [OpenAPI com Scalar](./openapi-scalar.md#autenticacao-automatica-
 
 ## Próximos passos
 
+- [Segurança](./seguranca.md) — visão de camadas (Helmet, CORS, cookies, guards)
 - [Variáveis de ambiente](../inicio/variaveis-de-ambiente.md) — chaves JWT, OAuth2 e Redis
 - [OpenAPI com Scalar](./openapi-scalar.md#autenticacao-automatica-no-scalar) — configuracao automatica no Scalar
 - [Controllers](./controllers.md) — padrão fino HTTP → handler

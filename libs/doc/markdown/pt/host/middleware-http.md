@@ -27,7 +27,7 @@ O bootstrap registra [`helmet`](https://helmetjs.github.io/) **antes** de cookie
 
 | Opção | Comportamento |
 | --- | --- |
-| `contentSecurityPolicy` | CSP restritiva (`defaultSrc: none`); `scriptSrc` permite `'self'`, `'unsafe-inline'` e `cdn.jsdelivr.net` (Scalar) |
+| `contentSecurityPolicy` | CSP restritiva (`defaultSrc: none`); scripts/estilos/imagens do Scalar via `cdn.jsdelivr.net`; fontes também em `fonts.scalar.com` |
 | `hsts` | Ativo apenas quando `NODE_ENV=production` |
 | `upgradeInsecureRequests` | Só em produção |
 | `crossOriginEmbedderPolicy` | `false` (compatível com Scalar / assets externos) |
@@ -76,5 +76,7 @@ Resposta ao exceder o limite: HTTP **429** com mensagem JSON padronizada.
 
 - `src/test/core/resolve-cors-origins.spec.ts`
 - `src/test/core/http/rate-limit.middleware.spec.ts`
+
+Visão de camadas: [Segurança](./seguranca.md).
 
 Veja também: [Variáveis de ambiente](../inicio/variaveis-de-ambiente.md), [Estrutura do projeto](../inicio/estrutura-do-projeto.md).

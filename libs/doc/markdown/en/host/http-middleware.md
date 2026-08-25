@@ -27,7 +27,7 @@ The bootstrap registers [`helmet`](https://helmetjs.github.io/) **before** cooki
 
 | Option | Behavior |
 | --- | --- |
-| `contentSecurityPolicy` | Restrictive CSP (`defaultSrc: none`); `scriptSrc` allows `'self'`, `'unsafe-inline'`, and `cdn.jsdelivr.net` (Scalar) |
+| `contentSecurityPolicy` | Restrictive CSP (`defaultSrc: none`); Scalar scripts/styles/images via `cdn.jsdelivr.net`; fonts also from `fonts.scalar.com` |
 | `hsts` | Enabled only when `NODE_ENV=production` |
 | `upgradeInsecureRequests` | Production only |
 | `crossOriginEmbedderPolicy` | `false` (compatible with Scalar / external assets) |
@@ -76,5 +76,7 @@ When the limit is exceeded: HTTP **429** with a JSON message.
 
 - `src/test/core/resolve-cors-origins.spec.ts`
 - `src/test/core/http/rate-limit.middleware.spec.ts`
+
+Layered view: [Security](./security.md).
 
 See also: [Environment variables](../getting-started/environment-variables.md), [Project structure](../getting-started/project-structure.md).
