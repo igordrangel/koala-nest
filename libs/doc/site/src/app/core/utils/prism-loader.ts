@@ -10,6 +10,7 @@ export function ensurePrismLoaded() {
   }
 
   prismPromise ??= (async () => {
+    await import('prism-themes/themes/prism-atom-dark.min.css');
     await import('prismjs');
     await import('prismjs/components/prism-bash');
     await import('prismjs/components/prism-typescript');
