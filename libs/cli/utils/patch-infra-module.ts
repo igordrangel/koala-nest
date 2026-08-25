@@ -155,12 +155,8 @@ export function patchInfraModuleForQueue(content: string) {
   });
 }
 
-export function stripInfraModuleCache(content: string) {
-  const flags = resolveInfraFlags(content);
-
-  return buildInfraModule({
-    cache: false,
-    auth: flags.auth,
-    queue: flags.queue,
-  });
+export function stripInfraModuleCache(_content: string) {
+  // Usado no install CORE para resetar o InfraModule completo do template
+  // (cache + auth). Auth/queue são reaplicados depois pelos patches dedicados.
+  return SLIM_INFRA_MODULE;
 }
