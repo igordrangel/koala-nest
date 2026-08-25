@@ -1,9 +1,93 @@
 /* Generated Automatically - Do not edit manually */
 
+@utility arrow-right {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/arrow-right.svg');
+    mask-image: url('/assets/icons/arrow-right.svg');
+  }
+}
+
+@utility arrow-up-right {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/arrow-up-right.svg');
+    mask-image: url('/assets/icons/arrow-up-right.svg');
+  }
+}
+
+@utility bars {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/bars.svg');
+    mask-image: url('/assets/icons/bars.svg');
+  }
+}
+
+@utility check {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/check.svg');
+    mask-image: url('/assets/icons/check.svg');
+  }
+}
+
+@utility circle-info {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/circle-info.svg');
+    mask-image: url('/assets/icons/circle-info.svg');
+  }
+}
+
+@utility circle {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/circle.svg');
+    mask-image: url('/assets/icons/circle.svg');
+  }
+}
+
+@utility clipboard {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/clipboard.svg');
+    mask-image: url('/assets/icons/clipboard.svg');
+  }
+}
+
+@utility code {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/code.svg');
+    mask-image: url('/assets/icons/code.svg');
+  }
+}
+
+@utility file-code {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/file-code.svg');
+    mask-image: url('/assets/icons/file-code.svg');
+  }
+}
+
+@utility github {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/github.svg');
+    mask-image: url('/assets/icons/github.svg');
+  }
+}
+
 @utility kl-logotype {
   &::after {
     -webkit-mask-image: url('/assets/icons/kl-logotype.svg');
     mask-image: url('/assets/icons/kl-logotype.svg');
+  }
+}
+
+@utility magnifying-glass {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/magnifying-glass.svg');
+    mask-image: url('/assets/icons/magnifying-glass.svg');
+  }
+}
+
+@utility terminal {
+  &::after {
+    -webkit-mask-image: url('/assets/icons/terminal.svg');
+    mask-image: url('/assets/icons/terminal.svg');
   }
 }
 

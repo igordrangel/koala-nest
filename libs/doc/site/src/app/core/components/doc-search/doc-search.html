@@ -8,7 +8,7 @@
   [attr.aria-label]="copy().search"
 >
   <span class="flex items-center gap-2">
-    <i class="fa-solid fa-magnifying-glass text-xs opacity-60"></i>
+    <i class="app-icon magnifying-glass text-xs opacity-60"></i>
     <span class="text-xs">{{ copy().searchDocs }}</span>
   </span>
   <kbd class="kbd kbd-xs hidden lg:inline-flex opacity-60">Ctrl+K</kbd>
@@ -23,7 +23,7 @@
   (click)="toggle()"
   [attr.aria-label]="copy().search"
 >
-  <i class="fa-solid fa-magnifying-glass"></i>
+  <i class="app-icon magnifying-glass"></i>
 </button>
 
 @if (open()) {
@@ -39,7 +39,7 @@
       (click)="$event.stopPropagation()"
     >
       <div class="flex items-center gap-3 border-b border-base-300 px-4 py-3">
-        <i class="fa-solid fa-magnifying-glass opacity-50"></i>
+        <i class="app-icon magnifying-glass opacity-50"></i>
         <input
           #searchInput
           type="search"

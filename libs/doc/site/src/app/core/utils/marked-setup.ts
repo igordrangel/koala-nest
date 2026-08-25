@@ -35,14 +35,14 @@ function codeIcon(language: string) {
     case 'bash':
     case 'sh':
     case 'shell':
-      return 'fa-solid fa-terminal p-1 text-[0.5rem]';
+      return 'app-icon terminal p-1 text-[0.5rem]';
     case 'typescript':
     case 'ts':
-      return 'fa-solid fa-code p-1 text-[0.5rem]';
+      return 'app-icon code p-1 text-[0.5rem]';
     case 'json':
-      return 'fa-regular fa-file-code p-1 text-[0.5rem]';
+      return 'app-icon file-code p-1 text-[0.5rem]';
     default:
-      return 'fa-solid fa-code p-1 text-[0.5rem]';
+      return 'app-icon code p-1 text-[0.5rem]';
   }
 }
 
@@ -103,7 +103,7 @@ export function createDocsMarkedRenderer(): Renderer {
       class="code-copy-btn hover:cursor-pointer ml-2 shrink-0 px-2 text-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800 rounded-sm"
       aria-label="Copiar código"
     >
-      <i class="fa-regular fa-clipboard"></i>
+      <i class="app-icon clipboard"></i>
     </button>
   </div>
   <pre class="language-${language} !m-0 !rounded-none !border-0 !bg-transparent"><code class="language-${language}">${escaped}</code></pre>
@@ -115,7 +115,7 @@ export function createDocsMarkedRenderer(): Renderer {
     const content = body.replace(/^<p>([\s\S]*)<\/p>$/m, '$1');
 
     return `<div role="alert" class="alert alert-warning alert-dash mt-2">
-  <i class="fa-solid fa-circle-info"></i>
+  <i class="app-icon circle-info"></i>
   <span>${content}</span>
 </div>\n`;
   };

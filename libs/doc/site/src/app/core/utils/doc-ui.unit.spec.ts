@@ -49,7 +49,7 @@ describe('markdown copy helpers', () => {
   it('localiza botão e texto do bloco de código', () => {
     document.body.innerHTML = `
       <div class="code-block">
-        <button data-copy-code><i class="fa-regular fa-clipboard"></i></button>
+        <button data-copy-code><i class="app-icon clipboard"></i></button>
         <pre><code>const x = 1;</code></pre>
       </div>
     `;

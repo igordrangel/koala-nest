@@ -108,10 +108,10 @@ export class MarkdownContentComponent {
     if (!icon) return;
 
     const previousClass = icon.className;
-    icon.className = 'fa-solid fa-check';
+    icon.className = 'app-icon check';
 
     window.setTimeout(() => {
-      icon.className = previousClass || 'fa-regular fa-clipboard';
+      icon.className = previousClass || 'app-icon clipboard';
     }, 2000);
   }
 }
