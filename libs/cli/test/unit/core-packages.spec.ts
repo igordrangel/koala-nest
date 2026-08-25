@@ -24,6 +24,7 @@ describe('core-packages', () => {
     expect(CORE_PACKAGES).toContain('@koalarx/utils@^5.0.0');
     expect(CORE_PACKAGES).toContain('@scalar/nestjs-api-reference');
     expect(CORE_PACKAGES).toContain('cookie-parser');
+    expect(CORE_PACKAGES).toContain('helmet');
     expect(CORE_PACKAGES).not.toContain('cron-parser');
     expect(CORE_PACKAGES).not.toContain('ioredis');
     expect(CORE_PACKAGES).not.toContain('@nestjs/terminus');

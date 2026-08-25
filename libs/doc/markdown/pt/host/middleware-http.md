@@ -4,12 +4,12 @@ slug: middleware-http
 category: host
 docKey: host/middleware-http
 order: 0
-description: CORS, cookies, rate limit e bootstrap HTTP via applyHttpMiddleware.
+description: Helmet, CORS, cookies, rate limit e bootstrap HTTP via applyHttpMiddleware.
 ---
 
 # Middleware HTTP
 
-CORS, `cookie-parser` e rate limit são aplicados em um único ponto: `applyHttpMiddleware` em `src/host/bootstrap/apply-http-middleware.ts`. O `main.ts` chama essa função logo após `NestFactory.create`.
+Helmet, CORS, `cookie-parser` e rate limit são aplicados em um único ponto: `applyHttpMiddleware` em `src/host/bootstrap/apply-http-middleware.ts`. O `main.ts` chama essa função logo após `NestFactory.create`.
 
 ```typescript
 import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
@@ -20,6 +20,19 @@ async function bootstrap() {
   // ...
 }
 ```
+
+## Helmet (headers de segurança)
+
+O bootstrap registra [`helmet`](https://helmetjs.github.io/) **antes** de cookies, rate limit e CORS. A configuração segue o padrão Globo Seguros:
+
+| Opção | Comportamento |
+| --- | --- |
+| `contentSecurityPolicy` | CSP restritiva (`defaultSrc: none`); `scriptSrc` permite `'self'`, `'unsafe-inline'` e `cdn.jsdelivr.net` (Scalar) |
+| `hsts` | Ativo apenas quando `NODE_ENV=production` |
+| `upgradeInsecureRequests` | Só em produção |
+| `crossOriginEmbedderPolicy` | `false` (compatível com Scalar / assets externos) |
+
+Demais headers padrão do Helmet (X-Content-Type-Options, X-Frame-Options, etc.) permanecem ativos.
 
 ## CORS
 

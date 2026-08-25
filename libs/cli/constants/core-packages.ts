@@ -10,6 +10,7 @@ export const CORE_PACKAGES = [
   'zod',
   '@scalar/nestjs-api-reference',
   'cookie-parser',
+  'helmet',
   'dotenv',
 ] as const;
 

@@ -5,15 +5,12 @@ import {
   QueueMessageBody,
   QueueName,
 } from '@/domain/common/iqueue.service';
+import { EnvService } from '@/infra/common/env.service';
 import { delay } from '@koalarx/utils/KlDelay';
 import { Logger } from '@nestjs/common';
 
 export type QueueBaseOptions = {
   queueName: QueueName;
-  maxConcurrency: number;
-  capacityDelayMs?: number;
-  idleDelayMs?: number;
-  errorDelayMs?: number;
 };
 
 export type QueueMessageValidatorClass<TMessage> = new (
@@ -26,22 +23,35 @@ export type QueueBaseConfig<TMessage> = {
   queueOptions: QueueBaseOptions;
 };
 
+type QueueRuntimeOptions = {
+  queueName: QueueName;
+  maxConcurrency: number;
+  capacityDelayMs: number;
+  idleDelayMs: number;
+  errorDelayMs: number;
+};
+
 export abstract class QueueBase<TMessage extends Record<string, any>> {
   private readonly queue: IQueueService;
-  private readonly options: Required<QueueBaseOptions>;
+  private readonly options: QueueRuntimeOptions;
   private readonly validator: QueueMessageValidatorClass<TMessage>;
   private running = false;
   private inFlight = 0;
 
   protected readonly logger: Logger;
 
-  constructor(queue: IQueueService, config: QueueBaseConfig<TMessage>) {
+  constructor(
+    queue: IQueueService,
+    env: EnvService,
+    config: QueueBaseConfig<TMessage>,
+  ) {
     this.queue = queue;
     this.options = {
-      capacityDelayMs: 200,
-      idleDelayMs: 1000,
-      errorDelayMs: 2000,
-      ...config.queueOptions,
+      queueName: config.queueOptions.queueName,
+      maxConcurrency: env.get('QUEUE_MAX_CONCURRENCY'),
+      capacityDelayMs: env.get('QUEUE_CAPACITY_DELAY_MS'),
+      idleDelayMs: env.get('QUEUE_IDLE_DELAY_MS'),
+      errorDelayMs: env.get('QUEUE_ERROR_DELAY_MS'),
     };
     this.validator = config.validator;
     this.logger = new Logger(config.loggerName);

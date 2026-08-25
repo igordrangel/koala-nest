@@ -9,13 +9,14 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
-## [4.4.0] — Build, Docker e QueueBase
+## [4.4.0] — Build, Docker, QueueBase e Helmet
 
 ### Added
 
-- Feature opt-in `queue` / `queue-jobs`: `QueueBase`, `IQueueService`, stub `QueueService`, `QueueFakeService` e vars abstratas de env.
+- Feature opt-in `queue` / `queue-jobs`: `QueueBase`, `IQueueService`, stub `QueueService`, `QueueFakeService` e vars abstratas de env (lidas pelo `QueueBase` via `EnvService`).
 - `Dockerfile` + `entrypoint.sh` gerados no `kl-nest new` conforme `bun` / `npm` / `pnpm`.
-- Documentação PT/EN de queue jobs.
+- `helmet` no core (`applyHttpMiddleware`) com CSP/HSTS no padrão Globo Seguros.
+- Documentação PT/EN de queue jobs e middleware HTTP atualizada.
 
 ### Changed
 

@@ -22,7 +22,7 @@ This feature copies **broker-agnostic** bases (Cloudflare Queues, SQS, RabbitMQ,
 
 ## Environment variables
 
-When the feature is installed, the CLI injects into `env.ts` / `.env.example`:
+When the feature is installed, the CLI injects into `env.ts` / `.env.example` / `.env`. Defining them in `.env` is **optional** — the Zod schema applies defaults if the keys are missing. `QueueBase` reads these via `EnvService` (do not pass them in the constructor).
 
 | Variable | Default | Usage |
 | --- | --- | --- |
@@ -37,21 +37,17 @@ No provider-specific variables (Cloudflare IDs, SQS credentials, etc.) — those
 
 1. Define the message DTO + `RequestValidatorBase`.
 2. Extend `QueueBase<TMessage>` and implement `processMessage`.
-3. Pass env options in `super`:
+3. Pass only `queueName` in `queueOptions` — concurrency and delays come from env:
 
 ```typescript
 @Injectable()
 export class ConsumeExampleQueueHandler extends QueueBase<ExampleMessageDto> {
   constructor(queue: IQueueService, env: EnvService) {
-    super(queue, {
+    super(queue, env, {
       loggerName: ConsumeExampleQueueHandler.name,
       validator: ExampleMessageValidator,
       queueOptions: {
         queueName: QueueName.example,
-        maxConcurrency: env.get('QUEUE_MAX_CONCURRENCY'),
-        capacityDelayMs: env.get('QUEUE_CAPACITY_DELAY_MS'),
-        idleDelayMs: env.get('QUEUE_IDLE_DELAY_MS'),
-        errorDelayMs: env.get('QUEUE_ERROR_DELAY_MS'),
       },
     });
   }

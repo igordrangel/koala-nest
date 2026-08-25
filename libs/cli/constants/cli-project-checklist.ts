@@ -98,6 +98,7 @@ export const CORE_PACKAGE_DEPENDENCIES = [
   'typeorm',
   '@scalar/nestjs-api-reference',
   'tsc-alias',
+  'helmet',
 ] as const;
 
 /** Template default — sem exemplo Person. */

@@ -13,17 +13,18 @@ Changelog for anyone using or upgrading CLI-generated projects. Deep dives live 
 
 The published `@koalarx/nest` version is shown on the site and in the repo `package.json`. Root [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) mirrors these notes.
 
-## 4.4.0 — Build, Docker, and QueueBase
+## 4.4.0 — Build, Docker, QueueBase, and Helmet
 
 ### What changed
 
 - **`tsc-alias` in build:** generated projects use `nest build && tsc-alias -p tsconfig.build.json` so `@/*` imports work in `dist/` (production/Docker).
 - **Dockerfile per package manager:** `kl-nest new` writes `Dockerfile` + `entrypoint.sh` for `bun`, `npm`, or `pnpm`.
-- **Queue jobs (opt-in):** `kl-nest new` / `kl-nest add queue` copies `QueueBase`, `IQueueService`, stub `QueueService`, and a test fake; injects abstract env vars (`QUEUE_MAX_CONCURRENCY`, delays). No broker SDK — implement infra later.
+- **Queue jobs (opt-in):** `kl-nest new` / `kl-nest add queue` copies `QueueBase`, `IQueueService`, stub `QueueService`, and a test fake; injects abstract env vars (`QUEUE_MAX_CONCURRENCY`, delays). `QueueBase` reads concurrency/delays via `EnvService` (do not pass them in the constructor). No broker SDK — implement infra later.
+- **Helmet in core:** `applyHttpMiddleware` sets security headers (CSP tuned for Scalar/`cdn.jsdelivr.net`, HSTS only in `production`), following the Globo Seguros pattern.
 
 ### Upgrade
 
-On existing projects: update the `build` script and add `tsc-alias` as a devDependency; copy a Dockerfile matching your PM if you containerize; use `kl-nest add queue` for messaging.
+On existing projects: update the `build` script and add `tsc-alias` as a devDependency; copy a Dockerfile matching your PM if you containerize; use `kl-nest add queue` for messaging; install `helmet` and align `apply-http-middleware.ts` with the current template.
 
 ## 4.3.1 — OpenAPI scaffold and tsconfig
 

@@ -290,7 +290,7 @@ const QUEUE_ENV_SCHEMA_SNIPPET = `  QUEUE_MAX_CONCURRENCY: z.coerce.number().int
   QUEUE_ERROR_DELAY_MS: z.coerce.number().int().min(0).default(2000),`;
 
 const QUEUE_ENV_EXAMPLE_SNIPPET = `
-# Queue jobs (mensageria) — opções abstratas do QueueBase
+# Queue jobs (mensageria) — opcional; defaults no schema Zod se omitidos
 QUEUE_MAX_CONCURRENCY=10
 QUEUE_CAPACITY_DELAY_MS=200
 QUEUE_IDLE_DELAY_MS=1000
