@@ -66,7 +66,7 @@ No `kl-nest new`, a CLI pergunta o **tipo de aplicação** (ou use `--type` / `-
 | Template | `default` ou `crud` | Só `default` |
 | Auth / health | JWT, OAuth2, API Key, health | **Não** disponíveis |
 | Features típicas | cache, health, cron, events, queue | cache, **queue**, cron, events |
-| Controllers | `host/controllers` | Prefira handlers de fila/cron em `application` + `host/services` |
+| Controllers | `host/controllers` | Sem controllers/decorators/filters HTTP; filas via `QueueBase`; cron/events via `host/jobs` se instalados |
 
 Aliases de tipo: `api` / `http` → API; `worker` / `broker` / `background` / `background-service` → Worker.
 
@@ -148,6 +148,7 @@ kl-nest add
 # direto (silencioso quanto a prompts)
 kl-nest add cache
 kl-nest add auth jwt
+kl-nest add auth api-key --api-key-internal-subnet
 kl-nest add health cron events
 kl-nest add queue
 kl-nest add ai-context cursor
@@ -159,13 +160,14 @@ kl-nest add ai-context cursor github
 | --- | --- | --- |
 | Autenticação JWT | `kl-nest add auth jwt` | Só faz sentido em API |
 | Autenticação OAuth2 | `kl-nest add auth oauth2` | Inclui cache em memória para o `state` |
+| Autenticação API Key | `kl-nest add auth api-key` | Aditiva — exige JWT e/ou OAuth2 já instalados (ou no mesmo comando). Opcional: `--api-key-internal-subnet` |
 | Cache Redis | `kl-nest add cache` | Adiciona `ioredis`; no CRUD, restaura cache de listagem |
 | Health check | `kl-nest add health` | Terminus HTTP — só API |
-| Cron jobs | `kl-nest add cron` | Requer cache em memória (instalado automaticamente) |
-| Event jobs | `kl-nest add events` | No CRUD, restaura handlers de exemplo |
-| Queue jobs | `kl-nest add queue` | Ideal em Worker; também válido na API |
-| Contexto AI (Cursor) | `kl-nest add ai-context cursor` | `AGENTS.md` + `.cursor/rules` (não sobrescreve) |
-| Contexto AI (Copilot) | `kl-nest add ai-context github` | `AGENTS.md` + `.github/copilot-instructions.md` |
+| Cron jobs | `kl-nest add cron` | Requer cache em memória; registra `JobsModule` / `host/jobs` |
+| Event jobs | `kl-nest add events` | Registra `JobsModule` / `host/jobs`; no CRUD, restaura handlers de exemplo |
+| Queue jobs | `kl-nest add queue` | Ideal em Worker; usa `QueueBase` + `IQueueService` — **não** instala `JobsModule` |
+| Contexto AI (Cursor) | `kl-nest add ai-context cursor` | `AGENTS.md` + `.cursor/rules` (não sobrescreve). Detalhes: [Contexto AI](./contexto-ai.md) |
+| Contexto AI (Copilot) | `kl-nest add ai-context github` | `AGENTS.md` + `.github/copilot-instructions.md`. Detalhes: [Contexto AI](./contexto-ai.md) |
 
 ## Templates
 

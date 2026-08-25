@@ -9,7 +9,9 @@ description: JWT, guards globais, rotas públicas, OAuth2 genérico e API Key.
 
 # Autenticação
 
-O módulo de autenticação é opcional na CLI (`kl-nest new` → **JWT**, **OAuth2** e/ou **API Key**). Com JWT, o template inclui entidade `User`, login por e-mail/senha e emissão de tokens RS256. Com OAuth2, usuários são criados ou reutilizados após o fluxo authorization code. **API Key** é aditiva (exige JWT e/ou OAuth2) e autentica chamadas machine-to-machine na borda HTTP.
+> **Opt-in (só API):** `kl-nest new` → **JWT**, **OAuth2** e/ou **API Key**, ou depois `kl-nest add auth jwt` / `oauth2` / `api-key`. API Key é aditiva (exige JWT e/ou OAuth2). Flag opcional: `--api-key-internal-subnet`.
+
+O módulo de autenticação é opcional. Com JWT, o template inclui entidade `User`, login por e-mail/senha e emissão de tokens RS256. Com OAuth2, usuários são criados ou reutilizados após o fluxo authorization code. **API Key** autentica chamadas machine-to-machine na borda HTTP.
 
 A instalação de auth **não** altera `data-source-factory.ts`: a entidade `User` entra no DataSource via `@Entity` (DbContext) e o `UserRepository` é registrado no `RepositoryModule`.
 
@@ -258,7 +260,7 @@ O bootstrap de jobs inscreve handlers de eventos e inicia CronJobs apenas quando
 
 API Key autentica callers HTTP síncronos (integrações, BFF, hops pontuais entre serviços). **Não** substitui broker/eventos nem obriga proxy de arquivos — storage em cloud + mensageria continuam a escolha preferível para domínio escalável. A strategy fica no host; handlers só veem o usuário já autenticado via `ILoggedUserInfoService`.
 
-CLI: `--auth jwt,api-key` (ou `oauth2,api-key` / `jwt,oauth2,api-key`). Flag opcional `--api-key-internal-subnet` libera IPs privados (RFC1918) no tipo `domain` para pods no cluster.
+CLI (`new`): `--auth jwt,api-key` (ou `oauth2,api-key` / `jwt,oauth2,api-key`). Em projeto existente: `kl-nest add auth api-key` (com JWT e/ou OAuth2 já instalados, ou no mesmo comando: `kl-nest add auth jwt api-key`). Flag opcional `--api-key-internal-subnet` libera IPs privados (RFC1918) no tipo `domain` para pods no cluster.
 
 ### CRUD e token
 

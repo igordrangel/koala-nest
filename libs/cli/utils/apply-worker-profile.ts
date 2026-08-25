@@ -65,22 +65,20 @@ describe('App (E2E)', () => {
 });
 `;
 
-/** Paths HTTP/OpenAPI removidos no perfil Worker. */
+/** Paths HTTP/OpenAPI removidos no perfil Worker (sem superfície de request). */
 export const WORKER_HTTP_PATHS_TO_REMOVE = [
   'src/host/bootstrap',
   'src/host/open-api',
-  'src/host/controllers/common',
-  'src/host/controllers/health-check',
-  'src/host/controllers/person',
-  'src/host/controllers/auth',
-  'src/host/controllers/oauth2',
-  'src/host/controllers/api-key',
+  'src/host/controllers',
+  'src/host/decorators',
+  'src/host/filters',
   'src/core/http',
   'src/core/utils/resolve-cors-origins.ts',
   'src/core/utils/resolve-api-host.ts',
   'src/test/core/http',
   'src/test/core/resolve-cors-origins.spec.ts',
   'src/test/core/resolve-api-host.spec.ts',
+  'src/test/host/errors.filter.spec.ts',
   'src/test/utils/configure-test-app.ts',
 ] as const;
 

@@ -34,12 +34,12 @@ ${color.cyan('Comandos:')}
   ${color.green('help')}      Exibe esta ajuda
 
 ${color.cyan('Add — funcionalidades:')}
-  ${color.dim('auth jwt|oauth2|api-key')}   Autenticação
+  ${color.dim('auth jwt|oauth2|api-key')}   Autenticação (só API)
   ${color.dim('cache')}                     Cache Redis (+ exemplos no CRUD)
-  ${color.dim('health')}                    GET /health
-  ${color.dim('cron')}                      Jobs com expressão cron
-  ${color.dim('events')}                    Jobs reativos a eventos
-  ${color.dim('queue')}                     Handlers de fila (mensageria)
+  ${color.dim('health')}                    GET /health (só API)
+  ${color.dim('cron')}                      Jobs com expressão cron (+ JobsModule)
+  ${color.dim('events')}                    Jobs reativos a eventos (+ JobsModule)
+  ${color.dim('queue')}                     Handlers de fila (QueueBase; sem JobsModule)
   ${color.dim('ai-context cursor|github')}  Contexto AI (AGENTS.md + regras do editor)
 
 ${color.cyan('Exemplos:')}
@@ -50,6 +50,7 @@ ${color.cyan('Exemplos:')}
   kl-nest new --verbose
   kl-nest add cache
   kl-nest add auth jwt health --verbose
+  kl-nest add auth api-key --api-key-internal-subnet
   kl-nest add cron events
   kl-nest add queue
   kl-nest add ai-context cursor

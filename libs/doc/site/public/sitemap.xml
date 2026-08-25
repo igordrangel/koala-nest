@@ -43,6 +43,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/estrutura-do-projeto/" />
   </url>
   <url>
+    <loc>https://nest.koalarx.com/pt/docs/inicio/contexto-ai/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/getting-started/ai-context/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+  </url>
+  <url>
     <loc>https://nest.koalarx.com/pt/docs/core/bases-reutilizaveis/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/bases-reutilizaveis/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/reusable-bases/" />
@@ -233,6 +239,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/inicio/estrutura-do-projeto/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/getting-started/project-structure/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/estrutura-do-projeto/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/getting-started/ai-context/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/getting-started/ai-context/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/core/reusable-bases/</loc>

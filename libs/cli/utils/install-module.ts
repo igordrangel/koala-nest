@@ -45,6 +45,7 @@ import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
 import { runCommand } from './run-command';
 import { patchEnvForQueue, stripEnvForWorker } from './patch-env';
+import { ensureJobsModuleRegistered } from './patch-jobs-module';
 
 export {
   AppType,
@@ -512,6 +513,8 @@ export async function installModule(
       break;
     }
     case Modules.INTERNAL_CRON_JOBS: {
+      install('src/host/jobs', projectName);
+      ensureJobsModuleRegistered(projectName);
       install('src/core/background-services/cron-service', projectName);
       install('src/core/utils/cron-expression-to-boolean.ts', projectName);
       if (!options.skipPackages) {
@@ -520,6 +523,8 @@ export async function installModule(
       break;
     }
     case Modules.INTERNAL_EVENT_JOBS: {
+      install('src/host/jobs', projectName);
+      ensureJobsModuleRegistered(projectName);
       install('src/core/background-services/event-service', projectName);
       break;
     }

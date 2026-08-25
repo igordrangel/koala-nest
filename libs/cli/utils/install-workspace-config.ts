@@ -58,6 +58,21 @@ function runScriptCommand(
   return `${PACKAGE_MANAGER_COMMAND[packageManager]} run ${script}`;
 }
 
+/** `.gitignore` some do npm pack; o build publica também como `gitignore`. */
+function resolveTemplateGitignore(): string | null {
+  const sourceRoot = getSourceCodePath();
+
+  for (const name of ['.gitignore', 'gitignore'] as const) {
+    const candidate = path.join(sourceRoot, name);
+
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 export function installWorkspaceConfig(
   projectName: string,
   packageManager: PackageManager,
@@ -112,13 +127,17 @@ export function installWorkspaceConfig(
     },
   );
 
-  const gitignoreSource = path.join(getSourceCodePath(), '.gitignore');
+  const gitignoreSource = resolveTemplateGitignore();
 
-  if (existsSync(gitignoreSource)) {
-    cpSync(gitignoreSource, path.join(projectRoot, '.gitignore'), {
-      force: true,
-    });
+  if (!gitignoreSource) {
+    throw new Error(
+      'Template .gitignore não encontrado (esperado .gitignore ou gitignore em koala-nest).',
+    );
   }
+
+  cpSync(gitignoreSource, path.join(projectRoot, '.gitignore'), {
+    force: true,
+  });
 }
 
 export function createEnvFromExample(projectName: string): void {

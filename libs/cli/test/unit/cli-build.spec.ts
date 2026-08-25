@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
 import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 import {
   cliBuildScript,
   cliEntry,
@@ -37,5 +38,24 @@ describe('CLI build', () => {
 
     expect(result.status).toBe(0);
     expect(existsSync(cliEntry)).toBe(true);
+  });
+
+  it('build-koala-nest publica gitignore sem ponto para o npm pack', () => {
+    const result = spawnSync(
+      'bun',
+      [path.join(repoRoot, 'scripts/build-koala-nest.mjs')],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+      },
+    );
+
+    expect(result.status).toBe(0);
+    expect(
+      existsSync(path.join(repoRoot, 'dist/koala-nest/gitignore')),
+    ).toBe(true);
+    expect(
+      existsSync(path.join(repoRoot, 'dist/koala-nest/.gitignore')),
+    ).toBe(true);
   });
 });

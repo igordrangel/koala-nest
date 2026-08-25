@@ -57,6 +57,7 @@ export const WORKSPACE_SETUP_PATHS = [
   '.vscode/settings.json',
   '.vscode/tasks.json',
   '.vscode/extensions.json',
+  '.gitignore',
   '.env',
   'Dockerfile',
   'entrypoint.sh',
@@ -80,14 +81,18 @@ export const CORE_REQUIRED_PATHS = [
   'src/core/utils/initialize-undefined-array-props.ts',
   'src/host/main.ts',
   'src/host/app.module.ts',
-  'src/host/jobs/jobs.module.ts',
-  'src/host/jobs/jobs-bootstrap.service.ts',
   'src/infra/infra.module.ts',
   'src/infra/repositories/repository.module.ts',
   'src/infra/database/data-source-factory.ts',
   'src/infra/database/migrations/load-all-entities.ts',
   'src/infra/database/migrations/migration-datasource.ts',
   'src/infra/database/migrations/generate-migration.ts',
+] as const;
+
+/** JobsModule — só com cron e/ou events (não com queue sozinha). */
+export const JOBS_REQUIRED_PATHS = [
+  'src/host/jobs/jobs.module.ts',
+  'src/host/jobs/jobs-bootstrap.service.ts',
 ] as const;
 
 /** Paths HTTP exclusivos do perfil API. */
@@ -101,7 +106,10 @@ export const CORE_API_REQUIRED_PATHS = [
 /** Paths HTTP que o Worker não deve ter. */
 export const WORKER_FORBIDDEN_HTTP_PATHS = [
   ...CORE_API_REQUIRED_PATHS,
-  'src/host/controllers/common/controller.base.ts',
+  'src/host/controllers',
+  'src/host/decorators',
+  'src/host/filters',
+  'src/test/host/errors.filter.spec.ts',
   'src/test/utils/configure-test-app.ts',
 ] as const;
 
@@ -384,6 +392,10 @@ export function requiredPathsForExpectation(
     paths.push(...EVENTS_REQUIRED_PATHS);
   }
 
+  if (expectation.cronJobs || expectation.eventJobs) {
+    paths.push(...JOBS_REQUIRED_PATHS);
+  }
+
   if (expectation.queueJobs) {
     paths.push(...QUEUE_REQUIRED_PATHS);
   }
@@ -436,6 +448,10 @@ export function forbiddenPathsForExpectation(
 
   if (!expectation.eventJobs) {
     paths.push(...EVENTS_REQUIRED_PATHS);
+  }
+
+  if (!expectation.cronJobs && !expectation.eventJobs) {
+    paths.push(...JOBS_REQUIRED_PATHS);
   }
 
   if (!expectation.queueJobs) {
@@ -527,7 +543,11 @@ export const WORKER_E2E_MUST_NOT_CONTAIN = [
 export function appModuleMustContain(
   expectation: ProjectExpectation,
 ): readonly string[] {
-  const patterns = ['JobsModule.register'];
+  const patterns: string[] = [];
+
+  if (expectation.cronJobs || expectation.eventJobs) {
+    patterns.push('JobsModule.register');
+  }
 
   if (expectation.template === Template.CRUD_SAMPLE) {
     patterns.push(
@@ -537,9 +557,7 @@ export function appModuleMustContain(
       'DeleteInactiveJob',
     );
   } else if (expectation.auth === false) {
-    patterns.push('InfraModule', 'eventHandlers: []', 'cronJobs: []');
-  } else {
-    patterns.push('eventHandlers: []', 'cronJobs: []');
+    patterns.push('InfraModule');
   }
 
   if (expectation.health) {
@@ -568,6 +586,10 @@ export function appModuleMustNotContain(
 
   if (!expectation.health) {
     patterns.push('HealthCheckModule');
+  }
+
+  if (!expectation.cronJobs && !expectation.eventJobs) {
+    patterns.push('JobsModule');
   }
 
   return patterns;

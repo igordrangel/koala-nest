@@ -23,7 +23,9 @@ A versão publicada do pacote `@koalarx/nest` aparece no site e no `package.json
 - **Helmet no core:** `applyHttpMiddleware` aplica headers de segurança (CSP alinhada ao Scalar/`cdn.jsdelivr.net`, HSTS só em `production`), no padrão Globo Seguros.
 - **Doc Segurança:** novo tópico [Segurança](../host/seguranca.md) (PT/EN) com visão em camadas (Helmet, CORS, rate limit, cookies, validação, auth, RedLock).
 - **Cookie `refreshToken`:** no login, `SameSite`/`Secure` seguem `API_HOST` — localhost usa `Strict` sem `Secure`; fora disso, `None` + `Secure` para XHR cross-site.
-- **Tipo de app (API vs Worker):** `kl-nest new` pergunta o tipo (ou `--type` / `--app-type`). **API** mantém HTTP + OpenAPI. **Worker** (broker / fila / background) usa `NestFactory.createApplicationContext` — sem listen, Helmet, CORS, Scalar, PORT/HOST; Dockerfile sem `EXPOSE 3000`. Preferir `--features queue,cron,events`. Não combina com template CRUD, auth HTTP nem health. Guia completo (prompts + **modo silencioso `-y`**): [Guia de instalação](../inicio/guia-de-instalacao.md#api-vs-worker).
+- **Tipo de app (API vs Worker):** `kl-nest new` pergunta o tipo (ou `--type` / `--app-type`). **API** mantém HTTP + OpenAPI. **Worker** (broker / fila / background) usa `NestFactory.createApplicationContext` — sem listen, Helmet, CORS, Scalar, PORT/HOST, controllers, decorators ou filters; Dockerfile sem `EXPOSE 3000`. Preferir `--features queue,cron,events`. **Queue sozinha** não instala `host/jobs` / `JobsModule` (só cron/events). Não combina com template CRUD, auth HTTP nem health. Guia completo (prompts + **modo silencioso `-y`**): [Guia de instalação](../inicio/guia-de-instalacao.md#api-vs-worker).
+- **`.gitignore` no scaffold:** `kl-nest new` sempre copia o `.gitignore` do template (o `npm pack` omitia o arquivo com esse nome; o build publica também como `gitignore`).
+- **Doc Contexto AI:** tópico [Contexto AI](../inicio/contexto-ai.md) (PT/EN) — propósito, Cursor/Copilot, `kl-nest add ai-context`, e estrutura recomendada (`.github/instructions`, `agents`, `prompts`, `skills`).
 
 ### Atualização
 

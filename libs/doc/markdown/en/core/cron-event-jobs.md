@@ -9,7 +9,7 @@ description: Scheduled background jobs (CronJob) and domain event processing (Ev
 
 # Cron and Event Jobs
 
-> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add cron` / `kl-nest add events`. Cron jobs require in-memory cache (installed automatically when needed).
+> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add cron` / `kl-nest add events`. That registers `JobsModule` under `src/host/jobs/`. Cron jobs require in-memory cache (installed automatically when needed).
 
 Koala Nest provides two background mechanisms in `src/core/background-services/` (copied by the CLI when the feature is selected):
 

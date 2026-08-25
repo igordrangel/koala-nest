@@ -283,7 +283,7 @@ export function parseAddArgs(args: string[]): AddArg[] {
 
     if (!feature) {
       throw new Error(
-        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, ai-context.`,
+        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, queue, ai-context.`,
       );
     }
 

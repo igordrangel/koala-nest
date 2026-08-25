@@ -167,6 +167,31 @@ describe('cli-project-checklist', () => {
         'src/host/bootstrap/apply-http-middleware.ts',
         'src/host/open-api/define-documentation.ts',
         'src/core/http/rate-limit.middleware.ts',
+        'src/host/controllers',
+        'src/host/decorators',
+        'src/host/filters',
+      ]),
+    );
+  });
+
+  it('queue sozinha não exige JobsModule (cron/events)', () => {
+    const expectation = buildProjectExpectation(
+      Template.DEFAULT,
+      [],
+      [ExtraFeature.QUEUE_JOBS],
+      undefined,
+      AppType.WORKER,
+    );
+
+    expect(requiredPathsForExpectation(expectation)).toEqual(
+      expect.arrayContaining([
+        'src/core/background-services/queue-service/queue.base.ts',
+      ]),
+    );
+    expect(forbiddenPathsForExpectation(expectation)).toEqual(
+      expect.arrayContaining([
+        'src/host/jobs/jobs.module.ts',
+        'src/host/jobs/jobs-bootstrap.service.ts',
       ]),
     );
   });

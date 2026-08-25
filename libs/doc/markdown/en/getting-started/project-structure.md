@@ -106,7 +106,7 @@ export class AppModule {}
 
 ## Background jobs
 
-Every project includes `src/host/jobs/` with `JobsModule.register()`. Pass handler classes in `eventHandlers` and `cronJobs`; `JobsBootstrapService` subscribes to events and starts cron jobs on `OnModuleInit` (controlled by `CRON_JOBS_ENABLED`).
+With **cron** and/or **events** (`kl-nest new` / `add`), the scaffold includes `src/host/jobs/` with `JobsModule.register()`. **Queue alone** does not install `JobsModule` — use `QueueBase` + `IQueueService`. Pass handler classes in `eventHandlers` and `cronJobs`; `JobsBootstrapService` subscribes to events and starts cron jobs on `OnModuleInit` (controlled by `CRON_JOBS_ENABLED`).
 
 ```typescript
 JobsModule.register({

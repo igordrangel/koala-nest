@@ -23,7 +23,9 @@ The published `@koalarx/nest` version is shown on the site and in the repo `pack
 - **Helmet in core:** `applyHttpMiddleware` sets security headers (CSP tuned for Scalar/`cdn.jsdelivr.net`, HSTS only in `production`), following the Globo Seguros pattern.
 - **Security docs:** new [Security](../host/security.md) topic (PT/EN) with a layered view (Helmet, CORS, rate limit, cookies, validation, auth, RedLock).
 - **`refreshToken` cookie:** on login, `SameSite`/`Secure` follow `API_HOST` — localhost uses `Strict` without `Secure`; otherwise `None` + `Secure` for cross-site XHR.
-- **App type (API vs Worker):** `kl-nest new` asks for the type (or `--type` / `--app-type`). **API** keeps HTTP + OpenAPI. **Worker** (broker / queue / background) uses `NestFactory.createApplicationContext` — no listen, Helmet, CORS, Scalar, or PORT/HOST; Dockerfile without `EXPOSE 3000`. Prefer `--features queue,cron,events`. Incompatible with CRUD template, HTTP auth, and health. Full guide (prompts + **silent `-y` mode**): [Installation guide](../getting-started/installation-guide.md#api-vs-worker).
+- **App type (API vs Worker):** `kl-nest new` asks for the type (or `--type` / `--app-type`). **API** keeps HTTP + OpenAPI. **Worker** (broker / queue / background) uses `NestFactory.createApplicationContext` — no listen, Helmet, CORS, Scalar, PORT/HOST, controllers, decorators, or filters; Dockerfile without `EXPOSE 3000`. Prefer `--features queue,cron,events`. **Queue alone** does not install `host/jobs` / `JobsModule` (only cron/events). Incompatible with CRUD template, HTTP auth, and health. Full guide (prompts + **silent `-y` mode**): [Installation guide](../getting-started/installation-guide.md#api-vs-worker).
+- **`.gitignore` in scaffold:** `kl-nest new` always copies the template `.gitignore` (`npm pack` omitted files named `.gitignore`; the build also publishes `gitignore`).
+- **AI context docs:** new [AI context](../getting-started/ai-context.md) topic (PT/EN) — purpose, Cursor/Copilot, `kl-nest add ai-context`, and recommended layout (`.github/instructions`, `agents`, `prompts`, `skills`).
 
 ### Upgrade
 

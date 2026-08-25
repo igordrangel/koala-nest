@@ -15,6 +15,7 @@ Documentação otimizada para LLMs. Cada tópico aponta para o arquivo Markdown 
 - [Guia de instalação](markdown/pt/inicio/guia-de-instalacao.md): CLI kl-nest — new (API/Worker), modo silencioso -y, flags e add.
 - [Variáveis de ambiente](markdown/pt/inicio/variaveis-de-ambiente.md): Configuração e validação de variáveis de ambiente com Zod.
 - [Estrutura do projeto](markdown/pt/inicio/estrutura-do-projeto.md): Bootstrap da aplicação, módulos principais e ponto de entrada.
+- [Contexto AI](markdown/pt/inicio/contexto-ai.md): Vibecoding com Cursor e GitHub Copilot — o que a CLI gera e estrutura recomendada de contexto.
 
 ## Core
 

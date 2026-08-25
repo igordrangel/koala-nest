@@ -31,11 +31,13 @@ Escolha no `kl-nest new` ou adicione depois com `kl-nest add`:
 | Feature | Comando | Descrição |
 | --- | --- | --- |
 | Autenticação JWT/OAuth2 | `kl-nest add auth jwt` / `oauth2` | Guards globais, Scalar OAuth |
+| Autenticação API Key | `kl-nest add auth api-key` | M2M aditivo (exige JWT e/ou OAuth2) |
 | Cache Redis | `kl-nest add cache` | `ICacheService` + `ioredis` |
 | Health check | `kl-nest add health` | `GET /health` com Terminus |
 | Cron jobs | `kl-nest add cron` | `CronJobHandlerBase` + `JobsModule` |
 | Event jobs | `kl-nest add events` | `EventJob` + handlers em memória |
-| Queue jobs | `kl-nest add queue` | `QueueBase` + `IQueueService` (infra a implementar) |
+| Queue jobs | `kl-nest add queue` | `QueueBase` + `IQueueService` (infra a implementar; sem `JobsModule`) |
+| Contexto AI | `kl-nest add ai-context cursor\|github` | Vibecoding — [Contexto AI](../inicio/contexto-ai.md) |
 
 OAuth2 e cron jobs instalam **cache em memória** automaticamente quando Redis não foi selecionado (sem `ioredis`).
 
@@ -69,6 +71,7 @@ Alterações relevantes da CLI e dos templates ficam em [Patch notes](./patch-no
 ## Próximos passos
 
 - [Guia de instalação](../inicio/guia-de-instalacao.md) — `kl-nest new` e `kl-nest add`
+- [Contexto AI](../inicio/contexto-ai.md) — vibecoding (Cursor / Copilot) e estrutura recomendada
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
 - [Segurança](../host/seguranca.md) — Helmet, CORS, auth e demais camadas
 - [Patch notes](./patch-notes.md) — o que mudou recentemente

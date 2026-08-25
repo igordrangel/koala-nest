@@ -9,7 +9,7 @@ description: GET /health endpoint with NestJS Terminus — database and optional
 
 # Health check
 
-**Opt-in** feature installed with `kl-nest new` (multiselect) or `kl-nest add health`.
+> **Opt-in:** install with `kl-nest new` (multiselect) or `kl-nest add health` (API only).
 
 Exposes `GET /health` using [@nestjs/terminus](https://docs.nestjs.com/recipes/terminus). The endpoint is **public** (`@IsPublic()`) and **excluded from OpenAPI** (`@ApiExcludeEndpoint()`).
 

@@ -12,6 +12,7 @@ import {
   resolveProjectFeatures,
 } from './install-module.ts';
 import { stripEnvForWorker } from './patch-env.ts';
+import { stripJobsInfrastructure } from './patch-jobs-module.ts';
 import { adjustCrudPersonModule } from './patch-person-features.ts';
 import { cleanDefaultTemplateWithoutAuth } from './remove-sample-parts.ts';
 import { formatCode } from './format-code.ts';
@@ -93,6 +94,11 @@ export async function applyOptionalFeatures(
     options.auth.length === 0
   ) {
     await cleanDefaultTemplateWithoutAuth(projectName);
+  }
+
+  // JobsModule é só para cron/events — queue usa QueueBase + IQueueService.
+  if (!projectFeatures.cronJobs && !projectFeatures.eventJobs) {
+    stripJobsInfrastructure(projectName);
   }
 
   if (appType === AppType.WORKER) {
