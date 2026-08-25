@@ -331,6 +331,12 @@ export function assertEventJobs(projectDir: string) {
   ]);
 }
 
+export function assertQueueJobs(projectDir: string) {
+  assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], [
+    ExtraFeature.QUEUE_JOBS,
+  ]);
+}
+
 export function assertDefaultWithAllFeatures(projectDir: string) {
   assertCliProjectFromSelection(projectDir, Template.DEFAULT, [], [
     ExtraFeature.CACHE,

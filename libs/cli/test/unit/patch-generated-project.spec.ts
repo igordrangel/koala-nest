@@ -9,6 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'bun:test';
 import {
+  patchBuildScript,
   patchGeneratedProjectConfig,
   patchNestCliEntry,
   patchStartProdScript,
@@ -24,7 +25,7 @@ describe('patchGeneratedProjectConfig', () => {
     }
   });
 
-  it('ajusta entryFile e start:prod para src/host/main.ts', () => {
+  it('ajusta entryFile, start:prod e build com tsc-alias', () => {
     tempDir = mkdtempSync(path.join(os.tmpdir(), 'koala-nest-cli-'));
     mkdirSync(tempDir, { recursive: true });
 
@@ -34,7 +35,16 @@ describe('patchGeneratedProjectConfig', () => {
     );
     writeFileSync(
       path.join(tempDir, 'package.json'),
-      `${JSON.stringify({ scripts: { 'start:prod': 'node dist/main' } }, null, 2)}\n`,
+      `${JSON.stringify(
+        {
+          scripts: {
+            build: 'nest build',
+            'start:prod': 'node dist/main',
+          },
+        },
+        null,
+        2,
+      )}\n`,
     );
 
     patchGeneratedProjectConfig(tempDir);
@@ -48,6 +58,9 @@ describe('patchGeneratedProjectConfig', () => {
 
     expect(nestCli.entryFile).toBe('host/main');
     expect(packageJson.scripts['start:prod']).toBe('node dist/host/main');
+    expect(packageJson.scripts.build).toBe(
+      'nest build && tsc-alias -p tsconfig.build.json',
+    );
   });
 
   it('expõe funções individuais de patch', () => {
@@ -65,6 +78,7 @@ describe('patchGeneratedProjectConfig', () => {
 
     patchNestCliEntry(tempDir);
     patchStartProdScript(tempDir);
+    patchBuildScript(tempDir);
 
     const nestCli = JSON.parse(
       readFileSync(path.join(tempDir, 'nest-cli.json'), 'utf8'),
@@ -75,5 +89,8 @@ describe('patchGeneratedProjectConfig', () => {
 
     expect(nestCli.entryFile).toBe('host/main');
     expect(packageJson.scripts['start:prod']).toBe('node dist/host/main');
+    expect(packageJson.scripts.build).toBe(
+      'nest build && tsc-alias -p tsconfig.build.json',
+    );
   });
 });

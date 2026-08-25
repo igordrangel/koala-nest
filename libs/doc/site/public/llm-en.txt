@@ -12,9 +12,10 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 
 ## Getting Started
 
-- [Installation guide](markdown/en/getting-started/installation-guide.md): Install the CLI and create your first NestJS project with DDD.
+- [Installation guide](markdown/en/getting-started/installation-guide.md): kl-nest CLI — new (API/Worker), silent -y mode, flags, and add.
 - [Environment variables](markdown/en/getting-started/environment-variables.md): Environment variable configuration and validation with Zod.
 - [Project structure](markdown/en/getting-started/project-structure.md): Application bootstrap, main modules, and entry point.
+- [AI context](markdown/en/getting-started/ai-context.md): Vibecoding with Cursor and GitHub Copilot — what the CLI scaffolds and the recommended context layout.
 
 ## Core
 
@@ -24,6 +25,7 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 - [Pagination and filters](markdown/en/core/pagination.md): Pagination, sorting, and filters in listings with PaginationRequest and PaginationDto.
 - [Cron and Event Jobs](markdown/en/core/cron-event-jobs.md): Scheduled background jobs (CronJob) and domain event processing (EventJob).
 - [Koala Utils](markdown/en/core/koala-utils.md): Integration with @koalarx/utils — delay, CPF/CNPJ, strings, dates, and arrays.
+- [Queue jobs (messaging)](markdown/en/core/queue-jobs.md): Provider-agnostic queue handlers — QueueBase, IQueueService, and infra stub.
 
 ## Domain
 
@@ -39,7 +41,8 @@ Documentation optimized for LLMs. Each topic links to the corresponding Markdown
 
 ## Host
 
-- [HTTP middleware](markdown/en/host/http-middleware.md): CORS, cookies, rate limit, and HTTP bootstrap via applyHttpMiddleware.
+- [HTTP middleware](markdown/en/host/http-middleware.md): Helmet, CORS, cookies, rate limit, and HTTP bootstrap via applyHttpMiddleware.
+- [Security](markdown/en/host/security.md): API security layers — Helmet, CORS, rate limit, cookies, validation, auth, and RedLock.
 - [Controllers](markdown/en/host/controllers.md): Thin HTTP controllers that delegate to handlers.
 - [Routes and tags](markdown/en/host/routes.md): Centralized route configuration with RouterConfigBase.
 - [Error handling](markdown/en/host/error-handling.md): Global ErrorsFilter for Zod, TypeORM, and internal errors.

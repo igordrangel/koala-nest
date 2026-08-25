@@ -9,7 +9,9 @@ description: JWT, global guards, public routes, generic OAuth2, and API Key.
 
 # Authentication
 
-The authentication module is optional in the CLI (`kl-nest new` → **JWT**, **OAuth2**, and/or **API Key**). With JWT, the template includes a `User` entity, email/password login, and RS256 token issuance. With OAuth2, users are created or reused after the authorization code flow. **API Key** is additive (requires JWT and/or OAuth2) and authenticates machine-to-machine calls at the HTTP edge.
+> **Opt-in (API only):** `kl-nest new` → **JWT**, **OAuth2**, and/or **API Key**, or later `kl-nest add auth jwt` / `oauth2` / `api-key`. API Key is additive (requires JWT and/or OAuth2). Optional flag: `--api-key-internal-subnet`.
+
+The authentication module is optional. With JWT, the template includes a `User` entity, email/password login, and RS256 token issuance. With OAuth2, users are created or reused after the authorization code flow. **API Key** authenticates machine-to-machine calls at the HTTP edge.
 
 Installing auth does **not** patch `data-source-factory.ts`: the `User` entity joins the DataSource via `@Entity` (DbContext), and `UserRepository` is registered in `RepositoryModule`.
 
@@ -88,6 +90,8 @@ Authorization: Bearer <refreshToken>
 ```
 
 Or send the refresh token as an **httpOnly cookie** named `refreshToken` — `AuthGuard` promotes it to `Authorization` automatically on this route.
+
+On login, the cookie is set with `httpOnly` and `path=/`. On localhost (`API_HOST` containing `localhost`): `SameSite=Strict` without `Secure`. Outside localhost (front ≠ API): `SameSite=None; Secure` so the browser accepts `Set-Cookie` on cross-site XHR.
 
 Response format matches `POST /auth/login` (`accessToken` + `refreshToken`). Refresh tokens are rejected on all other routes by `JwtStrategy`.
 
@@ -256,7 +260,7 @@ Job bootstrap subscribes to domain events and starts CronJobs only when `CRON_JO
 
 API Key authenticates synchronous HTTP callers (integrations, BFF, occasional service hops). It does **not** replace a message broker or force a file-proxy API — cloud storage + messaging remain the preferred scalable design. The strategy lives in the host layer; handlers only see the already-authenticated user via `ILoggedUserInfoService`.
 
-CLI: `--auth jwt,api-key` (or `oauth2,api-key` / `jwt,oauth2,api-key`). Optional `--api-key-internal-subnet` allows private (RFC1918) IPs for `domain` type when pods talk inside the cluster.
+CLI (`new`): `--auth jwt,api-key` (or `oauth2,api-key` / `jwt,oauth2,api-key`). On an existing project: `kl-nest add auth api-key` (with JWT and/or OAuth2 already installed, or in the same command: `kl-nest add auth jwt api-key`). Optional `--api-key-internal-subnet` allows private (RFC1918) IPs for `domain` type when pods talk inside the cluster.
 
 ### CRUD and token
 
@@ -288,6 +292,7 @@ Full guide: [OpenAPI with Scalar](./openapi-scalar.md#automatic-scalar-authentic
 
 ## Next steps
 
+- [Security](./security.md) — layered view (Helmet, CORS, cookies, guards)
 - [Environment variables](../getting-started/environment-variables.md) — JWT, OAuth2, and Redis keys
 - [OpenAPI with Scalar](./openapi-scalar.md#automatic-scalar-authentication) — automatic Scalar configuration
 - [Controllers](./controllers.md) — thin HTTP → handler pattern

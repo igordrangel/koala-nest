@@ -1,4 +1,5 @@
 import {
+  AppType,
   AuthStrategy,
   ExtraFeature,
   Template,
@@ -20,12 +21,14 @@ export type AiContextExpectation = {
 
 /** Estado esperado de um projeto gerado pela CLI (`new` / `add`). */
 export type ProjectExpectation = {
+  appType: AppType;
   template: Template;
   auth: false | readonly AuthStrategy[];
   cache: CacheLevel;
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  queueJobs: boolean;
   aiContext?: AiContextExpectation;
 };
 
@@ -54,7 +57,10 @@ export const WORKSPACE_SETUP_PATHS = [
   '.vscode/settings.json',
   '.vscode/tasks.json',
   '.vscode/extensions.json',
+  '.gitignore',
   '.env',
+  'Dockerfile',
+  'entrypoint.sh',
 ] as const;
 
 /** Contexto AI gerado pela CLI (Cursor / GitHub Copilot). */
@@ -73,15 +79,9 @@ export const CORE_REQUIRED_PATHS = [
   'src/core/env.ts',
   'src/core/common/list-response.base.ts',
   'src/core/utils/initialize-undefined-array-props.ts',
-  'src/core/http/rate-limit.middleware.ts',
-  'src/core/utils/resolve-cors-origins.ts',
-  'src/host/bootstrap/apply-http-middleware.ts',
   'src/host/main.ts',
   'src/host/app.module.ts',
-  'src/host/jobs/jobs.module.ts',
-  'src/host/jobs/jobs-bootstrap.service.ts',
   'src/infra/infra.module.ts',
-  'src/host/open-api/define-documentation.ts',
   'src/infra/repositories/repository.module.ts',
   'src/infra/database/data-source-factory.ts',
   'src/infra/database/migrations/load-all-entities.ts',
@@ -89,11 +89,40 @@ export const CORE_REQUIRED_PATHS = [
   'src/infra/database/migrations/generate-migration.ts',
 ] as const;
 
+/** JobsModule — só com cron e/ou events (não com queue sozinha). */
+export const JOBS_REQUIRED_PATHS = [
+  'src/host/jobs/jobs.module.ts',
+  'src/host/jobs/jobs-bootstrap.service.ts',
+] as const;
+
+/** Paths HTTP exclusivos do perfil API. */
+export const CORE_API_REQUIRED_PATHS = [
+  'src/core/http/rate-limit.middleware.ts',
+  'src/core/utils/resolve-cors-origins.ts',
+  'src/host/bootstrap/apply-http-middleware.ts',
+  'src/host/open-api/define-documentation.ts',
+] as const;
+
+/** Paths HTTP que o Worker não deve ter. */
+export const WORKER_FORBIDDEN_HTTP_PATHS = [
+  ...CORE_API_REQUIRED_PATHS,
+  'src/host/controllers',
+  'src/host/decorators',
+  'src/host/filters',
+  'src/test/host/errors.filter.spec.ts',
+  'src/test/utils/configure-test-app.ts',
+] as const;
+
 export const CORE_PACKAGE_DEPENDENCIES = [
   '@koalarx/utils',
   'zod',
   'typeorm',
+  'tsc-alias',
+] as const;
+
+export const CORE_API_PACKAGE_DEPENDENCIES = [
   '@scalar/nestjs-api-reference',
+  'helmet',
 ] as const;
 
 /** Template default — sem exemplo Person. */
@@ -153,6 +182,21 @@ export const EVENTS_REQUIRED_PATHS = [
   'src/core/background-services/event-service/event-handler.base.ts',
 ] as const;
 
+/** Queue jobs (`--features queue`). */
+export const QUEUE_REQUIRED_PATHS = [
+  'src/core/background-services/queue-service/queue.base.ts',
+  'src/domain/common/iqueue.service.ts',
+  'src/infra/services/queue.service.ts',
+  'src/test/services/queue.fake-service.ts',
+] as const;
+
+export const QUEUE_ENV_KEYS = [
+  'QUEUE_MAX_CONCURRENCY',
+  'QUEUE_CAPACITY_DELAY_MS',
+  'QUEUE_IDLE_DELAY_MS',
+  'QUEUE_ERROR_DELAY_MS',
+] as const;
+
 export const AUTH_JWT_PACKAGES = [
   '@nestjs/jwt',
   'passport-jwt',
@@ -162,6 +206,7 @@ export const AUTH_JWT_PACKAGES = [
 /** Combinações representativas do comando `new` para testes parametrizados. */
 export const CLI_NEW_SELECTION_MATRIX: readonly {
   label: string;
+  appType?: AppType;
   template: Template;
   auth: readonly AuthStrategy[];
   features: readonly ExtraFeature[];
@@ -171,6 +216,20 @@ export const CLI_NEW_SELECTION_MATRIX: readonly {
     template: Template.DEFAULT,
     auth: [],
     features: [],
+  },
+  {
+    label: 'worker sem extras',
+    appType: AppType.WORKER,
+    template: Template.DEFAULT,
+    auth: [],
+    features: [],
+  },
+  {
+    label: 'worker + queue + cron',
+    appType: AppType.WORKER,
+    template: Template.DEFAULT,
+    auth: [],
+    features: [ExtraFeature.QUEUE_JOBS, ExtraFeature.INTERNAL_CRON_JOBS],
   },
   {
     label: 'default sem auth + health',
@@ -195,6 +254,12 @@ export const CLI_NEW_SELECTION_MATRIX: readonly {
     template: Template.DEFAULT,
     auth: [],
     features: [ExtraFeature.INTERNAL_EVENT_JOBS],
+  },
+  {
+    label: 'default sem auth + queue',
+    template: Template.DEFAULT,
+    auth: [],
+    features: [ExtraFeature.QUEUE_JOBS],
   },
   {
     label: 'default sem auth + cache + health + cron + events',
@@ -256,8 +321,14 @@ export function buildProjectExpectation(
   auth: readonly AuthStrategy[],
   features: readonly ExtraFeature[],
   aiContext: AiContextExpectation = { cursor: false, github: false },
+  appType: AppType = AppType.API,
 ): ProjectExpectation {
-  const resolved = resolveNewProjectOptions(template, [...auth], [...features]);
+  const resolved = resolveNewProjectOptions(
+    template,
+    [...auth],
+    [...features],
+    appType,
+  );
   const projectFeatures = resolveProjectFeatures(
     resolved.features,
     resolved.auth,
@@ -272,12 +343,14 @@ export function buildProjectExpectation(
   }
 
   return {
+    appType,
     template,
     auth: resolved.auth.length === 0 ? false : resolved.auth,
     cache,
     health: projectFeatures.health,
     cronJobs: projectFeatures.cronJobs,
     eventJobs: projectFeatures.eventJobs,
+    queueJobs: projectFeatures.queueJobs,
     aiContext,
   };
 }
@@ -290,6 +363,10 @@ export function requiredPathsForExpectation(
     ...WORKSPACE_SETUP_PATHS,
     ...E2E_INFRA_PATHS,
   ];
+
+  if (expectation.appType === AppType.API) {
+    paths.push(...CORE_API_REQUIRED_PATHS);
+  }
 
   if (expectation.template === Template.CRUD_SAMPLE) {
     paths.push(...CRUD_TEMPLATE_REQUIRED_PATHS, ...CRUD_E2E_EXAMPLE_PATHS);
@@ -315,6 +392,14 @@ export function requiredPathsForExpectation(
     paths.push(...EVENTS_REQUIRED_PATHS);
   }
 
+  if (expectation.cronJobs || expectation.eventJobs) {
+    paths.push(...JOBS_REQUIRED_PATHS);
+  }
+
+  if (expectation.queueJobs) {
+    paths.push(...QUEUE_REQUIRED_PATHS);
+  }
+
   const aiContext = expectation.aiContext ?? { cursor: false, github: false };
 
   if (aiContext.cursor || aiContext.github) {
@@ -336,6 +421,10 @@ export function forbiddenPathsForExpectation(
   expectation: ProjectExpectation,
 ): readonly string[] {
   const paths: string[] = [];
+
+  if (expectation.appType === AppType.WORKER) {
+    paths.push(...WORKER_FORBIDDEN_HTTP_PATHS);
+  }
 
   if (expectation.template === Template.DEFAULT) {
     paths.push(...DEFAULT_TEMPLATE_FORBIDDEN_PATHS, ...CRUD_E2E_EXAMPLE_PATHS);
@@ -361,6 +450,14 @@ export function forbiddenPathsForExpectation(
     paths.push(...EVENTS_REQUIRED_PATHS);
   }
 
+  if (!expectation.cronJobs && !expectation.eventJobs) {
+    paths.push(...JOBS_REQUIRED_PATHS);
+  }
+
+  if (!expectation.queueJobs) {
+    paths.push(...QUEUE_REQUIRED_PATHS);
+  }
+
   const aiContext = expectation.aiContext ?? { cursor: false, github: false };
 
   if (!aiContext.cursor && !aiContext.github) {
@@ -382,6 +479,12 @@ export function requiredPackagesForExpectation(
   expectation: ProjectExpectation,
 ): readonly string[] {
   const packages = new Set<string>(CORE_PACKAGE_DEPENDENCIES);
+
+  if (expectation.appType === AppType.API) {
+    for (const pkg of CORE_API_PACKAGE_DEPENDENCIES) {
+      packages.add(pkg);
+    }
+  }
 
   if (expectation.cache === 'redis') {
     for (const pkg of CACHE_REDIS_PACKAGES) {
@@ -413,10 +516,38 @@ export function requiredPackagesForExpectation(
 /** Conteúdo obrigatório em `src/host/main.ts` (boot Nest). */
 export const MAIN_MUST_CONTAIN = ['@koalarx/utils/prototypes'] as const;
 
+export const MAIN_API_MUST_CONTAIN = [
+  'NestFactory.create(AppModule)',
+  'applyHttpMiddleware',
+] as const;
+
+export const MAIN_WORKER_MUST_CONTAIN = ['createApplicationContext'] as const;
+
+export const MAIN_WORKER_MUST_NOT_CONTAIN = [
+  'app.listen',
+  'applyHttpMiddleware',
+  'defineDocumentation',
+] as const;
+
+/** E2E Worker: TestingModule.compile() já é INestApplicationContext. */
+export const WORKER_E2E_MUST_CONTAIN = [
+  'Test.createTestingModule',
+  '.compile()',
+] as const;
+
+export const WORKER_E2E_MUST_NOT_CONTAIN = [
+  'createNestApplicationContext',
+  'createNestApplication()',
+] as const;
+
 export function appModuleMustContain(
   expectation: ProjectExpectation,
 ): readonly string[] {
-  const patterns = ['JobsModule.register'];
+  const patterns: string[] = [];
+
+  if (expectation.cronJobs || expectation.eventJobs) {
+    patterns.push('JobsModule.register');
+  }
 
   if (expectation.template === Template.CRUD_SAMPLE) {
     patterns.push(
@@ -426,9 +557,7 @@ export function appModuleMustContain(
       'DeleteInactiveJob',
     );
   } else if (expectation.auth === false) {
-    patterns.push('InfraModule', 'eventHandlers: []', 'cronJobs: []');
-  } else {
-    patterns.push('eventHandlers: []', 'cronJobs: []');
+    patterns.push('InfraModule');
   }
 
   if (expectation.health) {
@@ -459,27 +588,43 @@ export function appModuleMustNotContain(
     patterns.push('HealthCheckModule');
   }
 
+  if (!expectation.cronJobs && !expectation.eventJobs) {
+    patterns.push('JobsModule');
+  }
+
   return patterns;
 }
 
 export function infraModuleMustContain(
   expectation: ProjectExpectation,
 ): readonly string[] {
-  if (expectation.cache === false) {
-    return [];
+  const patterns: string[] = [];
+
+  if (expectation.cache !== false) {
+    patterns.push('ICacheService', 'CacheServiceProvider');
   }
 
-  return ['ICacheService', 'CacheServiceProvider'];
+  if (expectation.queueJobs) {
+    patterns.push('IQueueService', 'QueueService');
+  }
+
+  return patterns;
 }
 
 export function infraModuleMustNotContain(
   expectation: ProjectExpectation,
 ): readonly string[] {
+  const patterns: string[] = [];
+
   if (expectation.cache === false) {
-    return ['ICacheService', 'CacheServiceProvider'];
+    patterns.push('ICacheService', 'CacheServiceProvider');
   }
 
-  return [];
+  if (!expectation.queueJobs) {
+    patterns.push('IQueueService', 'QueueService');
+  }
+
+  return patterns;
 }
 
 export function healthControllerMustContain(

@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import {
   buildJobsRegisterBlock,
+  ensureJobsModuleRegistered,
   patchAppModuleJobs,
+  stripJobsInfrastructure,
 } from '@cli/utils/patch-jobs-module.ts';
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -120,5 +123,106 @@ describe('patch-jobs-module', () => {
     expect(content).not.toMatch(
       /JobsModule\.register\(\{[\s\S]*imports: \[PersonModule\]/,
     );
+  });
+
+  it('stripJobsInfrastructure remove pasta jobs e registro no AppModule', () => {
+    const previousCwd = process.cwd();
+
+    mkdirSync(path.join(tempDir, 'src/host/jobs'), { recursive: true });
+    writeFileSync(
+      path.join(tempDir, 'src/host/jobs/jobs.module.ts'),
+      'export class JobsModule {}\n',
+    );
+
+    try {
+      process.chdir(tempDir);
+      stripJobsInfrastructure('');
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const content = readFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      'utf8',
+    );
+
+    expect(content).not.toContain('JobsModule');
+    expect(existsSync(path.join(tempDir, 'src/host/jobs'))).toBe(false);
+  });
+
+  it('stripJobsInfrastructure remove JobsModule colado na mesma linha', () => {
+    const previousCwd = process.cwd();
+
+    writeFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      `import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JobsModule } from './jobs/jobs.module';
+import { InfraModule } from '@/infra/infra.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),        JobsModule.register({
+      eventHandlers: [],
+      cronJobs: [],
+    }),
+    InfraModule,
+  ],
+})
+export class AppModule {}
+`,
+    );
+
+    try {
+      process.chdir(tempDir);
+      stripJobsInfrastructure('');
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const content = readFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      'utf8',
+    );
+
+    expect(content).not.toContain('JobsModule');
+    expect(content).toContain('InfraModule');
+  });
+
+  it('ensureJobsModuleRegistered reinsere JobsModule quando ausente', () => {
+    const previousCwd = process.cwd();
+
+    writeFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      `import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
+})
+export class AppModule {}
+`,
+    );
+
+    try {
+      process.chdir(tempDir);
+      ensureJobsModuleRegistered('');
+    } finally {
+      process.chdir(previousCwd);
+    }
+
+    const content = readFileSync(
+      path.join(tempDir, 'src/host/app.module.ts'),
+      'utf8',
+    );
+
+    expect(content).toContain('JobsModule.register');
+    expect(content).toContain('eventHandlers: []');
   });
 });

@@ -9,12 +9,22 @@ import {
   healthControllerMustNotContain,
   infraModuleMustContain,
   infraModuleMustNotContain,
+  MAIN_API_MUST_CONTAIN,
   MAIN_MUST_CONTAIN,
+  MAIN_WORKER_MUST_CONTAIN,
+  MAIN_WORKER_MUST_NOT_CONTAIN,
+  WORKER_E2E_MUST_CONTAIN,
+  WORKER_E2E_MUST_NOT_CONTAIN,
   requiredPackagesForExpectation,
   requiredPathsForExpectation,
   type ProjectExpectation,
 } from '@cli/constants/cli-project-checklist';
-import { AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
+import {
+  AppType,
+  AuthStrategy,
+  ExtraFeature,
+  Template,
+} from '@cli/constants/domain';
 import { detectProjectState } from './detect-project-state';
 import { resolveProjectPath } from './resolve-project-path';
 import { assertAuthStrategyProject } from './auth-strategy-validation';
@@ -109,6 +119,55 @@ export function listCliProjectViolations(
   );
 
   expectContains(violations, 'main.ts', main, MAIN_MUST_CONTAIN);
+
+  if (expectation.appType === AppType.WORKER) {
+    expectContains(violations, 'main.ts', main, MAIN_WORKER_MUST_CONTAIN);
+    expectNotContains(
+      violations,
+      'main.ts',
+      main,
+      MAIN_WORKER_MUST_NOT_CONTAIN,
+    );
+
+    const createE2e = readOptional(projectRoot, 'src/test/create-e2e-test-app.ts');
+    expectContains(
+      violations,
+      'create-e2e-test-app.ts',
+      createE2e,
+      WORKER_E2E_MUST_CONTAIN,
+    );
+    expectNotContains(
+      violations,
+      'create-e2e-test-app.ts',
+      createE2e,
+      WORKER_E2E_MUST_NOT_CONTAIN,
+    );
+  } else {
+    expectContains(violations, 'main.ts', main, MAIN_API_MUST_CONTAIN);
+  }
+
+  if (expectation.appType === AppType.WORKER) {
+    const envSource = readOptional(projectRoot, 'src/core/env.ts');
+    const envExample = readOptional(projectRoot, '.env.example');
+    const dockerfile = readOptional(projectRoot, 'Dockerfile');
+
+    expectNotContains(violations, 'env.ts', envSource, [
+      'PORT:',
+      'HOST:',
+      'CORS_ORIGINS',
+      'RATE_LIMIT_MAX',
+      'API_HOST',
+    ]);
+    expectNotContains(violations, '.env.example', envExample, [
+      'PORT=',
+      'HOST=',
+      'CORS_ORIGINS',
+      'RATE_LIMIT_MAX',
+      'API_HOST',
+    ]);
+    expectNotContains(violations, 'Dockerfile', dockerfile, ['EXPOSE 3000']);
+  }
+
   expectContains(
     violations,
     'app.module',
@@ -145,6 +204,21 @@ export function listCliProjectViolations(
     healthController,
     healthControllerMustNotContain(expectation),
   );
+
+  if (expectation.queueJobs) {
+    const envSource = readOptional(projectRoot, 'src/core/env.ts');
+    const envExample = readOptional(projectRoot, '.env.example');
+
+    for (const key of [
+      'QUEUE_MAX_CONCURRENCY',
+      'QUEUE_CAPACITY_DELAY_MS',
+      'QUEUE_IDLE_DELAY_MS',
+      'QUEUE_ERROR_DELAY_MS',
+    ]) {
+      expectContains(violations, 'env.ts', envSource, [key]);
+      expectContains(violations, '.env.example', envExample, [`${key}=`]);
+    }
+  }
 
   if (expectation.template === Template.CRUD_SAMPLE) {
     const deletePerson = readOptional(
@@ -229,6 +303,12 @@ export function listCliProjectViolations(
       );
     }
 
+    if (detected.queueJobs !== expectation.queueJobs) {
+      violations.push(
+        `state:queueJobs esperado ${expectation.queueJobs}, detectado ${detected.queueJobs}`,
+      );
+    }
+
     const expectedAi = expectation.aiContext ?? {
       cursor: false,
       github: false,
@@ -280,6 +360,10 @@ export function assertCliProject(
     );
   }
 
+  if (expectation.appType === AppType.WORKER) {
+    return;
+  }
+
   if (expectation.auth !== false) {
     assertAuthStrategyProject(projectName, expectation.auth);
   } else {
@@ -292,8 +376,12 @@ export function assertCliProjectFromSelection(
   template: Template,
   auth: readonly AuthStrategy[],
   features: readonly ExtraFeature[],
+  appType: AppType = AppType.API,
 ) {
-  assertCliProject(projectName, buildProjectExpectation(template, auth, features));
+  assertCliProject(
+    projectName,
+    buildProjectExpectation(template, auth, features, undefined, appType),
+  );
 }
 
 export { buildProjectExpectation, type ProjectExpectation };

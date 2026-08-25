@@ -36,6 +36,7 @@ export type ProjectState = {
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  queueJobs: boolean;
   aiContext: AiContextState;
 };
 
@@ -130,6 +131,12 @@ export function detectProjectState(projectName = ''): ProjectState {
         'src/core/background-services/event-service/event-handler.base.ts',
       ),
     ),
+    queueJobs: existsSync(
+      path.join(
+        projectRoot,
+        'src/core/background-services/queue-service/queue.base.ts',
+      ),
+    ),
     aiContext: {
       cursor: existsSync(path.join(projectRoot, AI_CONTEXT_CURSOR_MARKER)),
       github: existsSync(path.join(projectRoot, AI_CONTEXT_GITHUB_PATH)),
@@ -154,6 +161,10 @@ export function listAvailableAddOptions(state: ProjectState) {
 
   if (!state.eventJobs) {
     features.push(ExtraFeature.INTERNAL_EVENT_JOBS);
+  }
+
+  if (!state.queueJobs) {
+    features.push(ExtraFeature.QUEUE_JOBS);
   }
 
   const missing = listMissingAuthStrategies(state.auth);
@@ -272,7 +283,7 @@ export function parseAddArgs(args: string[]): AddArg[] {
 
     if (!feature) {
       throw new Error(
-        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, ai-context.`,
+        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, queue, ai-context.`,
       );
     }
 

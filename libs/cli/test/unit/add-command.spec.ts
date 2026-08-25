@@ -222,6 +222,7 @@ describe('detectProjectState', () => {
         health: true,
         cronJobs: true,
         eventJobs: true,
+        queueJobs: false,
         aiContext: { cursor: false, github: false },
       });
     } finally {

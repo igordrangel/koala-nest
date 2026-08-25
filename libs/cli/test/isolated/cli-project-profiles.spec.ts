@@ -13,7 +13,11 @@ import {
   CLI_NEW_SELECTION_MATRIX,
   requiredPackagesForExpectation,
 } from '@cli/constants/cli-project-checklist';
-import { Template, resolveNewProjectOptions } from '@cli/constants/domain';
+import {
+  AppType,
+  Template,
+  resolveNewProjectOptions,
+} from '@cli/constants/domain';
 import { applyOptionalFeatures } from '@cli/utils/apply-optional-features.ts';
 import { assertCliProjectFromSelection } from '@cli/utils/cli-project-validation.ts';
 import { finalizeNewProjectSetup } from '@cli/utils/install-workspace-config.ts';
@@ -74,30 +78,37 @@ describe('CLI project profiles via installModule + applyOptionalFeatures', () =>
 
   for (const selection of CLI_NEW_SELECTION_MATRIX) {
     it(`checklist completo: ${selection.label}`, async () => {
+      const appType = selection.appType ?? AppType.API;
+
       await installModule(Modules.CORE, selection.template, tempDir, {
         skipPackages: true,
+        appType,
       });
 
       const resolved = resolveNewProjectOptions(
         selection.template,
         [...selection.auth],
         [...selection.features],
+        appType,
       );
 
       await applyOptionalFeatures({
         projectName: tempDir,
+        appType,
         template: selection.template,
         auth: resolved.auth,
         features: resolved.features,
         skipPackages: true,
       });
 
-      finalizeNewProjectSetup(tempDir, 'bun');
+      finalizeNewProjectSetup(tempDir, 'bun', [], appType);
 
       const expectation = buildProjectExpectation(
         selection.template,
         selection.auth,
         selection.features,
+        undefined,
+        appType,
       );
       seedProjectMetadata(tempDir, expectation);
 
@@ -120,6 +131,7 @@ describe('CLI project profiles via installModule + applyOptionalFeatures', () =>
         selection.template,
         selection.auth,
         selection.features,
+        appType,
       );
     });
   }

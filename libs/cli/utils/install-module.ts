@@ -2,13 +2,14 @@ import {
   AUTH_DEV_PACKAGES,
   AUTH_PACKAGES,
   CACHE_PACKAGES,
-  CORE_DEV_PACKAGES,
-  CORE_PACKAGES,
   CRON_PACKAGES,
   devAddFlag,
+  getCoreDevPackages,
+  getCorePackages,
   HEALTH_PACKAGES,
 } from '@cli/constants/core-packages';
 import {
+  AppType,
   AuthStrategy,
   ExtraFeature,
   InstallModule as Modules,
@@ -23,6 +24,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
+import { applyWorkerProfile } from './apply-worker-profile';
 import { getPackageManager } from './get-package-manager';
 import { getSourceCodePath } from './get-source-code-path';
 import { patchAuthInstall } from './patch-auth-install';
@@ -34,6 +36,7 @@ import {
 import {
   patchInfraModuleForAuth,
   patchInfraModuleForCache,
+  patchInfraModuleForQueue,
   stripInfraModuleCache,
 } from './patch-infra-module';
 import { patchMainForAuth } from './patch-main';
@@ -41,8 +44,11 @@ import { pruneCoreAuthForSlimTemplate } from './prune-core-auth';
 import { removeSampleParts } from './remove-sample-parts';
 import { resolveProjectPath } from './resolve-project-path';
 import { runCommand } from './run-command';
+import { patchEnvForQueue, stripEnvForWorker } from './patch-env';
+import { ensureJobsModuleRegistered } from './patch-jobs-module';
 
 export {
+  AppType,
   AuthChoice,
   AuthStrategy,
   CRUD_BUNDLED_FEATURES,
@@ -55,6 +61,7 @@ export {
 } from '@cli/constants/domain';
 
 export type InstallModuleOptions = {
+  appType?: AppType;
   authStrategies?: AuthStrategy[];
   apiKeyInternalSubnet?: boolean;
   withRedis?: boolean;
@@ -71,6 +78,7 @@ export type ProjectFeatures = {
   health: boolean;
   cronJobs: boolean;
   eventJobs: boolean;
+  queueJobs: boolean;
 };
 
 function install(modulePath: string, projectName: string) {
@@ -125,6 +133,18 @@ function patchInfraModuleAuthFile(projectName: string) {
   writeFileSync(
     infraModulePath,
     patchInfraModuleForAuth(readFileSync(infraModulePath, 'utf8')),
+  );
+}
+
+function patchInfraModuleQueueFile(projectName: string) {
+  const infraModulePath = path.join(
+    resolveProjectPath(projectName),
+    'src/infra/infra.module.ts',
+  );
+
+  writeFileSync(
+    infraModulePath,
+    patchInfraModuleForQueue(readFileSync(infraModulePath, 'utf8')),
   );
 }
 
@@ -298,6 +318,27 @@ export async function installModule(
       rmSync(
         path.join(
           resolveProjectPath(projectName),
+          'src/infra/services/queue.service.ts',
+        ),
+        { force: true },
+      );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
+          'src/domain/common/iqueue.service.ts',
+        ),
+        { force: true },
+      );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
+          'src/test/services/queue.fake-service.ts',
+        ),
+        { force: true },
+      );
+      rmSync(
+        path.join(
+          resolveProjectPath(projectName),
           'src/infra/services/logged-user-info.service.ts',
         ),
         { force: true },
@@ -355,13 +396,17 @@ export async function installModule(
 
       patchInfraModuleFile(projectName, false);
 
+      const appType = options.appType ?? AppType.API;
+
       if (!options.skipPackages) {
+        const corePackages = getCorePackages(appType);
+        const coreDevBase = getCoreDevPackages(appType);
         const coreDevPackages =
           packageManager === 'bun'
-            ? [...CORE_DEV_PACKAGES, '@types/bun']
-            : CORE_DEV_PACKAGES;
+            ? [...coreDevBase, '@types/bun']
+            : coreDevBase;
 
-        await installPackages(projectName, CORE_PACKAGES, coreDevPackages);
+        await installPackages(projectName, corePackages, coreDevPackages);
       }
 
       if (template === Template.DEFAULT) {
@@ -375,6 +420,11 @@ export async function installModule(
         install('src/host/controllers/person', projectName);
         install('src/infra/repositories/person.repository.ts', projectName);
         install('src/infra/database/migrations', projectName);
+      }
+
+      if (appType === AppType.WORKER) {
+        applyWorkerProfile(projectName);
+        stripEnvForWorker(projectName);
       }
       break;
     }
@@ -463,6 +513,8 @@ export async function installModule(
       break;
     }
     case Modules.INTERNAL_CRON_JOBS: {
+      install('src/host/jobs', projectName);
+      ensureJobsModuleRegistered(projectName);
       install('src/core/background-services/cron-service', projectName);
       install('src/core/utils/cron-expression-to-boolean.ts', projectName);
       if (!options.skipPackages) {
@@ -471,7 +523,18 @@ export async function installModule(
       break;
     }
     case Modules.INTERNAL_EVENT_JOBS: {
+      install('src/host/jobs', projectName);
+      ensureJobsModuleRegistered(projectName);
       install('src/core/background-services/event-service', projectName);
+      break;
+    }
+    case Modules.QUEUE_JOBS: {
+      install('src/core/background-services/queue-service', projectName);
+      install('src/domain/common/iqueue.service.ts', projectName);
+      install('src/infra/services/queue.service.ts', projectName);
+      install('src/test/services/queue.fake-service.ts', projectName);
+      patchInfraModuleQueueFile(projectName);
+      patchEnvForQueue(projectName);
       break;
     }
   }
@@ -495,5 +558,6 @@ export function resolveProjectFeatures(
     health: selected.has(ExtraFeature.HEALTH_CHECK),
     cronJobs: selected.has(ExtraFeature.INTERNAL_CRON_JOBS),
     eventJobs: selected.has(ExtraFeature.INTERNAL_EVENT_JOBS),
+    queueJobs: selected.has(ExtraFeature.QUEUE_JOBS),
   };
 }

@@ -10,8 +10,11 @@ import {
   CORE_PACKAGES,
   CRON_PACKAGES,
   HEALTH_PACKAGES,
+  getCoreDevPackages,
+  getCorePackages,
   devAddFlag,
 } from '@cli/constants/core-packages.ts';
+import { AppType } from '@cli/constants/domain';
 import {
   mergeCrudSampleFeatures,
   resolveNewProjectOptions,
@@ -24,10 +27,25 @@ describe('core-packages', () => {
     expect(CORE_PACKAGES).toContain('@koalarx/utils@^5.0.0');
     expect(CORE_PACKAGES).toContain('@scalar/nestjs-api-reference');
     expect(CORE_PACKAGES).toContain('cookie-parser');
+    expect(CORE_PACKAGES).toContain('helmet');
     expect(CORE_PACKAGES).not.toContain('cron-parser');
     expect(CORE_PACKAGES).not.toContain('ioredis');
     expect(CORE_PACKAGES).not.toContain('@nestjs/terminus');
     expect(CORE_PACKAGES).not.toContain('@nestjs/axios');
+  });
+
+  it('worker omite pacotes HTTP/OpenAPI', () => {
+    const workerPackages = getCorePackages(AppType.WORKER);
+    const workerDev = getCoreDevPackages(AppType.WORKER);
+
+    expect(workerPackages).toContain('@koalarx/utils@^5.0.0');
+    expect(workerPackages).toContain('dotenv');
+    expect(workerPackages).not.toContain('helmet');
+    expect(workerPackages).not.toContain('@nestjs/swagger');
+    expect(workerPackages).not.toContain('@scalar/nestjs-api-reference');
+    expect(workerPackages).not.toContain('cookie-parser');
+    expect(workerDev).not.toContain('@types/cookie-parser');
+    expect(workerDev).toContain('tsc-alias');
   });
 
   it('agrupa pacotes por feature', () => {
@@ -39,6 +57,7 @@ describe('core-packages', () => {
     expect(CORE_DEV_PACKAGES).toContain('@types/cookie-parser');
     expect(CORE_DEV_PACKAGES).toContain('ts-node');
     expect(CORE_DEV_PACKAGES).toContain('tsconfig-paths');
+    expect(CORE_DEV_PACKAGES).toContain('tsc-alias');
     expect(CORE_PACKAGES).toContain('dotenv');
     expect(AUTH_DEV_PACKAGES).not.toContain('@types/cookie-parser');
   });
@@ -91,6 +110,7 @@ describe('resolveProjectFeatures', () => {
     expect(features.cacheForCrud).toBe(false);
     expect(features.cronJobs).toBe(false);
     expect(features.eventJobs).toBe(false);
+    expect(features.queueJobs).toBe(false);
   });
 });
 

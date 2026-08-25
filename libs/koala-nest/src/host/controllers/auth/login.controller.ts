@@ -29,10 +29,14 @@ export class LoginController implements IController<
   ): Promise<LoginResponse> {
     const tokens = await this.handler.handle(request);
 
+    // Cross-site XHR (front ≠ API) bloqueia Set-Cookie com SameSite=Lax;
+    // None+Secure é obrigatório. Lax basta em localhost (same-site).
+    const isLocalhost = process.env.API_HOST?.includes('localhost') === true;
+
     response.cookie(AuthHttp.REFRESH_TOKEN_COOKIE, tokens.refreshToken, {
       path: '/',
-      secure: true,
-      sameSite: 'strict',
+      secure: !isLocalhost,
+      sameSite: isLocalhost ? 'strict' : 'none',
       httpOnly: true,
     });
 

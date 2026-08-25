@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { cpSync, mkdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -28,6 +28,12 @@ function buildKoalaNest() {
       return !relative.split(path.sep).some((part) => EXCLUDED_DIRS.has(part));
     },
   });
+
+  // npm pack omite arquivos nomeados `.gitignore`; publicar cópia sem o ponto.
+  const gitignore = path.join(outputDir, ".gitignore");
+  if (existsSync(gitignore)) {
+    cpSync(gitignore, path.join(outputDir, "gitignore"));
+  }
 
   console.log(`Build concluído: ${path.relative(rootDir, outputDir)}/`);
 }

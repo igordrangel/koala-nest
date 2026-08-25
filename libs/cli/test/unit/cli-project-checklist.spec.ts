@@ -6,7 +6,7 @@ import {
   MAIN_MUST_CONTAIN,
   requiredPathsForExpectation,
 } from '@cli/constants/cli-project-checklist';
-import { AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
+import { AppType, AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
 
 describe('cli-project-checklist', () => {
   it('main exige import de prototypes do @koalarx/utils', () => {
@@ -17,12 +17,14 @@ describe('cli-project-checklist', () => {
     expect(
       buildProjectExpectation(Template.CRUD_SAMPLE, [], []),
     ).toEqual({
+      appType: AppType.API,
       template: Template.CRUD_SAMPLE,
       auth: [AuthStrategy.JWT],
       cache: 'redis',
       health: false,
       cronJobs: true,
       eventJobs: true,
+      queueJobs: false,
       aiContext: { cursor: false, github: false },
     });
   });
@@ -31,6 +33,7 @@ describe('cli-project-checklist', () => {
     expect(
       buildProjectExpectation(Template.CRUD_SAMPLE, [AuthStrategy.OAUTH2], []),
     ).toMatchObject({
+      appType: AppType.API,
       auth: [AuthStrategy.OAUTH2],
       cache: 'redis',
       cronJobs: true,
@@ -56,6 +59,7 @@ describe('cli-project-checklist', () => {
     expect(
       buildProjectExpectation(Template.DEFAULT, [AuthStrategy.JWT], []),
     ).toMatchObject({
+      appType: AppType.API,
       cache: 'memory',
       health: false,
       cronJobs: false,
@@ -69,8 +73,26 @@ describe('cli-project-checklist', () => {
         ExtraFeature.INTERNAL_CRON_JOBS,
       ]),
     ).toMatchObject({
+      appType: AppType.API,
       cache: 'memory',
       cronJobs: true,
+    });
+  });
+
+  it('buildProjectExpectation worker sem HTTP/auth', () => {
+    expect(
+      buildProjectExpectation(
+        Template.DEFAULT,
+        [],
+        [ExtraFeature.QUEUE_JOBS],
+        undefined,
+        AppType.WORKER,
+      ),
+    ).toMatchObject({
+      appType: AppType.WORKER,
+      auth: false,
+      health: false,
+      queueJobs: true,
     });
   });
 
@@ -84,6 +106,8 @@ describe('cli-project-checklist', () => {
     expect(labels).toContain('crud jwt');
     expect(labels).toContain('crud oauth2');
     expect(labels).toContain('crud jwt + oauth2');
+    expect(labels).toContain('worker sem extras');
+    expect(labels).toContain('worker + queue + cron');
   });
 
   it('matriz new cobre features opcionais isoladas e combinadas', () => {
@@ -93,6 +117,7 @@ describe('cli-project-checklist', () => {
     expect(labels).toContain('default sem auth + cache');
     expect(labels).toContain('default sem auth + cron');
     expect(labels).toContain('default sem auth + events');
+    expect(labels).toContain('default sem auth + queue');
     expect(labels).toContain('default sem auth + cache + health + cron + events');
     expect(labels).toContain('default jwt + cache + health');
   });
@@ -103,6 +128,8 @@ describe('cli-project-checklist', () => {
         selection.template,
         selection.auth,
         selection.features,
+        undefined,
+        selection.appType ?? AppType.API,
       );
       const required = new Set(requiredPathsForExpectation(expectation));
       const forbidden = forbiddenPathsForExpectation(expectation);
@@ -112,7 +139,7 @@ describe('cli-project-checklist', () => {
     }
   });
 
-  it('default sem features proíbe artefatos de cache, health, cron e events', () => {
+  it('default sem features proíbe artefatos de cache, health, cron, events e queue', () => {
     const expectation = buildProjectExpectation(Template.DEFAULT, [], []);
 
     expect(forbiddenPathsForExpectation(expectation)).toEqual(
@@ -121,6 +148,50 @@ describe('cli-project-checklist', () => {
         'src/host/controllers/health-check/health-check.controller.ts',
         'src/core/utils/cron-expression-to-boolean.ts',
         'src/core/background-services/event-service/event-handler.base.ts',
+        'src/core/background-services/queue-service/queue.base.ts',
+      ]),
+    );
+  });
+
+  it('worker proíbe superfície HTTP', () => {
+    const expectation = buildProjectExpectation(
+      Template.DEFAULT,
+      [],
+      [],
+      undefined,
+      AppType.WORKER,
+    );
+
+    expect(forbiddenPathsForExpectation(expectation)).toEqual(
+      expect.arrayContaining([
+        'src/host/bootstrap/apply-http-middleware.ts',
+        'src/host/open-api/define-documentation.ts',
+        'src/core/http/rate-limit.middleware.ts',
+        'src/host/controllers',
+        'src/host/decorators',
+        'src/host/filters',
+      ]),
+    );
+  });
+
+  it('queue sozinha não exige JobsModule (cron/events)', () => {
+    const expectation = buildProjectExpectation(
+      Template.DEFAULT,
+      [],
+      [ExtraFeature.QUEUE_JOBS],
+      undefined,
+      AppType.WORKER,
+    );
+
+    expect(requiredPathsForExpectation(expectation)).toEqual(
+      expect.arrayContaining([
+        'src/core/background-services/queue-service/queue.base.ts',
+      ]),
+    );
+    expect(forbiddenPathsForExpectation(expectation)).toEqual(
+      expect.arrayContaining([
+        'src/host/jobs/jobs.module.ts',
+        'src/host/jobs/jobs-bootstrap.service.ts',
       ]),
     );
   });

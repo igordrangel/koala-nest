@@ -9,7 +9,7 @@ description: Endpoint GET /health com NestJS Terminus — banco e Redis opcional
 
 # Health check
 
-Feature **opt-in** instalada com `kl-nest new` (multiselect) ou `kl-nest add health`.
+> **Opt-in:** instale com `kl-nest new` (multiselect) ou `kl-nest add health` (só API).
 
 Expõe `GET /health` usando [@nestjs/terminus](https://docs.nestjs.com/recipes/terminus). O endpoint é **público** (`@IsPublic()`) e **omitido do OpenAPI** (`@ApiExcludeEndpoint()`).
 

@@ -26,7 +26,21 @@ export function patchStartProdScript(projectPath: string): void {
   writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
 }
 
+export function patchBuildScript(projectPath: string): void {
+  const packageJsonPath = path.join(projectPath, 'package.json');
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+    scripts?: Record<string, string>;
+    [key: string]: unknown;
+  };
+
+  packageJson.scripts ??= {};
+  packageJson.scripts.build = 'nest build && tsc-alias -p tsconfig.build.json';
+
+  writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
+}
+
 export function patchGeneratedProjectConfig(projectPath: string): void {
   patchNestCliEntry(projectPath);
   patchStartProdScript(projectPath);
+  patchBuildScript(projectPath);
 }

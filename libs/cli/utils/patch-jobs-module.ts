@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { removeImportLines } from './project-files';
 import { resolveProjectPath } from './resolve-project-path';
@@ -170,4 +170,52 @@ export function patchAppModuleExampleJobs(
     eventHandlers: options.eventJobs ? ['InactivePersonHandler'] : [],
     cronJobs: options.cronJobs ? ['CreatePersonJob', 'DeleteInactiveJob'] : [],
   });
+}
+
+/** Remove `JobsModule` do `app.module` (cron/events não selecionados). */
+export function removeJobsFromAppModule(projectName: string) {
+  const modulePath = appModulePath(projectName);
+
+  if (!existsSync(modulePath)) {
+    return;
+  }
+
+  let content = readFileSync(modulePath, 'utf8');
+  content = removeImportLines(content, [
+    './jobs/jobs.module',
+    ...Object.values(EXAMPLE_JOB_IMPORTS),
+  ]);
+  // Pode estar em linha própria ou colado após outro import (ex.: após patch de InfraModule).
+  content = content.replace(/\s*JobsModule\.register\(\{[\s\S]*?\}\),?/g, '');
+  content = content.replace(/,\s*\n(\s*)\]/g, '\n$1]');
+  writeFileSync(modulePath, content, 'utf8');
+}
+
+/**
+ * Remove `src/host/jobs` e o registro no `AppModule`.
+ * Queue não usa JobsModule — só cron/events.
+ */
+export function stripJobsInfrastructure(projectName: string) {
+  removeJobsFromAppModule(projectName);
+  rmSync(path.join(resolveProjectPath(projectName), 'src/host/jobs'), {
+    recursive: true,
+    force: true,
+  });
+}
+
+/** Garante JobsModule no AppModule quando cron/events são instalados depois. */
+export function ensureJobsModuleRegistered(projectName: string) {
+  const modulePath = appModulePath(projectName);
+
+  if (!existsSync(modulePath)) {
+    return;
+  }
+
+  const content = readFileSync(modulePath, 'utf8');
+
+  if (content.includes('JobsModule.register(')) {
+    return;
+  }
+
+  patchAppModuleJobs(projectName, { eventHandlers: [], cronJobs: [] });
 }

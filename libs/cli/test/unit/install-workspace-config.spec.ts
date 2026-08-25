@@ -62,6 +62,12 @@ describe('install-workspace-config', () => {
     expect(tasks.tasks[0].command).toBe('pnpm run start:dev');
     expect(settings['npm.packageManager']).toBe('pnpm');
     expect(existsSync(path.join(projectDir, '.gitignore'))).toBe(true);
+    expect(readFileSync(path.join(projectDir, '.gitignore'), 'utf8')).toContain(
+      'node_modules',
+    );
+    expect(readFileSync(path.join(projectDir, '.gitignore'), 'utf8')).toContain(
+      '.env',
+    );
   });
 
   it('converte nome do projeto para snake_case no banco', () => {

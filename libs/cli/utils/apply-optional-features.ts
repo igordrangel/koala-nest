@@ -1,16 +1,25 @@
-import { AuthStrategy, ExtraFeature, Template } from '@cli/constants/domain';
+import {
+  AppType,
+  AuthStrategy,
+  ExtraFeature,
+  Template,
+} from '@cli/constants/domain';
+import { applyWorkerProfile } from './apply-worker-profile.ts';
 import {
   installModule,
   mapExtraFeatureToModule,
   Modules,
   resolveProjectFeatures,
 } from './install-module.ts';
+import { stripEnvForWorker } from './patch-env.ts';
+import { stripJobsInfrastructure } from './patch-jobs-module.ts';
 import { adjustCrudPersonModule } from './patch-person-features.ts';
 import { cleanDefaultTemplateWithoutAuth } from './remove-sample-parts.ts';
 import { formatCode } from './format-code.ts';
 
 export type ApplyOptionalFeaturesOptions = {
   projectName?: string;
+  appType?: AppType;
   template: Template;
   auth: AuthStrategy[];
   features: ExtraFeature[];
@@ -22,6 +31,7 @@ export async function applyOptionalFeatures(
   options: ApplyOptionalFeaturesOptions,
 ): Promise<void> {
   const projectName = options.projectName ?? '';
+  const appType = options.appType ?? AppType.API;
   const projectFeatures = resolveProjectFeatures(
     options.features,
     options.auth,
@@ -40,6 +50,7 @@ export async function applyOptionalFeatures(
     await installModule(Modules.CACHE, options.template, projectName, {
       withRedis: projectFeatures.cacheWithRedis,
       skipPackages: options.skipPackages,
+      appType,
     });
   }
 
@@ -48,11 +59,19 @@ export async function applyOptionalFeatures(
       authStrategies: options.auth,
       apiKeyInternalSubnet: options.apiKeyInternalSubnet,
       skipPackages: options.skipPackages,
+      appType,
     });
   }
 
   for (const feature of options.features) {
     if (feature === ExtraFeature.CACHE) {
+      continue;
+    }
+
+    if (
+      appType === AppType.WORKER &&
+      feature === ExtraFeature.HEALTH_CHECK
+    ) {
       continue;
     }
 
@@ -64,8 +83,9 @@ export async function applyOptionalFeatures(
         ? {
             withRedisIndicator: projectFeatures.cache,
             skipPackages: options.skipPackages,
+            appType,
           }
-        : { skipPackages: options.skipPackages },
+        : { skipPackages: options.skipPackages, appType },
     );
   }
 
@@ -74,6 +94,16 @@ export async function applyOptionalFeatures(
     options.auth.length === 0
   ) {
     await cleanDefaultTemplateWithoutAuth(projectName);
+  }
+
+  // JobsModule é só para cron/events — queue usa QueueBase + IQueueService.
+  if (!projectFeatures.cronJobs && !projectFeatures.eventJobs) {
+    stripJobsInfrastructure(projectName);
+  }
+
+  if (appType === AppType.WORKER) {
+    applyWorkerProfile(projectName);
+    stripEnvForWorker(projectName);
   }
 
   await formatCode(projectName);

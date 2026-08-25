@@ -43,6 +43,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/estrutura-do-projeto/" />
   </url>
   <url>
+    <loc>https://nest.koalarx.com/pt/docs/inicio/contexto-ai/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/getting-started/ai-context/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+  </url>
+  <url>
     <loc>https://nest.koalarx.com/pt/docs/core/bases-reutilizaveis/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/bases-reutilizaveis/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/reusable-bases/" />
@@ -77,6 +83,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/pt/docs/core/queue-jobs/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/pt/docs/domain/entidades/</loc>
@@ -119,6 +131,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/http-middleware/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/pt/docs/host/seguranca/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/pt/docs/host/controllers/</loc>
@@ -223,6 +241,12 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/estrutura-do-projeto/" />
   </url>
   <url>
+    <loc>https://nest.koalarx.com/en/docs/getting-started/ai-context/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/getting-started/ai-context/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/inicio/contexto-ai/" />
+  </url>
+  <url>
     <loc>https://nest.koalarx.com/en/docs/core/reusable-bases/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/bases-reutilizaveis/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/reusable-bases/" />
@@ -257,6 +281,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/core/queue-jobs/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/queue-jobs/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/domain/entities/</loc>
@@ -299,6 +329,12 @@
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/http-middleware/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/host/security/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/host/controllers/</loc>

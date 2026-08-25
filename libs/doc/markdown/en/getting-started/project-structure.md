@@ -9,11 +9,11 @@ description: Application bootstrap, main modules, and entry point.
 
 # Project structure
 
-This guide describes how the NestJS application is initialized and how modules connect.
+This guide describes how the NestJS application is initialized and how modules connect. The profile (**API** or **Worker**) is chosen in `kl-nest new` — see [Installation guide](./installation-guide.md#api-vs-worker).
 
-## Entry point
+## Entry point (API)
 
-The `src/host/main.ts` file configures OpenAPI documentation, global error filter, and starts the server. CORS, cookies, and rate limit live in `applyHttpMiddleware` (`src/host/bootstrap/`). Details: [HTTP middleware](../host/http-middleware.md). **Core** projects (without auth/cron) stay slim — the CLI removes optional imports and blocks when features were not selected.
+On an **API**, `src/host/main.ts` configures OpenAPI documentation, the global error filter, and starts the server. CORS, cookies, and rate limit live in `applyHttpMiddleware` (`src/host/bootstrap/`). Details: [HTTP middleware](../host/http-middleware.md). **Core** projects (without auth/cron) stay slim — the CLI removes optional imports and blocks when features were not selected.
 
 ```typescript
 import 'dotenv/config';
@@ -47,6 +47,40 @@ bootstrap();
 
 **With cron/event jobs** (`kl-nest add cron` / `add events`): infrastructure under `src/core/background-services/` and `JobsModule.register()` in `AppModule` (empty arrays in Default; sample handlers in CRUD).
 
+## Entry point (Worker)
+
+On a **Worker**, there is no `listen`, Helmet, CORS, or OpenAPI. Bootstrap uses `NestFactory.createApplicationContext` and closes the context on `SIGINT`/`SIGTERM`:
+
+```typescript
+import 'dotenv/config';
+import '@koalarx/utils/prototypes';
+
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.createApplicationContext(AppModule);
+
+  const shutdown = async () => {
+    await app.close();
+  };
+
+  process.once('SIGINT', () => {
+    void shutdown();
+  });
+  process.once('SIGTERM', () => {
+    void shutdown();
+  });
+}
+
+bootstrap().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+```
+
+Queue handlers (`QueueBase`) are typically started from modules under `host/services` (or resolved in `main` after the context). Prefer `--features queue` (and/or cron/events) when scaffolding.
+
 ## Root module
 
 `AppModule` imports environment validation and feature modules. In the **CRUD Example** template, `PersonModule` is already registered; in the **Default** template, you add modules as you create resources.
@@ -72,7 +106,7 @@ export class AppModule {}
 
 ## Background jobs
 
-Every project includes `src/host/jobs/` with `JobsModule.register()`. Pass handler classes in `eventHandlers` and `cronJobs`; `JobsBootstrapService` subscribes to events and starts cron jobs on `OnModuleInit` (controlled by `CRON_JOBS_ENABLED`).
+With **cron** and/or **events** (`kl-nest new` / `add`), the scaffold includes `src/host/jobs/` with `JobsModule.register()`. **Queue alone** does not install `JobsModule` — use `QueueBase` + `IQueueService`. Pass handler classes in `eventHandlers` and `cronJobs`; `JobsBootstrapService` subscribes to events and starts cron jobs on `OnModuleInit` (controlled by `CRON_JOBS_ENABLED`).
 
 ```typescript
 JobsModule.register({

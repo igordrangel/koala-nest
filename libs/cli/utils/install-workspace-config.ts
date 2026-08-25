@@ -2,10 +2,12 @@ import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { PackageManager } from '@cli/types';
 import type { AiContextTarget } from '@cli/constants/ai-context';
+import { AppType } from '@cli/constants/domain';
 import { getSourceCodePath } from './get-source-code-path';
 import { installAiContext } from './install-ai-context';
 import { ensureJwtKeysInEnv } from './patch-env';
 import { resolveProjectPath } from './resolve-project-path';
+import { writeDockerAssets } from './write-docker-assets';
 
 const PACKAGE_MANAGER_COMMAND: Record<PackageManager, string> = {
   bun: 'bun',
@@ -54,6 +56,21 @@ function runScriptCommand(
   script: string,
 ): string {
   return `${PACKAGE_MANAGER_COMMAND[packageManager]} run ${script}`;
+}
+
+/** `.gitignore` some do npm pack; o build publica também como `gitignore`. */
+function resolveTemplateGitignore(): string | null {
+  const sourceRoot = getSourceCodePath();
+
+  for (const name of ['.gitignore', 'gitignore'] as const) {
+    const candidate = path.join(sourceRoot, name);
+
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 export function installWorkspaceConfig(
@@ -110,13 +127,17 @@ export function installWorkspaceConfig(
     },
   );
 
-  const gitignoreSource = path.join(getSourceCodePath(), '.gitignore');
+  const gitignoreSource = resolveTemplateGitignore();
 
-  if (existsSync(gitignoreSource)) {
-    cpSync(gitignoreSource, path.join(projectRoot, '.gitignore'), {
-      force: true,
-    });
+  if (!gitignoreSource) {
+    throw new Error(
+      'Template .gitignore não encontrado (esperado .gitignore ou gitignore em koala-nest).',
+    );
   }
+
+  cpSync(gitignoreSource, path.join(projectRoot, '.gitignore'), {
+    force: true,
+  });
 }
 
 export function createEnvFromExample(projectName: string): void {
@@ -143,9 +164,11 @@ export function finalizeNewProjectSetup(
   projectName: string,
   packageManager: PackageManager,
   aiContext: readonly AiContextTarget[] = [],
+  appType: AppType = AppType.API,
 ): void {
   installWorkspaceConfig(projectName, packageManager);
   createEnvFromExample(projectName);
+  writeDockerAssets(projectName, packageManager, appType);
 
   if (aiContext.length > 0) {
     installAiContext(projectName, aiContext);

@@ -9,6 +9,32 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [4.4.0] — Build, Docker, QueueBase, Helmet e Worker
+
+### Added
+
+- Feature opt-in `queue` / `queue-jobs`: `QueueBase`, `IQueueService`, stub `QueueService`, `QueueFakeService` e vars abstratas de env (lidas pelo `QueueBase` via `EnvService`).
+- `Dockerfile` + `entrypoint.sh` gerados no `kl-nest new` conforme `bun` / `npm` / `pnpm`.
+- `helmet` no core (`applyHttpMiddleware`) com CSP/HSTS no padrão Globo Seguros.
+- Tipo de app **API** vs **Worker** no `kl-nest new` (`--type` / `--app-type`): Worker usa `createApplicationContext` sem superfície HTTP (sem controllers/decorators/filters); `JobsModule` só com cron/events (queue sozinha não inclui `host/jobs`).
+- Documentação PT/EN de queue jobs e middleware HTTP atualizada.
+- Tópico [Segurança](https://nest.koalarx.com/pt/docs/host/seguranca) / [Security](https://nest.koalarx.com/en/docs/host/security) — visão em camadas.
+- Guia de instalação: comparativo **API vs Worker** e referência do **modo silencioso `-y`** (flags/defaults para LLMs e CI).
+- Tópico [Contexto AI](https://nest.koalarx.com/pt/docs/inicio/contexto-ai) / [AI context](https://nest.koalarx.com/en/docs/getting-started/ai-context) — vibecoding, IDEs e estrutura recomendada de pastas.
+
+### Changed
+
+- Script `build` dos projetos gerados: `nest build && tsc-alias -p tsconfig.build.json` (`tsc-alias` em `CORE_DEV_PACKAGES`).
+
+### Fixed
+
+- Cookie `refreshToken` no login: `SameSite`/`Secure` conforme `API_HOST` (localhost: `Strict` sem `Secure`; produção cross-site: `None` + `Secure`).
+- Worker: deixa de copiar `host/controllers`, `host/decorators` e `host/filters` (sem HTTP).
+- `JobsModule` / `host/jobs` só entram com cron ou events — selecionar apenas `queue` não inclui jobs internos.
+- `kl-nest new` sempre gera `.gitignore` (npm pack omitia o arquivo `.gitignore` do template; build publica cópia `gitignore`).
+
+Detalhes: [Patch notes — 4.4.0](https://nest.koalarx.com/pt/docs/intro/patch-notes).
+
 ## [4.3.1]
 
 ### Fixed

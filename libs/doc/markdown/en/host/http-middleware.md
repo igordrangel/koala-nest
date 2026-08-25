@@ -4,12 +4,12 @@ slug: http-middleware
 category: host
 docKey: host/middleware-http
 order: 0
-description: CORS, cookies, rate limit, and HTTP bootstrap via applyHttpMiddleware.
+description: Helmet, CORS, cookies, rate limit, and HTTP bootstrap via applyHttpMiddleware.
 ---
 
 # HTTP middleware
 
-CORS, `cookie-parser`, and rate limiting are applied in one place: `applyHttpMiddleware` in `src/host/bootstrap/apply-http-middleware.ts`. `main.ts` calls it right after `NestFactory.create`.
+Helmet, CORS, `cookie-parser`, and rate limiting are applied in one place: `applyHttpMiddleware` in `src/host/bootstrap/apply-http-middleware.ts`. `main.ts` calls it right after `NestFactory.create`.
 
 ```typescript
 import { applyHttpMiddleware } from '@/host/bootstrap/apply-http-middleware';
@@ -20,6 +20,19 @@ async function bootstrap() {
   // ...
 }
 ```
+
+## Helmet (security headers)
+
+The bootstrap registers [`helmet`](https://helmetjs.github.io/) **before** cookies, rate limit, and CORS. Configuration follows the Globo Seguros pattern:
+
+| Option | Behavior |
+| --- | --- |
+| `contentSecurityPolicy` | Restrictive CSP (`defaultSrc: none`); Scalar scripts/styles/images via `cdn.jsdelivr.net`; fonts also from `fonts.scalar.com` |
+| `hsts` | Enabled only when `NODE_ENV=production` |
+| `upgradeInsecureRequests` | Production only |
+| `crossOriginEmbedderPolicy` | `false` (compatible with Scalar / external assets) |
+
+Other Helmet defaults (X-Content-Type-Options, X-Frame-Options, etc.) stay enabled.
 
 ## CORS
 
@@ -63,5 +76,7 @@ When the limit is exceeded: HTTP **429** with a JSON message.
 
 - `src/test/core/resolve-cors-origins.spec.ts`
 - `src/test/core/http/rate-limit.middleware.spec.ts`
+
+Layered view: [Security](./security.md).
 
 See also: [Environment variables](../getting-started/environment-variables.md), [Project structure](../getting-started/project-structure.md).

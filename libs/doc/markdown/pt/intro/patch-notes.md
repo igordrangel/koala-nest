@@ -13,6 +13,24 @@ Changelog voltado a quem usa ou atualiza projetos gerados pela CLI. Detalhes té
 
 A versão publicada do pacote `@koalarx/nest` aparece no site e no `package.json` do repositório. O arquivo [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) na raiz espelha estas notas.
 
+## 4.4.0 — Build, Docker, QueueBase, Helmet e Worker
+
+### O que mudou
+
+- **`tsc-alias` no build:** o script `build` dos projetos gerados passa a ser `nest build && tsc-alias -p tsconfig.build.json`, evitando imports `@/*` quebrados em `dist/` (produção/Docker).
+- **Dockerfile por package manager:** `kl-nest new` gera `Dockerfile` + `entrypoint.sh` alinhados a `bun`, `npm` ou `pnpm`.
+- **Queue jobs (opt-in):** `kl-nest new` / `kl-nest add queue` copia `QueueBase`, `IQueueService`, stub `QueueService` e fake de teste; injeta vars abstratas (`QUEUE_MAX_CONCURRENCY`, delays) no `env`. O `QueueBase` lê concorrência/delays via `EnvService` (não passe no constructor). Sem SDK de broker — implemente a infra depois.
+- **Helmet no core:** `applyHttpMiddleware` aplica headers de segurança (CSP alinhada ao Scalar/`cdn.jsdelivr.net`, HSTS só em `production`), no padrão Globo Seguros.
+- **Doc Segurança:** novo tópico [Segurança](../host/seguranca.md) (PT/EN) com visão em camadas (Helmet, CORS, rate limit, cookies, validação, auth, RedLock).
+- **Cookie `refreshToken`:** no login, `SameSite`/`Secure` seguem `API_HOST` — localhost usa `Strict` sem `Secure`; fora disso, `None` + `Secure` para XHR cross-site.
+- **Tipo de app (API vs Worker):** `kl-nest new` pergunta o tipo (ou `--type` / `--app-type`). **API** mantém HTTP + OpenAPI. **Worker** (broker / fila / background) usa `NestFactory.createApplicationContext` — sem listen, Helmet, CORS, Scalar, PORT/HOST, controllers, decorators ou filters; Dockerfile sem `EXPOSE 3000`. Preferir `--features queue,cron,events`. **Queue sozinha** não instala `host/jobs` / `JobsModule` (só cron/events). Não combina com template CRUD, auth HTTP nem health. Guia completo (prompts + **modo silencioso `-y`**): [Guia de instalação](../inicio/guia-de-instalacao.md#api-vs-worker).
+- **`.gitignore` no scaffold:** `kl-nest new` sempre copia o `.gitignore` do template (o `npm pack` omitia o arquivo com esse nome; o build publica também como `gitignore`).
+- **Doc Contexto AI:** tópico [Contexto AI](../inicio/contexto-ai.md) (PT/EN) — propósito, Cursor/Copilot, `kl-nest add ai-context`, e estrutura recomendada (`.github/instructions`, `agents`, `prompts`, `skills`).
+
+### Atualização
+
+Em projetos já gerados: ajuste o script `build` e adicione `tsc-alias` como devDependency; copie um Dockerfile compatível com o seu PM se quiser containerizar; use `kl-nest add queue` para a feature de mensageria; instale `helmet` e alinhe `apply-http-middleware.ts` ao template atual; alinhe as opções do cookie `refreshToken` no `login.controller.ts` ao template atual. Para um novo worker/broker: `kl-nest new my-worker -y --type worker --features queue`.
+
 ## 4.3.1 — Scaffold OpenAPI e tsconfig
 
 ### O que mudou
@@ -21,7 +39,7 @@ A versão publicada do pacote `@koalarx/nest` aparece no site e no `package.json
 - **OpenAPI sync nas variantes slim:** templates sem auth e JWT-only deixam de usar `async` sem `await` (evita `@typescript-eslint/require-await`).
 - **`tsconfig.spec.json` no scaffold:** copiado/gerado junto do core (Bun: template com `bun-types` + `@types/bun`; npm/pnpm: variante mínima) para o ESLint encontrar o arquivo referenciado em `parserOptions.project`.
 
-### Upgrade
+### Atualização
 
 Em projetos já gerados: alinhe a lista `hiddenClients` e remova `async` desnecessário no OpenAPI como no template atual; se o ESLint apontar `tsconfig.spec.json` ausente, copie o arquivo do template (ou a variante npm/pnpm) e, em Bun, adicione `@types/bun` como devDependency.
 
@@ -37,7 +55,7 @@ Em projetos já gerados: alinhe a lista `hiddenClients` e remova `async` desnece
 - **Contexto AI (vibecoding):** no `kl-nest new` (prompt) e no `kl-nest add ai-context cursor|github` — gera `AGENTS.md` e regras Cursor / instruções Copilot voltadas ao projeto gerado (docs-first + constraints DDD). Com `-y` não gera; use `add` depois. Não sobrescreve arquivos já existentes.
 - **Chaves JWT no `.env`:** ao escolher JWT, OAuth2 e/ou API Key no `new` ou no `add auth`, a CLI gera o par RS256 (`JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` em base64) e preenche o `.env`. Placeholders no `.env.example` ficam vazios; valores já preenchidos não são sobrescritos.
 
-### Upgrade
+### Atualização
 
 Em projetos já gerados: `kl-nest add auth api-key` (com JWT/OAuth2 já instalado) e opcionalmente `--api-key-internal-subnet`. Gere/aplique a migration `CreateApiKey` e adicione `passport-custom` se necessário.
 

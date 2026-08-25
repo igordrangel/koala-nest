@@ -12,13 +12,13 @@ Em vez de depender de uma biblioteca opaca, a CLI **copia módulos prontos para 
 
 | Recurso | Status |
 | --- | --- |
-| Comando `new` (projeto interativo) | Disponível |
-| Módulo **core** (DDD, TypeORM, Swagger, validação) | Disponível |
+| Comando `new` (API ou Worker) | Disponível |
+| Módulo **core** (DDD, TypeORM, validação Zod) | Disponível |
 | Template **Padrão** (estrutura limpa) | Disponível |
-| Template **Exemplo de CRUD** (Person) | Disponível |
-| Autenticação (JWT, OAuth2) | Disponível na CLI |
-| API Key | Em breve |
-| Cache, health check, jobs internos | Disponível via `new` e `add` |
+| Template **Exemplo de CRUD** (Person) — só API | Disponível |
+| Autenticação JWT, OAuth2 e API Key | Disponível via `new` e `add` |
+| Cache Redis, health, cron, events, queue | Disponível via `new` e `add` |
+| Contexto AI (Cursor / GitHub Copilot) | Disponível via `new` (prompt) e `add ai-context` |
 | Comando `add` (funcionalidades avulsas) | Disponível |
 
 ## Instalação e uso
@@ -67,8 +67,12 @@ npx @koalarx/nest@latest new
 
 ```bash
 kl-nest new
+kl-nest new my-worker -y --type worker --features queue
 kl-nest add cache
 kl-nest add auth jwt health
+kl-nest add auth api-key
+kl-nest add queue
+kl-nest add ai-context cursor github
 kl-nest version
 kl-nest --help
 
@@ -79,26 +83,33 @@ npx @koalarx/nest new
 
 O comando `new` pergunta:
 
+- tipo de aplicação (**API** ou **Worker**);
 - nome do projeto;
 - gerenciador de pacotes (`bun`, `npm` ou `pnpm` — Bun recomendado);
-- template (**Padrão** ou **Exemplo de CRUD**);
-- estratégia de autenticação (**JWT**, **OAuth2** ou nenhuma) e funcionalidades extras (cache, health, cron, eventos); **API Key** ainda aparece desabilitada no prompt;
+- template (**Padrão** ou **Exemplo de CRUD** — CRUD só na API);
+- autenticação (**JWT**, **OAuth2**, **API Key** aditiva, ou nenhuma) e features (cache, health, cron, events, queue — health/auth só na API);
+- contexto AI (**Cursor**, **GitHub Copilot**, ambos ou nenhum). Com `-y` o contexto AI não é gerado.
 
 O comando `add` instala funcionalidades em um projeto Koala Nest já existente (detecta o que já está presente e pula duplicatas):
 
-- `auth jwt` / `auth oauth2` — autenticação
+- `auth jwt` / `auth oauth2` / `auth api-key` — autenticação (API; api-key exige JWT e/ou OAuth2)
 - `cache` — cache Redis (com exemplos no template CRUD)
-- `health` — endpoint `GET /health`
-- `cron` — jobs com expressão cron
-- `events` — jobs reativos a eventos
+- `health` — endpoint `GET /health` (API)
+- `cron` / `events` — jobs internos (`JobsModule` / `host/jobs`)
+- `queue` — handlers de fila (`QueueBase`; sem `JobsModule`)
+- `ai-context cursor` / `github` — contexto para vibecoding
 
 ```bash
 cd meu-projeto
 kl-nest add cache
 kl-nest add auth jwt health --verbose
+kl-nest add auth api-key --api-key-internal-subnet
 kl-nest add cron events
+kl-nest add queue
+kl-nest add ai-context cursor
 ```
 
+Detalhes: [Guia de instalação](https://nest.koalarx.com/pt/docs/inicio/guia-de-instalacao) · [Contexto AI](https://nest.koalarx.com/pt/docs/inicio/contexto-ai)
 ### Templates
 
 **Padrão** — estrutura DDD pronta para começar do zero, sem código de exemplo de domínio.

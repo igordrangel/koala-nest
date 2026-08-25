@@ -173,6 +173,10 @@ export function stripEnvAuth(projectName: string) {
   mkdirSync(path.join(projectRoot, 'src/core'), { recursive: true });
   writeFileSync(path.join(projectRoot, 'src/core/env.ts'), envWithoutAuth);
   writeFileSync(path.join(projectRoot, '.env.example'), envExampleWithoutAuth);
+
+  if (projectHasQueueFeature(projectName)) {
+    patchEnvForQueue(projectName);
+  }
 }
 
 export function restoreEnvWithAuth(projectName: string) {
@@ -273,5 +277,133 @@ export function patchEnvForAuthStrategies(
 
   if (authNeedsJwtKeys(strategies)) {
     ensureJwtKeysInEnv(projectName, { addIfMissing: true });
+  }
+
+  if (projectHasQueueFeature(projectName)) {
+    patchEnvForQueue(projectName);
+  }
+}
+
+const QUEUE_ENV_SCHEMA_SNIPPET = `  QUEUE_MAX_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(10),
+  QUEUE_CAPACITY_DELAY_MS: z.coerce.number().int().min(0).default(200),
+  QUEUE_IDLE_DELAY_MS: z.coerce.number().int().min(0).default(1000),
+  QUEUE_ERROR_DELAY_MS: z.coerce.number().int().min(0).default(2000),`;
+
+const QUEUE_ENV_EXAMPLE_SNIPPET = `
+# Queue jobs (mensageria) — opcional; defaults no schema Zod se omitidos
+QUEUE_MAX_CONCURRENCY=10
+QUEUE_CAPACITY_DELAY_MS=200
+QUEUE_IDLE_DELAY_MS=1000
+QUEUE_ERROR_DELAY_MS=2000
+`;
+
+function projectHasQueueFeature(projectName: string): boolean {
+  return existsSync(
+    path.join(
+      resolveProjectPath(projectName),
+      'src/core/background-services/queue-service/queue.base.ts',
+    ),
+  );
+}
+
+function injectQueueEnvSchema(content: string): string {
+  if (content.includes('QUEUE_MAX_CONCURRENCY')) {
+    return content;
+  }
+
+  if (content.includes('BOOTSTRAP_DELAY_MS:')) {
+    return content.replace(
+      /(BOOTSTRAP_DELAY_MS:[^\n]+\n)/,
+      `$1${QUEUE_ENV_SCHEMA_SNIPPET}\n`,
+    );
+  }
+
+  return content.replace(
+    /(export const envSchema = z\.object\(\{\n)/,
+    `$1${QUEUE_ENV_SCHEMA_SNIPPET}\n`,
+  );
+}
+
+function injectQueueEnvExample(content: string): string {
+  if (content.includes('QUEUE_MAX_CONCURRENCY=')) {
+    return content;
+  }
+
+  return `${content.trimEnd()}\n${QUEUE_ENV_EXAMPLE_SNIPPET}`;
+}
+
+/** Injeta vars abstratas do QueueBase em env.ts / .env.example / .env (idempotente). */
+export function patchEnvForQueue(projectName: string): void {
+  const projectRoot = resolveProjectPath(projectName);
+  const envTsPath = path.join(projectRoot, 'src/core/env.ts');
+  const envExamplePath = path.join(projectRoot, '.env.example');
+  const envPath = path.join(projectRoot, '.env');
+
+  if (existsSync(envTsPath)) {
+    writeFileSync(
+      envTsPath,
+      injectQueueEnvSchema(readFileSync(envTsPath, 'utf8')),
+    );
+  }
+
+  if (existsSync(envExamplePath)) {
+    writeFileSync(
+      envExamplePath,
+      injectQueueEnvExample(readFileSync(envExamplePath, 'utf8')),
+    );
+  }
+
+  if (existsSync(envPath)) {
+    writeFileSync(
+      envPath,
+      injectQueueEnvExample(readFileSync(envPath, 'utf8')),
+    );
+  }
+}
+
+const envWorker = `import { envBooleanSchema } from '@/core/schemas';
+import { z } from 'zod';
+
+export const envSchema = z.object({
+  NODE_ENV: z.enum(['test', 'develop', 'staging', 'production']),
+  DATABASE_URL: z.string(),
+  DATABASE_SCHEMA: z.string().optional(),
+  REDIS_CONNECTION_STRING: z.string().optional(),
+  CACHE_KEY_PREFIX: z.string().optional(),
+  CRON_JOBS_ENABLED: envBooleanSchema(false),
+  BOOTSTRAP_DELAY_MS: z.coerce.number().default(0),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+export function validateEnvConfig(config: Record<string, unknown>): Env {
+  return envSchema.parse(config);
+}
+`;
+
+const envExampleWorker = `NODE_ENV=develop
+DATABASE_URL=postgresql://postgres:root@localhost:5432/koala_nest
+
+# Redis (opcional)
+# Instância única: pode omitir — usa memória local (cache, lock de CronJob em dev).
+# Várias réplicas: recomendado para cache/lock consistentes entre processos.
+# REDIS_CONNECTION_STRING=redis://localhost:6379
+# CACHE_KEY_PREFIX=koala-nest
+
+# Cron jobs internos. Ative com \`kl-nest add cron\`.
+CRON_JOBS_ENABLED=false
+BOOTSTRAP_DELAY_MS=0
+`;
+
+/** Env sem PORT/HOST/CORS/rate-limit/API_HOST — perfil Worker. */
+export function stripEnvForWorker(projectName: string) {
+  const projectRoot = resolveProjectPath(projectName);
+
+  mkdirSync(path.join(projectRoot, 'src/core'), { recursive: true });
+  writeFileSync(path.join(projectRoot, 'src/core/env.ts'), envWorker);
+  writeFileSync(path.join(projectRoot, '.env.example'), envExampleWorker);
+
+  if (projectHasQueueFeature(projectName)) {
+    patchEnvForQueue(projectName);
   }
 }
