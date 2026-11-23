@@ -7,6 +7,8 @@ import {
 } from '@cli/constants/domain';
 import {
   AGENTS_ASSET_RELATIVE_PATHS,
+  AGENTS_INSTRUCTION_PATHS,
+  AGENTS_SKILL_PATHS,
   LEGACY_AI_CONTEXT_CURSOR_RULE_PATHS,
   LEGACY_AI_CONTEXT_GITHUB_PATH,
 } from '@cli/constants/agents';
@@ -442,7 +444,8 @@ export function forbiddenPathsForExpectation(
   }
 
   if (!expectation.agents) {
-    paths.push(...AGENTS_REQUIRED_PATHS);
+    // Nest CLI pode gerar AGENTS.md sozinho; proíbe só a estrutura Koala (.agents/).
+    paths.push(...AGENTS_INSTRUCTION_PATHS, ...AGENTS_SKILL_PATHS);
   } else {
     paths.push(...AGENTS_LEGACY_FORBIDDEN_PATHS);
   }
