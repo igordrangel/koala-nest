@@ -17,7 +17,7 @@ on:
 jobs:
   cli-e2e-tests:
     name: CLI E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout

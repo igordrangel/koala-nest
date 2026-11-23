@@ -67,9 +67,12 @@ export async function createEmptyNestProject(
   ]);
 
   if (packageManager !== 'npm') {
-    rmSync(path.join(cwd, projectName, 'package-lock.json'));
+    rmSync(path.join(cwd, projectName, 'package-lock.json'), {
+      force: true,
+    });
     rmSync(path.join(cwd, projectName, 'node_modules'), {
       recursive: true,
+      force: true,
     });
   }
 
