@@ -309,20 +309,11 @@ export function listCliProjectViolations(
       );
     }
 
-    const expectedAi = expectation.aiContext ?? {
-      cursor: false,
-      github: false,
-    };
+    const expectedAgents = expectation.agents ?? false;
 
-    if (detected.aiContext.cursor !== expectedAi.cursor) {
+    if (detected.agents !== expectedAgents) {
       violations.push(
-        `state:aiContext.cursor esperado ${expectedAi.cursor}, detectado ${detected.aiContext.cursor}`,
-      );
-    }
-
-    if (detected.aiContext.github !== expectedAi.github) {
-      violations.push(
-        `state:aiContext.github esperado ${expectedAi.github}, detectado ${detected.aiContext.github}`,
+        `state:agents esperado ${expectedAgents}, detectado ${detected.agents}`,
       );
     }
 
@@ -380,7 +371,7 @@ export function assertCliProjectFromSelection(
 ) {
   assertCliProject(
     projectName,
-    buildProjectExpectation(template, auth, features, undefined, appType),
+    buildProjectExpectation(template, auth, features, false, appType),
   );
 }
 

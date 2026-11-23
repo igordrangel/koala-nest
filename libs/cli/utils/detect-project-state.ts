@@ -1,12 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import {
-  AI_CONTEXT_CURSOR_MARKER,
-  AI_CONTEXT_GITHUB_PATH,
-  listMissingAiContextTargets,
-  parseAiContextTarget,
-  type AiContextTarget as AiContextTargetType,
-} from '@cli/constants/ai-context';
+  AGENTS_FILE_PATH,
+  AGENTS_MARKER_PATH,
+} from '@cli/constants/agents';
 import {
   AddArgKind,
   AuthStrategy,
@@ -24,11 +21,6 @@ import { resolveProjectPath } from './resolve-project-path';
 
 export type CacheLevel = false | 'memory' | 'redis';
 
-export type AiContextState = {
-  cursor: boolean;
-  github: boolean;
-};
-
 export type ProjectState = {
   template: Template;
   auth: false | AuthStrategyType[];
@@ -37,7 +29,7 @@ export type ProjectState = {
   cronJobs: boolean;
   eventJobs: boolean;
   queueJobs: boolean;
-  aiContext: AiContextState;
+  agents: boolean;
 };
 
 export function assertKoalaProject(projectName = ''): string {
@@ -137,10 +129,9 @@ export function detectProjectState(projectName = ''): ProjectState {
         'src/core/background-services/queue-service/queue.base.ts',
       ),
     ),
-    aiContext: {
-      cursor: existsSync(path.join(projectRoot, AI_CONTEXT_CURSOR_MARKER)),
-      github: existsSync(path.join(projectRoot, AI_CONTEXT_GITHUB_PATH)),
-    },
+    agents:
+      existsSync(path.join(projectRoot, AGENTS_FILE_PATH)) &&
+      existsSync(path.join(projectRoot, AGENTS_MARKER_PATH)),
   };
 }
 
@@ -182,7 +173,8 @@ export function listAvailableAddOptions(state: ProjectState) {
       return hasHumanAuth;
     }),
     features,
-    aiContextTargets: listMissingAiContextTargets(state.aiContext),
+    /** Sempre disponível: `add agents` recria a estrutura por completo. */
+    agents: true,
   };
 }
 
@@ -193,10 +185,7 @@ export type AddArg =
       apiKeyInternalSubnet?: boolean;
     }
   | { kind: typeof AddArgKind.FEATURE; feature: ExtraFeature }
-  | {
-      kind: typeof AddArgKind.AI_CONTEXT;
-      targets: AiContextTargetType[];
-    };
+  | { kind: typeof AddArgKind.AGENTS };
 
 export function parseAddArgs(args: string[]): AddArg[] {
   const parsed: AddArg[] = [];
@@ -245,37 +234,8 @@ export function parseAddArgs(args: string[]): AddArg[] {
       continue;
     }
 
-    if (arg === AddArgKind.AI_CONTEXT) {
-      const targets: AiContextTargetType[] = [];
-      let cursor = index + 1;
-
-      while (cursor < args.length) {
-        const token = args[cursor]?.toLowerCase();
-
-        if (!token) {
-          break;
-        }
-
-        try {
-          targets.push(parseAiContextTarget(token));
-        } catch {
-          break;
-        }
-
-        cursor += 1;
-      }
-
-      if (targets.length === 0) {
-        throw new Error(
-          'Use: kl-nest add ai-context cursor  ou  kl-nest add ai-context github  ou  kl-nest add ai-context cursor github',
-        );
-      }
-
-      parsed.push({
-        kind: AddArgKind.AI_CONTEXT,
-        targets: Array.from(new Set(targets)),
-      });
-      index = cursor - 1;
+    if (arg === AddArgKind.AGENTS) {
+      parsed.push({ kind: AddArgKind.AGENTS });
       continue;
     }
 
@@ -283,7 +243,7 @@ export function parseAddArgs(args: string[]): AddArg[] {
 
     if (!feature) {
       throw new Error(
-        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, queue, ai-context.`,
+        `Opção desconhecida: "${args[index]}". Use: cache, auth, health, cron, events, queue, agents.`,
       );
     }
 
@@ -296,7 +256,7 @@ export function parseAddArgs(args: string[]): AddArg[] {
 export function dedupeAddArgs(args: AddArg[]): AddArg[] {
   const seenFeatures = new Set<ExtraFeature>();
   const authStrategies = new Set<AuthStrategyType>();
-  const aiContextTargets = new Set<AiContextTargetType>();
+  let agents = false;
   let apiKeyInternalSubnet = false;
   const result: AddArg[] = [];
 
@@ -313,11 +273,8 @@ export function dedupeAddArgs(args: AddArg[]): AddArg[] {
       continue;
     }
 
-    if (arg.kind === AddArgKind.AI_CONTEXT) {
-      for (const target of arg.targets) {
-        aiContextTargets.add(target);
-      }
-
+    if (arg.kind === AddArgKind.AGENTS) {
+      agents = true;
       continue;
     }
 
@@ -335,11 +292,8 @@ export function dedupeAddArgs(args: AddArg[]): AddArg[] {
     });
   }
 
-  if (aiContextTargets.size > 0) {
-    result.push({
-      kind: AddArgKind.AI_CONTEXT,
-      targets: Array.from(aiContextTargets),
-    });
+  if (agents) {
+    result.push({ kind: AddArgKind.AGENTS });
   }
 
   return result;

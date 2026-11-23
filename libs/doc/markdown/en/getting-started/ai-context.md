@@ -4,77 +4,69 @@ slug: ai-context
 category: getting-started
 docKey: inicio/contexto-ai
 order: 3
-description: Vibecoding with Cursor and GitHub Copilot — what the CLI scaffolds and the recommended context layout.
+description: IDE-agnostic vibecoding — AGENTS.md, .agents/instructions, Koala code-review skill.
 ---
 
 # AI context
 
-> **Opt-in:** during `kl-nest new` (prompt) or `kl-nest add ai-context cursor` / `github` / both. With `-y`, context is **not** generated — use `add` afterwards. The CLI does **not** overwrite existing files.
+> **Opt-in:** during `kl-nest new` (prompt “Configurar contexto para agentes de IA?”) or `kl-nest add agents`. With `-y`, context is **not** generated — use `add agents` afterwards. The CLI **fully replaces** the generated structure (and removes legacy Cursor/Copilot `ai-context` files if present).
 
-## What it is for
+## Purpose
 
-Reduce hallucination in vibecoding: the agent reads the generated repository (DDD layers, template bases, docs-first via [`llms.txt`](https://nest.koalarx.com/llms-en.txt)) instead of inventing `@koalarx/nest` imports or APIs that are not in the project.
+Reduce hallucination in vibecoding: the agent reads the scaffolded repo (DDD layers, template bases, docs-first via [`llms.txt`](https://nest.koalarx.com/llms.txt)) instead of inventing `@koalarx/nest` runtime imports or APIs that do not exist in the project.
 
-The core (`AGENTS.md` and editor rules) points at public docs and lists hard constraints (layers, Bun, Zod, API vs Worker, etc.). **Domain/business** content for your product should live separately — see [recommended layout](./ai-context.md#recommended-layout-for-future-context).
+The entry point is **`AGENTS.md`** (recognized by Cursor, Copilot, and other IDEs). Details live under `.agents/instructions/`; skills under `.agents/skills/`.
 
-## Supported IDEs and tools
-
-| CLI target | Tool | What the CLI generates |
-| --- | --- | --- |
-| `cursor` | [Cursor](https://cursor.com) | `AGENTS.md` + `.cursor/rules/*.mdc` |
-| `github` | GitHub Copilot (VS Code / GitHub) | `AGENTS.md` + `.github/copilot-instructions.md` |
-
-Aliases for `github`: `copilot`, `github-copilot`. You can install both in one command:
+## Command
 
 ```bash
-kl-nest add ai-context cursor
-kl-nest add ai-context github
-kl-nest add ai-context cursor github
+kl-nest add agents
 ```
 
-## What the CLI installs today
+In interactive `kl-nest new`, confirm whether to configure agent context. In silent mode (`-y`), run `add agents` afterwards.
 
-Files copied from `libs/cli/assets/ai-context/` (in the published package):
+## What the CLI installs
+
+Files copied from `libs/cli/assets/agents/` (in the published package):
+
+```text
+AGENTS.md
+.agents/
+  instructions/
+    docs-first.md
+    hard-constraints.md
+    layers-ddd.md
+    new-resource.md
+    class-members.md
+    library-usage.md
+  skills/
+    code-review.md
+```
 
 | File | Role |
 | --- | --- |
-| `AGENTS.md` | Short entry — docs-first + hard constraints (read by Cursor and Copilot) |
-| `.cursor/rules/koala-*.mdc` | Path-scoped rules per layer (host, application, domain, …) |
-| `.github/copilot-instructions.md` | Copilot entry (same spirit as `AGENTS.md`) |
+| `AGENTS.md` | Short index — docs-first, hard-constraint summary, When→Read map, skills |
+| `.agents/instructions/*.md` | Purpose-split instructions (layers, resource recipe, libs, etc.) |
+| `.agents/skills/code-review.md` | Full review skill against Koala standards |
 
-This covers the Koala Nest **framework**. It does not include your product requirements, business rules, or operational policies.
+This covers the Koala Nest **framework**. Product domain/business rules should live in your own files (e.g. under `.agents/instructions/` or `.github/instructions/`), without duplicating the CLI-generated core.
 
-## Recommended layout for future context
+## Code review skill
 
-To grow context without duplicating sources of truth, use folders under `.github/` (pattern used in production Koala Nest projects):
+Ask the agent (verbatim phrase):
 
-```text
-AGENTS.md                         # Cursor / agents entry (CLI)
-.cursor/rules/                    # path-scoped Cursor rules (CLI)
-.github/
-  copilot-instructions.md         # Copilot entry (CLI) — points at instructions/
-  instructions/                   # canonical domain / business / ops context
-    README.md                     # index + reading order
-    ...                           # requirements, business rules, policies, etc.
-  agents/                         # (optional) specialized agents
-    README.md
-  prompts/                        # (optional) reusable prompts
-    README.md
-  skills/                         # (optional) domain skills / guides
-    README.md
-```
+> Faça uma revisão completa utilizando os padrões Koala
 
-### Conventions
+The skill in `.agents/skills/code-review.md` covers: best practices, Nest.js patterns (via Nest MCP when available in the IDE), Clean Code, abstraction, DDD, test coverage, security, and standardized library/template usage.
 
-- **One source of truth:** domain and business live in `.github/instructions/`; do not copy the same long text into `AGENTS.md`, Copilot, and Cursor.
-- **Short entries:** keep `AGENTS.md` and `copilot-instructions.md` lean and **link** to `instructions/`.
-- **`agents` / `prompts` / `skills`:** optional folders for later evolution (the CLI does **not** create them today).
-- **Cursor path-scoped:** keep using `.cursor/rules` for folder-level rules; long domain content belongs in `instructions/`.
+## Install behavior
 
-Example `instructions/README.md` index: reading order (policy → technical usage → requirements → business rules) and a quick “where to look” guide.
+- **`new` (when confirmed)** and **`add agents`**: purge previous structure + force-copy assets.
+- Removes legacy `ai-context`: `.cursor/rules/koala-*.mdc` and `.github/copilot-instructions.md`.
+- No longer generates `.mdc` rules or `copilot-instructions.md` — context is IDE-agnostic via `AGENTS.md`.
 
 ## Next steps
 
-- [Installation guide](./installation-guide.md) — `new`, `-y`, and the `add` catalog
+- [Installation guide](./installation-guide.md) — `new`, `-y`, and `add` catalog
 - [Overview](../intro/overview.md) — optional features
 - LLM indexes: [llms.txt](https://nest.koalarx.com/llms.txt) · [llms-en.txt](https://nest.koalarx.com/llms-en.txt)

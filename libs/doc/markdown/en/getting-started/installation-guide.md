@@ -50,7 +50,7 @@ The interactive `new` command prompts, in order:
 4. template (**Default** or **CRUD Example** — API only);
 5. authentication (**JWT**, **OAuth2**, and/or **API Key** — API only; required on CRUD; API Key is additive);
 6. extra features (depends on type — see table below);
-7. **AI context** for vibecoding: **Cursor**, **GitHub Copilot**, both, or none.
+7. **AI agent context** (`AGENTS.md` + `.agents/`) — yes or no.
 
 ## API vs Worker
 
@@ -97,7 +97,7 @@ OAuth2 and cron jobs automatically install **in-memory cache** (without `ioredis
 | `--auth` | `none` (empty list) | `none`, `jwt`, `oauth2`, `api-key` (comma; API only) |
 | `--features` | none | `cache,health,cron,events,queue` (comma; `health` API only) |
 | `--api-key-internal-subnet` | off | boolean flag (with API Key) |
-| AI context | **not generated** | use `kl-nest add ai-context cursor\|github` afterwards |
+| AI context | **not generated** | use `kl-nest add agents` afterwards |
 
 Rules for Worker + `-y`:
 
@@ -151,9 +151,7 @@ kl-nest add auth jwt
 kl-nest add auth api-key --api-key-internal-subnet
 kl-nest add health cron events
 kl-nest add queue
-kl-nest add ai-context cursor
-kl-nest add ai-context github
-kl-nest add ai-context cursor github
+kl-nest add agents
 ```
 
 | Item | Command | Notes |
@@ -166,8 +164,7 @@ kl-nest add ai-context cursor github
 | Cron jobs | `kl-nest add cron` | Requires in-memory cache; registers `JobsModule` / `host/jobs` |
 | Event jobs | `kl-nest add events` | Registers `JobsModule` / `host/jobs`; on CRUD, restores example handlers |
 | Queue jobs | `kl-nest add queue` | Ideal on Worker; uses `QueueBase` + `IQueueService` — does **not** install `JobsModule` |
-| AI context (Cursor) | `kl-nest add ai-context cursor` | `AGENTS.md` + `.cursor/rules` (no overwrite). Details: [AI context](./ai-context.md) |
-| AI context (Copilot) | `kl-nest add ai-context github` | `AGENTS.md` + `.github/copilot-instructions.md`. Details: [AI context](./ai-context.md) |
+| AI agents | `kl-nest add agents` | `AGENTS.md` + `.agents/` (replaces if present). Details: [AI context](./ai-context.md) |
 
 ## Templates
 

@@ -1,9 +1,6 @@
 import * as p from '@clack/prompts';
 import color from 'picocolors';
-import {
-  AI_CONTEXT_LABELS,
-  type AiContextTarget as AiContextTargetType,
-} from '@cli/constants/ai-context';
+import { AGENTS_LABEL } from '@cli/constants/agents';
 import {
   AddArgKind,
   AuthStrategy,
@@ -122,20 +119,18 @@ async function resolveAddArgsFromPrompt(): Promise<AddArg[]> {
     }
   }
 
-  if (available.aiContextTargets.length > 0) {
-    const targets = assertNotCancel(
-      await p.multiselect({
-        message: 'Contexto AI',
-        options: available.aiContextTargets.map((target) => ({
-          value: target,
-          label: AI_CONTEXT_LABELS[target],
-        })),
-        required: false,
+  if (available.agents) {
+    const installAgents = assertNotCancel(
+      await p.confirm({
+        message: state.agents
+          ? `Reinstalar ${AGENTS_LABEL}? (substitui AGENTS.md e .agents/)`
+          : `Instalar ${AGENTS_LABEL}?`,
+        initialValue: !state.agents,
       }),
-    ) as AiContextTargetType[];
+    );
 
-    if (targets.length > 0) {
-      args.push({ kind: AddArgKind.AI_CONTEXT, targets });
+    if (installAgents) {
+      args.push({ kind: AddArgKind.AGENTS });
     }
   }
 
@@ -155,9 +150,10 @@ export async function runAdd(
   const available = listAvailableAddOptions(state);
 
   if (
+    rawArgs.length === 0 &&
     available.authStrategies.length === 0 &&
     available.features.length === 0 &&
-    available.aiContextTargets.length === 0
+    !available.agents
   ) {
     p.outro(
       color.green(

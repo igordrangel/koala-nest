@@ -18,7 +18,7 @@ Em vez de depender de uma biblioteca opaca, a CLI **copia módulos prontos para 
 | Template **Exemplo de CRUD** (Person) — só API | Disponível |
 | Autenticação JWT, OAuth2 e API Key | Disponível via `new` e `add` |
 | Cache Redis, health, cron, events, queue | Disponível via `new` e `add` |
-| Contexto AI (Cursor / GitHub Copilot) | Disponível via `new` (prompt) e `add ai-context` |
+| Contexto AI (agentes IDE-agnóstico) | Disponível via `new` (prompt) e `add agents` |
 | Comando `add` (funcionalidades avulsas) | Disponível |
 
 ## Instalação e uso
@@ -72,7 +72,7 @@ kl-nest add cache
 kl-nest add auth jwt health
 kl-nest add auth api-key
 kl-nest add queue
-kl-nest add ai-context cursor github
+kl-nest add agents
 kl-nest version
 kl-nest --help
 
@@ -88,16 +88,16 @@ O comando `new` pergunta:
 - gerenciador de pacotes (`bun`, `npm` ou `pnpm` — Bun recomendado);
 - template (**Padrão** ou **Exemplo de CRUD** — CRUD só na API);
 - autenticação (**JWT**, **OAuth2**, **API Key** aditiva, ou nenhuma) e features (cache, health, cron, events, queue — health/auth só na API);
-- contexto AI (**Cursor**, **GitHub Copilot**, ambos ou nenhum). Com `-y` o contexto AI não é gerado.
+- contexto para agentes de IA (`AGENTS.md` + `.agents/`). Com `-y` o contexto não é gerado.
 
-O comando `add` instala funcionalidades em um projeto Koala Nest já existente (detecta o que já está presente e pula duplicatas):
+O comando `add` instala funcionalidades em um projeto Koala Nest já existente (detecta o que já está presente e pula duplicatas; `agents` sempre recria):
 
 - `auth jwt` / `auth oauth2` / `auth api-key` — autenticação (API; api-key exige JWT e/ou OAuth2)
 - `cache` — cache Redis (com exemplos no template CRUD)
 - `health` — endpoint `GET /health` (API)
 - `cron` / `events` — jobs internos (`JobsModule` / `host/jobs`)
 - `queue` — handlers de fila (`QueueBase`; sem `JobsModule`)
-- `ai-context cursor` / `github` — contexto para vibecoding
+- `agents` — contexto AI IDE-agnóstico (`AGENTS.md` + `.agents/`)
 
 ```bash
 cd meu-projeto
@@ -106,7 +106,7 @@ kl-nest add auth jwt health --verbose
 kl-nest add auth api-key --api-key-internal-subnet
 kl-nest add cron events
 kl-nest add queue
-kl-nest add ai-context cursor
+kl-nest add agents
 ```
 
 Detalhes: [Guia de instalação](https://nest.koalarx.com/pt/docs/inicio/guia-de-instalacao) · [Contexto AI](https://nest.koalarx.com/pt/docs/inicio/contexto-ai)

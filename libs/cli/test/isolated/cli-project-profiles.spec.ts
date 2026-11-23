@@ -101,13 +101,13 @@ describe('CLI project profiles via installModule + applyOptionalFeatures', () =>
         skipPackages: true,
       });
 
-      finalizeNewProjectSetup(tempDir, 'bun', [], appType);
+      finalizeNewProjectSetup(tempDir, 'bun', false, appType);
 
       const expectation = buildProjectExpectation(
         selection.template,
         selection.auth,
         selection.features,
-        undefined,
+        false,
         appType,
       );
       seedProjectMetadata(tempDir, expectation);

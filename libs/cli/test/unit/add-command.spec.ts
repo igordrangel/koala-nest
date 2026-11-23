@@ -160,20 +160,14 @@ describe('parseAddArgs', () => {
     expect(() => parseAddArgs(['auth'])).toThrow(/auth jwt/);
   });
 
-  it('aceita ai-context com alvos', () => {
-    expect(parseAddArgs(['ai-context', 'cursor', 'github'])).toEqual([
-      { kind: 'ai-context', targets: ['cursor', 'github'] },
-    ]);
+  it('aceita agents sem alvos', () => {
+    expect(parseAddArgs(['agents'])).toEqual([{ kind: 'agents' }]);
   });
 
-  it('aceita alias copilot para github', () => {
-    expect(parseAddArgs(['ai-context', 'copilot'])).toEqual([
-      { kind: 'ai-context', targets: ['github'] },
-    ]);
-  });
-
-  it('rejeita ai-context sem alvos', () => {
-    expect(() => parseAddArgs(['ai-context'])).toThrow(/ai-context cursor/);
+  it('rejeita ai-context legado', () => {
+    expect(() => parseAddArgs(['ai-context', 'cursor'])).toThrow(
+      /Opção desconhecida/,
+    );
   });
 });
 
@@ -185,8 +179,8 @@ describe('dedupeAddArgs', () => {
         { kind: 'feature', feature: 'cache' },
         { kind: 'auth', strategies: ['jwt'] },
         { kind: 'auth', strategies: ['oauth2'] },
-        { kind: 'ai-context', targets: ['cursor'] },
-        { kind: 'ai-context', targets: ['github', 'cursor'] },
+        { kind: 'agents' },
+        { kind: 'agents' },
       ]),
     ).toEqual([
       {
@@ -195,7 +189,7 @@ describe('dedupeAddArgs', () => {
         apiKeyInternalSubnet: false,
       },
       { kind: 'feature', feature: 'cache' },
-      { kind: 'ai-context', targets: ['cursor', 'github'] },
+      { kind: 'agents' },
     ]);
   });
 });
@@ -223,7 +217,7 @@ describe('detectProjectState', () => {
         cronJobs: true,
         eventJobs: true,
         queueJobs: false,
-        aiContext: { cursor: false, github: false },
+        agents: false,
       });
     } finally {
       process.chdir(previousCwd);

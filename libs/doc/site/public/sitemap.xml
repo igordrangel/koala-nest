@@ -79,16 +79,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/cron-event-jobs/" />
   </url>
   <url>
-    <loc>https://nest.koalarx.com/pt/docs/core/koala-utils/</loc>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
-  </url>
-  <url>
     <loc>https://nest.koalarx.com/pt/docs/core/queue-jobs/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/queue-jobs/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/pt/docs/core/koala-utils/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/pt/docs/domain/entidades/</loc>
@@ -133,16 +133,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
   </url>
   <url>
-    <loc>https://nest.koalarx.com/pt/docs/host/seguranca/</loc>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
-  </url>
-  <url>
     <loc>https://nest.koalarx.com/pt/docs/host/controllers/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/controllers/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/controllers/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/controllers/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/pt/docs/host/seguranca/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/pt/docs/host/rotas/</loc>
@@ -277,16 +277,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/cron-event-jobs/" />
   </url>
   <url>
-    <loc>https://nest.koalarx.com/en/docs/core/koala-utils/</loc>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
-  </url>
-  <url>
     <loc>https://nest.koalarx.com/en/docs/core/queue-jobs/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/queue-jobs/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/queue-jobs/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/core/koala-utils/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/core/koala-utils/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/core/koala-utils/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/domain/entities/</loc>
@@ -331,16 +331,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/middleware-http/" />
   </url>
   <url>
-    <loc>https://nest.koalarx.com/en/docs/host/security/</loc>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
-  </url>
-  <url>
     <loc>https://nest.koalarx.com/en/docs/host/controllers/</loc>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/controllers/" />
     <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/controllers/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/controllers/" />
+  </url>
+  <url>
+    <loc>https://nest.koalarx.com/en/docs/host/security/</loc>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nest.koalarx.com/en/docs/host/security/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nest.koalarx.com/pt/docs/host/seguranca/" />
   </url>
   <url>
     <loc>https://nest.koalarx.com/en/docs/host/routes/</loc>

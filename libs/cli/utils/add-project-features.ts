@@ -33,8 +33,8 @@ import {
 import { normalizeAddArgs } from './normalize-add-args';
 import { restoreRedisHealthCheck } from './patch-health-module';
 import { patchAuthInstall } from './patch-auth-install';
-import { installAiContext } from './install-ai-context';
-import { AiContextTarget } from '@cli/constants/ai-context';
+import { AGENTS_LABEL } from '@cli/constants/agents';
+import { installAgents } from './install-agents';
 
 async function ensureMemoryCache(projectName: string, template: TemplateType) {
   const state = detectProjectState(projectName);
@@ -97,26 +97,13 @@ export async function addProjectFeatures(
   const orderedArgs = normalizeAddArgs(args);
 
   for (const arg of orderedArgs) {
-    if (arg.kind === AddArgKind.AI_CONTEXT) {
-      const missing = arg.targets.filter((target) => {
-        if (target === AiContextTarget.CURSOR) {
-          return !state.aiContext.cursor;
-        }
-
-        return !state.aiContext.github;
+    if (arg.kind === AddArgKind.AGENTS) {
+      const result = installAgents(projectName);
+      results.push({
+        label: result.label || AGENTS_LABEL,
+        installed: result.installed,
+        reason: result.reason,
       });
-
-      if (missing.length === 0) {
-        results.push({
-          label: 'contexto AI',
-          installed: false,
-          reason: 'Contexto AI solicitado já está instalado.',
-        });
-        continue;
-      }
-
-      const contextResults = installAiContext(projectName, missing);
-      results.push(...contextResults);
       state = detectProjectState(projectName);
       continue;
     }

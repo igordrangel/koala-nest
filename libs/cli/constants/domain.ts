@@ -62,7 +62,7 @@ export enum InstallModule {
 export const AddArgKind = {
   AUTH: 'auth',
   FEATURE: 'feature',
-  AI_CONTEXT: 'ai-context',
+  AGENTS: 'agents',
 } as const;
 
 export type AddArgKind = (typeof AddArgKind)[keyof typeof AddArgKind];

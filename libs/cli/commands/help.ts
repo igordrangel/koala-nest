@@ -23,8 +23,8 @@ ${color.cyan('New — opções:')}
   ${color.dim('--api-key-internal-subnet')}  Bypass de subnet interna com API Key
 
 ${color.cyan('New — prompts:')}
-  Pergunta o ${color.dim('tipo')} (API ou Worker), depois template/auth/features (conforme o tipo) e o ${color.dim('contexto AI')} (Cursor, GitHub Copilot ou ambos).
-  Com ${color.dim('-y')} o contexto AI não é gerado (use ${color.dim('kl-nest add ai-context …')} depois).
+  Pergunta o ${color.dim('tipo')} (API ou Worker), depois template/auth/features (conforme o tipo) e se deve ${color.dim('configurar contexto para agentes de IA')}.
+  Com ${color.dim('-y')} o contexto de agentes não é gerado (use ${color.dim('kl-nest add agents')} depois).
   Worker usa ${color.dim('createApplicationContext')} — sem Helmet, CORS, OpenAPI nem porta HTTP.
 
 ${color.cyan('Comandos:')}
@@ -40,7 +40,7 @@ ${color.cyan('Add — funcionalidades:')}
   ${color.dim('cron')}                      Jobs com expressão cron (+ JobsModule)
   ${color.dim('events')}                    Jobs reativos a eventos (+ JobsModule)
   ${color.dim('queue')}                     Handlers de fila (QueueBase; sem JobsModule)
-  ${color.dim('ai-context cursor|github')}  Contexto AI (AGENTS.md + regras do editor)
+  ${color.dim('agents')}                    Contexto AI (AGENTS.md + .agents/; substitui se já existir)
 
 ${color.cyan('Exemplos:')}
   kl-nest new example
@@ -53,9 +53,7 @@ ${color.cyan('Exemplos:')}
   kl-nest add auth api-key --api-key-internal-subnet
   kl-nest add cron events
   kl-nest add queue
-  kl-nest add ai-context cursor
-  kl-nest add ai-context github
-  kl-nest add ai-context cursor github
+  kl-nest add agents
   kl-nest version
 `);
 }
