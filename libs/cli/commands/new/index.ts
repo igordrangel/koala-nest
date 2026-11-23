@@ -26,13 +26,6 @@ import {
   TEMPLATE_LABELS,
 } from '@cli/constants/domain';
 import {
-  AI_CONTEXT_PROMPT_LABELS,
-  AiContextPromptChoice,
-  formatAiContextTargets,
-  resolveAiContextTargetsFromPrompt,
-  type AiContextTarget,
-} from '@cli/constants/ai-context';
-import {
   installModule,
   Modules,
   resolveNewProjectOptions,
@@ -187,34 +180,13 @@ async function promptExtraFeatures(template: Template, appType: AppType) {
   ) as ExtraFeature[];
 }
 
-async function promptAiContext(): Promise<AiContextTarget[]> {
-  const choice = assertNotCancel(
-    await p.select({
-      message: 'Contexto AI (Cursor / GitHub Copilot)',
-      options: [
-        {
-          value: AiContextPromptChoice.NONE,
-          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.NONE],
-        },
-        {
-          value: AiContextPromptChoice.CURSOR,
-          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.CURSOR],
-          hint: '.cursor/rules + AGENTS.md',
-        },
-        {
-          value: AiContextPromptChoice.GITHUB,
-          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.GITHUB],
-          hint: '.github/copilot-instructions.md + AGENTS.md',
-        },
-        {
-          value: AiContextPromptChoice.BOTH,
-          label: AI_CONTEXT_PROMPT_LABELS[AiContextPromptChoice.BOTH],
-        },
-      ],
+async function promptAgents(): Promise<boolean> {
+  return assertNotCancel(
+    await p.confirm({
+      message: 'Configurar contexto para agentes de IA?',
+      initialValue: true,
     }),
-  ) as AiContextPromptChoice;
-
-  return resolveAiContextTargetsFromPrompt(choice);
+  );
 }
 
 async function promptProjectName() {
@@ -318,7 +290,7 @@ async function resolveProjectInput(args: string[]) {
 
     assertWorkerCompatibleOptions(appType, template, auth, features);
 
-    const aiContext = await promptAiContext();
+    const agents = await promptAgents();
 
     return buildNewProjectConfig(parsed, {
       name,
@@ -328,7 +300,7 @@ async function resolveProjectInput(args: string[]) {
       auth,
       features,
       apiKeyInternalSubnet,
-      aiContext,
+      agents,
     });
   }
 
@@ -345,7 +317,7 @@ async function resolveProjectInput(args: string[]) {
     template: Template.DEFAULT,
     auth: [],
     features: [],
-    aiContext: [],
+    agents: false,
   });
 }
 
@@ -401,12 +373,12 @@ export async function runNew(args: string[] = []): Promise<void> {
     apiKeyInternalSubnet: project.apiKeyInternalSubnet,
   });
 
-  spinner.message('Configurando workspace (.vscode, .env e contexto AI)...');
+  spinner.message('Configurando workspace (.vscode, .env e agentes de IA)...');
 
   finalizeNewProjectSetup(
     project.name,
     project.packageManager,
-    project.aiContext,
+    project.agents,
     project.appType,
   );
 
@@ -441,7 +413,7 @@ export async function runNew(args: string[] = []): Promise<void> {
     `${color.bold('Gerenciador:')} ${project.packageManager}`,
     `${color.bold('Autenticação:')} ${formatAuthStrategies(authStrategies)}`,
     `${color.bold('Extras:')} ${extrasSummary || color.dim('nenhum')}`,
-    `${color.bold('Contexto AI:')} ${formatAiContextTargets(project.aiContext)}`,
+    `${color.bold('Agentes de IA:')} ${project.agents ? 'sim (AGENTS.md + .agents/)' : color.dim('não')}`,
     `${color.dim('Depois:')} cd ${project.name} && ${project.packageManager} start`,
     `${color.dim('Extras:')} kl-nest add <feature>`,
   ];

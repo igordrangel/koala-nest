@@ -25,7 +25,7 @@ describe('cli-project-checklist', () => {
       cronJobs: true,
       eventJobs: true,
       queueJobs: false,
-      aiContext: { cursor: false, github: false },
+      agents: false,
     });
   });
 
@@ -38,19 +38,26 @@ describe('cli-project-checklist', () => {
       cache: 'redis',
       cronJobs: true,
       eventJobs: true,
-      aiContext: { cursor: false, github: false },
+      agents: false,
     });
   });
 
-  it('requiredPaths inclui contexto AI quando solicitado', () => {
+  it('requiredPaths inclui agents quando solicitado', () => {
     const paths = requiredPathsForExpectation(
-      buildProjectExpectation(Template.DEFAULT, [], [], {
-        cursor: true,
-        github: true,
-      }),
+      buildProjectExpectation(Template.DEFAULT, [], [], true),
     );
 
     expect(paths).toContain('AGENTS.md');
+    expect(paths).toContain('.agents/instructions/hard-constraints.md');
+    expect(paths).toContain('.agents/skills/code-review.md');
+    expect(paths).not.toContain('.cursor/rules/koala-layers.mdc');
+  });
+
+  it('forbiddenPaths bloqueia legado Cursor/Copilot quando agents=true', () => {
+    const paths = forbiddenPathsForExpectation(
+      buildProjectExpectation(Template.DEFAULT, [], [], true),
+    );
+
     expect(paths).toContain('.cursor/rules/koala-layers.mdc');
     expect(paths).toContain('.github/copilot-instructions.md');
   });

@@ -1,10 +1,9 @@
 import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { PackageManager } from '@cli/types';
-import type { AiContextTarget } from '@cli/constants/ai-context';
 import { AppType } from '@cli/constants/domain';
 import { getSourceCodePath } from './get-source-code-path';
-import { installAiContext } from './install-ai-context';
+import { installAgents } from './install-agents';
 import { ensureJwtKeysInEnv } from './patch-env';
 import { resolveProjectPath } from './resolve-project-path';
 import { writeDockerAssets } from './write-docker-assets';
@@ -163,14 +162,14 @@ export function createEnvFromExample(projectName: string): void {
 export function finalizeNewProjectSetup(
   projectName: string,
   packageManager: PackageManager,
-  aiContext: readonly AiContextTarget[] = [],
+  agents = false,
   appType: AppType = AppType.API,
 ): void {
   installWorkspaceConfig(projectName, packageManager);
   createEnvFromExample(projectName);
   writeDockerAssets(projectName, packageManager, appType);
 
-  if (aiContext.length > 0) {
-    installAiContext(projectName, aiContext);
+  if (agents) {
+    installAgents(projectName);
   }
 }

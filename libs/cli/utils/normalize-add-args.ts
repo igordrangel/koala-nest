@@ -11,9 +11,9 @@ export function normalizeAddArgs(args: AddArg[]): AddArg[] {
     (item): item is Extract<AddArg, { kind: typeof AddArgKind.AUTH }> =>
       item.kind === AddArgKind.AUTH,
   );
-  const aiContext = args.find(
-    (item): item is Extract<AddArg, { kind: typeof AddArgKind.AI_CONTEXT }> =>
-      item.kind === AddArgKind.AI_CONTEXT,
+  const agents = args.find(
+    (item): item is Extract<AddArg, { kind: typeof AddArgKind.AGENTS }> =>
+      item.kind === AddArgKind.AGENTS,
   );
   const selectedFeatures = new Set(
     args
@@ -46,8 +46,8 @@ export function normalizeAddArgs(args: AddArg[]): AddArg[] {
     }
   }
 
-  if (aiContext) {
-    ordered.push(aiContext);
+  if (agents) {
+    ordered.push(agents);
   }
 
   return ordered;

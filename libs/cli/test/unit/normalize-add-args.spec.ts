@@ -44,17 +44,17 @@ describe('normalizeAddArgs', () => {
     ]);
   });
 
-  it('coloca ai-context no final', () => {
+  it('coloca agents no final', () => {
     expect(
       normalizeAddArgs([
-        { kind: 'ai-context', targets: ['cursor'] },
+        { kind: 'agents' },
         { kind: 'feature', feature: 'cache' },
         { kind: 'auth', strategies: ['jwt'] },
       ]),
     ).toEqual([
       { kind: 'feature', feature: 'cache' },
       { kind: 'auth', strategies: ['jwt'] },
-      { kind: 'ai-context', targets: ['cursor'] },
+      { kind: 'agents' },
     ]);
   });
 });

@@ -1,4 +1,6 @@
 {
+  "cSpell.enabled": false,
+  "json.schemaDownload.enable": true,
   "material-icon-theme.activeIconPack": "nest",
   "editor.fontFamily": "Fira Code",
   "editor.fontSize": 15,

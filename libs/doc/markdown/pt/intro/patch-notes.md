@@ -13,6 +13,20 @@ Changelog voltado a quem usa ou atualiza projetos gerados pela CLI. Detalhes té
 
 A versão publicada do pacote `@koalarx/nest` aparece no site e no `package.json` do repositório. O arquivo [`CHANGELOG.md`](https://github.com/igordrangel/koala-nest/blob/main/CHANGELOG.md) na raiz espelha estas notas.
 
+## 4.5.0 — `kl-nest add agents` (contexto AI IDE-agnóstico)
+
+### O que mudou
+
+- **`kl-nest add agents`** substitui `add ai-context cursor|github`. Gera `AGENTS.md` (índice) + `.agents/instructions/*.md` + `.agents/skills/code-review.md`.
+- **IDE-agnóstico:** não gera mais `.cursor/rules/*.mdc` nem `.github/copilot-instructions.md`.
+- **Replace completo:** `new` (quando confirmado) e `add agents` removem a estrutura anterior (incluindo legado `ai-context`) e recriam os assets.
+- **Skill de revisão:** ative com a frase **Faça uma revisão completa utilizando os padrões Koala**.
+- Doc [Contexto AI](../inicio/contexto-ai.md) atualizada (PT/EN).
+
+### Atualização
+
+Em projetos existentes: `kl-nest add agents` (substitui `AGENTS.md` / `.agents` e remove regras Cursor/Copilot geradas pela CLI antiga).
+
 ## 4.4.0 — Build, Docker, QueueBase, Helmet e Worker
 
 ### O que mudou

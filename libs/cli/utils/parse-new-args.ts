@@ -11,7 +11,6 @@ import {
   assertWorkerCompatibleOptions,
 } from '@cli/constants/domain';
 import type { PackageManager } from '@cli/types/index.ts';
-import type { AiContextTarget } from '@cli/constants/ai-context';
 
 export type ParsedNewArgs = {
   projectName?: string;
@@ -20,7 +19,7 @@ export type ParsedNewArgs = {
   template?: Template;
   auth?: AuthStrategy[];
   features: ExtraFeature[];
-  aiContext: AiContextTarget[];
+  agents: boolean;
   apiKeyInternalSubnet: boolean;
   yes: boolean;
   interactive: boolean;
@@ -200,7 +199,7 @@ export function parseNewArgs(args: string[]): ParsedNewArgs {
     template,
     auth,
     features,
-    aiContext: [],
+    agents: false,
     apiKeyInternalSubnet,
     yes,
     interactive: !yes,
@@ -248,7 +247,7 @@ export function buildNewProjectConfig(
     auth: AuthStrategy[];
     features: ExtraFeature[];
     apiKeyInternalSubnet?: boolean;
-    aiContext?: AiContextTarget[];
+    agents?: boolean;
   },
 ) {
   return {
@@ -260,6 +259,6 @@ export function buildNewProjectConfig(
     features: parsed.features.length > 0 ? parsed.features : overrides.features,
     apiKeyInternalSubnet:
       overrides.apiKeyInternalSubnet ?? parsed.apiKeyInternalSubnet,
-    aiContext: overrides.aiContext ?? parsed.aiContext,
+    agents: overrides.agents ?? parsed.agents,
   };
 }

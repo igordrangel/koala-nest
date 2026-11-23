@@ -6,18 +6,15 @@ import {
   resolveNewProjectOptions,
 } from '@cli/constants/domain';
 import {
-  AI_CONTEXT_AGENTS_PATH,
-  AI_CONTEXT_CURSOR_RULE_PATHS,
-  AI_CONTEXT_GITHUB_PATH,
-} from '@cli/constants/ai-context';
+  AGENTS_ASSET_RELATIVE_PATHS,
+  AGENTS_INSTRUCTION_PATHS,
+  AGENTS_SKILL_PATHS,
+  LEGACY_AI_CONTEXT_CURSOR_RULE_PATHS,
+  LEGACY_AI_CONTEXT_GITHUB_PATH,
+} from '@cli/constants/agents';
 import { resolveProjectFeatures } from '@cli/utils/install-module';
 
 export type CacheLevel = false | 'memory' | 'redis';
-
-export type AiContextExpectation = {
-  cursor: boolean;
-  github: boolean;
-};
 
 /** Estado esperado de um projeto gerado pela CLI (`new` / `add`). */
 export type ProjectExpectation = {
@@ -29,7 +26,7 @@ export type ProjectExpectation = {
   cronJobs: boolean;
   eventJobs: boolean;
   queueJobs: boolean;
-  aiContext?: AiContextExpectation;
+  agents?: boolean;
 };
 
 /** Infraestrutura E2E presente em todo projeto gerado. */
@@ -63,15 +60,13 @@ export const WORKSPACE_SETUP_PATHS = [
   'entrypoint.sh',
 ] as const;
 
-/** Contexto AI gerado pela CLI (Cursor / GitHub Copilot). */
-export const AI_CONTEXT_AGENTS_REQUIRED_PATHS = [AI_CONTEXT_AGENTS_PATH] as const;
+/** Contexto de agentes gerado pela CLI (`kl-nest add agents`). */
+export const AGENTS_REQUIRED_PATHS = [...AGENTS_ASSET_RELATIVE_PATHS] as const;
 
-export const AI_CONTEXT_CURSOR_REQUIRED_PATHS = [
-  ...AI_CONTEXT_CURSOR_RULE_PATHS,
-] as const;
-
-export const AI_CONTEXT_GITHUB_REQUIRED_PATHS = [
-  AI_CONTEXT_GITHUB_PATH,
+/** Paths legados de `ai-context` que não devem existir após install de agents. */
+export const AGENTS_LEGACY_FORBIDDEN_PATHS = [
+  ...LEGACY_AI_CONTEXT_CURSOR_RULE_PATHS,
+  LEGACY_AI_CONTEXT_GITHUB_PATH,
 ] as const;
 
 /** Núcleo comum a qualquer projeto Koala Nest. */
@@ -320,7 +315,7 @@ export function buildProjectExpectation(
   template: Template,
   auth: readonly AuthStrategy[],
   features: readonly ExtraFeature[],
-  aiContext: AiContextExpectation = { cursor: false, github: false },
+  agents = false,
   appType: AppType = AppType.API,
 ): ProjectExpectation {
   const resolved = resolveNewProjectOptions(
@@ -351,7 +346,7 @@ export function buildProjectExpectation(
     cronJobs: projectFeatures.cronJobs,
     eventJobs: projectFeatures.eventJobs,
     queueJobs: projectFeatures.queueJobs,
-    aiContext,
+    agents,
   };
 }
 
@@ -400,18 +395,8 @@ export function requiredPathsForExpectation(
     paths.push(...QUEUE_REQUIRED_PATHS);
   }
 
-  const aiContext = expectation.aiContext ?? { cursor: false, github: false };
-
-  if (aiContext.cursor || aiContext.github) {
-    paths.push(...AI_CONTEXT_AGENTS_REQUIRED_PATHS);
-  }
-
-  if (aiContext.cursor) {
-    paths.push(...AI_CONTEXT_CURSOR_REQUIRED_PATHS);
-  }
-
-  if (aiContext.github) {
-    paths.push(...AI_CONTEXT_GITHUB_REQUIRED_PATHS);
+  if (expectation.agents) {
+    paths.push(...AGENTS_REQUIRED_PATHS);
   }
 
   return paths;
@@ -458,18 +443,11 @@ export function forbiddenPathsForExpectation(
     paths.push(...QUEUE_REQUIRED_PATHS);
   }
 
-  const aiContext = expectation.aiContext ?? { cursor: false, github: false };
-
-  if (!aiContext.cursor && !aiContext.github) {
-    paths.push(...AI_CONTEXT_AGENTS_REQUIRED_PATHS);
-  }
-
-  if (!aiContext.cursor) {
-    paths.push(...AI_CONTEXT_CURSOR_REQUIRED_PATHS);
-  }
-
-  if (!aiContext.github) {
-    paths.push(...AI_CONTEXT_GITHUB_REQUIRED_PATHS);
+  if (!expectation.agents) {
+    // Nest CLI pode gerar AGENTS.md sozinho; proíbe só a estrutura Koala (.agents/).
+    paths.push(...AGENTS_INSTRUCTION_PATHS, ...AGENTS_SKILL_PATHS);
+  } else {
+    paths.push(...AGENTS_LEGACY_FORBIDDEN_PATHS);
   }
 
   return paths;

@@ -9,6 +9,21 @@ O conteúdo principal vive em `libs/doc/markdown/{pt,en}/intro/patch-notes.md` (
 
 Formato inspirado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
+## [4.5.0] — `kl-nest add agents` (contexto AI IDE-agnóstico)
+
+### Added
+
+- `kl-nest add agents`: `AGENTS.md` + `.agents/instructions/` + `.agents/skills/code-review.md`.
+- Skill de revisão ativada com “Faça uma revisão completa utilizando os padrões Koala”.
+
+### Changed
+
+- Substitui `kl-nest add ai-context cursor|github`; contexto passa a ser IDE-agnóstico via `AGENTS.md`.
+- Install faz purge + replace completo (remove legado `.cursor/rules/koala-*.mdc` e `.github/copilot-instructions.md`).
+- Prompt do `new` vira confirmação sim/não para agentes de IA.
+
+Detalhes: [Patch notes — 4.5.0](https://nest.koalarx.com/pt/docs/intro/patch-notes).
+
 ## [4.4.0] — Build, Docker, QueueBase, Helmet e Worker
 
 ### Added

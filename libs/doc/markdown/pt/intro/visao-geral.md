@@ -37,7 +37,7 @@ Escolha no `kl-nest new` ou adicione depois com `kl-nest add`:
 | Cron jobs | `kl-nest add cron` | `CronJobHandlerBase` + `JobsModule` |
 | Event jobs | `kl-nest add events` | `EventJob` + handlers em memória |
 | Queue jobs | `kl-nest add queue` | `QueueBase` + `IQueueService` (infra a implementar; sem `JobsModule`) |
-| Contexto AI | `kl-nest add ai-context cursor\|github` | Vibecoding — [Contexto AI](../inicio/contexto-ai.md) |
+| Agentes de IA | `kl-nest add agents` | Vibecoding IDE-agnóstico — [Contexto AI](../inicio/contexto-ai.md) |
 
 OAuth2 e cron jobs instalam **cache em memória** automaticamente quando Redis não foi selecionado (sem `ioredis`).
 
@@ -71,7 +71,7 @@ Alterações relevantes da CLI e dos templates ficam em [Patch notes](./patch-no
 ## Próximos passos
 
 - [Guia de instalação](../inicio/guia-de-instalacao.md) — `kl-nest new` e `kl-nest add`
-- [Contexto AI](../inicio/contexto-ai.md) — vibecoding (Cursor / Copilot) e estrutura recomendada
+- [Contexto AI](../inicio/contexto-ai.md) — vibecoding IDE-agnóstico (`add agents`) e skill de revisão
 - [Arquitetura DDD](./arquitetura-ddd.md) — camadas e responsabilidades
 - [Segurança](../host/seguranca.md) — Helmet, CORS, auth e demais camadas
 - [Patch notes](./patch-notes.md) — o que mudou recentemente

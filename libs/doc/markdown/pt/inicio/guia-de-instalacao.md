@@ -50,7 +50,7 @@ O comando `new` **interativo** pergunta, nesta ordem:
 4. template (**Padrão** ou **Exemplo de CRUD** — só na API);
 5. autenticação (**JWT**, **OAuth2** e/ou **API Key** — só na API; no CRUD, auth é obrigatória; API Key é aditiva);
 6. funcionalidades extras (conforme o tipo — ver tabela abaixo);
-7. **contexto AI** para vibecoding: **Cursor**, **GitHub Copilot**, ambos ou nenhum.
+7. **contexto para agentes de IA** (`AGENTS.md` + `.agents/`) — sim ou não.
 
 ## API vs Worker
 
@@ -97,7 +97,7 @@ OAuth2 e cron jobs instalam **cache em memória** automaticamente (sem `ioredis`
 | `--auth` | `none` (lista vazia) | `none`, `jwt`, `oauth2`, `api-key` (vírgula; só API) |
 | `--features` | nenhuma | `cache,health,cron,events,queue` (vírgula; `health` só API) |
 | `--api-key-internal-subnet` | off | flag boolean (com API Key) |
-| contexto AI | **não gera** | use `kl-nest add ai-context cursor\|github` depois |
+| contexto AI | **não gera** | use `kl-nest add agents` depois |
 
 Regras com Worker + `-y`:
 
@@ -151,9 +151,7 @@ kl-nest add auth jwt
 kl-nest add auth api-key --api-key-internal-subnet
 kl-nest add health cron events
 kl-nest add queue
-kl-nest add ai-context cursor
-kl-nest add ai-context github
-kl-nest add ai-context cursor github
+kl-nest add agents
 ```
 
 | Item | Comando | Observação |
@@ -166,8 +164,7 @@ kl-nest add ai-context cursor github
 | Cron jobs | `kl-nest add cron` | Requer cache em memória; registra `JobsModule` / `host/jobs` |
 | Event jobs | `kl-nest add events` | Registra `JobsModule` / `host/jobs`; no CRUD, restaura handlers de exemplo |
 | Queue jobs | `kl-nest add queue` | Ideal em Worker; usa `QueueBase` + `IQueueService` — **não** instala `JobsModule` |
-| Contexto AI (Cursor) | `kl-nest add ai-context cursor` | `AGENTS.md` + `.cursor/rules` (não sobrescreve). Detalhes: [Contexto AI](./contexto-ai.md) |
-| Contexto AI (Copilot) | `kl-nest add ai-context github` | `AGENTS.md` + `.github/copilot-instructions.md`. Detalhes: [Contexto AI](./contexto-ai.md) |
+| Agentes de IA | `kl-nest add agents` | `AGENTS.md` + `.agents/` (substitui se já existir). Detalhes: [Contexto AI](./contexto-ai.md) |
 
 ## Templates
 
