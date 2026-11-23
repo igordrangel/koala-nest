@@ -56,9 +56,11 @@ export async function createEmptyNestProject(
 
   const command = PackageManagerRunner[packageManager];
 
+  // Pin CLI 11: Nest 12 defaults to ESM (`type: module` + nodenext) and Nest 12
+  // packages, which break the NestJS 11 / CommonJS Koala template.
   await runCommand([
     command,
-    '@nestjs/cli',
+    '@nestjs/cli@11',
     'new',
     projectName,
     '--package-manager',
